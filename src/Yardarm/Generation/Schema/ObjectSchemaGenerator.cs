@@ -28,7 +28,9 @@ namespace Yardarm.Generation.Schema
 
         public SyntaxTree Generate(OpenApiSchema schema, string key)
         {
-            if (!(_typeNameGenerator.GetName(schema, Enumerable.Empty<OpenApiPathElement>(), key) is QualifiedNameSyntax classNameAndNamespace))
+            var element = new LocatedOpenApiElement<OpenApiSchema>(schema, key);
+
+            if (!(_typeNameGenerator.GetName(element) is QualifiedNameSyntax classNameAndNamespace))
             {
                 throw new InvalidOperationException($"Name must be a {nameof(QualifiedNameSyntax)}.");
             }
@@ -38,26 +40,32 @@ namespace Yardarm.Generation.Schema
             return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
                 .AddMembers(
                     SyntaxFactory.NamespaceDeclaration(ns)
-                        .AddMembers(Generate(schema, Array.Empty<OpenApiPathElement>(), key))));
+                        .AddMembers(Generate(element))));
         }
 
-        public MemberDeclarationSyntax Generate(OpenApiSchema schema, OpenApiPathElement[] parents, string key)
+        public MemberDeclarationSyntax Generate(LocatedOpenApiElement element)
         {
-            if (!(_typeNameGenerator.GetName(schema, parents, key) is QualifiedNameSyntax classNameAndNamespace))
+            if (!(element.Element is OpenApiSchema schema))
+            {
+                throw new ArgumentException("LocatedOpenApiElement must contain an OpenApiSchema");
+            }
+
+            if (!(_typeNameGenerator.GetName(element) is QualifiedNameSyntax classNameAndNamespace))
             {
                 throw new InvalidOperationException($"Name must be a {nameof(QualifiedNameSyntax)}.");
             }
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
-            var newParents = parents.Push(new OpenApiPathElement(schema, key));
+            var newParents = element.Parents.Push(element);
 
             ClassDeclarationSyntax? declaration = SyntaxFactory.ClassDeclaration(className)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()))
-                .AddMembers(schema.Properties.Select(p => CreateProperty(p.Key, p.Value, newParents)).ToArray());
+                .AddMembers(schema.Properties
+                    .Select(p => CreateProperty(new LocatedOpenApiElement<OpenApiSchema>(p.Value, p.Key, newParents))).ToArray());
 
             MemberDeclarationSyntax[] childSchemas = schema.Properties
                 .Where(property => property.Value.Reference == null)
@@ -66,7 +74,7 @@ namespace Yardarm.Generation.Schema
                     ISchemaGenerator generator = _schemaGeneratorFactory.Create(property.Key, property.Value);
 
                     // This isn't a schema reference, so the child property may require schema generation
-                    return generator.Generate(property.Value, newParents, property.Key)!;
+                    return generator.Generate(new LocatedOpenApiElement<OpenApiSchema>(property.Value, property.Key, newParents))!;
                 })
                 .Where(p => p != null)
                 .ToArray();
@@ -79,11 +87,11 @@ namespace Yardarm.Generation.Schema
             return declaration;
         }
 
-        protected virtual MemberDeclarationSyntax CreateProperty(string name, OpenApiSchema type, OpenApiPathElement[] parents)
+        protected virtual MemberDeclarationSyntax CreateProperty(LocatedOpenApiElement<OpenApiSchema> element)
         {
-            var propertyName = _nameFormatterSelector.GetFormatter(NameKind.Property).Format(name);
+            var propertyName = _nameFormatterSelector.GetFormatter(NameKind.Property).Format(element.Key);
 
-            var typeName = _typeNameGenerator.GetName(type, parents, name);
+            var typeName = _typeNameGenerator.GetName(element);
 
             return SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))

@@ -26,26 +26,26 @@ namespace Yardarm.Names
             NamespaceProvider = namespaceProvider;
         }
 
-        public virtual TypeSyntax GetName(IOpenApiReferenceable component, IEnumerable<OpenApiPathElement> parents, string key) =>
-            component switch
+        public virtual TypeSyntax GetName(LocatedOpenApiElement element) =>
+            element switch
             {
-                OpenApiSchema schema => GetSchemaName(schema, parents, key),
-                _ => throw new InvalidOperationException($"Invalid component type {component.GetType().FullName}")
+                LocatedOpenApiElement<OpenApiSchema> schemaElement => GetSchemaName(schemaElement),
+                _ => throw new InvalidOperationException($"Invalid component type {element.Element.GetType().FullName}")
             };
 
-        protected virtual TypeSyntax GetSchemaName(OpenApiSchema schema, IEnumerable<OpenApiPathElement> parents,
-            string key) =>
-            schema.Type switch
+        protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
+            element.Element.Type switch
             {
-                "object" => GetObjectSchemaName(schema, parents, key),
+                "object" => GetObjectSchemaName(element),
                 "string" => String,
                 "number" => Int,
                 "array" => String, // TODO: Arrays
-                _ => throw new InvalidOperationException($"Unknown schema type {schema.Type}")
+                _ => throw new InvalidOperationException($"Unknown schema type {element.Element.Type}")
             };
 
-        protected virtual QualifiedNameSyntax GetObjectSchemaName(OpenApiSchema schema, IEnumerable<OpenApiPathElement> parents, string key)
+        protected virtual QualifiedNameSyntax GetObjectSchemaName(LocatedOpenApiElement<OpenApiSchema> schemaElement)
         {
+            var schema = schemaElement.Element;
             var formatter = _nameFormatterSelector.GetFormatter(NameKind.Class);
 
             if (schema.Reference != null)
@@ -56,11 +56,11 @@ namespace Yardarm.Names
                     SyntaxFactory.IdentifierName(formatter.Format(schema.Reference.Id)));
             }
 
-            var (parent, additionalParents) = parents.Pop();
-            var parentName = GetName(parent.Parent, additionalParents, parent.Key);
+            var parent = schemaElement.Parents[0];
+            var parentName = GetName(parent);
 
             return SyntaxFactory.QualifiedName((QualifiedNameSyntax) parentName,
-                SyntaxFactory.IdentifierName(_nameFormatterSelector.GetFormatter(NameKind.Class).Format(key + "Model")));
+                SyntaxFactory.IdentifierName(_nameFormatterSelector.GetFormatter(NameKind.Class).Format(schemaElement.Key + "Model")));
         }
     }
 }

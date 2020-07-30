@@ -14,6 +14,6 @@ namespace Yardarm.Generation.Schema
 
         public SyntaxTree? Generate(OpenApiSchema schema, string key) => null;
 
-        public MemberDeclarationSyntax? Generate(OpenApiSchema schema, OpenApiPathElement[] parents, string key) => null;
+        public MemberDeclarationSyntax? Generate(LocatedOpenApiElement element) => null;
     }
 }

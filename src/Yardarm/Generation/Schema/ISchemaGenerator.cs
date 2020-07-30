@@ -9,6 +9,6 @@ namespace Yardarm.Generation.Schema
     {
         SyntaxTree? Generate(OpenApiSchema schema, string key);
 
-        MemberDeclarationSyntax? Generate(OpenApiSchema schema, OpenApiPathElement[] parents, string key);
+        MemberDeclarationSyntax? Generate(LocatedOpenApiElement element);
     }
 }

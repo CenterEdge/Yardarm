@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Helpers;
 using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
@@ -27,7 +28,10 @@ namespace Yardarm.Generation.Schema
 
         public SyntaxTree Generate(OpenApiSchema schema, string key)
         {
-            var classNameAndNamespace = _typeNameGenerator.GetName(schema, Enumerable.Empty<OpenApiPathElement>(), key);
+            if (!(_typeNameGenerator.GetName(schema, Enumerable.Empty<OpenApiPathElement>(), key) is QualifiedNameSyntax classNameAndNamespace))
+            {
+                throw new InvalidOperationException($"Name must be a {nameof(QualifiedNameSyntax)}.");
+            }
 
             var ns = classNameAndNamespace.Left;
 
@@ -39,30 +43,27 @@ namespace Yardarm.Generation.Schema
 
         public MemberDeclarationSyntax Generate(OpenApiSchema schema, OpenApiPathElement[] parents, string key)
         {
-            QualifiedNameSyntax classNameAndNamespace = _typeNameGenerator.GetName(schema, parents, key);
+            if (!(_typeNameGenerator.GetName(schema, parents, key) is QualifiedNameSyntax classNameAndNamespace))
+            {
+                throw new InvalidOperationException($"Name must be a {nameof(QualifiedNameSyntax)}.");
+            }
 
             string className = classNameAndNamespace.Right.Identifier.Text;
+
+            var newParents = parents.Push(new OpenApiPathElement(schema, key));
 
             ClassDeclarationSyntax? declaration = SyntaxFactory.ClassDeclaration(className)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()))
-                .AddMembers(schema.Properties.Select(p => CreateProperty(p.Key, p.Value)).ToArray());
+                .AddMembers(schema.Properties.Select(p => CreateProperty(p.Key, p.Value, newParents)).ToArray());
 
             MemberDeclarationSyntax[] childSchemas = schema.Properties
                 .Where(property => property.Value.Reference == null)
                 .Select(property =>
                 {
                     ISchemaGenerator generator = _schemaGeneratorFactory.Create(property.Key, property.Value);
-
-                    var newParents = new OpenApiPathElement[parents.Length + 1];
-                    newParents[0] = new OpenApiPathElement(schema, key);
-
-                    if (parents.Length > 0)
-                    {
-                        parents.AsSpan().CopyTo(newParents.AsSpan(1));
-                    }
 
                     // This isn't a schema reference, so the child property may require schema generation
                     return generator.Generate(property.Value, newParents, property.Key)!;
@@ -78,11 +79,13 @@ namespace Yardarm.Generation.Schema
             return declaration;
         }
 
-        protected virtual MemberDeclarationSyntax CreateProperty(string name, OpenApiSchema type)
+        protected virtual MemberDeclarationSyntax CreateProperty(string name, OpenApiSchema type, OpenApiPathElement[] parents)
         {
             var propertyName = _nameFormatterSelector.GetFormatter(NameKind.Property).Format(name);
 
-            return SyntaxFactory.PropertyDeclaration(SyntaxFactory.ParseTypeName("string"), propertyName)
+            var typeName = _typeNameGenerator.GetName(type, parents, name);
+
+            return SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)

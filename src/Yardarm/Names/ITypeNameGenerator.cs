@@ -7,6 +7,6 @@ namespace Yardarm.Names
 {
     public interface ITypeNameGenerator
     {
-        QualifiedNameSyntax GetName(IOpenApiReferenceable component, IEnumerable<OpenApiPathElement> parent, string key);
+        TypeSyntax GetName(IOpenApiReferenceable component, IEnumerable<OpenApiPathElement> parent, string key);
     }
 }

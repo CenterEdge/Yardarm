@@ -464,6 +464,11 @@ components:
           example: '2020-05-01T15:00:00.000-04:00'
         balance:
           $ref: '#/components/schemas/Points'
+        nestedNoRef:
+          type: object
+          properties:
+            test:
+              type: string
       required:
         - cardNumber
         - issuedAtTime

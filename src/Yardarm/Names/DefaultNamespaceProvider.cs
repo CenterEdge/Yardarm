@@ -19,12 +19,7 @@ namespace Yardarm.Names
             _rootNamespace = SyntaxFactory.ParseName(settings.RootNamespace);
         }
 
-        public virtual NameSyntax GetSchemaNamespace(NameKind nameKind, OpenApiSchema schema) =>
-            nameKind switch
-            {
-                NameKind.Class => GetModelNamespace(),
-                _ => _rootNamespace
-            };
+        public virtual NameSyntax GetSchemaNamespace(OpenApiSchema schema) => GetModelNamespace();
 
         protected virtual NameSyntax GetModelNamespace() =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));

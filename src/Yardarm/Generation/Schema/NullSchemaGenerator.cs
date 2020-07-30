@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Schema
@@ -11,6 +12,8 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public SyntaxTree? Generate(string name, OpenApiSchema schema) => null;
+        public SyntaxTree? Generate(OpenApiSchema schema, string key) => null;
+
+        public MemberDeclarationSyntax? Generate(OpenApiSchema schema, OpenApiPathElement[] parents, string key) => null;
     }
 }

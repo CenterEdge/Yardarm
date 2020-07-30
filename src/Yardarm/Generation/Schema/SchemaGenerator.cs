@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 
@@ -22,7 +23,7 @@ namespace Yardarm.Generation.Schema
             {
                 var generator = _schemaGeneratorFactory.Create(schema.Key, schema.Value);
 
-                var syntaxTree = generator.Generate(schema.Key, schema.Value);
+                var syntaxTree = generator.Generate(schema.Value, schema.Key);
                 if (syntaxTree != null)
                 {
                     yield return syntaxTree;

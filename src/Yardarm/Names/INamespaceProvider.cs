@@ -5,6 +5,6 @@ namespace Yardarm.Names
 {
     public interface INamespaceProvider
     {
-        NameSyntax GetSchemaNamespace(NameKind nameKind, OpenApiSchema schema);
+        NameSyntax GetSchemaNamespace(OpenApiSchema schema);
     }
 }

@@ -30,6 +30,7 @@ namespace Yardarm
             services.TryAddSingleton<CamelCaseNameFormatter>();
             services.TryAddSingleton<PascalCaseNameFormatter>();
             services.TryAddSingleton<INameFormatterSelector, DefaultNameFormatterSelector>();
+            services.TryAddSingleton<ITypeNameGenerator, DefaultTypeNameGenerator>();
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
 
             // Other

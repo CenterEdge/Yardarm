@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.CommandLine", "Yardarm.CommandLine\Yardarm.CommandLine.csproj", "{527F5AF0-1F33-4F07-A6D6-E411CCA5B0AB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm", "Yardarm\Yardarm.csproj", "{1893C416-806A-43F9-A731-7B321A54FFE0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{527F5AF0-1F33-4F07-A6D6-E411CCA5B0AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{527F5AF0-1F33-4F07-A6D6-E411CCA5B0AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{527F5AF0-1F33-4F07-A6D6-E411CCA5B0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{527F5AF0-1F33-4F07-A6D6-E411CCA5B0AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1893C416-806A-43F9-A731-7B321A54FFE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1893C416-806A-43F9-A731-7B321A54FFE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1893C416-806A-43F9-A731-7B321A54FFE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1893C416-806A-43F9-A731-7B321A54FFE0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {74BA0E40-4DD5-45C9-AC38-3EC771CD3E6C}
+	EndGlobalSection
+EndGlobal

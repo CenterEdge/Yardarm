@@ -1,0 +1,600 @@
+openapi: 3.0.2
+info:
+  version: 1.0.0
+  title: CenterEdge Software Card System Integration API
+  contact:
+    name: Brant Burnett
+    email: bburnett@centeredgesoftware.com
+  license:
+    name: See license agreement
+  x-logo:
+    url: >-
+      https://raw.githubusercontent.com/CenterEdge/centeredge-resources/master/logo/centeredge_logo_color.svg
+  description: >
+    This document represents an API to be implemented by a third-party card
+    system to allow integration with CenterEdge Advantage. The CenterEdge
+    Advantage system will make requests to this API and receive responses back.
+
+    This integration is designed to allow the source of truth for key card
+    system data to continue to reside with the card system, such as card
+    numbers, card balances, and transaction history.
+
+    Implementing this API is not the only requirement for an integration with
+    CenterEdge Advantage. Other potential requirements include:
+
+    - CenterEdge support for reading/parsing the card system's magstripes,
+    barcodes, or
+      NFC chips
+    - Integration from the card system to CenterEdge APIs to post card sales at
+    kiosks or
+      from other sales channels
+    - Testing and certification of the integration by CenterEdge
+tags:
+  - name: Login
+    description: APIs related to authentication
+  - name: Capabilities
+    description: APIs to request capabilities of other APIs
+  - name: Cards
+    description: APIs to manage cards
+servers:
+  - url: 'http://example.com/api/v1'
+paths:
+  /login:
+    post:
+      tags:
+        - Login
+      summary: Login and get a new bearer token
+      description: >
+        Login and get a new bearer token. This token may expire, after which
+        subsequent requests will
+
+        return a 401. Returning a 401 response is the indication that a new
+        login should be performed
+
+        to acquire a new bearer token.
+      operationId: login
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bearerToken:
+                    type: string
+                required:
+                  - bearerToken
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: invalidLogin
+                message: Incorrect username or password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        description: Card transaction to create
+        required: true
+  /capabilities:
+    get:
+      tags:
+        - Capabilities
+      summary: Gets the capabilities of the API.
+      description: >
+        Gets the capabilities of the API. This is used by CenterEdge Advantage
+        to make decisions
+
+        about functions to offer on the UI.
+      operationId: getCapabilities
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    description: >
+                      List of capabilities strings.
+
+
+                      Currently supported:
+
+                      - `wipeCard` Supports wiping a card
+
+                      - `virtualSwipe` Supports emulating games via the API by
+                      creating a `gamePlay` transaction
+                    type: array
+                    items:
+                      type: string
+                  pointTypes:
+                    type: object
+                    description: Types of points supported
+                    properties:
+                      regularPoints:
+                        type: boolean
+                      bonusPoints:
+                        type: boolean
+                      redemptionTickets:
+                        type: boolean
+                  timePlayTypes:
+                    type: object
+                    description: Types of time plays supported
+                    properties:
+                      minutes:
+                        type: boolean
+                required:
+                  - capabilities
+  '/cards/{cardNumber}':
+    get:
+      tags:
+        - Cards
+      summary: Get information about a card.
+      description: |
+        Gets information about a card, such as its current balance.
+      operationId: getCard
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/cardNumber'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '404':
+          $ref: '#/components/responses/CardNotFound'
+    post:
+      tags:
+        - Cards
+      summary: Create an empty card
+      description: >
+        Creates an empty card with no balance. This may be used in scenarios
+        where a card is being
+
+        linked to a customer account without a sale, or where some other
+        entitlement is being added
+
+        to the card such as a season pass.
+      operationId: createEmptyCard
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/cardNumber'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: cardExists
+                description: Card already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operator:
+                  $ref: '#/components/schemas/Operator'
+              required:
+                - operator
+        description: Create an empty card payload
+        required: true
+    delete:
+      tags:
+        - Cards
+      summary: Wipe a card
+      description: >
+        Wipes a card, preparing it for reuse. Should remove any balance, time
+        plays, privileges,
+
+        and transaction history. Subsequent requests for this card should return
+        a 404 until a new
+
+        card is issued.
+      operationId: wipeCard
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/cardNumber'
+      responses:
+        '204':
+          description: No Content
+        '404':
+          $ref: '#/components/responses/CardNotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operator:
+                  $ref: '#/components/schemas/Operator'
+              required:
+                - operator
+        description: Create an empty card payload
+        required: true
+  '/cards/{cardNumber}/transactions':
+    get:
+      tags:
+        - Cards
+      summary: Get transaction history for a card
+      description: >
+        Returns a history of transactions on a card, since the last time the
+        card was wiped.
+
+        It should not include any transactions before the card was wiped or
+        issued originally.
+
+
+        This endpoint supports pagination, and transactions should be sorted in
+        *descending*
+
+        order (the most recent transaction first).
+      operationId: getCardTransactions
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/cardNumber'
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/take'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cardNumber:
+                    $ref: '#/components/schemas/CardNumber'
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CardTransaction'
+                  skipped:
+                    type: number
+                    minimum: 0
+                    description: >-
+                      Number of skipped transactions before the transactions in
+                      the response.
+                  totalCount:
+                    type: number
+                    minimum: 0
+                    description: >-
+                      Total number of transactions on this card. Used to support
+                      pagination.
+                required:
+                  - cardNumber
+                  - transactions
+                  - skipped
+                  - totalCount
+        '404':
+          $ref: '#/components/responses/CardNotFound'
+    post:
+      tags:
+        - Cards
+      summary: Create a card transaction
+      description: >
+        Creates a card transaction. Should return 400 if the transaction is not
+        allowed, along with
+
+        a useful error code and message.
+
+
+        If the transaction succeeds, the card should be changed in the
+        appropriate way (i.e. updated balance)
+
+        and the transaction should be included on subsequent requests for
+        transaction history.
+
+
+        If the card doesn't exist, it should be created automatically if the
+        transaction is adding value.
+
+        A 404 response should only be returned if the card doesn't exist when
+        removing value.
+
+
+        If necessary due to internal implementation details, it is acceptable to
+        create multiple transactions
+
+        as a result of a single request to create a transaction. For example, if
+        the transaction is adding two
+
+        different types of points and your internal implementation requires a
+        transaction for each point type.
+
+        However, the transaction creation should still be atomic, meaning both
+        are created or both fail as a unit.
+
+
+        Creating a `gamePlay` transaction is only supported if the Capabilities
+        request returns `virtualSwipe` in
+
+        the list of capabilities. This allows CenterEdge Advantage to emulate a
+        specific game.
+      operationId: createCardTransaction
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/cardNumber'
+      responses:
+        '200':
+          description: 'Created, returns the new card balance'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/CardNotFound'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardTransaction'
+        description: Card transaction to create
+        required: true
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+  schemas:
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: The username for login
+        passwordHash:
+          type: string
+          minLength: 1
+          description: >
+            The SHA-1 hash of the following concatenated strings (UTF-8):
+            username, password, and requestTimestamp
+
+            (exactly as formatted in the request). This hash is then Base64
+            encoded to make the password hash.
+
+
+            For example, if username is `CenterEdge`, password is `MyPassword`,
+            and requestTimestamp is
+
+            `2020-05-26T13:00:05.102Z`, then
+            `CenterEdgeMyPassword2020-05-26T13:00:05.102Z` is UTF-8 encoded,
+
+            SHA-1 hashed, and Base64 encoded to make
+            `GIetRQYzgeq/ChZ2CdH9g9E+8IM=`.
+        requestTimestamp:
+          type: string
+          format: date-time
+          description: >
+            The date/time when this login request is being made. This is
+            designed to help prevent
+
+            replay attacks. It is used when validating the passwordHash, and
+            should also be compared
+
+            to the real time within a window (i.e. +/- 5 minutes). If the
+            incoming requestTimestamp is outside
+
+            the window, the login should be declined.
+      required:
+        - username
+        - passwordHash
+        - requestTimestamp
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+          example: null
+          enum:
+            - cardNotFound
+            - cardExists
+            - badRequest
+            - invalidLogin
+        message:
+          type: string
+          description: Human-readable error message
+          example: Error message
+      required:
+        - code
+        - message
+    CardNumber:
+      description: Unique card number
+      type: string
+      example: 12345678
+      minLength: 6
+      maxLength: 20
+    Points:
+      type: object
+      description: >
+        This may contain zero or more different point types. A missing property
+        is the equivalent of 0.
+      properties:
+        regularPoints:
+          type: number
+          description: Regular points usable for game plays or for POS payment.
+          minimum: 0
+        bonusPoints:
+          type: number
+          description: Bonus points only usable for game plays.
+          minimum: 0
+        redemptionTickets:
+          type: number
+          description: >-
+            Redemption tickets won playing games, usable a the redemption
+            counter.
+          minimum: 0
+    Card:
+      type: object
+      properties:
+        cardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        issuedAtTime:
+          description: Date and time when the card was issued.
+          type: string
+          format: date-time
+          example: '2020-05-01T15:00:00.000-04:00'
+        balance:
+          $ref: '#/components/schemas/Points'
+      required:
+        - cardNumber
+        - issuedAtTime
+        - balance
+    Operator:
+      type: object
+      description: >
+        Information which may be optionally used to track additional details
+        about the
+
+        CenterEdge Advantage employee and station that performs an operation.
+      properties:
+        employeeName:
+          type: string
+        employeeNumber:
+          type: number
+        stationName:
+          type: string
+        stationNumber:
+          type: number
+    TransactionType:
+      description: Type of the transaction.
+      type: string
+      enum:
+        - addValue
+        - removeValue
+        - gamePlay
+        - other
+    TransactionBase:
+      type: object
+      description: >-
+        If available, information about the CenterEdge Advantage employee and
+        station where a transaction is performed is provided in the `operator`
+        property. CenterEdge will supply this when creating a transaction. The
+        card system may optionally persist it and return it on subquent
+        transaction history requests.
+      properties:
+        id:
+          type: string
+          description: Unique transaction id
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/TransactionType'
+        transactionTime:
+          description: >-
+            Date and time of the transaction, in ISO 8601 format with accurate
+            time zone information.
+          type: string
+          format: date-time
+          example: '2020-05-01T15:00:00.000-04:00'
+          readOnly: true
+        operator:
+          $ref: '#/components/schemas/Operator'
+    ValueTransaction:
+      allOf:
+        - $ref: '#/components/schemas/TransactionBase'
+        - type: object
+          properties:
+            amount:
+              $ref: '#/components/schemas/Points'
+          required:
+            - amount
+    GamePlayTransaction:
+      allOf:
+        - $ref: '#/components/schemas/TransactionBase'
+        - type: object
+          properties:
+            gameId:
+              type: string
+            gameDescription:
+              type: string
+            amount:
+              $ref: '#/components/schemas/Points'
+            usedTimePlay:
+              type: boolean
+            usedPlayPrivilege:
+              type: boolean
+          required:
+            - gameId
+            - gameDescription
+    CardTransaction:
+      oneOf:
+        - $ref: '#/components/schemas/ValueTransaction'
+        - $ref: '#/components/schemas/GamePlayTransaction'
+      discriminator:
+        propertyName: type
+        mapping:
+          addValue: '#/components/schemas/ValueTransaction'
+          removeValue: '#/components/schemas/ValueTransaction'
+          gamePlay: '#/components/schemas/GamePlayTransaction'
+  parameters:
+    cardNumber:
+      name: cardNumber
+      in: path
+      description: Unique card number.
+      required: true
+      schema:
+        $ref: '#/components/schemas/CardNumber'
+    skip:
+      name: skip
+      in: query
+      description: Skip this number of records in the result. Used for pagination.
+      schema:
+        type: number
+        minimum: 0
+    take:
+      name: take
+      in: query
+      description: Return up to this number of records in the result. Used for pagination.
+      schema:
+        type: number
+        minimum: 1
+        maximum: 100
+  responses:
+    CardNotFound:
+      description: >-
+        Card number does not exist or has not yet been issued. This includes
+        wiped cards.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: cardNotFound
+            description: Card Not Found
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: badRequest
+            description: Bad Request

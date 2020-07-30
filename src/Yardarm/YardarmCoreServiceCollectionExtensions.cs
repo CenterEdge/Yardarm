@@ -11,7 +11,7 @@ namespace Yardarm
 {
     public static class YardarmCoreServiceCollectionExtensions
     {
-        public static IServiceCollection AddYardarm(this IServiceCollection services)
+        public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, GenerationContext generationContext)
         {
             // Enrichers
             services
@@ -23,17 +23,19 @@ namespace Yardarm
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>();
 
-            services.TryAddTransient<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
+            services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
+            services.TryAddSingleton<ObjectSchemaGenerator>();
 
-            // Name formatters
-            services.TryAddScoped<CamelCaseNameFormatter>();
-            services.TryAddScoped<PascalCaseNameFormatter>();
-            services.TryAddScoped<INameFormatterSelector, DefaultNameFormatterSelector>();
+            // Names
+            services.TryAddSingleton<CamelCaseNameFormatter>();
+            services.TryAddSingleton<PascalCaseNameFormatter>();
+            services.TryAddSingleton<INameFormatterSelector, DefaultNameFormatterSelector>();
+            services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
 
             // Other
-            services.TryAddScoped<GenerationContextProvider>();
-            services.TryAddTransient(serviceProvider => serviceProvider.GetRequiredService<GenerationContextProvider>().Context);
-            services.TryAddTransient(serviceProvider => serviceProvider.GetRequiredService<GenerationContext>().Document);
+            services.AddSingleton(generationContext);
+            services.AddSingleton(settings);
+            services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<GenerationContext>().Document);
 
             return services;
         }

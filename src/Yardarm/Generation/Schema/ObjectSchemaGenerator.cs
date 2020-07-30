@@ -11,10 +11,12 @@ namespace Yardarm.Generation.Schema
     internal class ObjectSchemaGenerator : ISchemaGenerator
     {
         private readonly INameFormatterSelector _nameFormatterSelector;
+        private readonly INamespaceProvider _namespaceProvider;
 
-        public ObjectSchemaGenerator(INameFormatterSelector nameFormatterSelector)
+        public ObjectSchemaGenerator(INameFormatterSelector nameFormatterSelector, INamespaceProvider namespaceProvider)
         {
             _nameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
+            _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
         }
 
         public SyntaxTree Generate(string name, OpenApiSchema schema)
@@ -23,7 +25,7 @@ namespace Yardarm.Generation.Schema
 
             return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
                 .AddMembers(
-                    SyntaxFactory.NamespaceDeclaration(SyntaxFactory.IdentifierName("Test"))
+                    SyntaxFactory.NamespaceDeclaration(_namespaceProvider.GetSchemaNamespace(NameKind.Class, schema))
                         .AddMembers(SyntaxFactory.ClassDeclaration(className)
                             .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                             .AddMembers(SyntaxFactory.ConstructorDeclaration(className)

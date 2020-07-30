@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,81 +11,36 @@ namespace Yardarm
 {
     public class YardarmGenerator
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        internal YardarmGenerator(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        public EmitResult Emit(OpenApiDocument document, string dllFileName, string? pdbFileName = null)
+        public EmitResult Emit(OpenApiDocument document, YardarmGenerationSettings settings)
         {
             if (document == null)
             {
                 throw new ArgumentNullException(nameof(document));
             }
-            if (dllFileName == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(dllFileName));
+                throw new ArgumentNullException(nameof(settings));
             }
 
-            using var dllFile = File.Create(dllFileName);
-            using var pdbFile = pdbFileName != null ? File.Create(pdbFileName) : null;
+            var context = new GenerationContext(document);
 
-            return Emit(document, dllFile, pdbFile);
-        }
+            var serviceProvider = settings.BuildServiceProvider(context);
 
-        public EmitResult Emit(OpenApiDocument document, Stream dllStream, Stream? pdbStream = null)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-            if (dllStream == null)
-            {
-                throw new ArgumentNullException(nameof(dllStream));
-            }
-
-            using var scope = _serviceProvider.CreateScope();
-            var context = _serviceProvider.GetRequiredService<GenerationContext>();
-            context.Document = document;
-
-            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithOptimizationLevel(OptimizationLevel.Debug)
-                .WithGeneralDiagnosticOption(ReportDiagnostic.Error);
-
-            var syntaxTrees = _serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>()
+            var syntaxTrees = serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>()
                 .SelectMany(p => p.Generate())
                 .ToArray();
 
-            var compilation = CSharpCompilation.Create("TestOutput")
-                .WithOptions(compilationOptions)
-                .AddReferences(_serviceProvider.GetRequiredService<IEnumerable<IReferenceGenerator>>()
+            var compilation = CSharpCompilation.Create(settings.AssemblyName)
+                .WithOptions(settings.CompilationOptions)
+                .AddReferences(serviceProvider.GetRequiredService<IEnumerable<IReferenceGenerator>>()
                     .SelectMany(p => p.Generate())
                     .Distinct())
                 .AddSyntaxTrees(syntaxTrees);
 
-            return compilation.Emit(dllStream,
-                pdbStream: pdbStream,
+            return compilation.Emit(settings.DllOutput,
+                pdbStream: settings.PdbOutput,
                 options: new EmitOptions()
                     .WithDebugInformationFormat(DebugInformationFormat.PortablePdb));
         }
-
-        #region static
-
-        public static YardarmGenerator Create() => Create(null);
-
-        public static YardarmGenerator Create(Action<IServiceCollection>? registerServices)
-        {
-            var collection = new ServiceCollection();
-
-            registerServices?.Invoke(collection);
-
-            collection.AddYardarm();
-
-            return new YardarmGenerator(collection.BuildServiceProvider());
-        }
-
-        #endregion
     }
 }

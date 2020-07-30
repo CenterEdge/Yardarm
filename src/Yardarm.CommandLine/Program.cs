@@ -16,11 +16,14 @@ namespace Yardarm.CommandLine
 
             var document = reader.Read(stream, out _);
 
-            var generator = YardarmGenerator.Create();
+            var generator = new YardarmGenerator();
 
             using var dllStream = File.OpenWrite("test.dll");
             using var pdbStream = File.OpenWrite("test.pdb");
-            var compilationResult = generator.Emit(document, dllStream, pdbStream);
+
+            var settings = new YardarmGenerationSettings("Test") {DllOutput = dllStream, PdbOutput = pdbStream};
+
+            var compilationResult = generator.Emit(document, settings);
 
             foreach (var diagnostic in compilationResult.Diagnostics.Where(p => p.Severity == DiagnosticSeverity.Error))
             {

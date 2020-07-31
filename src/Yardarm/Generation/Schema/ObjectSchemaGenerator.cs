@@ -16,16 +16,19 @@ namespace Yardarm.Generation.Schema
         private readonly ITypeNameGenerator _typeNameGenerator;
         private readonly INameFormatterSelector _nameFormatterSelector;
         private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        private readonly List<ISchemaClassEnricher> _classEnrichers;
         private readonly List<IPropertyEnricher> _propertyEnrichers;
 
         public ObjectSchemaGenerator(ITypeNameGenerator typeNameGenerator, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorFactory schemaGeneratorFactory, IEnumerable<IPropertyEnricher> propertyEnrichers)
+            ISchemaGeneratorFactory schemaGeneratorFactory, IEnumerable<ISchemaClassEnricher> classEnrichers,
+            IEnumerable<IPropertyEnricher> propertyEnrichers)
         {
             _typeNameGenerator = typeNameGenerator ?? throw new ArgumentNullException(nameof(typeNameGenerator));
             _nameFormatterSelector =
                 nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
             _schemaGeneratorFactory =
                 schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            _classEnrichers = classEnrichers.ToList();
             _propertyEnrichers = propertyEnrichers.ToList();
         }
 
@@ -48,10 +51,12 @@ namespace Yardarm.Generation.Schema
 
         public MemberDeclarationSyntax Generate(LocatedOpenApiElement element)
         {
-            if (!(element.Element is OpenApiSchema schema))
+            if (!(element is LocatedOpenApiElement<OpenApiSchema> schemaElement))
             {
                 throw new ArgumentException("LocatedOpenApiElement must contain an OpenApiSchema");
             }
+
+            var schema = schemaElement.Element;
 
             if (!(_typeNameGenerator.GetName(element) is QualifiedNameSyntax classNameAndNamespace))
             {
@@ -62,7 +67,7 @@ namespace Yardarm.Generation.Schema
 
             var newParents = element.Parents.Push(element);
 
-            ClassDeclarationSyntax? declaration = SyntaxFactory.ClassDeclaration(className)
+            ClassDeclarationSyntax declaration = SyntaxFactory.ClassDeclaration(className)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
@@ -86,6 +91,8 @@ namespace Yardarm.Generation.Schema
             {
                 declaration = declaration.AddMembers(childSchemas);
             }
+
+            declaration = _classEnrichers.Aggregate(declaration, (p, enricher) => enricher.Enrich(p, schemaElement));
 
             return declaration;
         }

@@ -1,29 +1,45 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Readers;
 
 namespace Yardarm.CommandLine
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var reader = new OpenApiStreamReader();
 
-            using var stream = File.OpenRead("centeredge-cardsystemapi.yaml");
+            await using var stream = File.OpenRead("centeredge-cardsystemapi.yaml");
 
             var document = reader.Read(stream, out _);
 
             var generator = new YardarmGenerator();
 
-            using var dllStream = File.OpenWrite("test.dll");
-            using var pdbStream = File.OpenWrite("test.pdb");
+            await using var dllStream = File.OpenWrite("test.dll");
+            await using var pdbStream = File.OpenWrite("test.pdb");
 
-            var settings = new YardarmGenerationSettings("Test") {DllOutput = dllStream, PdbOutput = pdbStream};
+            var settings = new YardarmGenerationSettings("Test")
+            {
+                DllOutput = dllStream,
+                PdbOutput = pdbStream,
+                Extensions =
+                {
+                    services => services.AddLogging(builder =>
+                    {
+                        builder
+                            .SetMinimumLevel(LogLevel.Information)
+                            .AddConsole();
+                    })
+                }
+            };
 
-            var compilationResult = generator.Emit(document, settings);
+            var compilationResult = await generator.EmitAsync(document, settings);
 
             foreach (var diagnostic in compilationResult.Diagnostics.Where(p => p.Severity == DiagnosticSeverity.Error))
             {

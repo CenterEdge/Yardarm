@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +14,7 @@ namespace Yardarm
 {
     public class YardarmGenerator
     {
-        public EmitResult Emit(OpenApiDocument document, YardarmGenerationSettings settings)
+        public async Task<EmitResult> EmitAsync(OpenApiDocument document, YardarmGenerationSettings settings, CancellationToken cancellationToken = default)
         {
             if (document == null)
             {
@@ -30,11 +33,14 @@ namespace Yardarm
                 .SelectMany(p => p.Generate())
                 .ToArray();
 
+            List<MetadataReference> references = await serviceProvider.GetRequiredService<IEnumerable<IReferenceGenerator>>()
+                .ToAsyncEnumerable()
+                .SelectMany(p => p.Generate(cancellationToken))
+                .ToListAsync(cancellationToken);
+
             var compilation = CSharpCompilation.Create(settings.AssemblyName)
                 .WithOptions(settings.CompilationOptions)
-                .AddReferences(serviceProvider.GetRequiredService<IEnumerable<IReferenceGenerator>>()
-                    .SelectMany(p => p.Generate())
-                    .Distinct())
+                .AddReferences(references.Distinct())
                 .AddSyntaxTrees(syntaxTrees);
 
             return compilation.Emit(settings.DllOutput,

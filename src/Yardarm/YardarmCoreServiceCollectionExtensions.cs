@@ -16,16 +16,20 @@ namespace Yardarm
             // Enrichers
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
-                .AddPropertyEnricher<RequiredPropertyEnricher>();
+                .AddPropertyEnricher<RequiredPropertyEnricher>()
+                .AddPackageSpecEnricher<DependencyPackageSpecEnricher>();
 
             // Generators
             services
-                .AddTransient<IReferenceGenerator, NetStandardReferenceGenerator>()
+                .AddTransient<IReferenceGenerator, NuGetReferenceGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
-                .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>();
+                .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
+                .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
             services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ObjectSchemaGenerator>();
+            services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();
+            services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IPackageSpecGenerator>().Generate());
 
             // Names
             services.TryAddSingleton<CamelCaseNameFormatter>();
@@ -35,9 +39,11 @@ namespace Yardarm
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
 
             // Other
-            services.AddSingleton(generationContext);
-            services.AddSingleton(settings);
-            services.AddSingleton(serviceProvider => serviceProvider.GetRequiredService<GenerationContext>().Document);
+            services
+                .AddLogging()
+                .AddSingleton(generationContext)
+                .AddSingleton(settings)
+                .AddSingleton(serviceProvider => serviceProvider.GetRequiredService<GenerationContext>().Document);
 
             return services;
         }
@@ -49,6 +55,10 @@ namespace Yardarm
         public static IServiceCollection AddSchemaClassEnricher<T>(this IServiceCollection services)
             where T : class, ISchemaClassEnricher =>
             services.AddTransient<ISchemaClassEnricher, T>();
+
+        public static IServiceCollection AddPackageSpecEnricher<T>(this IServiceCollection services)
+            where T : class, IPackageSpecEnricher =>
+            services.AddTransient<IPackageSpecEnricher, T>();
 
         public static IServiceCollection AddPropertyEnricher<T>(this IServiceCollection services)
             where T : class, IPropertyEnricher =>

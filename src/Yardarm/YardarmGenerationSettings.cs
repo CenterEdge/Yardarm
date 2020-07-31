@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,8 @@ namespace Yardarm
 
         public Stream? PdbOutput { get; set; }
 
-        public List<Action<IServiceCollection>> Extensions { get; } = new List<Action<IServiceCollection>>();
+        public List<Func<IServiceCollection, IServiceCollection>> Extensions { get; } =
+            new List<Func<IServiceCollection, IServiceCollection>>();
 
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
@@ -42,12 +44,9 @@ namespace Yardarm
 
         public IServiceProvider BuildServiceProvider(GenerationContext generationContext)
         {
-            var services = new ServiceCollection();
+            IServiceCollection services = new ServiceCollection();
 
-            foreach (var extension in Extensions)
-            {
-                extension.Invoke(services);
-            }
+            services = Extensions.Aggregate(services, (p, extension) => extension.Invoke(p));
 
             services.AddYardarm(this, generationContext);
 

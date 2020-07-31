@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment;
 using Yardarm.Helpers;
 using Yardarm.Names;
 
@@ -15,15 +16,17 @@ namespace Yardarm.Generation.Schema
         private readonly ITypeNameGenerator _typeNameGenerator;
         private readonly INameFormatterSelector _nameFormatterSelector;
         private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        private readonly List<IPropertyEnricher> _propertyEnrichers;
 
         public ObjectSchemaGenerator(ITypeNameGenerator typeNameGenerator, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorFactory schemaGeneratorFactory)
+            ISchemaGeneratorFactory schemaGeneratorFactory, IEnumerable<IPropertyEnricher> propertyEnrichers)
         {
             _typeNameGenerator = typeNameGenerator ?? throw new ArgumentNullException(nameof(typeNameGenerator));
             _nameFormatterSelector =
                 nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
             _schemaGeneratorFactory =
                 schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            _propertyEnrichers = propertyEnrichers.ToList();
         }
 
         public SyntaxTree Generate(OpenApiSchema schema, string key)
@@ -93,13 +96,15 @@ namespace Yardarm.Generation.Schema
 
             var typeName = _typeNameGenerator.GetName(element);
 
-            return SyntaxFactory.PropertyDeclaration(typeName, propertyName)
+            var property = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+
+            return _propertyEnrichers.Aggregate(property, (p, enricher) => enricher.Enrich(p, element));
         }
     }
 }

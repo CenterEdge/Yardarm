@@ -25,8 +25,10 @@ namespace Yardarm
 
         public List<Action<IServiceCollection>> Extensions { get; } = new List<Action<IServiceCollection>>();
 
-        public CSharpCompilationOptions CompilationOptions { get; set; } = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-            .WithOptimizationLevel(OptimizationLevel.Release);
+        public CSharpCompilationOptions CompilationOptions { get; set; } =
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithOptimizationLevel(OptimizationLevel.Release)
+                .WithNullableContextOptions(NullableContextOptions.Enable);
 
         public YardarmGenerationSettings()
         {

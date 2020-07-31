@@ -15,7 +15,8 @@ namespace Yardarm
         {
             // Enrichers
             services
-                .AddTransient<IAssemblyInfoEnricher, TargetRuntimeAssemblyInfoEnricher>();
+                .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
+                .AddPropertyEnricher<RequiredPropertyEnricher>();
 
             // Generators
             services
@@ -40,5 +41,13 @@ namespace Yardarm
 
             return services;
         }
+
+        public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
+            where T : class, IAssemblyInfoEnricher =>
+            services.AddTransient<IAssemblyInfoEnricher, T>();
+
+        public static IServiceCollection AddPropertyEnricher<T>(this IServiceCollection services)
+            where T : class, IPropertyEnricher =>
+            services.AddTransient<IPropertyEnricher, T>();
     }
 }

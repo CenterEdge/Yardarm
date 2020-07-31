@@ -8,11 +8,15 @@ namespace Yardarm.Generation.Internal
 {
     internal class NetStandardReferenceGenerator : IReferenceGenerator
     {
+        private readonly string _nuGetPackagesPath = GetNugetPackagesPath();
+
         public IEnumerable<MetadataReference> Generate() =>
-            Directory.EnumerateFiles(
-                    Path.Combine(GetNugetPackagesPath(), @"netstandard.library\2.0.3\build\netstandard2.0\ref"),
-                    "*.dll")
+            CollectDlls(Path.Combine(_nuGetPackagesPath, @"netstandard.library\2.0.3\build\netstandard2.0\ref"))
+                .Concat(CollectDlls(Path.Combine(_nuGetPackagesPath, @"system.componentmodel.annotations\4.7.0\ref\netstandard2.0")))
                 .Select(p => MetadataReference.CreateFromFile(p));
+
+        private static IEnumerable<string> CollectDlls(string directory) =>
+            Directory.EnumerateFiles(directory, "*.dll");
 
         private static string GetNugetPackagesPath()
         {

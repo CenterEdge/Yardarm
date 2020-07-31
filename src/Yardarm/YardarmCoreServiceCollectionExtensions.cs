@@ -28,6 +28,9 @@ namespace Yardarm
 
             services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ObjectSchemaGenerator>();
+            services.TryAddSingleton<NumberSchemaGenerator>();
+            services.TryAddSingleton<StringSchemaGenerator>();
+            services.TryAddSingleton<EnumSchemaGenerator>();
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();
             services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IPackageSpecGenerator>().Generate());
 

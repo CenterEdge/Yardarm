@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 
@@ -12,8 +13,10 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public SyntaxTree? Generate(OpenApiSchema schema, string key) => null;
+        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement) => throw new NotImplementedException();
 
-        public MemberDeclarationSyntax? Generate(LocatedOpenApiElement element) => null;
+        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element) => null;
+
+        public MemberDeclarationSyntax? Generate(LocatedOpenApiElement<OpenApiSchema> element) => null;
     }
 }

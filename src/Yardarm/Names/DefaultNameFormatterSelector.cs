@@ -6,6 +6,8 @@
         {
             NameKind.Class => PascalCaseNameFormatter.Instance,
             NameKind.Property => PascalCaseNameFormatter.Instance,
+            NameKind.Enum => PascalCaseNameFormatter.Instance,
+            NameKind.EnumMember => PascalCaseNameFormatter.Instance,
             _ => PascalCaseNameFormatter.Instance
         };
     }

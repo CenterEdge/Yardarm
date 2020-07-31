@@ -11,35 +11,25 @@ using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
 {
-    internal class ObjectSchemaGenerator : ISchemaGenerator
+    internal class ObjectSchemaGenerator : SchemaGeneratorBase
     {
-        private readonly ITypeNameGenerator _typeNameGenerator;
-        private readonly INameFormatterSelector _nameFormatterSelector;
-        private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
         private readonly List<ISchemaClassEnricher> _classEnrichers;
         private readonly List<IPropertyEnricher> _propertyEnrichers;
 
-        public ObjectSchemaGenerator(ITypeNameGenerator typeNameGenerator, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorFactory schemaGeneratorFactory, IEnumerable<ISchemaClassEnricher> classEnrichers,
-            IEnumerable<IPropertyEnricher> propertyEnrichers)
+        protected override NameKind NameKind => NameKind.Class;
+
+        public ObjectSchemaGenerator(INamespaceProvider namespaceProvider, ITypeNameGenerator typeNameGenerator,
+            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory,
+            IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
+            : base(namespaceProvider, typeNameGenerator, nameFormatterSelector, schemaGeneratorFactory)
         {
-            _typeNameGenerator = typeNameGenerator ?? throw new ArgumentNullException(nameof(typeNameGenerator));
-            _nameFormatterSelector =
-                nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
-            _schemaGeneratorFactory =
-                schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
             _classEnrichers = classEnrichers.ToList();
             _propertyEnrichers = propertyEnrichers.ToList();
         }
 
-        public SyntaxTree Generate(OpenApiSchema schema, string key)
+        public override SyntaxTree GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
         {
-            var element = new LocatedOpenApiElement<OpenApiSchema>(schema, key);
-
-            if (!(_typeNameGenerator.GetName(element) is QualifiedNameSyntax classNameAndNamespace))
-            {
-                throw new InvalidOperationException($"Name must be a {nameof(QualifiedNameSyntax)}.");
-            }
+            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
 
             var ns = classNameAndNamespace.Left;
 
@@ -49,19 +39,11 @@ namespace Yardarm.Generation.Schema
                         .AddMembers(Generate(element))));
         }
 
-        public MemberDeclarationSyntax Generate(LocatedOpenApiElement element)
+        public override MemberDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiSchema> element)
         {
-            if (!(element is LocatedOpenApiElement<OpenApiSchema> schemaElement))
-            {
-                throw new ArgumentException("LocatedOpenApiElement must contain an OpenApiSchema");
-            }
+            var schema = element.Element;
 
-            var schema = schemaElement.Element;
-
-            if (!(_typeNameGenerator.GetName(element) is QualifiedNameSyntax classNameAndNamespace))
-            {
-                throw new InvalidOperationException($"Name must be a {nameof(QualifiedNameSyntax)}.");
-            }
+            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
@@ -79,10 +61,13 @@ namespace Yardarm.Generation.Schema
                 .Where(property => property.Value.Reference == null)
                 .Select(property =>
                 {
-                    ISchemaGenerator generator = _schemaGeneratorFactory.Create(property.Key, property.Value);
+                    var propertyElement =
+                        new LocatedOpenApiElement<OpenApiSchema>(property.Value, property.Key, newParents);
+
+                    ISchemaGenerator generator = SchemaGeneratorFactory.Get(propertyElement);
 
                     // This isn't a schema reference, so the child property may require schema generation
-                    return generator.Generate(new LocatedOpenApiElement<OpenApiSchema>(property.Value, property.Key, newParents))!;
+                    return generator.Generate(propertyElement)!;
                 })
                 .Where(p => p != null)
                 .ToArray();
@@ -92,16 +77,16 @@ namespace Yardarm.Generation.Schema
                 declaration = declaration.AddMembers(childSchemas);
             }
 
-            declaration = _classEnrichers.Aggregate(declaration, (p, enricher) => enricher.Enrich(p, schemaElement));
+            declaration = _classEnrichers.Aggregate(declaration, (p, enricher) => enricher.Enrich(p, element));
 
             return declaration;
         }
 
         protected virtual MemberDeclarationSyntax CreateProperty(LocatedOpenApiElement<OpenApiSchema> element)
         {
-            var propertyName = _nameFormatterSelector.GetFormatter(NameKind.Property).Format(element.Key);
+            var propertyName = NameFormatterSelector.GetFormatter(NameKind.Property).Format(element.Key);
 
-            var typeName = _typeNameGenerator.GetName(element);
+            var typeName = TypeNameGenerator.GetName(element);
 
             var property = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))

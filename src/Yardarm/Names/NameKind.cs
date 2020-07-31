@@ -3,6 +3,8 @@
     public enum NameKind
     {
         Class,
-        Property
+        Property,
+        Enum,
+        EnumMember,
     }
 }

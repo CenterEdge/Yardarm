@@ -13,11 +13,19 @@ namespace Yardarm.Generation.Schema
             _serviceProvider = serviceProvider;
         }
 
-        public virtual ISchemaGenerator Create(string name, OpenApiSchema schema) =>
-            schema.Type switch
+        public virtual ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> element) =>
+            element.Element.Type switch
             {
                 "object" => _serviceProvider.GetRequiredService<ObjectSchemaGenerator>(),
+                "string" => GetStringGenerator(element),
+                "number" => _serviceProvider.GetRequiredService<NumberSchemaGenerator>(),
+                "array" => GetStringGenerator(element), // TODO: Arrays
                 _ => NullSchemaGenerator.Instance
             };
+
+        public virtual ISchemaGenerator GetStringGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+            element.Element.Enum?.Count > 0
+                ? _serviceProvider.GetRequiredService<EnumSchemaGenerator>()
+                : (ISchemaGenerator) _serviceProvider.GetRequiredService<StringSchemaGenerator>();
     }
 }

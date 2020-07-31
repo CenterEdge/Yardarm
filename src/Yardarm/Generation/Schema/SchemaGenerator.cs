@@ -21,9 +21,11 @@ namespace Yardarm.Generation.Schema
         {
             foreach (var schema in _document.Components.Schemas)
             {
-                var generator = _schemaGeneratorFactory.Create(schema.Key, schema.Value);
+                var element = new LocatedOpenApiElement<OpenApiSchema>(schema.Value, schema.Key);
 
-                var syntaxTree = generator.Generate(schema.Value, schema.Key);
+                var generator = _schemaGeneratorFactory.Get(element);
+
+                var syntaxTree = generator.GenerateSyntaxTree(element);
                 if (syntaxTree != null)
                 {
                     yield return syntaxTree;

@@ -20,10 +20,13 @@ namespace Yardarm.Names
             _rootNamespace = SyntaxFactory.ParseName(settings.RootNamespace);
         }
 
-        public virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
+        public virtual NameSyntax GetRequestBodyNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
 
-        public virtual NameSyntax GetRequestBodyNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
+        public virtual NameSyntax GetResponseNamespace(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
+            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
+
+        public virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
     }
 }

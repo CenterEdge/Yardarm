@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -11,31 +12,34 @@ using Yardarm.Names;
 
 namespace Yardarm.Generation.Api
 {
-    internal class RequestBodySchemaGenerator : IRequestBodySchemaGenerator
+    internal class ResponseSchemaGenerator : IResponseSchemaGenerator
     {
         private readonly INamespaceProvider _namespaceProvider;
         private readonly INameFormatterSelector _nameFormatterSelector;
         private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
         private readonly IMediaTypeSelector _mediaTypeSelector;
+        private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
 
         protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
         protected IList<IPropertyEnricher> PropertyEnrichers { get; }
 
-        public RequestBodySchemaGenerator(INamespaceProvider namespaceProvider, INameFormatterSelector nameFormatterSelector,
+        public ResponseSchemaGenerator(INamespaceProvider namespaceProvider, INameFormatterSelector nameFormatterSelector,
             ISchemaGeneratorFactory schemaGeneratorFactory, IMediaTypeSelector mediaTypeSelector,
+            IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
         {
             _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
             _nameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
             _schemaGeneratorFactory = schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
             _mediaTypeSelector = mediaTypeSelector;
+            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
             ClassEnrichers = classEnrichers.ToArray();
             PropertyEnrichers = propertyEnrichers.ToArray();
         }
 
-        public virtual TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiRequestBody> element)
+        public virtual TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiResponse> element)
         {
-            OpenApiRequestBody requestBody = element.Element;
+            OpenApiResponse response = element.Element;
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
@@ -43,14 +47,14 @@ namespace Yardarm.Generation.Api
             }
 
             INameFormatter formatter = _nameFormatterSelector.GetFormatter(NameKind.Class);
-            NameSyntax ns = _namespaceProvider.GetRequestBodyNamespace(element);
+            NameSyntax ns = _namespaceProvider.GetResponseNamespace(element);
 
-            if (requestBody.Reference != null)
+            if (response.Reference != null)
             {
                 // We're in the components section
 
                 return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(requestBody.Reference.Id + "RequestBody")));
+                    SyntaxFactory.IdentifierName(formatter.Format(response.Reference.Id + "Response")));
             }
             else
             {
@@ -58,12 +62,16 @@ namespace Yardarm.Generation.Api
 
                 var operation = element.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
 
+                var responseCode = Enum.TryParse<HttpStatusCode>(element.Key, out var statusCode)
+                    ? _httpResponseCodeNameProvider.GetName(statusCode)
+                    : element.Key;
+
                 return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(operation.OperationId + "RequestBody")));
+                    SyntaxFactory.IdentifierName(formatter.Format($"{operation.OperationId}{responseCode}Response")));
             }
         }
 
-        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiRequestBody> element)
+        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiResponse> element)
         {
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)

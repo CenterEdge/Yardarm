@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 
@@ -13,7 +13,8 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement) => throw new NotImplementedException();
+        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement) =>
+            SyntaxFactory.IdentifierName("dynamic");
 
         public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element) => null;
 

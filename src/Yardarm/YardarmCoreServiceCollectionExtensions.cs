@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Internal;
 using Yardarm.Generation;
+using Yardarm.Generation.Api;
 using Yardarm.Generation.Internal;
 using Yardarm.Generation.Schema;
 using Yardarm.Names;
@@ -24,6 +25,7 @@ namespace Yardarm
                 .AddTransient<IReferenceGenerator, NuGetReferenceGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, RequestBodyGenerator>()
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
             services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
@@ -32,6 +34,10 @@ namespace Yardarm
             services.TryAddSingleton<NumberSchemaGenerator>();
             services.TryAddSingleton<StringSchemaGenerator>();
             services.TryAddSingleton<EnumSchemaGenerator>();
+
+            services.TryAddSingleton<IRequestBodySchemaGenerator, RequestBodySchemaGenerator>();
+            services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
+
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();
             services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IPackageSpecGenerator>().Generate());
 

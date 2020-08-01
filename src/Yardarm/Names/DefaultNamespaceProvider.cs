@@ -23,7 +23,7 @@ namespace Yardarm.Names
         public virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
 
-        public virtual NameSyntax GetRequestNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Requests"));
+        public virtual NameSyntax GetRequestBodyNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
+            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
     }
 }

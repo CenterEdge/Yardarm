@@ -40,6 +40,12 @@ namespace Yardarm.Generation.Schema
             var parent = schemaElement.Parents[0];
             var parentName = TypeNameGenerator.GetName(parent);
 
+            if (schemaElement.Key == "")
+            {
+                // This can occur for request bodies
+                return parentName;
+            }
+
             return SyntaxFactory.QualifiedName((QualifiedNameSyntax) parentName,
                 SyntaxFactory.IdentifierName(NameFormatterSelector.GetFormatter(NameKind.Class).Format(schemaElement.Key + "Model")));
         }

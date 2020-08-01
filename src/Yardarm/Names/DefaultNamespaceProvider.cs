@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation;
 
 namespace Yardarm.Names
 {
@@ -19,9 +20,10 @@ namespace Yardarm.Names
             _rootNamespace = SyntaxFactory.ParseName(settings.RootNamespace);
         }
 
-        public virtual NameSyntax GetSchemaNamespace(OpenApiSchema schema) => GetModelNamespace();
-
-        protected virtual NameSyntax GetModelNamespace() =>
+        public virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
+
+        public virtual NameSyntax GetRequestNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
+            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Requests"));
     }
 }

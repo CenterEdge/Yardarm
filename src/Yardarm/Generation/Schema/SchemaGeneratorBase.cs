@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Schema
 
             if (schema.Reference != null)
             {
-                var ns = NamespaceProvider.GetSchemaNamespace(schema);
+                var ns = NamespaceProvider.GetSchemaNamespace(schemaElement);
 
                 return SyntaxFactory.QualifiedName(ns,
                     SyntaxFactory.IdentifierName(formatter.Format(schema.Reference.Id)));

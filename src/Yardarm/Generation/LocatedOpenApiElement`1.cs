@@ -4,7 +4,7 @@ using Microsoft.OpenApi.Interfaces;
 namespace Yardarm.Generation
 {
     public class LocatedOpenApiElement<T> : LocatedOpenApiElement
-        where T : IOpenApiReferenceable
+        where T : IOpenApiSerializable
     {
         public new T Element => (T) base.Element;
 

@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Interfaces;
 namespace Yardarm.Generation
 {
     /// <summary>
-    /// Represents an <see cref="IOpenApiReferenceable"/> element with information about the path
+    /// Represents an <see cref="IOpenApiSerializable"/> element with information about the path
     /// used to reach that element in the Open API document.
     /// </summary>
     public class LocatedOpenApiElement
@@ -13,7 +13,7 @@ namespace Yardarm.Generation
         /// <summary>
         /// The element.
         /// </summary>
-        public IOpenApiReferenceable Element { get; }
+        public IOpenApiSerializable Element { get; }
 
         /// <summary>
         /// Key in which this element was stored on its parent.
@@ -27,12 +27,12 @@ namespace Yardarm.Generation
 
         public bool IsRoot => Parents.Count == 0;
 
-        public LocatedOpenApiElement(IOpenApiReferenceable element, string key)
+        public LocatedOpenApiElement(IOpenApiSerializable element, string key)
             : this(element, key, Array.Empty<LocatedOpenApiElement>())
         {
         }
 
-        public LocatedOpenApiElement(IOpenApiReferenceable element, string key, IReadOnlyList<LocatedOpenApiElement> parents)
+        public LocatedOpenApiElement(IOpenApiSerializable element, string key, IReadOnlyList<LocatedOpenApiElement> parents)
         {
             Element = element ?? throw new ArgumentNullException(nameof(element));
             Key = key ?? throw new ArgumentNullException(nameof(key));

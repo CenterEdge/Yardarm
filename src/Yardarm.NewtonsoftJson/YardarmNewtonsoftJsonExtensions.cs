@@ -10,7 +10,8 @@ namespace Yardarm.NewtonsoftJson
             settings.AddExtension(services =>
             {
                 services
-                    .AddSingleton<IPropertyEnricher, JsonPropertyEnricher>()
+                    .AddPropertyEnricher<JsonPropertyEnricher>()
+                    .AddEnumEnricher<JsonEnumEnricher>()
                     .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>();
 
                 return services;

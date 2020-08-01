@@ -20,7 +20,8 @@ namespace Yardarm.Generation.Internal
         {
             yield return CSharpSyntaxTree.Create(
                 _enrichers.Aggregate(SyntaxFactory.CompilationUnit(),
-                    (agg, enrichers) => enrichers.Enrich(agg)));
+                    (agg, enrichers) => enrichers.Enrich(agg))
+                    .NormalizeWhitespace());
         }
     }
 }

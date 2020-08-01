@@ -36,7 +36,8 @@ namespace Yardarm.Generation.Schema
             return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
                 .AddMembers(
                     SyntaxFactory.NamespaceDeclaration(ns)
-                        .AddMembers(Generate(element))));
+                        .AddMembers(Generate(element)))
+                .NormalizeWhitespace());
         }
 
         public override MemberDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiSchema> element)

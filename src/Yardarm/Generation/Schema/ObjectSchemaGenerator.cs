@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,8 +12,8 @@ namespace Yardarm.Generation.Schema
 {
     internal class ObjectSchemaGenerator : SchemaGeneratorBase
     {
-        private readonly List<ISchemaClassEnricher> _classEnrichers;
-        private readonly List<IPropertyEnricher> _propertyEnrichers;
+        protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
+        protected IList<IPropertyEnricher> PropertyEnrichers { get; }
 
         protected override NameKind NameKind => NameKind.Class;
 
@@ -23,8 +22,8 @@ namespace Yardarm.Generation.Schema
             IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
             : base(namespaceProvider, typeNameGenerator, nameFormatterSelector, schemaGeneratorFactory)
         {
-            _classEnrichers = classEnrichers.ToList();
-            _propertyEnrichers = propertyEnrichers.ToList();
+            ClassEnrichers = classEnrichers.ToArray();
+            PropertyEnrichers = propertyEnrichers.ToArray();
         }
 
         public override SyntaxTree GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
@@ -78,9 +77,7 @@ namespace Yardarm.Generation.Schema
                 declaration = declaration.AddMembers(childSchemas);
             }
 
-            declaration = _classEnrichers.Aggregate(declaration, (p, enricher) => enricher.Enrich(p, element));
-
-            return declaration;
+            return declaration.Enrich(ClassEnrichers, element);
         }
 
         protected virtual MemberDeclarationSyntax CreateProperty(LocatedOpenApiElement<OpenApiSchema> element)
@@ -97,7 +94,7 @@ namespace Yardarm.Generation.Schema
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-            return _propertyEnrichers.Aggregate(property, (p, enricher) => enricher.Enrich(p, element));
+            return property.Enrich(PropertyEnrichers, element);
         }
     }
 }

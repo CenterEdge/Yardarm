@@ -6,6 +6,8 @@ namespace Yardarm.Enrichment.Internal
 {
     internal class TargetRuntimeAssemblyInfoEnricher : IAssemblyInfoEnricher
     {
+        public int Priority => 0;
+
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax syntax) => syntax
             .AddAttributeLists(
                 SyntaxFactory.AttributeList().AddAttributes(

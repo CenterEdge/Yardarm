@@ -1,10 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment;
 using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
@@ -16,10 +17,16 @@ namespace Yardarm.Generation.Schema
 
         protected override NameKind NameKind => NameKind.Enum;
 
+        protected IList<IEnumEnricher> EnumEnrichers { get; }
+        protected IList<IEnumMemberEnricher> EnumMemberEnrichers { get; }
+
         public EnumSchemaGenerator(INamespaceProvider namespaceProvider, ITypeNameGenerator typeNameGenerator,
-            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory)
+            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory,
+            IEnumerable<IEnumEnricher> enumEnrichers, IEnumerable<IEnumMemberEnricher> enumMemberEnrichers)
             : base(namespaceProvider, typeNameGenerator, nameFormatterSelector, schemaGeneratorFactory)
         {
+            EnumEnrichers = enumEnrichers.ToArray();
+            EnumMemberEnrichers = enumMemberEnrichers.ToArray();
         }
 
         public override SyntaxTree GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
@@ -52,8 +59,7 @@ namespace Yardarm.Generation.Schema
                     .Where(p => p != null)
                     .ToArray());
 
-
-            return declaration;
+            return declaration.Enrich(EnumEnrichers, element);
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
@@ -76,9 +82,11 @@ namespace Yardarm.Generation.Schema
 
             string memberName = nameFormatter.Format(stringPrimitive.Value);
 
-            return SyntaxFactory.EnumMemberDeclaration(memberName)
+            var memberDeclaration = SyntaxFactory.EnumMemberDeclaration(memberName)
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                     CreateEnumMemberAttribute(stringPrimitive.Value)));
+
+            return memberDeclaration.Enrich(EnumMemberEnrichers, (schemaElement, value));
         }
 
         protected static AttributeSyntax CreateEnumMemberAttribute(string value) =>

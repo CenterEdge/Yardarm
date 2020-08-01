@@ -4,7 +4,7 @@ using Yardarm.Generation;
 
 namespace Yardarm.Enrichment
 {
-    public interface ISchemaClassEnricher : IEnricher<ClassDeclarationSyntax, LocatedOpenApiElement<OpenApiSchema>>
+    public interface IEnumEnricher : IEnricher<EnumDeclarationSyntax, LocatedOpenApiElement<OpenApiSchema>>
     {
     }
 }

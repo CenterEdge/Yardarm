@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Yardarm.Enrichment;
@@ -19,8 +18,8 @@ namespace Yardarm.Generation.Internal
         public IEnumerable<SyntaxTree> Generate()
         {
             yield return CSharpSyntaxTree.Create(
-                _enrichers.Aggregate(SyntaxFactory.CompilationUnit(),
-                    (agg, enrichers) => enrichers.Enrich(agg))
+                SyntaxFactory.CompilationUnit()
+                    .Enrich(_enrichers)
                     .NormalizeWhitespace());
         }
     }

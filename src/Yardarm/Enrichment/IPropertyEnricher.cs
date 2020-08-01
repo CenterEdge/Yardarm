@@ -4,8 +4,7 @@ using Yardarm.Generation;
 
 namespace Yardarm.Enrichment
 {
-    public interface IPropertyEnricher
+    public interface IPropertyEnricher : IEnricher<PropertyDeclarationSyntax, LocatedOpenApiElement<OpenApiSchema>>
     {
-        PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, LocatedOpenApiElement<OpenApiSchema> property);
     }
 }

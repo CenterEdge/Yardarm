@@ -11,6 +11,8 @@ namespace Yardarm.Enrichment.Internal
         public static readonly NameSyntax RequiredAttributeName =
             SyntaxFactory.ParseName("System.ComponentModel.DataAnnotations.Required");
 
+        public int Priority => 0;
+
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax,
             LocatedOpenApiElement<OpenApiSchema> property) =>
             property.Parents.FirstOrDefault() is LocatedOpenApiElement<OpenApiSchema> parentSchema &&

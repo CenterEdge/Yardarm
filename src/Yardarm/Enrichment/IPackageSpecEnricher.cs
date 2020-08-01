@@ -2,8 +2,7 @@
 
 namespace Yardarm.Enrichment
 {
-    public interface IPackageSpecEnricher
+    public interface IPackageSpecEnricher : IEnricher<PackageSpec>
     {
-        PackageSpec Enrich(PackageSpec packageSpec);
     }
 }

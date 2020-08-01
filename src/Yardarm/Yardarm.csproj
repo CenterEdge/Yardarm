@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <!-- We must also target netcoreapp3.0 to avoid binding issues with Microsoft.Bcl.AsyncInterfaces when consumed by netcoreapp3.0 and later -->
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
 
     <Nullable>enable</Nullable>
     <LangVersion>8</LangVersion>

@@ -113,9 +113,9 @@ namespace Yardarm.Generation.Internal
             LockFileTargetLibrary netstandardLibrary = netstandardTarget.Libraries.First(p => p.Name == NetStandardLibrary);
 
             string refDirectory = lockFile.PackageFolders.Select(p => p.Path)
-                .Select(p => Path.Join(p, netstandardLibrary.Name, netstandardLibrary.Version.ToString()))
+                .Select(p => Path.Combine(p, netstandardLibrary.Name, netstandardLibrary.Version.ToString()))
                 .First(Directory.Exists);
-            refDirectory = Path.Join(refDirectory, "build/netstandard2.0/ref");
+            refDirectory = Path.Combine(refDirectory, @"build\netstandard2.0\ref");
 
             dependencies.AddRange(Directory.EnumerateFiles(refDirectory, "*.dll"));
 

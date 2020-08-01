@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Yardarm.Helpers;
 
 namespace Yardarm.Enrichment.Internal
 {
@@ -10,7 +11,9 @@ namespace Yardarm.Enrichment.Internal
                 SyntaxFactory.AttributeList().AddAttributes(
                     SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.Runtime.Versioning.TargetFramework"))
                         .AddArgumentListArguments(
-                            SyntaxFactory.AttributeArgument(
-                                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(".NETStandard,Version=v2.0"))))));
+                            SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(".NETStandard,Version=v2.0")),
+                            SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(""))
+                                .WithNameEquals(SyntaxFactory.NameEquals("FrameworkDisplayName"))))
+                    .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword))));
     }
 }

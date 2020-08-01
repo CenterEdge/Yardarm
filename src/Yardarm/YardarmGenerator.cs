@@ -46,7 +46,8 @@ namespace Yardarm
             return compilation.Emit(settings.DllOutput,
                 pdbStream: settings.PdbOutput,
                 options: new EmitOptions()
-                    .WithDebugInformationFormat(DebugInformationFormat.PortablePdb));
+                    .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
+                    .WithHighEntropyVirtualAddressSpace(true));
         }
     }
 }

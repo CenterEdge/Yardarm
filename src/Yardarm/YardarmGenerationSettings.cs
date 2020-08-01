@@ -29,8 +29,13 @@ namespace Yardarm
 
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithDeterministic(true)
                 .WithOptimizationLevel(OptimizationLevel.Release)
-                .WithNullableContextOptions(NullableContextOptions.Enable);
+                .WithNullableContextOptions(NullableContextOptions.Enable)
+                .WithOverflowChecks(false)
+                .WithPlatform(Platform.AnyCpu)
+                .WithConcurrentBuild(true)
+                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
 
         public YardarmGenerationSettings()
         {

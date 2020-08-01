@@ -57,5 +57,17 @@ namespace Yardarm
 
             return services.BuildServiceProvider();
         }
+
+        public YardarmGenerationSettings AddExtension(Func<IServiceCollection, IServiceCollection> extension)
+        {
+            if (extension == null)
+            {
+                throw new ArgumentNullException(nameof(extension));
+            }
+
+            Extensions.Add(extension);
+
+            return this;
+        }
     }
 }

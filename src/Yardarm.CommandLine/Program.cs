@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Readers;
+using Yardarm.NewtonsoftJson;
 
 namespace Yardarm.CommandLine
 {
@@ -28,16 +29,14 @@ namespace Yardarm.CommandLine
             {
                 DllOutput = dllStream,
                 PdbOutput = pdbStream,
-                Extensions =
+            }
+                .AddExtension(services => services.AddLogging(builder =>
                 {
-                    services => services.AddLogging(builder =>
-                    {
-                        builder
-                            .SetMinimumLevel(LogLevel.Information)
-                            .AddConsole();
-                    })
-                }
-            };
+                    builder
+                        .SetMinimumLevel(LogLevel.Information)
+                        .AddConsole();
+                }))
+                .AddNewtonsoftJson();
 
             var compilationResult = await generator.EmitAsync(document, settings);
 

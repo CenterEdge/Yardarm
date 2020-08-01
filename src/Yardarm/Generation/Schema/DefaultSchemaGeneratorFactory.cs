@@ -19,6 +19,7 @@ namespace Yardarm.Generation.Schema
                 "object" => _serviceProvider.GetRequiredService<ObjectSchemaGenerator>(),
                 "string" => GetStringGenerator(element),
                 "number" => _serviceProvider.GetRequiredService<NumberSchemaGenerator>(),
+                "boolean" => _serviceProvider.GetRequiredService<BooleanSchemaGenerator>(),
                 "array" => _serviceProvider.GetRequiredService<ArraySchemaGenerator>(),
                 _ => NullSchemaGenerator.Instance
             };

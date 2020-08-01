@@ -469,6 +469,16 @@ components:
           properties:
             test:
               type: string
+        nestedArray:
+          type: array
+          items:
+            type: string
+        nestedRefArray:
+          type: array
+          items:
+            $ref: '#/components/schema/TransactionBase'
+        refArray:
+          $ref: '#/components/schema/Transactions'
       required:
         - cardNumber
         - issuedAtTime
@@ -497,6 +507,10 @@ components:
         - removeValue
         - gamePlay
         - other
+    Transactions:
+      type: array
+      items:
+        $ref: '#/components/schema/TransactionBase'
     TransactionBase:
       type: object
       description: >-

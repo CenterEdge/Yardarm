@@ -28,6 +28,7 @@ namespace Yardarm
 
             services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ObjectSchemaGenerator>();
+            services.TryAddSingleton<ArraySchemaGenerator>();
             services.TryAddSingleton<NumberSchemaGenerator>();
             services.TryAddSingleton<StringSchemaGenerator>();
             services.TryAddSingleton<EnumSchemaGenerator>();

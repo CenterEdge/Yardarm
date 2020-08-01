@@ -21,7 +21,7 @@ namespace Yardarm.Generation.Schema
         {
             foreach (var schema in _document.Components.Schemas)
             {
-                var element = new LocatedOpenApiElement<OpenApiSchema>(schema.Value, schema.Key);
+                var element = schema.Value.CreateRoot(schema.Key);
 
                 var generator = _schemaGeneratorFactory.Get(element);
 

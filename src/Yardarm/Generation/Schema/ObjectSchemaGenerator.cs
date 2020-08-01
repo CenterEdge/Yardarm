@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
-using Yardarm.Helpers;
 using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
@@ -47,22 +46,19 @@ namespace Yardarm.Generation.Schema
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
-            var newParents = element.Parents.Push(element);
-
             ClassDeclarationSyntax declaration = SyntaxFactory.ClassDeclaration(className)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()))
                 .AddMembers(schema.Properties
-                    .Select(p => CreateProperty(new LocatedOpenApiElement<OpenApiSchema>(p.Value, p.Key, newParents))).ToArray());
+                    .Select(p => CreateProperty(element.CreateChild(p.Value, p.Key))).ToArray());
 
             MemberDeclarationSyntax[] childSchemas = schema.Properties
                 .Where(property => property.Value.Reference == null)
                 .Select(property =>
                 {
-                    var propertyElement =
-                        new LocatedOpenApiElement<OpenApiSchema>(property.Value, property.Key, newParents);
+                    var propertyElement = element.CreateChild(property.Value, property.Key);
 
                     ISchemaGenerator generator = SchemaGeneratorFactory.Get(propertyElement);
 

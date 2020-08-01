@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
@@ -20,8 +19,7 @@ namespace Yardarm.Generation.Schema
         {
             // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since
             // we're not making a custom class for the list.
-            var itemElement = new LocatedOpenApiElement<OpenApiSchema>(schemaElement.Element.Items, schemaElement.Key,
-                schemaElement.Parents);
+            var itemElement = schemaElement.CreateChild(schemaElement.Element.Items, schemaElement.Key);
 
             TypeSyntax itemTypeName = _schemaGeneratorFactory.Get(itemElement).GetTypeName(itemElement);
 

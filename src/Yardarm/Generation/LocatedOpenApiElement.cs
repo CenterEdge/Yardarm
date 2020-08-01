@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
+using Yardarm.Helpers;
 
 namespace Yardarm.Generation
 {
@@ -38,5 +39,13 @@ namespace Yardarm.Generation
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Parents = parents ?? throw new ArgumentNullException(nameof(parents));
         }
+
+        public LocatedOpenApiElement<T> CreateChild<T>(T child, string key)
+            where T : IOpenApiSerializable =>
+            new LocatedOpenApiElement<T>(child, key, Parents.Push(this));
+
+        public static LocatedOpenApiElement<T> CreateRoot<T>(T rootItem, string key)
+            where T : IOpenApiSerializable =>
+            new LocatedOpenApiElement<T>(rootItem, key);
     }
 }

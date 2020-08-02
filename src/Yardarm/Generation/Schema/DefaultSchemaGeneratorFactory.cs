@@ -22,6 +22,11 @@ namespace Yardarm.Generation.Schema
                 return _serviceProvider.GetRequiredService<AllOfSchemaGenerator>();
             }
 
+            if (schema.OneOf.Count > 0)
+            {
+                return _serviceProvider.GetRequiredService<OneOfSchemaGenerator>();
+            }
+
             return schema.Type switch
             {
                 "object" => _serviceProvider.GetRequiredService<ObjectSchemaGenerator>(),

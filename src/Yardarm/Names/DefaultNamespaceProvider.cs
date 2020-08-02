@@ -20,6 +20,8 @@ namespace Yardarm.Names
             _rootNamespace = SyntaxFactory.ParseName(settings.RootNamespace);
         }
 
+        public NameSyntax GetRootNamespace() => _rootNamespace;
+
         public virtual NameSyntax GetRequestBodyNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
 

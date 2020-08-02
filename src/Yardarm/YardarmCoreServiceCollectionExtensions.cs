@@ -37,6 +37,7 @@ namespace Yardarm
             services.TryAddSingleton<StringSchemaGenerator>();
             services.TryAddSingleton<EnumSchemaGenerator>();
             services.TryAddSingleton<AllOfSchemaGenerator>();
+            services.TryAddSingleton<OneOfSchemaGenerator>();
 
             services.TryAddSingleton<IRequestBodySchemaGenerator, RequestBodySchemaGenerator>();
             services.TryAddSingleton<IResponseSchemaGenerator, ResponseSchemaGenerator>();

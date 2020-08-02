@@ -13,8 +13,16 @@ namespace Yardarm.Generation.Schema
             _serviceProvider = serviceProvider;
         }
 
-        public virtual ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> element) =>
-            element.Element.Type switch
+        public virtual ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> element)
+        {
+            OpenApiSchema schema = element.Element;
+
+            if (schema.AllOf.Count > 0)
+            {
+                return _serviceProvider.GetRequiredService<AllOfSchemaGenerator>();
+            }
+
+            return schema.Type switch
             {
                 "object" => _serviceProvider.GetRequiredService<ObjectSchemaGenerator>(),
                 "string" => GetStringGenerator(element),
@@ -23,6 +31,7 @@ namespace Yardarm.Generation.Schema
                 "array" => _serviceProvider.GetRequiredService<ArraySchemaGenerator>(),
                 _ => NullSchemaGenerator.Instance
             };
+        }
 
         public virtual ISchemaGenerator GetStringGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
             element.Element.Enum?.Count > 0

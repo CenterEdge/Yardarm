@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Schema
         {
             var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
 
-            var ns = classNameAndNamespace.Left;
+            NameSyntax ns = classNameAndNamespace.Left;
 
             return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
                 .AddMembers(
@@ -40,7 +40,7 @@ namespace Yardarm.Generation.Schema
 
         public override MemberDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiSchema> element)
         {
-            var schema = element.Element;
+            OpenApiSchema schema = element.Element;
 
             var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
 
@@ -50,39 +50,49 @@ namespace Yardarm.Generation.Schema
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                    .WithBody(SyntaxFactory.Block()))
-                .AddMembers(schema.Properties
-                    .Select(p => CreateProperty(element.CreateChild(p.Value, p.Key))).ToArray());
+                    .WithBody(SyntaxFactory.Block()));
 
-            MemberDeclarationSyntax[] childSchemas = schema.Properties
-                .Where(property => property.Value.Reference == null)
-                .Select(property =>
-                {
-                    var propertyElement = element.CreateChild(property.Value, property.Key);
-
-                    ISchemaGenerator generator = SchemaGeneratorFactory.Get(propertyElement);
-
-                    // This isn't a schema reference, so the child property may require schema generation
-                    return generator.Generate(propertyElement)!;
-                })
-                .Where(p => p != null)
-                .ToArray();
-
-            if (childSchemas.Length > 0)
-            {
-                declaration = declaration.AddMembers(childSchemas);
-            }
+            declaration = AddProperties(declaration, element, schema.Properties);
 
             return declaration.Enrich(ClassEnrichers, element);
         }
 
-        protected virtual MemberDeclarationSyntax CreateProperty(LocatedOpenApiElement<OpenApiSchema> element)
+        protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
+            LocatedOpenApiElement<OpenApiSchema> parent, IEnumerable<KeyValuePair<string, OpenApiSchema>> properties)
         {
-            var propertyName = NameFormatterSelector.GetFormatter(NameKind.Property).Format(element.Key);
+            MemberDeclarationSyntax[] members = properties
+                .SelectMany(p => DeclareProperty(parent.CreateChild(p.Value, p.Key)))
+                .ToArray();
 
-            var typeName = TypeNameGenerator.GetName(element);
+            return declaration.AddMembers(members);
+        }
 
-            var property = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
+        protected virtual IEnumerable<MemberDeclarationSyntax> DeclareProperty(
+            LocatedOpenApiElement<OpenApiSchema> property)
+        {
+            yield return CreatePropertyDeclaration(property);
+
+            if (property.Element.Reference == null)
+            {
+                // This isn't a reference, so we must generate the child schema
+
+                ISchemaGenerator generator = SchemaGeneratorFactory.Get(property);
+
+                MemberDeclarationSyntax? childSchema = generator.Generate(property);
+                if (childSchema != null)
+                {
+                    yield return childSchema;
+                }
+            }
+        }
+
+        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement<OpenApiSchema> property)
+        {
+            string propertyName = NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
+
+            var typeName = TypeNameGenerator.GetName(property);
+
+            var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -90,7 +100,7 @@ namespace Yardarm.Generation.Schema
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-            return property.Enrich(PropertyEnrichers, element);
+            return propertyDeclaration.Enrich(PropertyEnrichers, property);
         }
     }
 }

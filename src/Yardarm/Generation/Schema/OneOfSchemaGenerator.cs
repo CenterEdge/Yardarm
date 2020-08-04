@@ -29,20 +29,7 @@ namespace Yardarm.Generation.Schema
             ClassEnrichers = classEnrichers.ToArray();
         }
 
-        public override SyntaxTree GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
-        {
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
-
-            NameSyntax ns = classNameAndNamespace.Left;
-
-            return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
-                .AddMembers(
-                    SyntaxFactory.NamespaceDeclaration(ns)
-                        .AddMembers(Generate(element)))
-                .NormalizeWhitespace());
-        }
-
-        public override MemberDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiSchema> element)
+        public override IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element)
         {
             var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
 
@@ -53,7 +40,7 @@ namespace Yardarm.Generation.Schema
 
             var classDeclaration = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
 
-            return classDeclaration.Enrich(ClassEnrichers, element);
+            yield return classDeclaration.Enrich(ClassEnrichers, element);
         }
 
         public SyntaxTree Generate(NameSyntax ns, SimpleNameSyntax identifier, IEnumerable<LocatedOpenApiElement<OpenApiSchema>> values)

@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -50,7 +52,25 @@ namespace Yardarm.Generation.Schema
                 SyntaxFactory.IdentifierName(NameFormatterSelector.GetFormatter(NameKind.Class).Format(schemaElement.Key + "Model")));
         }
 
-        public abstract SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element);
-        public abstract MemberDeclarationSyntax? Generate(LocatedOpenApiElement<OpenApiSchema> element);
+        public virtual SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
+        {
+            var members = Generate(element).ToArray();
+            if (members.Length == 0)
+            {
+                return null;
+            }
+
+            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
+
+            NameSyntax ns = classNameAndNamespace.Left;
+
+            return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
+                .AddMembers(
+                    SyntaxFactory.NamespaceDeclaration(ns)
+                        .AddMembers(members))
+                .NormalizeWhitespace());
+        }
+
+        public abstract IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element);
     }
 }

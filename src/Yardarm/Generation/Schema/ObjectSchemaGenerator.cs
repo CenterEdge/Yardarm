@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -25,20 +24,7 @@ namespace Yardarm.Generation.Schema
             PropertyEnrichers = propertyEnrichers.ToArray();
         }
 
-        public override SyntaxTree GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
-        {
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
-
-            NameSyntax ns = classNameAndNamespace.Left;
-
-            return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
-                .AddMembers(
-                    SyntaxFactory.NamespaceDeclaration(ns)
-                        .AddMembers(Generate(element)))
-                .NormalizeWhitespace());
-        }
-
-        public override MemberDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiSchema> element)
+        public override IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element)
         {
             OpenApiSchema schema = element.Element;
 
@@ -54,7 +40,7 @@ namespace Yardarm.Generation.Schema
 
             declaration = AddProperties(declaration, element, schema.Properties);
 
-            return declaration.Enrich(ClassEnrichers, element);
+            yield return declaration.Enrich(ClassEnrichers, element);
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
@@ -78,10 +64,9 @@ namespace Yardarm.Generation.Schema
 
                 ISchemaGenerator generator = SchemaGeneratorFactory.Get(property);
 
-                MemberDeclarationSyntax? childSchema = generator.Generate(property);
-                if (childSchema != null)
+                foreach (MemberDeclarationSyntax child in generator.Generate(property))
                 {
-                    yield return childSchema;
+                    yield return child;
                 }
             }
         }

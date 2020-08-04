@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Any;
@@ -29,20 +28,7 @@ namespace Yardarm.Generation.Schema
             EnumMemberEnrichers = enumMemberEnrichers.ToArray();
         }
 
-        public override SyntaxTree GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
-        {
-            var fullName = (QualifiedNameSyntax) GetTypeName(element);
-
-            var ns = fullName.Left;
-
-            return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
-                .AddMembers(
-                    SyntaxFactory.NamespaceDeclaration(ns)
-                        .AddMembers(Generate(element)))
-                .NormalizeWhitespace());
-        }
-
-        public override MemberDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiSchema> element)
+        public override IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element)
         {
             var schema = element.Element;
 
@@ -59,7 +45,7 @@ namespace Yardarm.Generation.Schema
                     .Where(p => p != null)
                     .ToArray());
 
-            return declaration.Enrich(EnumEnrichers, element);
+            yield return declaration.Enrich(EnumEnrichers, element);
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(

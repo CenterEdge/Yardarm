@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 
@@ -10,6 +11,6 @@ namespace Yardarm.Generation.Schema
 
         SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element);
 
-        MemberDeclarationSyntax? Generate(LocatedOpenApiElement<OpenApiSchema> element);
+        IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element);
     }
 }

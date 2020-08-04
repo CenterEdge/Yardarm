@@ -25,9 +25,7 @@ namespace Yardarm
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var context = new GenerationContext(document);
-
-            var serviceProvider = settings.BuildServiceProvider(context);
+            var serviceProvider = settings.BuildServiceProvider(document);
 
             var syntaxTrees = serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>()
                 .SelectMany(p => p.Generate())

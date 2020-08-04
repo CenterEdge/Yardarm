@@ -3,18 +3,19 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Schema
 {
     public class NumberSchemaGenerator : ISchemaGenerator
     {
-        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement) =>
+        public static NumberSchemaGenerator Instance { get; } = new NumberSchemaGenerator();
+
+        public TypeSyntax GetTypeName() =>
             SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword));
 
-        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element) => null;
+        public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element) =>
+        public IEnumerable<MemberDeclarationSyntax> Generate() =>
             Enumerable.Empty<MemberDeclarationSyntax>();
     }
 }

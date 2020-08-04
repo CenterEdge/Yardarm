@@ -74,7 +74,7 @@ namespace Yardarm.Generation.Api
             var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
             var schemaGenerator = _schemaGeneratorFactory.Get(schemaElement);
 
-            return schemaGenerator.GenerateSyntaxTree(schemaElement);
+            return schemaGenerator.GenerateSyntaxTree();
         }
     }
 }

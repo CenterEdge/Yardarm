@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Schema
 {
@@ -15,12 +14,12 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement) =>
+        public TypeSyntax GetTypeName() =>
             SyntaxFactory.IdentifierName("dynamic");
 
-        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element) => null;
+        public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element) =>
+        public IEnumerable<MemberDeclarationSyntax> Generate() =>
             Enumerable.Empty<MemberDeclarationSyntax>();
     }
 }

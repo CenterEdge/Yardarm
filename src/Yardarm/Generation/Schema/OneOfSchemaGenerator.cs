@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -17,37 +16,32 @@ namespace Yardarm.Generation.Schema
     /// </summary>
     internal class OneOfSchemaGenerator : SchemaGeneratorBase
     {
-        protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
-
         protected override NameKind NameKind => NameKind.Class;
 
-        public OneOfSchemaGenerator(INamespaceProvider namespaceProvider, ITypeNameGenerator typeNameGenerator,
-            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory,
-            IEnumerable<ISchemaClassEnricher> classEnrichers)
-            : base(namespaceProvider, typeNameGenerator, nameFormatterSelector, schemaGeneratorFactory)
+        public OneOfSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+            : base(schemaElement, context)
         {
-            ClassEnrichers = classEnrichers.ToArray();
         }
 
-        public override IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element)
+        public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
+            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
 
             NameSyntax ns = classNameAndNamespace.Left;
             SimpleNameSyntax className = classNameAndNamespace.Right;
 
-            var syntaxTree = Generate(ns, className, element.Element.OneOf.Select(p => element.CreateChild(p, "")));
+            var syntaxTree = Generate(ns, className, Schema.OneOf.Select(p => SchemaElement.CreateChild(p, "")));
 
             var classDeclaration = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
 
-            yield return classDeclaration.Enrich(ClassEnrichers, element);
+            yield return classDeclaration.Enrich(Context.Enrichers.ClassEnrichers, SchemaElement);
         }
 
         public SyntaxTree Generate(NameSyntax ns, SimpleNameSyntax identifier, IEnumerable<LocatedOpenApiElement<OpenApiSchema>> values)
         {
             var builder = new StringBuilder(1024 * 10);
 
-            TypeSyntax[] typeNames = values.Select(p => TypeNameGenerator.GetName(p))
+            TypeSyntax[] typeNames = values.Select(p => Context.TypeNameGenerator.GetName(p))
                 .ToArray();
 
             builder.AppendLine($@"namespace {ns}

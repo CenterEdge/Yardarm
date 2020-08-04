@@ -16,36 +16,27 @@ namespace Yardarm.Generation.Schema
 
         protected override NameKind NameKind => NameKind.Enum;
 
-        protected IList<IEnumEnricher> EnumEnrichers { get; }
-        protected IList<IEnumMemberEnricher> EnumMemberEnrichers { get; }
-
-        public EnumSchemaGenerator(INamespaceProvider namespaceProvider, ITypeNameGenerator typeNameGenerator,
-            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory,
-            IEnumerable<IEnumEnricher> enumEnrichers, IEnumerable<IEnumMemberEnricher> enumMemberEnrichers)
-            : base(namespaceProvider, typeNameGenerator, nameFormatterSelector, schemaGeneratorFactory)
+        public EnumSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+            : base(schemaElement, context)
         {
-            EnumEnrichers = enumEnrichers.ToArray();
-            EnumMemberEnrichers = enumMemberEnrichers.ToArray();
         }
 
-        public override IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element)
+        public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var schema = element.Element;
-
-            var fullName = (QualifiedNameSyntax) GetTypeName(element);
+            var fullName = (QualifiedNameSyntax) GetTypeName();
 
             string enumName = fullName.Right.Identifier.Text;
 
-            INameFormatter memberNameFormatter = NameFormatterSelector.GetFormatter(NameKind.EnumMember);
+            INameFormatter memberNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.EnumMember);
 
             EnumDeclarationSyntax declaration = SyntaxFactory.EnumDeclaration(enumName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                .AddMembers(schema.Enum
-                    .Select(p => CreateEnumMember(element, p, memberNameFormatter)!)
+                .AddMembers(Schema.Enum
+                    .Select(p => CreateEnumMember(SchemaElement, p, memberNameFormatter)!)
                     .Where(p => p != null)
                     .ToArray());
 
-            yield return declaration.Enrich(EnumEnrichers, element);
+            yield return declaration.Enrich(Context.Enrichers.EnumEnrichers, SchemaElement);
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
@@ -72,7 +63,7 @@ namespace Yardarm.Generation.Schema
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                     CreateEnumMemberAttribute(stringPrimitive.Value)));
 
-            return memberDeclaration.Enrich(EnumMemberEnrichers, (schemaElement, value));
+            return memberDeclaration.Enrich(Context.Enrichers.EnumMemberEnrichers, (schemaElement, value));
         }
 
         protected static AttributeSyntax CreateEnumMemberAttribute(string value) =>

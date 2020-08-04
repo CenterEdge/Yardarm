@@ -10,25 +10,16 @@ namespace Yardarm.Generation.Schema
 {
     internal class ObjectSchemaGenerator : SchemaGeneratorBase
     {
-        protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
-        protected IList<IPropertyEnricher> PropertyEnrichers { get; }
-
         protected override NameKind NameKind => NameKind.Class;
 
-        public ObjectSchemaGenerator(INamespaceProvider namespaceProvider, ITypeNameGenerator typeNameGenerator,
-            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory,
-            IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
-            : base(namespaceProvider, typeNameGenerator, nameFormatterSelector, schemaGeneratorFactory)
+        public ObjectSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+            : base(schemaElement, context)
         {
-            ClassEnrichers = classEnrichers.ToArray();
-            PropertyEnrichers = propertyEnrichers.ToArray();
         }
 
-        public override IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element)
+        public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            OpenApiSchema schema = element.Element;
-
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
+            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
@@ -38,9 +29,9 @@ namespace Yardarm.Generation.Schema
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()));
 
-            declaration = AddProperties(declaration, element, schema.Properties);
+            declaration = AddProperties(declaration, SchemaElement, Schema.Properties);
 
-            yield return declaration.Enrich(ClassEnrichers, element);
+            yield return declaration.Enrich(Context.Enrichers.ClassEnrichers, SchemaElement);
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
@@ -62,9 +53,9 @@ namespace Yardarm.Generation.Schema
             {
                 // This isn't a reference, so we must generate the child schema
 
-                ISchemaGenerator generator = SchemaGeneratorFactory.Get(property);
+                ISchemaGenerator generator = Context.SchemaGeneratorFactory.Get(property);
 
-                foreach (MemberDeclarationSyntax child in generator.Generate(property))
+                foreach (MemberDeclarationSyntax child in generator.Generate())
                 {
                     yield return child;
                 }
@@ -73,9 +64,9 @@ namespace Yardarm.Generation.Schema
 
         protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement<OpenApiSchema> property)
         {
-            string propertyName = NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
+            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
 
-            var typeName = TypeNameGenerator.GetName(property);
+            var typeName = Context.TypeNameGenerator.GetName(property);
 
             var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
@@ -85,7 +76,7 @@ namespace Yardarm.Generation.Schema
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-            return propertyDeclaration.Enrich(PropertyEnrichers, property);
+            return propertyDeclaration.Enrich(Context.Enrichers.PropertyEnrichers, property);
         }
     }
 }

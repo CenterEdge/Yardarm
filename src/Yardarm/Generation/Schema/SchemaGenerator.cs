@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Schema
 
                 var generator = _schemaGeneratorFactory.Get(element);
 
-                var syntaxTree = generator.GenerateSyntaxTree(element);
+                var syntaxTree = generator.GenerateSyntaxTree();
                 if (syntaxTree != null)
                 {
                     yield return syntaxTree;

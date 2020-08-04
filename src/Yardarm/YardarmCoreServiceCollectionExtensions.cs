@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Internal;
 using Yardarm.Generation;
@@ -12,13 +13,15 @@ namespace Yardarm
 {
     public static class YardarmCoreServiceCollectionExtensions
     {
-        public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, GenerationContext generationContext)
+        public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, OpenApiDocument document)
         {
             // Enrichers
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddPropertyEnricher<RequiredPropertyEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>();
+
+            services.TryAddSingleton<IEnrichers, Enrichers>();
 
             // Generators
             services
@@ -30,14 +33,6 @@ namespace Yardarm
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
             services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
-            services.TryAddSingleton<ObjectSchemaGenerator>();
-            services.TryAddSingleton<ArraySchemaGenerator>();
-            services.TryAddSingleton<NumberSchemaGenerator>();
-            services.TryAddSingleton<BooleanSchemaGenerator>();
-            services.TryAddSingleton<StringSchemaGenerator>();
-            services.TryAddSingleton<EnumSchemaGenerator>();
-            services.TryAddSingleton<AllOfSchemaGenerator>();
-            services.TryAddSingleton<OneOfSchemaGenerator>();
 
             services.TryAddSingleton<IRequestBodySchemaGenerator, RequestBodySchemaGenerator>();
             services.TryAddSingleton<IResponseSchemaGenerator, ResponseSchemaGenerator>();
@@ -57,9 +52,9 @@ namespace Yardarm
             // Other
             services
                 .AddLogging()
-                .AddSingleton(generationContext)
+                .AddSingleton<GenerationContext>()
                 .AddSingleton(settings)
-                .AddSingleton(serviceProvider => serviceProvider.GetRequiredService<GenerationContext>().Document);
+                .AddSingleton(document);
 
             return services;
         }

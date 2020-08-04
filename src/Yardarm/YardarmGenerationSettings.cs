@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 
 namespace Yardarm
@@ -47,13 +48,13 @@ namespace Yardarm
             RootNamespace = assemblyName;
         }
 
-        public IServiceProvider BuildServiceProvider(GenerationContext generationContext)
+        public IServiceProvider BuildServiceProvider(OpenApiDocument document)
         {
             IServiceCollection services = new ServiceCollection();
 
             services = Extensions.Aggregate(services, (p, extension) => extension.Invoke(p));
 
-            services.AddYardarm(this, generationContext);
+            services.AddYardarm(this, document);
 
             return services.BuildServiceProvider();
         }

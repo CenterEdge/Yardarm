@@ -6,11 +6,12 @@ namespace Yardarm.Generation.Schema
 {
     public class DefaultSchemaGeneratorFactory : ISchemaGeneratorFactory
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly Lazy<GenerationContext> _context;
 
         public DefaultSchemaGeneratorFactory(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider;
+            // Use lazy initialization to avoid a circular reference within the DI container
+            _context = new Lazy<GenerationContext>(serviceProvider.GetRequiredService<GenerationContext>);
         }
 
         public virtual ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> element)
@@ -19,28 +20,40 @@ namespace Yardarm.Generation.Schema
 
             if (schema.AllOf.Count > 0)
             {
-                return _serviceProvider.GetRequiredService<AllOfSchemaGenerator>();
+                return new AllOfSchemaGenerator(element, _context.Value);
             }
 
             if (schema.OneOf.Count > 0)
             {
-                return _serviceProvider.GetRequiredService<OneOfSchemaGenerator>();
+                return new OneOfSchemaGenerator(element, _context.Value);
             }
 
             return schema.Type switch
             {
-                "object" => _serviceProvider.GetRequiredService<ObjectSchemaGenerator>(),
+                "object" => GetObjectGenerator(element),
                 "string" => GetStringGenerator(element),
-                "number" => _serviceProvider.GetRequiredService<NumberSchemaGenerator>(),
-                "boolean" => _serviceProvider.GetRequiredService<BooleanSchemaGenerator>(),
-                "array" => _serviceProvider.GetRequiredService<ArraySchemaGenerator>(),
+                "number" => GetNumberGenerator(element),
+                "boolean" => GetBooleanGenerator(element),
+                "array" => GetArrayGenerator(element),
                 _ => NullSchemaGenerator.Instance
             };
         }
 
-        public virtual ISchemaGenerator GetStringGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual ISchemaGenerator GetArrayGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+            new ArraySchemaGenerator(element, _context.Value);
+
+        protected virtual ISchemaGenerator GetBooleanGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+            BooleanSchemaGenerator.Instance;
+
+        protected virtual ISchemaGenerator GetNumberGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+            NumberSchemaGenerator.Instance;
+
+        protected virtual ISchemaGenerator GetObjectGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+            new ObjectSchemaGenerator(element, _context.Value);
+
+        protected virtual ISchemaGenerator GetStringGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
             element.Element.Enum?.Count > 0
-                ? _serviceProvider.GetRequiredService<EnumSchemaGenerator>()
-                : (ISchemaGenerator) _serviceProvider.GetRequiredService<StringSchemaGenerator>();
+                ? (ISchemaGenerator) new EnumSchemaGenerator(element, _context.Value)
+                : StringSchemaGenerator.Instance;
     }
 }

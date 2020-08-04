@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Schema
 {
     public interface ISchemaGenerator
     {
-        TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement);
+        TypeSyntax GetTypeName();
 
-        SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element);
+        SyntaxTree? GenerateSyntaxTree();
 
-        IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element);
+        IEnumerable<MemberDeclarationSyntax> Generate();
     }
 }

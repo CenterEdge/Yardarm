@@ -3,18 +3,19 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Schema
 {
     public class BooleanSchemaGenerator : ISchemaGenerator
     {
-        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement) =>
+        public static BooleanSchemaGenerator Instance { get; } = new BooleanSchemaGenerator();
+
+        public TypeSyntax GetTypeName() =>
             SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.BoolKeyword));
 
-        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element) => null;
+        public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element) =>
+        public IEnumerable<MemberDeclarationSyntax> Generate() =>
             Enumerable.Empty<MemberDeclarationSyntax>();
     }
 }

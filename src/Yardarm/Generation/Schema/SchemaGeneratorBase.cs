@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,57 +11,53 @@ namespace Yardarm.Generation.Schema
 {
     public abstract class SchemaGeneratorBase : ISchemaGenerator
     {
-        protected INamespaceProvider NamespaceProvider { get; }
-        protected ITypeNameGenerator TypeNameGenerator { get; }
-        protected INameFormatterSelector NameFormatterSelector { get; }
-        protected ISchemaGeneratorFactory SchemaGeneratorFactory { get; }
+        protected LocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
+        protected GenerationContext Context { get; }
+
+        protected OpenApiSchema Schema => SchemaElement.Element;
 
         protected abstract NameKind NameKind { get; }
 
-        protected SchemaGeneratorBase(INamespaceProvider namespaceProvider, ITypeNameGenerator typeNameGenerator,
-            INameFormatterSelector nameFormatterSelector, ISchemaGeneratorFactory schemaGeneratorFactory)
+        protected SchemaGeneratorBase(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
         {
-            NamespaceProvider = namespaceProvider;
-            TypeNameGenerator = typeNameGenerator;
-            NameFormatterSelector = nameFormatterSelector;
-            SchemaGeneratorFactory = schemaGeneratorFactory;
+            SchemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
+            Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public virtual TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement)
+        public virtual TypeSyntax GetTypeName()
         {
-            var schema = schemaElement.Element;
-            var formatter = NameFormatterSelector.GetFormatter(NameKind);
+            var formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
 
-            if (schema.Reference != null)
+            if (Schema.Reference != null)
             {
-                var ns = NamespaceProvider.GetSchemaNamespace(schemaElement);
+                var ns = Context.NamespaceProvider.GetSchemaNamespace(SchemaElement);
 
                 return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(schema.Reference.Id)));
+                    SyntaxFactory.IdentifierName(formatter.Format(Schema.Reference.Id)));
             }
 
-            var parent = schemaElement.Parents[0];
-            var parentName = TypeNameGenerator.GetName(parent);
+            var parent = SchemaElement.Parents[0];
+            var parentName = Context.TypeNameGenerator.GetName(parent);
 
-            if (schemaElement.Key == "")
+            if (SchemaElement.Key == "")
             {
                 // This can occur for request bodies
                 return parentName;
             }
 
             return SyntaxFactory.QualifiedName((QualifiedNameSyntax) parentName,
-                SyntaxFactory.IdentifierName(NameFormatterSelector.GetFormatter(NameKind.Class).Format(schemaElement.Key + "Model")));
+                SyntaxFactory.IdentifierName(Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(SchemaElement.Key + "Model")));
         }
 
-        public virtual SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element)
+        public virtual SyntaxTree? GenerateSyntaxTree()
         {
-            var members = Generate(element).ToArray();
+            var members = Generate().ToArray();
             if (members.Length == 0)
             {
                 return null;
             }
 
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName(element);
+            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
 
             NameSyntax ns = classNameAndNamespace.Left;
 
@@ -71,6 +68,6 @@ namespace Yardarm.Generation.Schema
                 .NormalizeWhitespace());
         }
 
-        public abstract IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element);
+        public abstract IEnumerable<MemberDeclarationSyntax> Generate();
     }
 }

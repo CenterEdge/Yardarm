@@ -10,27 +10,30 @@ namespace Yardarm.Generation.Schema
 {
     public class ArraySchemaGenerator : ISchemaGenerator
     {
-        private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        protected LocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
+        protected GenerationContext Context { get; }
 
-        public ArraySchemaGenerator(ISchemaGeneratorFactory schemaGeneratorFactory)
+        protected OpenApiSchema Schema => SchemaElement.Element;
+
+        public ArraySchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
         {
-            _schemaGeneratorFactory = schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            SchemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
+            Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiSchema> schemaElement)
+        public TypeSyntax GetTypeName()
         {
             // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since
             // we're not making a custom class for the list.
-            var itemElement = schemaElement.CreateChild(schemaElement.Element.Items, schemaElement.Key);
+            var itemElement = SchemaElement.CreateChild(Schema.Items, SchemaElement.Key);
 
-            TypeSyntax itemTypeName = _schemaGeneratorFactory.Get(itemElement).GetTypeName(itemElement);
+            TypeSyntax itemTypeName = Context.SchemaGeneratorFactory.Get(itemElement).GetTypeName();
 
             return SyntaxHelpers.ListT(itemTypeName);
         }
 
-        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiSchema> element) => null;
+        public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(LocatedOpenApiElement<OpenApiSchema> element) =>
-            Enumerable.Empty<MemberDeclarationSyntax>();
+        public IEnumerable<MemberDeclarationSyntax> Generate() => Enumerable.Empty<MemberDeclarationSyntax>();
     }
 }

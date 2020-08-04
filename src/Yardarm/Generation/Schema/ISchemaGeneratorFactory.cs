@@ -4,6 +4,6 @@ namespace Yardarm.Generation.Schema
 {
     public interface ISchemaGeneratorFactory
     {
-        ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> element);
+        ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> schema);
     }
 }

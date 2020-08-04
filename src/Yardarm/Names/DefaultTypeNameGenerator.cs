@@ -43,6 +43,6 @@ namespace Yardarm.Names
             _responseSchemaGenerator.GetTypeName(element);
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
-            _schemaGeneratorFactory.Get(element).GetTypeName(element);
+            _schemaGeneratorFactory.Get(element).GetTypeName();
     }
 }

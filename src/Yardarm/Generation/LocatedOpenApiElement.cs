@@ -9,7 +9,7 @@ namespace Yardarm.Generation
     /// Represents an <see cref="IOpenApiSerializable"/> element with information about the path
     /// used to reach that element in the Open API document.
     /// </summary>
-    public class LocatedOpenApiElement
+    public abstract class LocatedOpenApiElement : IEquatable<LocatedOpenApiElement>
     {
         /// <summary>
         /// The element.
@@ -47,5 +47,74 @@ namespace Yardarm.Generation
         public static LocatedOpenApiElement<T> CreateRoot<T>(T rootItem, string key)
             where T : IOpenApiSerializable =>
             new LocatedOpenApiElement<T>(rootItem, key);
+
+        #region Equality
+
+        public bool Equals(LocatedOpenApiElement? other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (!Element.Equals(other.Element) && Key != other.Key || Parents.Count != other.Parents.Count)
+            {
+                return false;
+            }
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            for (int i = 0; i < Parents.Count; i++)
+            {
+                if (!Parents[i].Equals(other.Parents[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((LocatedOpenApiElement) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+
+            hashCode.Add(Element);
+            hashCode.Add(Key);
+
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (int i = 0; i < Parents.Count; i++)
+            {
+                hashCode.Add(Parents[i]);
+            }
+
+            return hashCode.ToHashCode();
+        }
+
+        #endregion
     }
 }

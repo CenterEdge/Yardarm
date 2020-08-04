@@ -33,6 +33,7 @@ namespace Yardarm
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
             services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
+            services.TryAddSingleton<ISchemaGeneratorRegistry, SchemaGeneratorRegistry>();
 
             services.TryAddSingleton<IRequestBodySchemaGenerator, RequestBodySchemaGenerator>();
             services.TryAddSingleton<IResponseSchemaGenerator, ResponseSchemaGenerator>();

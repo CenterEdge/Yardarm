@@ -15,19 +15,19 @@ namespace Yardarm.Generation.Api
     {
         private readonly INamespaceProvider _namespaceProvider;
         private readonly INameFormatterSelector _nameFormatterSelector;
-        private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
         private readonly IMediaTypeSelector _mediaTypeSelector;
 
         protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
         protected IList<IPropertyEnricher> PropertyEnrichers { get; }
 
         public RequestBodySchemaGenerator(INamespaceProvider namespaceProvider, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorFactory schemaGeneratorFactory, IMediaTypeSelector mediaTypeSelector,
+            ISchemaGeneratorRegistry schemaGeneratorRegistry, IMediaTypeSelector mediaTypeSelector,
             IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
         {
             _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
             _nameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
-            _schemaGeneratorFactory = schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
             _mediaTypeSelector = mediaTypeSelector;
             ClassEnrichers = classEnrichers.ToArray();
             PropertyEnrichers = propertyEnrichers.ToArray();
@@ -72,7 +72,7 @@ namespace Yardarm.Generation.Api
             }
 
             var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
-            var schemaGenerator = _schemaGeneratorFactory.Get(schemaElement);
+            var schemaGenerator = _schemaGeneratorRegistry.Get(schemaElement);
 
             return schemaGenerator.GenerateSyntaxTree();
         }

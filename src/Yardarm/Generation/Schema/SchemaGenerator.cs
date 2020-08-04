@@ -9,12 +9,12 @@ namespace Yardarm.Generation.Schema
     public class SchemaGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
 
-        public SchemaGenerator(OpenApiDocument document, ISchemaGeneratorFactory schemaGeneratorFactory)
+        public SchemaGenerator(OpenApiDocument document, ISchemaGeneratorRegistry schemaGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
-            _schemaGeneratorFactory = schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
         }
 
         public IEnumerable<SyntaxTree> Generate()
@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Schema
             {
                 var element = schema.Value.CreateRoot(schema.Key);
 
-                var generator = _schemaGeneratorFactory.Get(element);
+                var generator = _schemaGeneratorRegistry.Get(element);
 
                 var syntaxTree = generator.GenerateSyntaxTree();
                 if (syntaxTree != null)

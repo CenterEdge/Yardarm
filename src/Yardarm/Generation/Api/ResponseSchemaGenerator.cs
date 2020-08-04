@@ -16,7 +16,7 @@ namespace Yardarm.Generation.Api
     {
         private readonly INamespaceProvider _namespaceProvider;
         private readonly INameFormatterSelector _nameFormatterSelector;
-        private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
         private readonly IMediaTypeSelector _mediaTypeSelector;
         private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
 
@@ -24,13 +24,13 @@ namespace Yardarm.Generation.Api
         protected IList<IPropertyEnricher> PropertyEnrichers { get; }
 
         public ResponseSchemaGenerator(INamespaceProvider namespaceProvider, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorFactory schemaGeneratorFactory, IMediaTypeSelector mediaTypeSelector,
+            ISchemaGeneratorRegistry schemaGeneratorRegistry, IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
         {
             _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
             _nameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
-            _schemaGeneratorFactory = schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
             _mediaTypeSelector = mediaTypeSelector;
             _httpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
             ClassEnrichers = classEnrichers.ToArray();
@@ -80,7 +80,7 @@ namespace Yardarm.Generation.Api
             }
 
             var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
-            var schemaGenerator = _schemaGeneratorFactory.Get(schemaElement);
+            var schemaGenerator = _schemaGeneratorRegistry.Get(schemaElement);
 
             return schemaGenerator.GenerateSyntaxTree();
         }

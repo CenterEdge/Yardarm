@@ -14,7 +14,7 @@ namespace Yardarm.Generation.Schema
             _context = new Lazy<GenerationContext>(serviceProvider.GetRequiredService<GenerationContext>);
         }
 
-        public virtual ISchemaGenerator Get(LocatedOpenApiElement<OpenApiSchema> element)
+        public virtual ISchemaGenerator Create(LocatedOpenApiElement<OpenApiSchema> element)
         {
             OpenApiSchema schema = element.Element;
 

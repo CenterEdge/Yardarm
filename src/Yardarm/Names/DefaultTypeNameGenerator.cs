@@ -9,14 +9,14 @@ namespace Yardarm.Names
 {
     public class DefaultTypeNameGenerator : ITypeNameGenerator
     {
-        private readonly ISchemaGeneratorFactory _schemaGeneratorFactory;
+        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
         private readonly IRequestBodySchemaGenerator _requestBodySchemaGenerator;
         private readonly IResponseSchemaGenerator _responseSchemaGenerator;
 
-        public DefaultTypeNameGenerator(ISchemaGeneratorFactory schemaGeneratorFactory, IRequestBodySchemaGenerator requestBodySchemaGenerator,
+        public DefaultTypeNameGenerator(ISchemaGeneratorRegistry schemaGeneratorRegistry, IRequestBodySchemaGenerator requestBodySchemaGenerator,
             IResponseSchemaGenerator responseSchemaGenerator)
         {
-            _schemaGeneratorFactory = schemaGeneratorFactory ?? throw new ArgumentNullException(nameof(schemaGeneratorFactory));
+            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
             _requestBodySchemaGenerator = requestBodySchemaGenerator ?? throw new ArgumentNullException(nameof(requestBodySchemaGenerator));
             _responseSchemaGenerator = responseSchemaGenerator ?? throw new ArgumentNullException(nameof(responseSchemaGenerator));
         }
@@ -43,6 +43,6 @@ namespace Yardarm.Names
             _responseSchemaGenerator.GetTypeName(element);
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
-            _schemaGeneratorFactory.Get(element).GetTypeName();
+            _schemaGeneratorRegistry.Get(element).GetTypeName();
     }
 }

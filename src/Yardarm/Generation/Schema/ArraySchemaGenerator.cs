@@ -27,7 +27,7 @@ namespace Yardarm.Generation.Schema
             // we're not making a custom class for the list.
             var itemElement = SchemaElement.CreateChild(Schema.Items, SchemaElement.Key);
 
-            TypeSyntax itemTypeName = Context.SchemaGeneratorFactory.Get(itemElement).GetTypeName();
+            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(itemElement).GetTypeName();
 
             return SyntaxHelpers.ListT(itemTypeName);
         }

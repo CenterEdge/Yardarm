@@ -77,6 +77,10 @@ namespace Yardarm
             where T : class, ISchemaClassEnricher =>
             services.AddTransient<ISchemaClassEnricher, T>();
 
+        public static IServiceCollection AddSchemaInterfaceEnricher<T>(this IServiceCollection services)
+            where T : class, ISchemaInterfaceEnricher =>
+            services.AddTransient<ISchemaInterfaceEnricher, T>();
+
         public static IServiceCollection AddPackageSpecEnricher<T>(this IServiceCollection services)
             where T : class, IPackageSpecEnricher =>
             services.AddTransient<IPackageSpecEnricher, T>();

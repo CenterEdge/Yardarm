@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment;
 using Yardarm.Features;
 using Yardarm.Names;
 
@@ -64,7 +65,7 @@ namespace Yardarm.Generation.Schema
             var interfaceDeclaration = SyntaxFactory.InterfaceDeclaration(interfaceName.ToString())
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
-            yield return interfaceDeclaration;
+            yield return interfaceDeclaration.Enrich(Context.Enrichers.InterfaceEnrichers, SchemaElement);
         }
 
         private bool HasDiscriminator => Schema.Discriminator?.PropertyName != null;

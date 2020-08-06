@@ -17,27 +17,37 @@ namespace Yardarm.Generation.Api
             _requestBodySchemaGenerator = requestBodySchemaGenerator ?? throw new ArgumentNullException(nameof(requestBodySchemaGenerator));
         }
 
-        public IEnumerable<SyntaxTree> Generate()
+        public void Preprocess()
         {
-            foreach (var syntaxTree in _document.Components.RequestBodies
-                .Select(p => Generate(p.Value.CreateRoot(p.Key))!)
-                .Where(p => p != null))
+            foreach (var request in GetRequestBodies())
             {
-                yield return syntaxTree;
-            }
-
-            foreach (var syntaxTree in _document.Paths
-                .Select(p => p.Value.CreateRoot(p.Key))
-                .SelectMany(p => p.Element.Operations,
-                    (path, operation) =>
-                        path.CreateChild(operation.Value, operation.Key.ToString()))
-                .Where(p => p.Element.RequestBody != null)
-                .Select(p => Generate(p.CreateChild(p.Element.RequestBody, p.Key))!)
-                .Where(p => p != null))
-            {
-                yield return syntaxTree;
+                Preprocess(request);
             }
         }
+
+        public IEnumerable<SyntaxTree> Generate()
+        {
+            foreach (var syntaxTree in GetRequestBodies()
+                .Select(Generate)
+                .Where(p => p != null))
+            {
+                yield return syntaxTree!;
+            }
+        }
+
+        private IEnumerable<LocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
+            _document.Components.RequestBodies
+                .Select(p => p.Value.CreateRoot(p.Key))
+                .Concat(_document.Paths
+                    .Select(p => p.Value.CreateRoot(p.Key))
+                    .SelectMany(p => p.Element.Operations,
+                        (path, operation) =>
+                            path.CreateChild(operation.Value, operation.Key.ToString()))
+                    .Where(p => p.Element.RequestBody != null)
+                    .Select(p => p.CreateChild(p.Element.RequestBody, p.Key)));
+
+        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
+            _requestBodySchemaGenerator.Preprocess(requestBody);
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _requestBodySchemaGenerator.GenerateSyntaxTree(requestBody);

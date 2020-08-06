@@ -10,6 +10,10 @@ namespace Yardarm.Generation.Schema
     {
         public static NumberSchemaGenerator Instance { get; } = new NumberSchemaGenerator();
 
+        public void Preprocess()
+        {
+        }
+
         public TypeSyntax GetTypeName() =>
             SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword));
 

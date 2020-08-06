@@ -17,28 +17,37 @@ namespace Yardarm.Generation.Api
             _responseSchemaGenerator = responseSchemaGenerator ?? throw new ArgumentNullException(nameof(responseSchemaGenerator));
         }
 
-        public IEnumerable<SyntaxTree> Generate()
+        public void Preprocess()
         {
-            foreach (var syntaxTree in _document.Components.Responses
-                .Select(p => Generate(p.Value.CreateRoot(p.Key))!)
-                .Where(p => p != null))
+            foreach (var response in GetResponses())
             {
-                yield return syntaxTree;
-            }
-
-            foreach (var syntaxTree in _document.Paths
-                .Select(p => p.Value.CreateRoot(p.Key))
-                .SelectMany(p => p.Element.Operations,
-                    (path, operation) =>
-                        path.CreateChild(operation.Value, operation.Key.ToString()))
-                .SelectMany(p => p.Element.Responses,
-                    (operation, response) => operation.CreateChild(response.Value, response.Key))
-                .Select(p => Generate(p)!)
-                .Where(p => p != null))
-            {
-                yield return syntaxTree;
+                Preprocess(response);
             }
         }
+
+        public IEnumerable<SyntaxTree> Generate()
+        {
+            foreach (var syntaxTree in GetResponses()
+                .Select(Generate)
+                .Where(p => p != null))
+            {
+                yield return syntaxTree!;
+            }
+        }
+
+        private IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
+            _document.Components.Responses
+                .Select(p => p.Value.CreateRoot(p.Key))
+                .Concat(_document.Paths
+                    .Select(p => p.Value.CreateRoot(p.Key))
+                    .SelectMany(p => p.Element.Operations,
+                        (path, operation) =>
+                            path.CreateChild(operation.Value, operation.Key.ToString()))
+                    .SelectMany(p => p.Element.Responses,
+                        (operation, response) => operation.CreateChild(response.Value, response.Key)));
+
+        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
+            _responseSchemaGenerator.Preprocess(requestBody);
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
             _responseSchemaGenerator.GenerateSyntaxTree(requestBody);

@@ -27,7 +27,15 @@ namespace Yardarm
 
             var serviceProvider = settings.BuildServiceProvider(document);
 
-            var syntaxTrees = serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>()
+            ISyntaxTreeGenerator[] syntaxTreeGenerators =
+                serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>().ToArray();
+
+            foreach (var syntaxTreeGenerator in syntaxTreeGenerators)
+            {
+                syntaxTreeGenerator.Preprocess();
+            }
+
+            var syntaxTrees = syntaxTreeGenerators
                 .SelectMany(p => p.Generate())
                 .ToArray();
 

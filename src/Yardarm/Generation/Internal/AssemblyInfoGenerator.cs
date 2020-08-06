@@ -15,6 +15,10 @@ namespace Yardarm.Generation.Internal
             _enrichers = enrichers ?? throw new ArgumentNullException(nameof(enrichers));
         }
 
+        public void Preprocess()
+        {
+        }
+
         public IEnumerable<SyntaxTree> Generate()
         {
             yield return CSharpSyntaxTree.Create(

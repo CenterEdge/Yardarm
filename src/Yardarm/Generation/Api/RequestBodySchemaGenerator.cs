@@ -33,6 +33,9 @@ namespace Yardarm.Generation.Api
             PropertyEnrichers = propertyEnrichers.ToArray();
         }
 
+        public virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> element) =>
+            GetSchemaGenerator(element)?.Preprocess();
+
         public virtual TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiRequestBody> element)
         {
             OpenApiRequestBody requestBody = element.Element;
@@ -63,7 +66,10 @@ namespace Yardarm.Generation.Api
             }
         }
 
-        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiRequestBody> element)
+        public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiRequestBody> element) =>
+            GetSchemaGenerator(element)?.GenerateSyntaxTree();
+
+        private ISchemaGenerator? GetSchemaGenerator(LocatedOpenApiElement<OpenApiRequestBody> element)
         {
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
@@ -72,9 +78,7 @@ namespace Yardarm.Generation.Api
             }
 
             var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
-            var schemaGenerator = _schemaGeneratorRegistry.Get(schemaElement);
-
-            return schemaGenerator.GenerateSyntaxTree();
+            return _schemaGeneratorRegistry.Get(schemaElement);
         }
     }
 }

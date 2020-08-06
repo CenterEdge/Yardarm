@@ -14,6 +14,10 @@ namespace Yardarm.Generation.Schema
         {
         }
 
+        public void Preprocess()
+        {
+        }
+
         public TypeSyntax GetTypeName() =>
             SyntaxFactory.IdentifierName("dynamic");
 

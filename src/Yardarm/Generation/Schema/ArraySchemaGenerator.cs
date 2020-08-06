@@ -21,6 +21,10 @@ namespace Yardarm.Generation.Schema
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        public void Preprocess()
+        {
+        }
+
         public TypeSyntax GetTypeName()
         {
             // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since

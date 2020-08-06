@@ -10,6 +10,10 @@ namespace Yardarm.Generation.Schema
     {
         public static StringSchemaGenerator Instance { get; } = new StringSchemaGenerator();
 
+        public void Preprocess()
+        {
+        }
+
         public TypeSyntax GetTypeName() =>
             SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.StringKeyword));
 

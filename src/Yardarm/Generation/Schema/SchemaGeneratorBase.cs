@@ -24,6 +24,10 @@ namespace Yardarm.Generation.Schema
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+        public virtual void Preprocess()
+        {
+        }
+
         public virtual TypeSyntax GetTypeName()
         {
             var formatter = Context.NameFormatterSelector.GetFormatter(NameKind);

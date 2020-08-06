@@ -6,6 +6,8 @@ namespace Yardarm.Generation.Schema
 {
     public interface ISchemaGenerator
     {
+        void Preprocess();
+
         TypeSyntax GetTypeName();
 
         SyntaxTree? GenerateSyntaxTree();

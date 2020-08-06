@@ -6,6 +6,8 @@ namespace Yardarm.Generation.Api
 {
     public interface IResponseSchemaGenerator
     {
+        void Preprocess(LocatedOpenApiElement<OpenApiResponse> element);
+
         TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiResponse> element);
 
         SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiResponse> element);

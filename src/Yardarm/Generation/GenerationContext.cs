@@ -9,6 +9,9 @@ namespace Yardarm.Generation
     public class GenerationContext
     {
         public OpenApiDocument Document { get; set; }
+
+        public FeatureCollection Features { get; } = new FeatureCollection();
+
         public INamespaceProvider NamespaceProvider { get; }
         public ITypeNameGenerator TypeNameGenerator { get; }
         public INameFormatterSelector NameFormatterSelector { get; }

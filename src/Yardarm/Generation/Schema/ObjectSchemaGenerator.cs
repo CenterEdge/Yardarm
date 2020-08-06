@@ -38,16 +38,16 @@ namespace Yardarm.Generation.Schema
             LocatedOpenApiElement<OpenApiSchema> parent, IEnumerable<KeyValuePair<string, OpenApiSchema>> properties)
         {
             MemberDeclarationSyntax[] members = properties
-                .SelectMany(p => DeclareProperty(parent.CreateChild(p.Value, p.Key)))
+                .SelectMany(p => DeclareProperty(parent.CreateChild(p.Value, p.Key), declaration.Identifier.ValueText))
                 .ToArray();
 
             return declaration.AddMembers(members);
         }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> DeclareProperty(
-            LocatedOpenApiElement<OpenApiSchema> property)
+            LocatedOpenApiElement<OpenApiSchema> property, string ownerName)
         {
-            yield return CreatePropertyDeclaration(property);
+            yield return CreatePropertyDeclaration(property, ownerName);
 
             if (property.Element.Reference == null)
             {
@@ -62,9 +62,15 @@ namespace Yardarm.Generation.Schema
             }
         }
 
-        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement<OpenApiSchema> property)
+        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement<OpenApiSchema> property, string ownerName)
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
+
+            if (propertyName == ownerName)
+            {
+                // Properties can't have the same name as the class/interface
+                propertyName += "Value";
+            }
 
             var typeName = Context.TypeNameGenerator.GetName(property);
 

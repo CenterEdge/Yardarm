@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Yardarm.Names;
 
 namespace Yardarm.NewtonsoftJson.Helpers
 {
@@ -17,12 +18,20 @@ namespace Yardarm.NewtonsoftJson.Helpers
             NewtonsoftJson(),
             SyntaxFactory.IdentifierName("JsonProperty"));
 
-        public static NameSyntax JsonConverterAttributeName() =>SyntaxFactory.QualifiedName(
+        public static NameSyntax JsonConverterAttributeName() => SyntaxFactory.QualifiedName(
             NewtonsoftJson(),
             SyntaxFactory.IdentifierName("JsonConverter"));
 
-        public static NameSyntax StringEnumConverterName() =>SyntaxFactory.QualifiedName(
+        public static NameSyntax StringEnumConverterName() => SyntaxFactory.QualifiedName(
             NewtonsoftJsonConverters(),
             SyntaxFactory.IdentifierName("StringEnumConverter"));
+
+        public static NameSyntax DiscriminatorConverterName(INamespaceProvider namespaceProvider) =>
+            SyntaxFactory.QualifiedName(
+                SyntaxFactory.QualifiedName(
+                    namespaceProvider.GetRootNamespace(),
+                    SyntaxFactory.IdentifierName("Converters")),
+                SyntaxFactory.IdentifierName("DiscriminatorConverter"));
+
     }
 }

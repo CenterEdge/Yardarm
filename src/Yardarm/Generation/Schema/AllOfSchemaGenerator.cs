@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -31,9 +32,14 @@ namespace Yardarm.Generation.Schema
 
                             TypeSyntax typeName = Context.TypeNameGenerator.GetName(referencedSchema);
 
+                            BaseListSyntax baseList = classDeclaration.BaseList != null
+                                ? classDeclaration.BaseList.WithTypes(SyntaxFactory.SeparatedList(
+                                    new[] {SyntaxFactory.SimpleBaseType(typeName)}.Concat(classDeclaration.BaseList.Types)))
+                                : SyntaxFactory.BaseList(
+                                    SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(SyntaxFactory.SimpleBaseType(typeName)));
+
                             classDeclaration = classDeclaration
-                                .WithBaseList(SyntaxFactory.BaseList(SyntaxFactory.SingletonSeparatedList<BaseTypeSyntax>(
-                                    SyntaxFactory.SimpleBaseType(typeName))));
+                                .WithBaseList(baseList);
 
                             addedInheritance = true;
                         }

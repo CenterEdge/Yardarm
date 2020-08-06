@@ -18,6 +18,8 @@ namespace Yardarm.Generation.Schema
 
         protected abstract NameKind NameKind { get; }
 
+        protected virtual string NamePrefix => "";
+
         protected SchemaGeneratorBase(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
         {
             SchemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
@@ -37,7 +39,7 @@ namespace Yardarm.Generation.Schema
                 var ns = Context.NamespaceProvider.GetSchemaNamespace(SchemaElement);
 
                 return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(Schema.Reference.Id)));
+                    SyntaxFactory.IdentifierName(NamePrefix + formatter.Format(Schema.Reference.Id)));
             }
 
             var parent = SchemaElement.Parents[0];
@@ -50,7 +52,7 @@ namespace Yardarm.Generation.Schema
             }
 
             return SyntaxFactory.QualifiedName((QualifiedNameSyntax) parentName,
-                SyntaxFactory.IdentifierName(Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(SchemaElement.Key + "Model")));
+                SyntaxFactory.IdentifierName(NamePrefix + Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(SchemaElement.Key + "Model")));
         }
 
         public virtual SyntaxTree? GenerateSyntaxTree()

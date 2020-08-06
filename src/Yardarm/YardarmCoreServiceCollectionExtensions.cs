@@ -19,7 +19,8 @@ namespace Yardarm
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddPropertyEnricher<RequiredPropertyEnricher>()
-                .AddPackageSpecEnricher<DependencyPackageSpecEnricher>();
+                .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
+                .AddSchemaClassEnricher<BaseTypeEnricher>();
 
             services.TryAddSingleton<IEnrichers, Enrichers>();
 

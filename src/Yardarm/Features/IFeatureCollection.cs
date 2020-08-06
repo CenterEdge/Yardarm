@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Yardarm
+namespace Yardarm.Features
 {
     public interface IFeatureCollection : IEnumerable<KeyValuePair<Type, object>>
     {

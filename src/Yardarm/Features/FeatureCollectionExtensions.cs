@@ -1,4 +1,4 @@
-﻿namespace Yardarm
+﻿namespace Yardarm.Features
 {
     public static class FeatureCollectionExtensions
     {

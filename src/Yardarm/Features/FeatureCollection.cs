@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Yardarm
+namespace Yardarm.Features
 {
     public class FeatureCollection : IFeatureCollection
     {

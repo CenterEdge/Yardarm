@@ -33,6 +33,7 @@ namespace Yardarm.Generation.Schema
                 "object" => GetObjectGenerator(element),
                 "string" => GetStringGenerator(element),
                 "number" => GetNumberGenerator(element),
+                "integer" => GetNumberGenerator(element),
                 "boolean" => GetBooleanGenerator(element),
                 "array" => GetArrayGenerator(element),
                 _ => NullSchemaGenerator.Instance
@@ -46,7 +47,7 @@ namespace Yardarm.Generation.Schema
             BooleanSchemaGenerator.Instance;
 
         protected virtual ISchemaGenerator GetNumberGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
-            NumberSchemaGenerator.Instance;
+            new NumberSchemaGenerator(element);
 
         protected virtual ISchemaGenerator GetObjectGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
             new ObjectSchemaGenerator(element, _context.Value);

@@ -440,14 +440,17 @@ components:
       properties:
         regularPoints:
           type: number
+          format: decimal
           description: Regular points usable for game plays or for POS payment.
           minimum: 0
         bonusPoints:
           type: number
+          format: decimal
           description: Bonus points only usable for game plays.
           minimum: 0
         redemptionTickets:
-          type: number
+          type: integer
+          format: int32
           description: >-
             Redemption tickets won playing games, usable a the redemption
             counter.
@@ -494,11 +497,11 @@ components:
         employeeName:
           type: string
         employeeNumber:
-          type: number
+          type: integer
         stationName:
           type: string
         stationNumber:
-          type: number
+          type: integer
     TransactionType:
       description: Type of the transaction.
       type: string

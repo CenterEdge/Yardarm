@@ -2,9 +2,9 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Yardarm.Generation.Schema
+namespace Yardarm.Generation
 {
-    public interface ISchemaGenerator
+    public interface ITypeGenerator
     {
         void Preprocess();
 

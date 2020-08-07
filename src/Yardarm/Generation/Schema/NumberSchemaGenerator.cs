@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Schema
 {
-    public class NumberSchemaGenerator : ISchemaGenerator
+    public class NumberSchemaGenerator : ITypeGenerator
     {
         private readonly LocatedOpenApiElement<OpenApiSchema> _schemaElement;
 

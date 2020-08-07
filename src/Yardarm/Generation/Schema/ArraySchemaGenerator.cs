@@ -8,7 +8,7 @@ using Yardarm.Helpers;
 
 namespace Yardarm.Generation.Schema
 {
-    public class ArraySchemaGenerator : ISchemaGenerator
+    public class ArraySchemaGenerator : ITypeGenerator
     {
         protected LocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
         protected GenerationContext Context { get; }

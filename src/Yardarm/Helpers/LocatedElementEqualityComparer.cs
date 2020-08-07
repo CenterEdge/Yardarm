@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Interfaces;
+using Yardarm.Generation;
 
-namespace Yardarm.Generation.Schema
+namespace Yardarm.Helpers
 {
-    public class SchemaEqualityComparer : IEqualityComparer<LocatedOpenApiElement<OpenApiSchema>>
+    internal class LocatedElementEqualityComparer<T> : IEqualityComparer<LocatedOpenApiElement<T>>
+        where T : IOpenApiSerializable
     {
-        public bool Equals(LocatedOpenApiElement<OpenApiSchema>? x, LocatedOpenApiElement<OpenApiSchema>? y)
+        public bool Equals(LocatedOpenApiElement<T>? x, LocatedOpenApiElement<T>? y)
         {
             if (x == null)
             {
@@ -18,15 +20,18 @@ namespace Yardarm.Generation.Schema
                 return false;
             }
 
-            if (x.Element.Reference != null)
+            if (x.Element is IOpenApiReferenceable referenceableX && y.Element is IOpenApiReferenceable referenceableY)
             {
-                if (y.Element.Reference == null)
+                if (referenceableX.Reference != null)
                 {
-                    // Can't be equal if one is a reference and the other is not
-                    return false;
-                }
+                    if (referenceableY.Reference == null)
+                    {
+                        // Can't be equal if one is a reference and the other is not
+                        return false;
+                    }
 
-                return x.Element.Reference.ReferenceV3 == y.Element.Reference.ReferenceV3;
+                    return referenceableX.Reference.ReferenceV3 == referenceableY.Reference.ReferenceV3;
+                }
             }
 
             // Neither are references, so compare the paths
@@ -39,11 +44,11 @@ namespace Yardarm.Generation.Schema
             return x.Parents.Count == 0 || Equals(x.Parents[0], y.Parents[0]);
         }
 
-        public int GetHashCode(LocatedOpenApiElement<OpenApiSchema> obj)
+        public int GetHashCode(LocatedOpenApiElement<T> obj)
         {
-            if (obj.Element.Reference != null)
+            if (obj.Element is IOpenApiReferenceable referenceable && referenceable.Reference != null)
             {
-                return obj.Element.Reference.ReferenceV3.GetHashCode();
+                return referenceable.Reference.ReferenceV3.GetHashCode();
             }
             else
             {

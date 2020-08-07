@@ -33,8 +33,9 @@ namespace Yardarm
                 .AddTransient<ISyntaxTreeGenerator, ResponseGenerator>()
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
-            services.TryAddSingleton<ISchemaGeneratorFactory, DefaultSchemaGeneratorFactory>();
-            services.TryAddSingleton<ISchemaGeneratorRegistry, SchemaGeneratorRegistry>();
+            services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
+            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
 
             services.TryAddSingleton<IRequestBodySchemaGenerator, RequestBodySchemaGenerator>();
             services.TryAddSingleton<IResponseSchemaGenerator, ResponseSchemaGenerator>();

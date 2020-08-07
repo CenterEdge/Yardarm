@@ -3,20 +3,19 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 using Yardarm.Generation.Api;
-using Yardarm.Generation.Schema;
 
 namespace Yardarm.Names
 {
     public class DefaultTypeNameGenerator : ITypeNameGenerator
     {
-        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<OpenApiSchema> _typeGeneratorRegistry;
         private readonly IRequestBodySchemaGenerator _requestBodySchemaGenerator;
         private readonly IResponseSchemaGenerator _responseSchemaGenerator;
 
-        public DefaultTypeNameGenerator(ISchemaGeneratorRegistry schemaGeneratorRegistry, IRequestBodySchemaGenerator requestBodySchemaGenerator,
+        public DefaultTypeNameGenerator(ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry, IRequestBodySchemaGenerator requestBodySchemaGenerator,
             IResponseSchemaGenerator responseSchemaGenerator)
         {
-            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
+            _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
             _requestBodySchemaGenerator = requestBodySchemaGenerator ?? throw new ArgumentNullException(nameof(requestBodySchemaGenerator));
             _responseSchemaGenerator = responseSchemaGenerator ?? throw new ArgumentNullException(nameof(responseSchemaGenerator));
         }
@@ -43,6 +42,6 @@ namespace Yardarm.Names
             _responseSchemaGenerator.GetTypeName(element);
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
-            _schemaGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).GetTypeName();
     }
 }

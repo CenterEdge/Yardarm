@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Yardarm.Generation.Schema
 {
-    public class StringSchemaGenerator : ISchemaGenerator
+    public class StringSchemaGenerator : ITypeGenerator
     {
         public static StringSchemaGenerator Instance { get; } = new StringSchemaGenerator();
 

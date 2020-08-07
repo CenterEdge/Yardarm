@@ -3,14 +3,14 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
-using Yardarm.Generation.Schema;
+using Yardarm.Helpers;
 
 namespace Yardarm.Features
 {
     public class SchemaBaseTypeFeature : ISchemaBaseTypeFeature
     {
         private readonly IDictionary<LocatedOpenApiElement<OpenApiSchema>, IList<BaseTypeSyntax>> _inheritance =
-            new Dictionary<LocatedOpenApiElement<OpenApiSchema>, IList<BaseTypeSyntax>>(new SchemaEqualityComparer());
+            new Dictionary<LocatedOpenApiElement<OpenApiSchema>, IList<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiSchema>());
 
         public void AddBaseType(LocatedOpenApiElement<OpenApiSchema> schema, BaseTypeSyntax type)
         {

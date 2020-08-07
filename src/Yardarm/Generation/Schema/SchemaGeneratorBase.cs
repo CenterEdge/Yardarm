@@ -9,7 +9,7 @@ using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
 {
-    public abstract class SchemaGeneratorBase : ISchemaGenerator
+    public abstract class SchemaGeneratorBase : ITypeGenerator
     {
         protected LocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
         protected GenerationContext Context { get; }

@@ -64,7 +64,7 @@ namespace Yardarm.Generation.Api
         public SyntaxTree? GenerateSyntaxTree(LocatedOpenApiElement<OpenApiResponse> element) =>
             GetSchemaGenerator(element)?.GenerateSyntaxTree();
 
-        private ISchemaGenerator? GetSchemaGenerator(LocatedOpenApiElement<OpenApiResponse> element)
+        private ITypeGenerator? GetSchemaGenerator(LocatedOpenApiElement<OpenApiResponse> element)
         {
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)

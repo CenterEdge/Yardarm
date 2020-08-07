@@ -16,7 +16,7 @@ namespace Yardarm.Generation
         private readonly Lazy<INamespaceProvider> _namespaceProvider;
         private readonly Lazy<ITypeNameGenerator> _typeNameGenerator;
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
-        private readonly Lazy<ISchemaGeneratorRegistry> _schemaGeneratorRegistry;
+        private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
         private readonly Lazy<IEnrichers> _enrichers;
 
         public FeatureCollection Features { get; } = new FeatureCollection();
@@ -25,7 +25,7 @@ namespace Yardarm.Generation
         public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
         public ITypeNameGenerator TypeNameGenerator => _typeNameGenerator.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
-        public ISchemaGeneratorRegistry SchemaGeneratorRegistry => _schemaGeneratorRegistry.Value;
+        public ITypeGeneratorRegistry SchemaGeneratorRegistry => _typeGeneratorRegistry.Value;
         public IEnrichers Enrichers => _enrichers.Value;
 
         public GenerationContext(IServiceProvider serviceProvider)
@@ -37,8 +37,8 @@ namespace Yardarm.Generation
             _typeNameGenerator = new Lazy<ITypeNameGenerator>(serviceProvider.GetRequiredService<ITypeNameGenerator>);
             _nameFormatterSelector =
                 new Lazy<INameFormatterSelector>(serviceProvider.GetRequiredService<INameFormatterSelector>);
-            _schemaGeneratorRegistry =
-                new Lazy<ISchemaGeneratorRegistry>(serviceProvider.GetRequiredService<ISchemaGeneratorRegistry>);
+            _typeGeneratorRegistry =
+                new Lazy<ITypeGeneratorRegistry>(serviceProvider.GetRequiredService<ITypeGeneratorRegistry>);
             _enrichers = new Lazy<IEnrichers>(serviceProvider.GetRequiredService<IEnrichers>);
         }
     }

@@ -53,7 +53,7 @@ namespace Yardarm.Generation.Schema
             {
                 // This isn't a reference, so we must generate the child schema
 
-                ISchemaGenerator generator = Context.SchemaGeneratorRegistry.Get(property);
+                ITypeGenerator generator = Context.SchemaGeneratorRegistry.Get(property);
 
                 foreach (MemberDeclarationSyntax child in generator.Generate())
                 {

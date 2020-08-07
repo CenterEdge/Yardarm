@@ -18,6 +18,7 @@ namespace Yardarm
             // Enrichers
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
+                .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
                 .AddPropertyEnricher<RequiredPropertyEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
                 .AddSchemaClassEnricher<BaseTypeEnricher>();

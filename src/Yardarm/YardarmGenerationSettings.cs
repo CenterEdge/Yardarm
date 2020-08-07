@@ -16,6 +16,8 @@ namespace Yardarm
 
         public string AssemblyName { get; set; } = "Yardarm.Sdk";
         public string RootNamespace { get; set; } = "Yardarm.Sdk";
+        public Version Version { get; set; } = new Version(1, 0, 0);
+        public string? VersionSuffix { get; set; }
 
         public Stream DllOutput
         {

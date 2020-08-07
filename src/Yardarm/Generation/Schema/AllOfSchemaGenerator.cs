@@ -45,7 +45,7 @@ namespace Yardarm.Generation.Schema
                         }
                         else
                         {
-                            classDeclaration = AddProperties(classDeclaration, SchemaElement, section.Properties);
+                            classDeclaration = AddProperties(classDeclaration, Element, section.Properties);
                         }
                     }
 

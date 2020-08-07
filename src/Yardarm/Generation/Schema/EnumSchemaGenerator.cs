@@ -32,11 +32,11 @@ namespace Yardarm.Generation.Schema
             EnumDeclarationSyntax declaration = SyntaxFactory.EnumDeclaration(enumName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(Schema.Enum
-                    .Select(p => CreateEnumMember(SchemaElement, p, memberNameFormatter)!)
+                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter)!)
                     .Where(p => p != null)
                     .ToArray());
 
-            yield return declaration.Enrich(Context.Enrichers.EnumEnrichers, SchemaElement);
+            yield return declaration.Enrich(Context.Enrichers.EnumEnrichers, Element);
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(

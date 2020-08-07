@@ -44,7 +44,7 @@ namespace Yardarm.Generation.Api
                         (path, operation) =>
                             path.CreateChild(operation.Value, operation.Key.ToString()))
                     .Where(p => p.Element.RequestBody != null)
-                    .Select(p => p.CreateChild(p.Element.RequestBody, p.Key)));
+                    .Select(p => p.CreateChild(p.Element.RequestBody, "Body")));
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _requestBodyGeneratorRegistry.Get(requestBody).Preprocess();

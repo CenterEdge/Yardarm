@@ -31,9 +31,14 @@ namespace Yardarm.Generation.Api
         public virtual TypeSyntax GetTypeName()
         {
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
-            if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
+            if (mediaType == null)
             {
                 throw new InvalidOperationException("No valid media type for this request");
+            }
+            else if (mediaType?.Element.Schema?.Type != "object" || mediaType?.Element.Schema.Reference != null)
+            {
+                var schemaElement = mediaType!.CreateChild(mediaType.Element.Schema!, "");
+                return Context.SchemaGeneratorRegistry.Get(schemaElement).GetTypeName();
             }
 
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);

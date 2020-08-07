@@ -1,20 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Names;
 
-namespace Yardarm.Generation.Schema
+namespace Yardarm.Generation.Api
 {
-    internal class ObjectSchemaGenerator : SchemaGeneratorBase
+    public class OperationTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
-        protected override NameKind NameKind => NameKind.Class;
+        protected IMediaTypeSelector MediaTypeSelector { get; }
 
-        public ObjectSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        protected OpenApiOperation Operation => Element.Element;
+
+        public OperationTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
+            GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+            : base(operationElement, context)
         {
+            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
+        }
+
+        public override TypeSyntax GetTypeName()
+        {
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            NameSyntax ns = Context.NamespaceProvider.GetRequestNamespace(Element);
+
+            return SyntaxFactory.QualifiedName(ns,
+                SyntaxFactory.IdentifierName(formatter.Format(Operation.OperationId + "Request")));
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
@@ -29,40 +43,32 @@ namespace Yardarm.Generation.Schema
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()));
 
-            declaration = AddProperties(declaration, Element, Schema.Properties);
+            declaration = AddProperties(declaration, Element, Operation.Parameters);
 
-            yield return declaration.Enrich(Context.Enrichers.ClassEnrichers, Element);
+            if (Operation.RequestBody != null)
+            {
+                var requestBodyElement = Element.CreateChild(Operation.RequestBody, "Body");
+                if (MediaTypeSelector.Select(requestBodyElement)?.Element.Schema != null)
+                {
+                    declaration = declaration.AddMembers(
+                        CreatePropertyDeclaration(requestBodyElement, className));
+                }
+            }
+
+            yield return declaration;
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
-            LocatedOpenApiElement<OpenApiSchema> parent, IEnumerable<KeyValuePair<string, OpenApiSchema>> properties)
+            LocatedOpenApiElement<OpenApiOperation> parent, IEnumerable<OpenApiParameter> properties)
         {
             MemberDeclarationSyntax[] members = properties
-                .SelectMany(p => DeclareProperty(parent.CreateChild(p.Value, p.Key), declaration.Identifier.ValueText))
+                .Select(p => CreatePropertyDeclaration(parent.CreateChild(p.Schema, p.Name), declaration.Identifier.ValueText))
                 .ToArray();
 
             return declaration.AddMembers(members);
         }
 
-        protected virtual IEnumerable<MemberDeclarationSyntax> DeclareProperty(
-            LocatedOpenApiElement<OpenApiSchema> property, string ownerName)
-        {
-            yield return CreatePropertyDeclaration(property, ownerName);
-
-            if (property.Element.Reference == null)
-            {
-                // This isn't a reference, so we must generate the child schema
-
-                ITypeGenerator generator = Context.SchemaGeneratorRegistry.Get(property);
-
-                foreach (MemberDeclarationSyntax child in generator.Generate())
-                {
-                    yield return child;
-                }
-            }
-        }
-
-        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement<OpenApiSchema> property, string ownerName)
+        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement property, string ownerName)
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
 
@@ -82,7 +88,7 @@ namespace Yardarm.Generation.Schema
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-            return propertyDeclaration.Enrich(Context.Enrichers.PropertyEnrichers, property);
+            return propertyDeclaration;
         }
     }
 }

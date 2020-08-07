@@ -40,7 +40,7 @@ namespace Yardarm.Generation.Api
             }
 
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
-            NameSyntax ns = Context.NamespaceProvider.GetResponseNamespace(ResponseElement);
+            NameSyntax ns = Context.NamespaceProvider.GetNamespace(ResponseElement);
 
             if (Response.Reference != null)
             {

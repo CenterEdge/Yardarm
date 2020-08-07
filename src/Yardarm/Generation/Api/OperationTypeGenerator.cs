@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Api
         public override TypeSyntax GetTypeName()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
-            NameSyntax ns = Context.NamespaceProvider.GetRequestNamespace(Element);
+            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
             return SyntaxFactory.QualifiedName(ns,
                 SyntaxFactory.IdentifierName(formatter.Format(Operation.OperationId + "Request")));

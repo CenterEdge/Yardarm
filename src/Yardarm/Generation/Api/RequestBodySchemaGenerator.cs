@@ -1,36 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Generation.Schema;
 using Yardarm.Names;
 
 namespace Yardarm.Generation.Api
 {
-    internal class RequestBodySchemaGenerator : IRequestBodySchemaGenerator
+    public class RequestBodySchemaGenerator : IRequestBodySchemaGenerator
     {
-        private readonly INamespaceProvider _namespaceProvider;
-        private readonly INameFormatterSelector _nameFormatterSelector;
-        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
-        private readonly IMediaTypeSelector _mediaTypeSelector;
+        protected GenerationContext Context { get; }
+        protected IMediaTypeSelector MediaTypeSelector { get; }
 
-        protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
-        protected IList<IPropertyEnricher> PropertyEnrichers { get; }
-
-        public RequestBodySchemaGenerator(INamespaceProvider namespaceProvider, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorRegistry schemaGeneratorRegistry, IMediaTypeSelector mediaTypeSelector,
-            IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
+        public RequestBodySchemaGenerator(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
         {
-            _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
-            _nameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
-            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
-            _mediaTypeSelector = mediaTypeSelector;
-            ClassEnrichers = classEnrichers.ToArray();
-            PropertyEnrichers = propertyEnrichers.ToArray();
+            Context = context;
+            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
         public virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> element) =>
@@ -39,14 +26,14 @@ namespace Yardarm.Generation.Api
         public virtual TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiRequestBody> element)
         {
             OpenApiRequestBody requestBody = element.Element;
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
+            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
                 throw new InvalidOperationException("No valid media type for this request");
             }
 
-            INameFormatter formatter = _nameFormatterSelector.GetFormatter(NameKind.Class);
-            NameSyntax ns = _namespaceProvider.GetRequestBodyNamespace(element);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            NameSyntax ns = Context.NamespaceProvider.GetRequestBodyNamespace(element);
 
             if (requestBody.Reference != null)
             {
@@ -71,14 +58,14 @@ namespace Yardarm.Generation.Api
 
         private ISchemaGenerator? GetSchemaGenerator(LocatedOpenApiElement<OpenApiRequestBody> element)
         {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
+            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
                 return null;
             }
 
             var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
-            return _schemaGeneratorRegistry.Get(schemaElement);
+            return Context.SchemaGeneratorRegistry.Get(schemaElement);
         }
     }
 }

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Generation.Schema;
 using Yardarm.Names;
 
@@ -14,27 +12,16 @@ namespace Yardarm.Generation.Api
 {
     internal class ResponseSchemaGenerator : IResponseSchemaGenerator
     {
-        private readonly INamespaceProvider _namespaceProvider;
-        private readonly INameFormatterSelector _nameFormatterSelector;
-        private readonly ISchemaGeneratorRegistry _schemaGeneratorRegistry;
-        private readonly IMediaTypeSelector _mediaTypeSelector;
-        private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
+        protected GenerationContext Context { get; }
+        protected IMediaTypeSelector MediaTypeSelector { get; }
+        protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
 
-        protected IList<ISchemaClassEnricher> ClassEnrichers { get; }
-        protected IList<IPropertyEnricher> PropertyEnrichers { get; }
-
-        public ResponseSchemaGenerator(INamespaceProvider namespaceProvider, INameFormatterSelector nameFormatterSelector,
-            ISchemaGeneratorRegistry schemaGeneratorRegistry, IMediaTypeSelector mediaTypeSelector,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
-            IEnumerable<ISchemaClassEnricher> classEnrichers, IEnumerable<IPropertyEnricher> propertyEnrichers)
+        public ResponseSchemaGenerator(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
+            IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
         {
-            _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
-            _nameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
-            _schemaGeneratorRegistry = schemaGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaGeneratorRegistry));
-            _mediaTypeSelector = mediaTypeSelector;
-            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
-            ClassEnrichers = classEnrichers.ToArray();
-            PropertyEnrichers = propertyEnrichers.ToArray();
+            Context = context;
+            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
+            HttpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
         }
 
         public virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> element) =>
@@ -43,14 +30,14 @@ namespace Yardarm.Generation.Api
         public virtual TypeSyntax GetTypeName(LocatedOpenApiElement<OpenApiResponse> element)
         {
             OpenApiResponse response = element.Element;
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
+            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
                 throw new InvalidOperationException("No valid media type for this request");
             }
 
-            INameFormatter formatter = _nameFormatterSelector.GetFormatter(NameKind.Class);
-            NameSyntax ns = _namespaceProvider.GetResponseNamespace(element);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            NameSyntax ns = Context.NamespaceProvider.GetResponseNamespace(element);
 
             if (response.Reference != null)
             {
@@ -66,7 +53,7 @@ namespace Yardarm.Generation.Api
                 var operation = element.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
 
                 var responseCode = Enum.TryParse<HttpStatusCode>(element.Key, out var statusCode)
-                    ? _httpResponseCodeNameProvider.GetName(statusCode)
+                    ? HttpResponseCodeNameProvider.GetName(statusCode)
                     : element.Key;
 
                 return SyntaxFactory.QualifiedName(ns,
@@ -79,14 +66,14 @@ namespace Yardarm.Generation.Api
 
         private ISchemaGenerator? GetSchemaGenerator(LocatedOpenApiElement<OpenApiResponse> element)
         {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(element);
+            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(element);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
                 return null;
             }
 
             var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
-            return _schemaGeneratorRegistry.Get(schemaElement);
+            return Context.SchemaGeneratorRegistry.Get(schemaElement);
         }
     }
 }

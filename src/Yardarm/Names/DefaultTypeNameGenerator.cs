@@ -8,16 +8,11 @@ namespace Yardarm.Names
 {
     public class DefaultTypeNameGenerator : ITypeNameGenerator
     {
-        private readonly ITypeGeneratorRegistry<OpenApiSchema> _typeGeneratorRegistry;
-        private readonly IRequestBodySchemaGenerator _requestBodySchemaGenerator;
-        private readonly IResponseSchemaGenerator _responseSchemaGenerator;
+        private readonly ITypeGeneratorRegistry _typeGeneratorRegistry;
 
-        public DefaultTypeNameGenerator(ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry, IRequestBodySchemaGenerator requestBodySchemaGenerator,
-            IResponseSchemaGenerator responseSchemaGenerator)
+        public DefaultTypeNameGenerator(ITypeGeneratorRegistry typeGeneratorRegistry)
         {
             _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
-            _requestBodySchemaGenerator = requestBodySchemaGenerator ?? throw new ArgumentNullException(nameof(requestBodySchemaGenerator));
-            _responseSchemaGenerator = responseSchemaGenerator ?? throw new ArgumentNullException(nameof(responseSchemaGenerator));
         }
 
         public TypeSyntax GetName(LocatedOpenApiElement element)
@@ -36,10 +31,10 @@ namespace Yardarm.Names
             };
 
         protected virtual TypeSyntax GetRequestBodyName(LocatedOpenApiElement<OpenApiRequestBody> element) =>
-            _requestBodySchemaGenerator.GetTypeName(element);
+            _typeGeneratorRegistry.Get(element).GetTypeName();
 
         protected virtual TypeSyntax GetResponseName(LocatedOpenApiElement<OpenApiResponse> element) =>
-            _responseSchemaGenerator.GetTypeName(element);
+            _typeGeneratorRegistry.Get(element).GetTypeName();
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
             _typeGeneratorRegistry.Get(element).GetTypeName();

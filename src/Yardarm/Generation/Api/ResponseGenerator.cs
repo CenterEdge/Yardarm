@@ -9,12 +9,12 @@ namespace Yardarm.Generation.Api
     public class ResponseGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly IResponseSchemaGenerator _responseSchemaGenerator;
+        private readonly ITypeGeneratorRegistry<OpenApiResponse> _responseGeneratorRegistry;
 
-        public ResponseGenerator(OpenApiDocument document, IResponseSchemaGenerator responseSchemaGenerator)
+        public ResponseGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiResponse> responseGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
-            _responseSchemaGenerator = responseSchemaGenerator ?? throw new ArgumentNullException(nameof(responseSchemaGenerator));
+            _responseGeneratorRegistry = responseGeneratorRegistry ?? throw new ArgumentNullException(nameof(responseGeneratorRegistry));
         }
 
         public void Preprocess()
@@ -47,9 +47,9 @@ namespace Yardarm.Generation.Api
                         (operation, response) => operation.CreateChild(response.Value, response.Key)));
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
-            _responseSchemaGenerator.Preprocess(requestBody);
+            _responseGeneratorRegistry.Get(requestBody).Preprocess();
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
-            _responseSchemaGenerator.GenerateSyntaxTree(requestBody);
+            _responseGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
     }
 }

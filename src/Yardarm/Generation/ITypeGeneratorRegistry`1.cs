@@ -5,6 +5,6 @@ namespace Yardarm.Generation
     public interface ITypeGeneratorRegistry<TElement>
         where TElement : IOpenApiSerializable
     {
-        public ITypeGenerator Get(LocatedOpenApiElement<TElement> schemaElement);
+        public ITypeGenerator Get(LocatedOpenApiElement<TElement> element);
     }
 }

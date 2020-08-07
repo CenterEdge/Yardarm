@@ -9,12 +9,12 @@ namespace Yardarm.Generation.Api
     public class RequestBodyGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly IRequestBodySchemaGenerator _requestBodySchemaGenerator;
+        private readonly ITypeGeneratorRegistry<OpenApiRequestBody> _requestBodyGeneratorRegistry;
 
-        public RequestBodyGenerator(OpenApiDocument document, IRequestBodySchemaGenerator requestBodySchemaGenerator)
+        public RequestBodyGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiRequestBody> requestBodyGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
-            _requestBodySchemaGenerator = requestBodySchemaGenerator ?? throw new ArgumentNullException(nameof(requestBodySchemaGenerator));
+            _requestBodyGeneratorRegistry = requestBodyGeneratorRegistry ?? throw new ArgumentNullException(nameof(requestBodyGeneratorRegistry));
         }
 
         public void Preprocess()
@@ -47,9 +47,9 @@ namespace Yardarm.Generation.Api
                     .Select(p => p.CreateChild(p.Element.RequestBody, p.Key)));
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            _requestBodySchemaGenerator.Preprocess(requestBody);
+            _requestBodyGeneratorRegistry.Get(requestBody).Preprocess();
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            _requestBodySchemaGenerator.GenerateSyntaxTree(requestBody);
+            _requestBodyGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
     }
 }

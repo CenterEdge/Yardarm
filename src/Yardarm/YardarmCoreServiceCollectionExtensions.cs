@@ -37,8 +37,8 @@ namespace Yardarm
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
 
-            services.TryAddSingleton<IRequestBodySchemaGenerator, RequestBodySchemaGenerator>();
-            services.TryAddSingleton<IResponseSchemaGenerator, ResponseSchemaGenerator>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, DefaultRequestBodyGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, DefaultResponseGeneratorFactory>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();

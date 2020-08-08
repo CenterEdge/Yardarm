@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
+using Yardarm.Packaging;
 
 namespace Yardarm
 {
@@ -49,11 +51,44 @@ namespace Yardarm
                 .AddReferences(references.Distinct())
                 .AddSyntaxTrees(syntaxTrees);
 
-            return compilation.Emit(settings.DllOutput,
+            var compilationResult = compilation.Emit(settings.DllOutput,
                 pdbStream: settings.PdbOutput,
                 options: new EmitOptions()
                     .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
                     .WithHighEntropyVirtualAddressSpace(true));
+
+            if (!compilationResult.Success)
+            {
+                return compilationResult;
+            }
+
+            if (settings.NuGetOutput != null)
+            {
+                PackNuGet(serviceProvider, settings);
+            }
+
+            return compilationResult;
+        }
+
+        private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)
+        {
+            if (!settings.DllOutput.CanRead || !settings.DllOutput.CanSeek)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(YardarmGenerationSettings.DllOutput)} must be seekable and readable to pack a NuGet package.");
+            }
+            if (!settings.PdbOutput.CanRead || !settings.PdbOutput.CanSeek)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet package.");
+            }
+
+            settings.DllOutput.Seek(0, SeekOrigin.Begin);
+            settings.PdbOutput.Seek(0, SeekOrigin.Begin);
+
+            var packer = serviceProvider.GetRequiredService<NuGetPacker>();
+
+            packer.Pack(settings.DllOutput, settings.PdbOutput, settings.NuGetOutput);
         }
     }
 }

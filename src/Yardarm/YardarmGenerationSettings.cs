@@ -13,11 +13,13 @@ namespace Yardarm
     public class YardarmGenerationSettings
     {
         private Stream? _dllOutput;
+        private Stream? _pdbOutput;
 
         public string AssemblyName { get; set; } = "Yardarm.Sdk";
         public string RootNamespace { get; set; } = "Yardarm.Sdk";
         public Version Version { get; set; } = new Version(1, 0, 0);
         public string? VersionSuffix { get; set; }
+        public string Author { get; set; } = "anonymous";
 
         public Stream DllOutput
         {
@@ -25,7 +27,13 @@ namespace Yardarm
             set => _dllOutput = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public Stream? PdbOutput { get; set; }
+        public Stream PdbOutput
+        {
+            get => _pdbOutput ??= new MemoryStream();
+            set => _pdbOutput = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public Stream? NuGetOutput { get; set; }
 
         public List<Func<IServiceCollection, IServiceCollection>> Extensions { get; } =
             new List<Func<IServiceCollection, IServiceCollection>>();

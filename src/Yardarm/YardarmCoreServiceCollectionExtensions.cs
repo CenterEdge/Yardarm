@@ -8,6 +8,7 @@ using Yardarm.Generation.Api;
 using Yardarm.Generation.Internal;
 using Yardarm.Generation.Schema;
 using Yardarm.Names;
+using Yardarm.Packaging;
 
 namespace Yardarm
 {
@@ -60,7 +61,8 @@ namespace Yardarm
                 .AddLogging()
                 .AddSingleton<GenerationContext>()
                 .AddSingleton(settings)
-                .AddSingleton(document);
+                .AddSingleton(document)
+                .AddTransient<NuGetPacker>();
 
             return services;
         }
@@ -76,6 +78,10 @@ namespace Yardarm
         public static IServiceCollection AddEnumMemberEnricher<T>(this IServiceCollection services)
             where T : class, IEnumMemberEnricher =>
             services.AddTransient<IEnumMemberEnricher, T>();
+
+        public static IServiceCollection AddNuGetPackageEnricher<T>(this IServiceCollection services)
+            where T : class, INuGetPackageEnricher =>
+            services.AddTransient<INuGetPackageEnricher, T>();
 
         public static IServiceCollection AddSchemaClassEnricher<T>(this IServiceCollection services)
             where T : class, ISchemaClassEnricher =>

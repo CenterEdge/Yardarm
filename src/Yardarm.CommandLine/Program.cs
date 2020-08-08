@@ -22,13 +22,16 @@ namespace Yardarm.CommandLine
 
             var generator = new YardarmGenerator();
 
-            await using var dllStream = File.OpenWrite("test.dll");
-            await using var pdbStream = File.OpenWrite("test.pdb");
+            await using var dllStream = File.Create("test2.dll");
+            await using var pdbStream = File.Create("test2.pdb");
+            // await using var nugetStream = File.Create("test.nupkg");
 
             var settings = new YardarmGenerationSettings("Test")
             {
                 DllOutput = dllStream,
                 PdbOutput = pdbStream,
+                // NuGetOutput = nugetStream,
+                VersionSuffix = "-beta001"
             }
                 .AddExtension(services => services.AddLogging(builder =>
                 {

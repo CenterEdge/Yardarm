@@ -8,6 +8,7 @@
             NameKind.Property => PascalCaseNameFormatter.Instance,
             NameKind.Enum => PascalCaseNameFormatter.Instance,
             NameKind.EnumMember => PascalCaseNameFormatter.Instance,
+            NameKind.Interface => PascalCaseNameFormatter.InterfacePrefix,
             _ => PascalCaseNameFormatter.Instance
         };
     }

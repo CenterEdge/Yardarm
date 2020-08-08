@@ -1,10 +1,24 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace Yardarm.Names
 {
     public class PascalCaseNameFormatter : INameFormatter
     {
         public static PascalCaseNameFormatter Instance { get; } = new PascalCaseNameFormatter();
+
+        public static PascalCaseNameFormatter InterfacePrefix { get; } = new PascalCaseNameFormatter("I");
+
+        public string Prefix { get; }
+
+        public PascalCaseNameFormatter() : this("")
+        {
+        }
+
+        public PascalCaseNameFormatter(string prefix)
+        {
+            Prefix = prefix ?? throw new ArgumentNullException(nameof(prefix));
+        }
 
         public virtual string Format(string name)
         {
@@ -13,7 +27,7 @@ namespace Yardarm.Names
                 return name;
             }
 
-            var builder = new StringBuilder(name.Length);
+            var builder = new StringBuilder(Prefix, Prefix.Length + name.Length);
 
             bool nextCapital = true;
             foreach (char ch in name)

@@ -6,5 +6,6 @@
         Property,
         Enum,
         EnumMember,
+        Interface
     }
 }

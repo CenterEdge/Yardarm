@@ -29,6 +29,7 @@ namespace Yardarm.Names
                 LocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
                 LocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
                 LocatedOpenApiElement<OpenApiSchema> schema => GetSchemaNamespace(schema),
+                LocatedOpenApiElement<OpenApiTag> tag => GetTagNamespace(tag),
                 _ => throw new InvalidOperationException($"Element type {element.Element.GetType()} doesn't have a namespace.")
             };
 
@@ -43,5 +44,8 @@ namespace Yardarm.Names
 
         protected virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
+
+        protected virtual NameSyntax GetTagNamespace(LocatedOpenApiElement<OpenApiTag> schema) =>
+            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Api"));
     }
 }

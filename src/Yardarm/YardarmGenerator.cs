@@ -88,7 +88,7 @@ namespace Yardarm
 
             var packer = serviceProvider.GetRequiredService<NuGetPacker>();
 
-            packer.Pack(settings.DllOutput, settings.PdbOutput, settings.NuGetOutput);
+            packer.Pack(settings.DllOutput, settings.PdbOutput, settings.NuGetOutput!);
         }
     }
 }

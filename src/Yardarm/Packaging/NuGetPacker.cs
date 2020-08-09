@@ -30,7 +30,7 @@ namespace Yardarm.Packaging
             _packageEnrichers = packageEnrichers.ToArray();
         }
 
-        public void Pack(Stream dllStream, Stream pdbStream, Stream nugetStream)
+        public void Pack(Stream dllStream, Stream pdbStream, Stream xmlDocumentationStream, Stream nugetStream)
         {
             var builder = new PackageBuilder
             {
@@ -44,7 +44,8 @@ namespace Yardarm.Packaging
                 Files =
                 {
                     new StreamPackageFile(dllStream, $"lib/netstandard2.0/{_settings.AssemblyName}.dll"),
-                    new StreamPackageFile(pdbStream, $"lib/netstandard2.0/{_settings.AssemblyName}.pdb")
+                    new StreamPackageFile(pdbStream, $"lib/netstandard2.0/{_settings.AssemblyName}.pdb"),
+                    new StreamPackageFile(xmlDocumentationStream, $"lib/netstandard2.0/{_settings.AssemblyName}.xml")
                 },
                 DependencyGroups =
                 {

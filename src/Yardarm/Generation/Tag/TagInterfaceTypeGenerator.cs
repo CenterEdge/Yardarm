@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment;
 using Yardarm.Helpers;
 using Yardarm.Names;
 
@@ -41,12 +42,14 @@ namespace Yardarm.Generation.Tag
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);
 
-            yield return SyntaxFactory.MethodDeclaration(responseType, methodName)
+            var methodDeclaration = SyntaxFactory.MethodDeclaration(responseType, methodName)
                 .AddParameterListParameters(
                     SyntaxFactory.Parameter(SyntaxFactory.Identifier("request"))
                         .WithType(requestType),
                     SyntaxHelpers.DefaultedCancellationTokenParameter())
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+
+            yield return methodDeclaration.Enrich(Context.Enrichers.OperationMethodEnrichers, operation);
         }
 
         private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Tag.Name);

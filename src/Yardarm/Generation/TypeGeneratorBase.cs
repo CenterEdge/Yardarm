@@ -38,11 +38,12 @@ namespace Yardarm.Generation
 
             NameSyntax ns = classNameAndNamespace.Left;
 
-            return CSharpSyntaxTree.Create(SyntaxFactory.CompilationUnit()
+            var compilationUnit = SyntaxFactory.CompilationUnit()
                 .AddMembers(
                     SyntaxFactory.NamespaceDeclaration(ns)
-                        .AddMembers(members))
-                .NormalizeWhitespace());
+                        .AddMembers(members));
+
+            return CSharpSyntaxTree.Create(compilationUnit);
         }
 
         public abstract IEnumerable<MemberDeclarationSyntax> Generate();

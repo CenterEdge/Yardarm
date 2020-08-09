@@ -14,6 +14,7 @@ namespace Yardarm
     {
         private Stream? _dllOutput;
         private Stream? _pdbOutput;
+        private Stream? _xmlDocumentationOutput;
 
         public string AssemblyName { get; set; } = "Yardarm.Sdk";
         public string RootNamespace { get; set; } = "Yardarm.Sdk";
@@ -31,6 +32,12 @@ namespace Yardarm
         {
             get => _pdbOutput ??= new MemoryStream();
             set => _pdbOutput = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        public Stream XmlDocumentationOutput
+        {
+            get => _xmlDocumentationOutput ??= new MemoryStream();
+            set => _xmlDocumentationOutput = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         public Stream? NuGetOutput { get; set; }

@@ -53,6 +53,7 @@ namespace Yardarm
 
             var compilationResult = compilation.Emit(settings.DllOutput,
                 pdbStream: settings.PdbOutput,
+                xmlDocumentationStream: settings.XmlDocumentationOutput,
                 options: new EmitOptions()
                     .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
                     .WithHighEntropyVirtualAddressSpace(true));
@@ -82,13 +83,19 @@ namespace Yardarm
                 throw new InvalidOperationException(
                     $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet package.");
             }
+            if (!settings.XmlDocumentationOutput.CanRead || !settings.XmlDocumentationOutput.CanSeek)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(YardarmGenerationSettings.XmlDocumentationOutput)} must be seekable and readable to pack a NuGet package.");
+            }
 
             settings.DllOutput.Seek(0, SeekOrigin.Begin);
             settings.PdbOutput.Seek(0, SeekOrigin.Begin);
+            settings.XmlDocumentationOutput.Seek(0, SeekOrigin.Begin);
 
             var packer = serviceProvider.GetRequiredService<NuGetPacker>();
 
-            packer.Pack(settings.DllOutput, settings.PdbOutput, settings.NuGetOutput!);
+            packer.Pack(settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput, settings.NuGetOutput!);
         }
     }
 }

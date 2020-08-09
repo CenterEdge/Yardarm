@@ -24,12 +24,14 @@ namespace Yardarm.CommandLine
 
             await using var dllStream = File.Create("test2.dll");
             await using var pdbStream = File.Create("test2.pdb");
+            await using var xmlDocumentationStream = File.Create("test2.xml");
             // await using var nugetStream = File.Create("test.nupkg");
 
             var settings = new YardarmGenerationSettings("Test")
             {
                 DllOutput = dllStream,
                 PdbOutput = pdbStream,
+                XmlDocumentationOutput = xmlDocumentationStream,
                 // NuGetOutput = nugetStream,
                 VersionSuffix = "-beta001"
             }

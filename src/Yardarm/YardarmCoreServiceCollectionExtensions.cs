@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -21,7 +22,9 @@ namespace Yardarm
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
+                .AddOperationMethodEnricher<OperationMethodDocumentationEnricher>()
                 .AddPropertyEnricher<RequiredPropertyEnricher>()
+                .AddPropertyEnricher<DocumentationPropertyEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
                 .AddSchemaClassEnricher<BaseTypeEnricher>();
 
@@ -85,6 +88,10 @@ namespace Yardarm
         public static IServiceCollection AddNuGetPackageEnricher<T>(this IServiceCollection services)
             where T : class, INuGetPackageEnricher =>
             services.AddTransient<INuGetPackageEnricher, T>();
+
+        public static IServiceCollection AddOperationMethodEnricher<T>(this IServiceCollection services)
+            where T : class, IOperationMethodEnricher =>
+            services.AddTransient<IOperationMethodEnricher, T>();
 
         public static IServiceCollection AddSchemaClassEnricher<T>(this IServiceCollection services)
             where T : class, ISchemaClassEnricher =>

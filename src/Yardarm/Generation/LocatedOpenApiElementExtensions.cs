@@ -31,5 +31,11 @@ namespace Yardarm.Generation
             operations
                 .SelectMany(p => p.Element.Responses,
                     (operation, response) => operation.CreateChild(response.Value, response.Key));
+
+        public static IEnumerable<LocatedOpenApiElement<OpenApiTag>> GetTags(
+            this IEnumerable<LocatedOpenApiElement<OpenApiOperation>> operations) =>
+            operations
+                .SelectMany(p => p.Element.Tags,
+                    (operation, tag) => operation.CreateChild(tag, ""));
     }
 }

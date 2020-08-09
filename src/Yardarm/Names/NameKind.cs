@@ -6,6 +6,9 @@
         Property,
         Enum,
         EnumMember,
-        Interface
+        Interface,
+        Namespace,
+        Method,
+        AsyncMethod
     }
 }

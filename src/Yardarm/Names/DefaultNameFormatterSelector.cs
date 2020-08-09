@@ -9,6 +9,9 @@
             NameKind.Enum => PascalCaseNameFormatter.Instance,
             NameKind.EnumMember => PascalCaseNameFormatter.Instance,
             NameKind.Interface => PascalCaseNameFormatter.InterfacePrefix,
+            NameKind.Namespace => PascalCaseNameFormatter.Instance,
+            NameKind.Method => PascalCaseNameFormatter.Instance,
+            NameKind.AsyncMethod => PascalCaseNameFormatter.AsyncSuffix,
             _ => PascalCaseNameFormatter.Instance
         };
     }

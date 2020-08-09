@@ -7,17 +7,22 @@ namespace Yardarm.Names
     {
         public static PascalCaseNameFormatter Instance { get; } = new PascalCaseNameFormatter();
 
-        public static PascalCaseNameFormatter InterfacePrefix { get; } = new PascalCaseNameFormatter("I");
+        public static PascalCaseNameFormatter InterfacePrefix { get; } = new PascalCaseNameFormatter("I", "");
+
+        public static PascalCaseNameFormatter AsyncSuffix { get; } = new PascalCaseNameFormatter("", "Async");
 
         public string Prefix { get; }
 
-        public PascalCaseNameFormatter() : this("")
+        public string Suffix { get; }
+
+        public PascalCaseNameFormatter() : this("", "")
         {
         }
 
-        public PascalCaseNameFormatter(string prefix)
+        public PascalCaseNameFormatter(string prefix, string suffix)
         {
             Prefix = prefix ?? throw new ArgumentNullException(nameof(prefix));
+            Suffix = suffix ?? throw new ArgumentNullException(nameof(suffix));
         }
 
         public virtual string Format(string name)
@@ -27,7 +32,7 @@ namespace Yardarm.Names
                 return name;
             }
 
-            var builder = new StringBuilder(Prefix, Prefix.Length + name.Length);
+            var builder = new StringBuilder(Prefix, Prefix.Length + name.Length + Suffix.Length);
 
             bool nextCapital = true;
             foreach (char ch in name)
@@ -53,6 +58,11 @@ namespace Yardarm.Names
                 {
                     nextCapital = true;
                 }
+            }
+
+            if (Suffix.Length > 0)
+            {
+                builder.Append(Suffix);
             }
 
             return builder.ToString();

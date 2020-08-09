@@ -38,13 +38,9 @@ namespace Yardarm.Generation.Api
         private IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
             _document.Components.Responses
                 .Select(p => p.Value.CreateRoot(p.Key))
-                .Concat(_document.Paths
-                    .Select(p => p.Value.CreateRoot(p.Key))
-                    .SelectMany(p => p.Element.Operations,
-                        (path, operation) =>
-                            path.CreateChild(operation.Value, operation.Key.ToString()))
-                    .SelectMany(p => p.Element.Responses,
-                        (operation, response) => operation.CreateChild(response.Value, response.Key)));
+                .Concat(_document.Paths.ToLocatedElements()
+                    .GetOperations()
+                    .GetResponses());
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
             _responseGeneratorRegistry.Get(requestBody).Preprocess();

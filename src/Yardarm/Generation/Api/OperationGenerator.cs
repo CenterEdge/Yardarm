@@ -36,11 +36,8 @@ namespace Yardarm.Generation.Api
         }
 
         private IEnumerable<LocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
-            _document.Paths
-                .Select(p => p.Value.CreateRoot(p.Key))
-                .SelectMany(p => p.Element.Operations,
-                    (path, operation) =>
-                        path.CreateChild(operation.Value, operation.Key.ToString()));
+            _document.Paths.ToLocatedElements()
+                .GetOperations();
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiOperation> operation) =>
             _operationTypeGeneratorRegistry.Get(operation).Preprocess();

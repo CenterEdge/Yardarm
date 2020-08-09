@@ -38,13 +38,9 @@ namespace Yardarm.Generation.Api
         private IEnumerable<LocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
             _document.Components.RequestBodies
                 .Select(p => p.Value.CreateRoot(p.Key))
-                .Concat(_document.Paths
-                    .Select(p => p.Value.CreateRoot(p.Key))
-                    .SelectMany(p => p.Element.Operations,
-                        (path, operation) =>
-                            path.CreateChild(operation.Value, operation.Key.ToString()))
-                    .Where(p => p.Element.RequestBody != null)
-                    .Select(p => p.CreateChild(p.Element.RequestBody, "Body")));
+                .Concat(_document.Paths.ToLocatedElements()
+                    .GetOperations()
+                    .GetRequestBodies());
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _requestBodyGeneratorRegistry.Get(requestBody).Preprocess();

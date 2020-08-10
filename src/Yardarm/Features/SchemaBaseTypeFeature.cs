@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -9,18 +10,14 @@ namespace Yardarm.Features
 {
     public class SchemaBaseTypeFeature : ISchemaBaseTypeFeature
     {
-        private readonly IDictionary<LocatedOpenApiElement<OpenApiSchema>, IList<BaseTypeSyntax>> _inheritance =
-            new Dictionary<LocatedOpenApiElement<OpenApiSchema>, IList<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiSchema>());
+        private readonly ConcurrentDictionary<LocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
+            new ConcurrentDictionary<LocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiSchema>());
 
         public void AddBaseType(LocatedOpenApiElement<OpenApiSchema> schema, BaseTypeSyntax type)
         {
-            if (!_inheritance.TryGetValue(schema, out var list))
-            {
-                list = new List<BaseTypeSyntax>();
-                _inheritance[schema] = list;
-            }
+            var bag = _inheritance.GetOrAdd(schema, _ => new ConcurrentBag<BaseTypeSyntax>());
 
-            list.Add(type);
+            bag.Add(type);
         }
 
         public IEnumerable<BaseTypeSyntax> GetBaseTypes(LocatedOpenApiElement<OpenApiSchema> schema)

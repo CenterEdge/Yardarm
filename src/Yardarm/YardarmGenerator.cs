@@ -32,12 +32,12 @@ namespace Yardarm
             ISyntaxTreeGenerator[] syntaxTreeGenerators =
                 serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>().ToArray();
 
-            foreach (var syntaxTreeGenerator in syntaxTreeGenerators)
-            {
-                syntaxTreeGenerator.Preprocess();
-            }
+            Parallel.ForEach(syntaxTreeGenerators, p => p.Preprocess());
 
-            var syntaxTrees = syntaxTreeGenerators
+            SyntaxTree[] syntaxTrees = syntaxTreeGenerators
+                .AsParallel()
+                .AsUnordered()
+                .WithCancellation(cancellationToken)
                 .SelectMany(p => p.Generate())
                 .ToArray();
 

@@ -6,6 +6,7 @@ namespace Yardarm.Enrichment
     public interface IEnrichers
     {
         ISchemaEnrichers Schema { get; }
-        IList<IOperationMethodEnricher> OperationMethod { get; }
+        IList<IOperationInterfaceMethodEnricher> OperationInterfaceMethod { get; }
+        IList<IOperationClassMethodEnricher> OperationClassMethod { get; }
     }
 }

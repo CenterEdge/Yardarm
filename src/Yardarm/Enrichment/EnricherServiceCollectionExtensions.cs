@@ -12,7 +12,8 @@ namespace Yardarm.Enrichment
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
-                .AddOperationMethodEnricher<OperationMethodDocumentationEnricher>()
+                .AddOperationClassMethodEnricher<OperationClassMethodDocumentationEnricher>()
+                .AddOperationInterfaceMethodEnricher<OperationInterfaceMethodDocumentationEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
                 .AddDefaultSchemaEnrichers();
 
@@ -34,9 +35,13 @@ namespace Yardarm.Enrichment
             where T : class, INuGetPackageEnricher =>
             services.AddTransient<INuGetPackageEnricher, T>();
 
-        public static IServiceCollection AddOperationMethodEnricher<T>(this IServiceCollection services)
-            where T : class, IOperationMethodEnricher =>
-            services.AddTransient<IOperationMethodEnricher, T>();
+        public static IServiceCollection AddOperationClassMethodEnricher<T>(this IServiceCollection services)
+            where T : class, IOperationClassMethodEnricher =>
+            services.AddTransient<IOperationClassMethodEnricher, T>();
+
+        public static IServiceCollection AddOperationInterfaceMethodEnricher<T>(this IServiceCollection services)
+            where T : class, IOperationInterfaceMethodEnricher =>
+            services.AddTransient<IOperationInterfaceMethodEnricher, T>();
 
         public static IServiceCollection AddPackageSpecEnricher<T>(this IServiceCollection services)
             where T : class, IPackageSpecEnricher =>

@@ -12,7 +12,7 @@ namespace Yardarm.Helpers
     {
         private static readonly char[] _newLineChars = {'\r', '\n'};
 
-        public static SyntaxTrivia BuildXmlCommentTrivia(params XmlElementSyntax[] elements)
+        public static SyntaxTrivia BuildXmlCommentTrivia(params XmlNodeSyntax[] elements)
         {
             var nodes = new XmlNodeSyntax[elements.Length * 2 + 1];
 
@@ -48,6 +48,12 @@ namespace Yardarm.Helpers
                     .SelectMany(ContentLine)
                     .Concat(ContentLine(""))
                     .ToArray());
+
+        /// <summary>
+        /// Builds a remarks element. Assumes a leading /// comment, and does not add a newline at the end
+        /// </summary>
+        public static XmlEmptyElementSyntax BuildInheritDocElement() =>
+            XmlEmptyElement(XmlName(Identifier("inheritdoc")));
 
         /// <summary>
         /// Line of content text with a preceding newline

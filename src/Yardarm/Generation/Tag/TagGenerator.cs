@@ -6,12 +6,12 @@ using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Tag
 {
-    public class TagInterfaceGenerator : ISyntaxTreeGenerator
+    public class TagGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
         private readonly ITypeGeneratorRegistry<OpenApiTag> _tagGeneratorRegistry;
 
-        public TagInterfaceGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry)
+        public TagGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
             _tagGeneratorRegistry = tagGeneratorRegistry ?? throw new ArgumentNullException(nameof(tagGeneratorRegistry));

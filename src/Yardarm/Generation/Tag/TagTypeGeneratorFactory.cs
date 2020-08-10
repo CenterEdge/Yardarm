@@ -3,16 +3,16 @@ using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Tag
 {
-    public class TagInterfaceTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiTag>
+    public class TagTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiTag>
     {
         private readonly GenerationContext _context;
 
-        public TagInterfaceTypeGeneratorFactory(GenerationContext context)
+        public TagTypeGeneratorFactory(GenerationContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public ITypeGenerator Create(LocatedOpenApiElement<OpenApiTag> element) =>
-            new TagInterfaceTypeGenerator(element, _context);
+            new TagTypeGenerator(element, _context);
     }
 }

@@ -17,7 +17,7 @@ namespace Yardarm.Names
         public TypeSyntax GetName(LocatedOpenApiElement element)
         {
             return GetNameInternal(element)
-                         ?? throw new InvalidOperationException("Element does not have a type name.");
+                   ?? throw new InvalidOperationException("Element does not have a type name.");
         }
 
         protected virtual TypeSyntax? GetNameInternal(LocatedOpenApiElement element) =>
@@ -27,6 +27,7 @@ namespace Yardarm.Names
                 LocatedOpenApiElement<OpenApiRequestBody> requestBodyElement => GetRequestBodyName(requestBodyElement),
                 LocatedOpenApiElement<OpenApiResponse> responseElement => GetResponseName(responseElement),
                 LocatedOpenApiElement<OpenApiSchema> schemaElement => GetSchemaName(schemaElement),
+                LocatedOpenApiElement<OpenApiTag> tagElement => GetTagName(tagElement),
                 _ => element.Parents.Count > 0 ? GetNameInternal(element.Parents[0]) : null
             };
 
@@ -40,6 +41,9 @@ namespace Yardarm.Names
             _typeGeneratorRegistry.Get(element).GetTypeName();
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
+            _typeGeneratorRegistry.Get(element).GetTypeName();
+
+        protected virtual TypeSyntax GetTagName(LocatedOpenApiElement<OpenApiTag> element) =>
             _typeGeneratorRegistry.Get(element).GetTypeName();
     }
 }

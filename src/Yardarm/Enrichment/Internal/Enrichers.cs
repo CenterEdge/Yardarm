@@ -7,14 +7,17 @@ namespace Yardarm.Enrichment.Internal
 {
     internal class Enrichers : IEnrichers
     {
-        public IList<IOperationMethodEnricher> OperationMethod { get; }
+        public IList<IOperationClassMethodEnricher> OperationClassMethod { get; }
+        public IList<IOperationInterfaceMethodEnricher> OperationInterfaceMethod { get; }
         public ISchemaEnrichers Schema { get; }
 
         public Enrichers(
-            IEnumerable<IOperationMethodEnricher> operationMethodEnrichers,
+            IEnumerable<IOperationClassMethodEnricher> operationClassMethodEnrichers,
+            IEnumerable<IOperationInterfaceMethodEnricher> operationInterfaceMethodEnrichers,
             ISchemaEnrichers schemaEnrichers)
         {
-            OperationMethod = operationMethodEnrichers.ToArray();
+            OperationClassMethod = operationClassMethodEnrichers.ToArray();
+            OperationInterfaceMethod = operationInterfaceMethodEnrichers.ToArray();
             Schema = schemaEnrichers ?? throw new ArgumentNullException(nameof(schemaEnrichers));
         }
     }

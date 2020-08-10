@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Tag
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateOperationMethod(
             LocatedOpenApiElement<OpenApiOperation> operation)
         {
-            TypeSyntax requestType = Context.TypeNameGenerator.GetName(operation);
+            TypeSyntax requestType = Context.TypeNameProvider.GetName(operation);
             TypeSyntax responseType = SyntaxHelpers.TaskT(SyntaxFactory.IdentifierName("dynamic"));
 
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)

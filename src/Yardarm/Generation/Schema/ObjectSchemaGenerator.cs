@@ -72,7 +72,7 @@ namespace Yardarm.Generation.Schema
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeNameGenerator.GetName(property);
+            var typeName = Context.TypeNameProvider.GetName(property);
 
             var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))

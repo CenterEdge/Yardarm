@@ -38,7 +38,7 @@ namespace Yardarm.NewtonsoftJson
                 SyntaxFactory.AttributeArgument(
                     SyntaxHelpers.StringLiteral(schema.Discriminator.PropertyName)),
                 SyntaxFactory.AttributeArgument(
-                    SyntaxFactory.TypeOfExpression(Context.TypeNameGenerator.GetName(element))));
+                    SyntaxFactory.TypeOfExpression(Context.TypeNameProvider.GetName(element))));
 
             if (schema.Discriminator.Mapping != null)
             {
@@ -64,7 +64,7 @@ namespace Yardarm.NewtonsoftJson
                                         ? new ExpressionSyntax[]
                                         {
                                             SyntaxHelpers.StringLiteral(mapping.Key), SyntaxFactory.TypeOfExpression(
-                                                Context.TypeNameGenerator.GetName(
+                                                Context.TypeNameProvider.GetName(
                                                     referencedSchema.CreateRoot(referencedSchema.Reference.Id)))
                                         }
                                         : Enumerable.Empty<ExpressionSyntax>();

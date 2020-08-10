@@ -3,7 +3,7 @@ using Yardarm.Generation;
 
 namespace Yardarm.Names
 {
-    public interface ITypeNameGenerator
+    public interface ITypeNameProvider
     {
         TypeSyntax GetName(LocatedOpenApiElement element);
     }

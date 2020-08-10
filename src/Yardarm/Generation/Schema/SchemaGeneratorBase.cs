@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Schema
             }
 
             var parent = Element.Parents[0];
-            var parentName = Context.TypeNameGenerator.GetName(parent);
+            var parentName = Context.TypeNameProvider.GetName(parent);
 
             if (Element.Key == "")
             {

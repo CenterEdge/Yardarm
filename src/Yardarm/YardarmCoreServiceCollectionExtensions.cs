@@ -60,7 +60,7 @@ namespace Yardarm
             services.TryAddSingleton<CamelCaseNameFormatter>();
             services.TryAddSingleton<PascalCaseNameFormatter>();
             services.TryAddSingleton<INameFormatterSelector, DefaultNameFormatterSelector>();
-            services.TryAddSingleton<ITypeNameGenerator, DefaultTypeNameGenerator>();
+            services.TryAddSingleton<ITypeNameProvider, DefaultTypeNameProvider>();
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
 

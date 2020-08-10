@@ -5,11 +5,11 @@ using Yardarm.Generation;
 
 namespace Yardarm.Names
 {
-    public class DefaultTypeNameGenerator : ITypeNameGenerator
+    public class DefaultTypeNameProvider : ITypeNameProvider
     {
         private readonly ITypeGeneratorRegistry _typeGeneratorRegistry;
 
-        public DefaultTypeNameGenerator(ITypeGeneratorRegistry typeGeneratorRegistry)
+        public DefaultTypeNameProvider(ITypeGeneratorRegistry typeGeneratorRegistry)
         {
             _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
         }

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Features;
 using Yardarm.Generation;
 
-namespace Yardarm.Enrichment.Internal
+namespace Yardarm.Enrichment.Schema.Internal
 {
     internal class BaseTypeEnricher : ISchemaClassEnricher
     {

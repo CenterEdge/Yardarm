@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Schema
                     .Where(p => p != null)
                     .ToArray());
 
-            yield return declaration.Enrich(Context.Enrichers.EnumEnrichers, Element);
+            yield return declaration.Enrich(Context.Enrichers.Schema.Enum, Element);
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
@@ -63,7 +63,7 @@ namespace Yardarm.Generation.Schema
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                     CreateEnumMemberAttribute(stringPrimitive.Value)));
 
-            return memberDeclaration.Enrich(Context.Enrichers.EnumMemberEnrichers, (schemaElement, value));
+            return memberDeclaration.Enrich(Context.Enrichers.Schema.EnumMember, (schemaElement, value));
         }
 
         protected static AttributeSyntax CreateEnumMemberAttribute(string value) =>

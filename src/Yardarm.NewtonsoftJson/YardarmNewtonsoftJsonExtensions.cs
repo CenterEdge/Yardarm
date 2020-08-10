@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Packaging;
 
@@ -10,8 +11,8 @@ namespace Yardarm.NewtonsoftJson
             settings.AddExtension(services =>
             {
                 services
-                    .AddPropertyEnricher<JsonPropertyEnricher>()
-                    .AddEnumEnricher<JsonEnumEnricher>()
+                    .AddSchemaPropertyEnricher<JsonPropertyEnricher>()
+                    .AddSchemaEnumEnricher<JsonEnumEnricher>()
                     .AddSchemaInterfaceEnricher<JsonDiscriminatorEnricher>()
                     .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()
                     .AddSingleton<ISyntaxTreeGenerator, JsonSyntaxTreeGenerator>();

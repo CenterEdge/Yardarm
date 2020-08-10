@@ -63,7 +63,7 @@ namespace Yardarm.Generation.Schema
             var interfaceDeclaration = SyntaxFactory.InterfaceDeclaration(interfaceName.ToString())
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
-            yield return interfaceDeclaration.Enrich(Context.Enrichers.InterfaceEnrichers, Element);
+            yield return interfaceDeclaration.Enrich(Context.Enrichers.Schema.Interface, Element);
         }
 
         private bool HasDiscriminator => Schema.Discriminator?.PropertyName != null;

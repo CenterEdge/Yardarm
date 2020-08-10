@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Internal;
+using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Generation.Internal;
 using Yardarm.Generation.MediaType;
@@ -21,17 +22,7 @@ namespace Yardarm
     {
         public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, OpenApiDocument document)
         {
-            // Enrichers
-            services
-                .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
-                .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
-                .AddOperationMethodEnricher<OperationMethodDocumentationEnricher>()
-                .AddPropertyEnricher<RequiredPropertyEnricher>()
-                .AddPropertyEnricher<DocumentationPropertyEnricher>()
-                .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
-                .AddSchemaClassEnricher<BaseTypeEnricher>();
-
-            services.TryAddSingleton<IEnrichers, Enrichers>();
+            services.AddDefaultEnrichers();
 
             // Generators
             services
@@ -76,40 +67,6 @@ namespace Yardarm
             return services;
         }
 
-        public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
-            where T : class, IAssemblyInfoEnricher =>
-            services.AddTransient<IAssemblyInfoEnricher, T>();
 
-        public static IServiceCollection AddEnumEnricher<T>(this IServiceCollection services)
-            where T : class, IEnumEnricher =>
-            services.AddTransient<IEnumEnricher, T>();
-
-        public static IServiceCollection AddEnumMemberEnricher<T>(this IServiceCollection services)
-            where T : class, IEnumMemberEnricher =>
-            services.AddTransient<IEnumMemberEnricher, T>();
-
-        public static IServiceCollection AddNuGetPackageEnricher<T>(this IServiceCollection services)
-            where T : class, INuGetPackageEnricher =>
-            services.AddTransient<INuGetPackageEnricher, T>();
-
-        public static IServiceCollection AddOperationMethodEnricher<T>(this IServiceCollection services)
-            where T : class, IOperationMethodEnricher =>
-            services.AddTransient<IOperationMethodEnricher, T>();
-
-        public static IServiceCollection AddSchemaClassEnricher<T>(this IServiceCollection services)
-            where T : class, ISchemaClassEnricher =>
-            services.AddTransient<ISchemaClassEnricher, T>();
-
-        public static IServiceCollection AddSchemaInterfaceEnricher<T>(this IServiceCollection services)
-            where T : class, ISchemaInterfaceEnricher =>
-            services.AddTransient<ISchemaInterfaceEnricher, T>();
-
-        public static IServiceCollection AddPackageSpecEnricher<T>(this IServiceCollection services)
-            where T : class, IPackageSpecEnricher =>
-            services.AddTransient<IPackageSpecEnricher, T>();
-
-        public static IServiceCollection AddPropertyEnricher<T>(this IServiceCollection services)
-            where T : class, IPropertyEnricher =>
-            services.AddTransient<IPropertyEnricher, T>();
     }
 }

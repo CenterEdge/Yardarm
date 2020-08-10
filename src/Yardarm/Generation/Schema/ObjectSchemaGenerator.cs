@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Schema
 
             declaration = AddProperties(declaration, Element, Schema.Properties);
 
-            yield return declaration.Enrich(Context.Enrichers.ClassEnrichers, Element);
+            yield return declaration.Enrich(Context.Enrichers.Schema.Class, Element);
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
@@ -82,7 +82,7 @@ namespace Yardarm.Generation.Schema
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-            return propertyDeclaration.Enrich(Context.Enrichers.PropertyEnrichers, property);
+            return propertyDeclaration.Enrich(Context.Enrichers.Schema.Property, property);
         }
     }
 }

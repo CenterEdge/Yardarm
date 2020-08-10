@@ -4,9 +4,9 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 using Yardarm.Helpers;
 
-namespace Yardarm.Enrichment.Internal
+namespace Yardarm.Enrichment.Schema.Internal
 {
-    internal class DocumentationPropertyEnricher : IPropertyEnricher
+    internal class DocumentationPropertyEnricher : ISchemaPropertyEnricher
     {
         public int Priority => 100; // Run after most other enrichers
 

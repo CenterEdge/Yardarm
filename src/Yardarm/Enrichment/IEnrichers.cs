@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
+using Yardarm.Enrichment.Schema;
 
 namespace Yardarm.Enrichment
 {
     public interface IEnrichers
     {
-        IList<ISchemaClassEnricher> ClassEnrichers { get; }
-        IList<ISchemaInterfaceEnricher> InterfaceEnrichers { get; }
-        IList<IOperationMethodEnricher> OperationMethodEnrichers { get; }
-        IList<IPropertyEnricher> PropertyEnrichers { get; }
-        IList<IEnumEnricher> EnumEnrichers { get; }
-        IList<IEnumMemberEnricher> EnumMemberEnrichers { get; }
+        ISchemaEnrichers Schema { get; }
+        IList<IOperationMethodEnricher> OperationMethod { get; }
     }
 }

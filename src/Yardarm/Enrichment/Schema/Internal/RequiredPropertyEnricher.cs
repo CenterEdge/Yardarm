@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 
-namespace Yardarm.Enrichment.Internal
+namespace Yardarm.Enrichment.Schema.Internal
 {
-    internal class RequiredPropertyEnricher : IPropertyEnricher
+    internal class RequiredPropertyEnricher : ISchemaPropertyEnricher
     {
         public static readonly NameSyntax RequiredAttributeName =
             SyntaxFactory.ParseName("System.ComponentModel.DataAnnotations.Required");

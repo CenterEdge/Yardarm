@@ -49,7 +49,7 @@ namespace Yardarm.Generation.Tag
                     SyntaxHelpers.DefaultedCancellationTokenParameter())
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 
-            yield return methodDeclaration.Enrich(Context.Enrichers.OperationMethodEnrichers, operation);
+            yield return methodDeclaration.Enrich(Context.Enrichers.OperationMethod, operation);
         }
 
         private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Tag.Name);

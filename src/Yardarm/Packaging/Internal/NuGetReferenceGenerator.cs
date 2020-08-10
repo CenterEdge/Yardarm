@@ -8,12 +8,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NuGet.Commands;
 using NuGet.Configuration;
-using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using Yardarm.Generation;
+using Yardarm.Generation.Internal;
 
-namespace Yardarm.Generation.Internal
+namespace Yardarm.Packaging.Internal
 {
     internal class NuGetReferenceGenerator : IReferenceGenerator
     {

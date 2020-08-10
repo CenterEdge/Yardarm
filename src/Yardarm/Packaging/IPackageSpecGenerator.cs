@@ -1,6 +1,6 @@
 ﻿using NuGet.ProjectModel;
 
-namespace Yardarm.Generation
+namespace Yardarm.Packaging
 {
     public interface IPackageSpecGenerator
     {

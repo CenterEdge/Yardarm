@@ -2,7 +2,7 @@
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 
-namespace Yardarm.Generation.Internal
+namespace Yardarm.Packaging.Internal
 {
     internal class StandardDependencyGenerator : IDependencyGenerator
     {

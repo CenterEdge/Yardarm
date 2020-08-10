@@ -1,7 +1,7 @@
 ﻿using System;
 using NuGet.Commands;
 
-namespace Yardarm.Generation
+namespace Yardarm.Packaging
 {
     public class NuGetRestoreException : Exception
     {

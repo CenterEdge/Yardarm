@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Yardarm.Generation;
+using Yardarm.Packaging;
 
 namespace Yardarm.NewtonsoftJson
 {

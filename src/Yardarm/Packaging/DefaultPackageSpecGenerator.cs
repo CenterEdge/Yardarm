@@ -6,7 +6,7 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using Yardarm.Enrichment;
 
-namespace Yardarm.Generation
+namespace Yardarm.Packaging
 {
     public class DefaultPackageSpecGenerator : IPackageSpecGenerator
     {

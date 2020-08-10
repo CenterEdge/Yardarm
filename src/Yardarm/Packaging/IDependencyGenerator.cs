@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NuGet.LibraryModel;
 
-namespace Yardarm.Generation
+namespace Yardarm.Packaging
 {
     public interface IDependencyGenerator
     {

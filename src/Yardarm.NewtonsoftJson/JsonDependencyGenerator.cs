@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
-using Yardarm.Generation;
+using Yardarm.Packaging;
 
 namespace Yardarm.NewtonsoftJson
 {

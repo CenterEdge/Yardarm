@@ -13,6 +13,7 @@ using Yardarm.Generation.Schema;
 using Yardarm.Generation.Tag;
 using Yardarm.Names;
 using Yardarm.Packaging;
+using Yardarm.Packaging.Internal;
 
 namespace Yardarm
 {

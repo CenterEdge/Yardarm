@@ -2,7 +2,7 @@
 using System.Linq;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
-using Yardarm.Generation;
+using Yardarm.Packaging;
 
 namespace Yardarm.Enrichment.Internal
 {

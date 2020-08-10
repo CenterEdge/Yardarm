@@ -12,8 +12,11 @@ OpenAPI 3 SDK Generator for C#
     - Should support mocking the implementations for consumers to write unit tests
   - XML documentation for IntelliSense
   - Portable PDB
-  - Targets .NET Standard 2.0 for compatibility
   - Dependency injection support via `Microsoft.Extensions.DependencyInjection.Abstractions`
+- Compatibility
+  - Targets .NET Standard 2.0
+  - Minimal dependencies on generated SDK to avoid dependency version conflicts when importing multiple SDK packages or other libraries
+  - To the extent possible, design the output code so that non-breaking API changes (i.e. adding an optional parameter or attribute) result in non-breaking changes to the SDK
 - Fast SDK generation
   - Doesn't make C# files on disk and run MSBuild
   - Uses Roslyn to compile directly in memory

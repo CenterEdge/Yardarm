@@ -1,7 +1,8 @@
 ﻿using System;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.MediaType;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.Operation
 {
     public class DefaultOperationGeneratorFactory : ITypeGeneratorFactory<OpenApiOperation>
     {

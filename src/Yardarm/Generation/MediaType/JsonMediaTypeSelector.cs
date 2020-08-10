@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.OpenApi.Models;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.MediaType
 {
     public class JsonMediaTypeSelector : IMediaTypeSelector
     {

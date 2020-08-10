@@ -1,14 +1,15 @@
 ﻿using System;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.MediaType;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.RequestBody
 {
-    public class DefaultRequestBodyGeneratorFactory : ITypeGeneratorFactory<OpenApiRequestBody>
+    public class RequestBodyTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiRequestBody>
     {
         private readonly GenerationContext _context;
         private readonly IMediaTypeSelector _mediaTypeSelector;
 
-        public DefaultRequestBodyGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+        public RequestBodyTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));

@@ -5,9 +5,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.RequestBody
 {
     public class RequestBodyTypeGenerator : ITypeGenerator
     {

@@ -1,12 +1,14 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Internal;
 using Yardarm.Generation;
-using Yardarm.Generation.Api;
 using Yardarm.Generation.Internal;
+using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Operation;
+using Yardarm.Generation.RequestBody;
+using Yardarm.Generation.Response;
 using Yardarm.Generation.Schema;
 using Yardarm.Generation.Tag;
 using Yardarm.Names;
@@ -45,10 +47,10 @@ namespace Yardarm
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
 
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, DefaultRequestBodyGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, DefaultResponseGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, DefaultOperationGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagInterfaceGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagInterfaceTypeGeneratorFactory>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();

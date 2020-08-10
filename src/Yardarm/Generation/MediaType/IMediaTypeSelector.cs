@@ -1,6 +1,6 @@
 ﻿using Microsoft.OpenApi.Models;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.MediaType
 {
     /// <summary>
     /// Selects the media type which is used to generate models.

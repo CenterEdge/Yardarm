@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.RequestBody
 {
     public class RequestBodyGenerator : ISyntaxTreeGenerator
     {

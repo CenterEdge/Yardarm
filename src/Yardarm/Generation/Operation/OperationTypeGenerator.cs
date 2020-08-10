@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 
-namespace Yardarm.Generation.Api
+namespace Yardarm.Generation.Operation
 {
     public class OperationTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {

@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
-using Yardarm.Generation.Api;
 
 namespace Yardarm.Names
 {

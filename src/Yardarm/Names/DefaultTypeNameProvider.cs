@@ -26,6 +26,7 @@ namespace Yardarm.Names
                 LocatedOpenApiElement<OpenApiOperation> operationElement => GetOperationName(operationElement),
                 LocatedOpenApiElement<OpenApiRequestBody> requestBodyElement => GetRequestBodyName(requestBodyElement),
                 LocatedOpenApiElement<OpenApiResponse> responseElement => GetResponseName(responseElement),
+                LocatedOpenApiElement<OpenApiResponses> responsesElement => GetResponsesName(responsesElement),
                 LocatedOpenApiElement<OpenApiSchema> schemaElement => GetSchemaName(schemaElement),
                 LocatedOpenApiElement<OpenApiTag> tagElement => GetTagName(tagElement),
                 _ => element.Parents.Count > 0 ? GetNameInternal(element.Parents[0]) : null
@@ -38,6 +39,9 @@ namespace Yardarm.Names
             _typeGeneratorRegistry.Get(element).GetTypeName();
 
         protected virtual TypeSyntax GetResponseName(LocatedOpenApiElement<OpenApiResponse> element) =>
+            _typeGeneratorRegistry.Get(element).GetTypeName();
+
+        protected virtual TypeSyntax GetResponsesName(LocatedOpenApiElement<OpenApiResponses> element) =>
             _typeGeneratorRegistry.Get(element).GetTypeName();
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>

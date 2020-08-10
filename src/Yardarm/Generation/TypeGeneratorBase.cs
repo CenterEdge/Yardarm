@@ -4,19 +4,15 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Interfaces;
 
 namespace Yardarm.Generation
 {
-    public abstract class TypeGeneratorBase<T> : ITypeGenerator
-        where T : IOpenApiSerializable
+    public abstract class TypeGeneratorBase : ITypeGenerator
     {
-        protected LocatedOpenApiElement<T> Element { get; }
         protected GenerationContext Context { get; }
 
-        protected TypeGeneratorBase(LocatedOpenApiElement<T> element, GenerationContext context)
+        protected TypeGeneratorBase(GenerationContext context)
         {
-            Element = element ?? throw new ArgumentNullException(nameof(element));
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 

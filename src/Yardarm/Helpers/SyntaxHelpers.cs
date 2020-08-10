@@ -1,50 +1,60 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Helpers
 {
     public static class SyntaxHelpers
     {
         public static TypeSyntax ListT(TypeSyntax itemType) =>
-            SyntaxFactory.QualifiedName(
-                SyntaxFactory.QualifiedName(
-                    SyntaxFactory.QualifiedName(
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Collections")
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        IdentifierName("System"),
+                        IdentifierName("Collections")
                     ),
-                    SyntaxFactory.IdentifierName("Generic")),
-                SyntaxFactory.GenericName(
-                        SyntaxFactory.Identifier("List"),
-                        SyntaxFactory.TypeArgumentList(SyntaxFactory.SingletonSeparatedList<TypeSyntax>(itemType))));
+                    IdentifierName("Generic")),
+                GenericName(
+                        Identifier("List"),
+                        TypeArgumentList(SingletonSeparatedList(itemType))));
 
         public static TypeSyntax TaskT(TypeSyntax resultType) =>
-            SyntaxFactory.QualifiedName(
-                SyntaxFactory.QualifiedName(
-                    SyntaxFactory.QualifiedName(
-                        SyntaxFactory.IdentifierName("System"),
-                        SyntaxFactory.IdentifierName("Threading")
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        IdentifierName("System"),
+                        IdentifierName("Threading")
                     ),
-                    SyntaxFactory.IdentifierName("Tasks")),
-                SyntaxFactory.GenericName(
-                    SyntaxFactory.Identifier("Task"),
-                    SyntaxFactory.TypeArgumentList(SyntaxFactory.SingletonSeparatedList<TypeSyntax>(resultType))));
+                    IdentifierName("Tasks")),
+                GenericName(
+                    Identifier("Task"),
+                    TypeArgumentList(SingletonSeparatedList(resultType))));
 
         public static TypeSyntax CancellationToken() =>
-            SyntaxFactory.QualifiedName(
-                SyntaxFactory.QualifiedName(
-                    SyntaxFactory.IdentifierName("System"),
-                    SyntaxFactory.IdentifierName("Threading")
+            QualifiedName(
+                QualifiedName(
+                    IdentifierName("System"),
+                    IdentifierName("Threading")
                 ),
-                SyntaxFactory.IdentifierName("CancellationToken"));
+                IdentifierName("CancellationToken"));
 
         public static ParameterSyntax DefaultedCancellationTokenParameter() =>
-            SyntaxFactory.Parameter(SyntaxFactory.Identifier("cancellationToken"))
+            Parameter(Identifier("cancellationToken"))
                 .WithType(CancellationToken())
-                .WithDefault(SyntaxFactory.EqualsValueClause(
-                    SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression,
-                        SyntaxFactory.Token(SyntaxKind.DefaultKeyword))));
+                .WithDefault(EqualsValueClause(
+                    LiteralExpression(SyntaxKind.DefaultLiteralExpression,
+                        Token(SyntaxKind.DefaultKeyword))));
 
         public static LiteralExpressionSyntax StringLiteral(string value) =>
-            SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(value));
+            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value));
+
+        public static ExpressionSyntax ParameterWithNullCheck(string parameterName) =>
+            BinaryExpression(SyntaxKind.CoalesceExpression,
+                IdentifierName(parameterName),
+                ThrowExpression(ObjectCreationExpression(
+                    QualifiedName(IdentifierName("System"), IdentifierName("ArgumentNullException")),
+                    ArgumentList(SingletonSeparatedList(Argument(
+                        StringLiteral(parameterName)))),
+                    null)));
     }
 }

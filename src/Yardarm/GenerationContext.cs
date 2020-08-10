@@ -3,14 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Features;
+using Yardarm.Generation;
 using Yardarm.Names;
 
-namespace Yardarm.Generation
+namespace Yardarm
 {
     public class GenerationContext
     {
-        private readonly IServiceProvider _serviceProvider;
-
         private readonly Lazy<OpenApiDocument> _openApiDocument;
         private readonly Lazy<INamespaceProvider> _namespaceProvider;
         private readonly Lazy<ITypeNameProvider> _typeNameProvider;
@@ -29,8 +28,6 @@ namespace Yardarm.Generation
 
         public GenerationContext(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
             _namespaceProvider = new Lazy<INamespaceProvider>(serviceProvider.GetRequiredService<INamespaceProvider>);
             _typeNameProvider = new Lazy<ITypeNameProvider>(serviceProvider.GetRequiredService<ITypeNameProvider>);

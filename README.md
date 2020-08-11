@@ -5,9 +5,7 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 # Features
 
 - Works with valid OpenAPI 3 specs, in JSON or YAML format
-- Multiple generation options
-  - Command-line application
-  - Docker image
+- Generates an SDK within the project
 - Generates a SDK using modern C# patterns and practices as follows:
   - Asynchronous methods with cancellation tokens
   - Nullable reference types
@@ -34,15 +32,13 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 
 ## Using Yardarm
 
-In order to generate an SDK from an OpenAPI specification, you can do any of the following:
-
-### Command Line Tool
-
-### Docker Image
+In order to generate an SDK from an OpenAPI specification, open up the project and change the input OpenAPI spec and then run the project. The SDK will be generated.
 
 ## Project Goals
 
 - More generation options
+  - Command Line Application
+  - Docker Image
   - In-code via library
   - .NET Core Global Tool
   - Support C# 9 Source Generators?

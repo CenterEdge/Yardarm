@@ -1,11 +1,14 @@
 # Yardarm
 
-OpenAPI 3 SDK Generator for C#
+Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that will generate an SDK for a valid OpenAPI specification.
 
-## Project Goals
+# Features
 
-- Works with most valid OpenAPI 3 specs, in JSON or YAML format
-- Generated SDK uses modern C# patterns and practices
+- Works with valid OpenAPI 3 specs, in JSON or YAML format
+- Multiple generation options
+  - Command-line application
+  - Docker image
+- Generates a SDK using modern C# patterns and practices as follows:
   - Asynchronous methods with cancellation tokens
   - Nullable reference types
   - Interfaces with concrete implementations
@@ -13,19 +16,9 @@ OpenAPI 3 SDK Generator for C#
   - XML documentation for IntelliSense
   - Portable PDB
   - Dependency injection support via `Microsoft.Extensions.DependencyInjection.Abstractions`
-- Compatibility
-  - Targets .NET Standard 2.0
-  - Minimal dependencies on generated SDK to avoid dependency version conflicts when importing multiple SDK packages or other libraries
-  - To the extent possible, design the output code so that non-breaking API changes (i.e. adding an optional parameter or attribute) result in non-breaking changes to the SDK
 - Fast SDK generation
   - Doesn't make C# files on disk and run MSBuild
   - Uses Roslyn to compile directly in memory
-- Multiple generation options
-  - In-code via library
-  - Command-line application
-  - .NET Core Global Tool
-  - Docker image
-  - Eventually support C# 9 Source Generators?
 - Built-in NuGet support
   - Generate valid `.nupkg` files directly, with correct dependencies
   - Automatically restore packages required for compilation
@@ -38,3 +31,32 @@ OpenAPI 3 SDK Generator for C#
   - Will allow the SDK consumer to extend the behaviors on the client side
   - Pluggable configuration for things like TLS and base urls
   - Add `HttpMessageHandler` instances to the `HttpClient` stack
+
+## Using Yardarm
+
+In order to generate an SDK from an OpenAPI specification, you can do any of the following:
+
+### Command Line Tool
+
+### Docker Image
+
+## Project Goals
+
+- More generation options
+  - In-code via library
+  - .NET Core Global Tool
+  - Support C# 9 Source Generators?
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
+
+## Authors
+
+* **Brant Burnett** - *Initial work* - [PurpleBooth](https://github.com/brantburnett)
+
+See also the list of [contributors](https://github.com/CenterEdge/Yardarm/graphs/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the Apache License - see the [LICENSE.md](LICENSE.md) file for details

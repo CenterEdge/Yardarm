@@ -53,7 +53,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Authors
 
-* **Brant Burnett** - *Initial work* - [PurpleBooth](https://github.com/brantburnett)
+* **Brant Burnett** - *Initial work* - [BrantBurnett](https://github.com/brantburnett)
 
 See also the list of [contributors](https://github.com/CenterEdge/Yardarm/graphs/contributors) who participated in this project.
 

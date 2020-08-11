@@ -8,22 +8,16 @@ namespace Yardarm.Names
 {
     public class DefaultNamespaceProvider : INamespaceProvider
     {
-        private readonly INameFormatter _namespaceFormatter;
         private readonly NameSyntax _rootNamespace;
 
-        public DefaultNamespaceProvider(YardarmGenerationSettings settings, INameFormatterSelector nameFormatterSelector)
+        public DefaultNamespaceProvider(YardarmGenerationSettings settings)
         {
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-            if (nameFormatterSelector == null)
-            {
-                throw new ArgumentNullException(nameof(nameFormatterSelector));
-            }
 
             _rootNamespace = SyntaxFactory.ParseName(settings.RootNamespace);
-            _namespaceFormatter = nameFormatterSelector.GetFormatter(NameKind.Namespace);
         }
 
         public NameSyntax GetRootNamespace() => _rootNamespace;
@@ -56,6 +50,6 @@ namespace Yardarm.Names
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
 
         protected virtual NameSyntax GetTagNamespace(LocatedOpenApiElement<OpenApiTag> tag) =>
-            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName(_namespaceFormatter.Format(tag.Element.Name)));
+            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Api"));
     }
 }

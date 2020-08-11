@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -14,17 +15,22 @@ namespace Yardarm.Generation.Response
 {
     internal class ResponseTypeGenerator : TypeGeneratorBase<OpenApiResponse>
     {
+        protected ResponseBaseTypeGenerator ResponseBaseTypeGenerator { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
 
         protected OpenApiResponse Response => Element.Element;
 
-        public ResponseTypeGenerator(LocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
+        public ResponseTypeGenerator(LocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context,
+            IMediaTypeSelector mediaTypeSelector,
+            IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
+            ResponseBaseTypeGenerator responseBaseTypeGenerator)
             : base(responseElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            HttpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
+            HttpResponseCodeNameProvider = httpResponseCodeNameProvider ??
+                                           throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
+            ResponseBaseTypeGenerator = responseBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
         }
 
         public override void Preprocess()
@@ -46,12 +52,31 @@ namespace Yardarm.Generation.Response
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
+            var className = GetClassName();
 
-            var declaration = ClassDeclaration(GetClassName())
+            var declaration = ClassDeclaration(className)
+                .AddBaseListTypes(SimpleBaseType(ResponseBaseTypeGenerator.GetTypeName()))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddMembers(
+                    GenerateConstructor(className))
                 .AddMembers(GenerateHeaderProperties().ToArray());
 
+            var parentResponses = Element.Parents.OfType<LocatedOpenApiElement<OpenApiResponses>>().FirstOrDefault();
+            var responsesInterfaceName = parentResponses != null
+                ? Context.TypeNameProvider.GetName(parentResponses)
+                : null;
+
+            if (responsesInterfaceName != null)
+            {
+                // This will be null if this is a response type defined globally and referenced
+                // Since it won't have a parent OpenApiResponse
+                // But for inline responses, we should add a direct reference to the interface
+                // Referenced responses will receive interfaces via enrichment
+
+                declaration = declaration.AddBaseListTypes(SimpleBaseType(responsesInterfaceName));
+            }
+
+            (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
             if (schemaGenerator != null)
             {
                 declaration = declaration
@@ -71,6 +96,15 @@ namespace Yardarm.Generation.Response
 
             yield return declaration;
         }
+
+        private ConstructorDeclarationSyntax GenerateConstructor(string className) =>
+            ConstructorDeclaration(className)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddParameterListParameters(
+                    Parameter(Identifier("message")).WithType(WellKnownTypes.HttpResponseMessage()))
+                .WithInitializer(ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                    .AddArgumentListArguments(Argument(IdentifierName("message"))))
+                .WithBody(Block());
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateHeaderProperties()
         {

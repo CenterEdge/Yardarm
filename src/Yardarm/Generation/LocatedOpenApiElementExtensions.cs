@@ -26,10 +26,15 @@ namespace Yardarm.Generation
                 .Where(p => p.Element.RequestBody != null)
                 .Select(p => p.CreateChild(p.Element.RequestBody, "Body"));
 
-        public static IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses(
+        public static IEnumerable<LocatedOpenApiElement<OpenApiResponses>> GetResponseSets(
             this IEnumerable<LocatedOpenApiElement<OpenApiOperation>> operations) =>
             operations
-                .SelectMany(p => p.Element.Responses,
+                .Select(p => p.CreateChild(p.Element.Responses, ""));
+
+        public static IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses(
+            this IEnumerable<LocatedOpenApiElement<OpenApiResponses>> operations) =>
+            operations
+                .SelectMany(p => p.Element,
                     (operation, response) => operation.CreateChild(response.Value, response.Key));
 
         public static IEnumerable<LocatedOpenApiElement<OpenApiTag>> GetTags(

@@ -10,16 +10,21 @@ namespace Yardarm.Generation.Response
         private readonly GenerationContext _context;
         private readonly IMediaTypeSelector _mediaTypeSelector;
         private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
+        private readonly ResponseBaseTypeGenerator _responseBaseTypeGenerator;
 
         public ResponseTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
+            IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
+            ResponseBaseTypeGenerator responseBaseTypeGenerator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
+            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ??
+                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
+            _responseBaseTypeGenerator = responseBaseTypeGenerator ??
+                                         throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
         }
 
         public ITypeGenerator Create(LocatedOpenApiElement<OpenApiResponse> element) =>
-            new ResponseTypeGenerator(element, _context, _mediaTypeSelector, _httpResponseCodeNameProvider);
+            new ResponseTypeGenerator(element, _context, _mediaTypeSelector, _httpResponseCodeNameProvider, _responseBaseTypeGenerator);
     }
 }

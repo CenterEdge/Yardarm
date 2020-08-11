@@ -28,7 +28,7 @@ namespace Yardarm
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, RequestBodyGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponseGenerator>()
-                .AddTransient<ISyntaxTreeGenerator, ResponsesGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, ResponseSetGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, RequestGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, TagGenerator>()
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
@@ -39,8 +39,9 @@ namespace Yardarm
 
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponsesTypeGeneratorFactory>();
-            services.TryAddSingleton<ResponsesBaseTypeGenerator>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
+            services.TryAddSingleton<ResponseBaseTypeGenerator>();
+            services.TryAddSingleton<ResponseBaseInterfaceTypeGenerator>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();

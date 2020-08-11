@@ -6,18 +6,20 @@ using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Generation.Response
 {
-    public class ResponsesGenerator : ISyntaxTreeGenerator
+    public class ResponseSetGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
         private readonly ITypeGeneratorRegistry<OpenApiResponses> _responsesGeneratorRegistry;
-        private readonly ResponsesBaseTypeGenerator _responsesBaseTypeGenerator;
+        private readonly ResponseBaseTypeGenerator _responsesBaseTypeGenerator;
+        private readonly ResponseBaseInterfaceTypeGenerator _responsesBaseInterfaceTypeGenerator;
 
-        public ResponsesGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiResponses> responsesGeneratorRegistry,
-            ResponsesBaseTypeGenerator responsesBaseTypeGenerator)
+        public ResponseSetGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiResponses> responsesGeneratorRegistry,
+            ResponseBaseTypeGenerator responsesBaseTypeGenerator, ResponseBaseInterfaceTypeGenerator responsesBaseInterfaceTypeGenerator)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
             _responsesGeneratorRegistry = responsesGeneratorRegistry ?? throw new ArgumentNullException(nameof(responsesGeneratorRegistry));
             _responsesBaseTypeGenerator = responsesBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responsesBaseTypeGenerator));
+            _responsesBaseInterfaceTypeGenerator = responsesBaseInterfaceTypeGenerator ?? throw new ArgumentNullException(nameof(responsesBaseInterfaceTypeGenerator));
         }
 
         public void Preprocess()
@@ -28,6 +30,7 @@ namespace Yardarm.Generation.Response
             }
 
             _responsesBaseTypeGenerator.Preprocess();
+            _responsesBaseInterfaceTypeGenerator.Preprocess();
         }
 
         public IEnumerable<SyntaxTree> Generate()
@@ -40,6 +43,12 @@ namespace Yardarm.Generation.Response
             }
 
             var baseType = _responsesBaseTypeGenerator.GenerateSyntaxTree();
+            if (baseType != null)
+            {
+                yield return baseType;
+            }
+
+            baseType = _responsesBaseInterfaceTypeGenerator.GenerateSyntaxTree();
             if (baseType != null)
             {
                 yield return baseType;

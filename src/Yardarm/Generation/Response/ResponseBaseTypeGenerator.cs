@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Helpers;
@@ -6,14 +7,19 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    public class ResponsesBaseTypeGenerator : TypeGeneratorBase
+    public class ResponseBaseTypeGenerator : TypeGeneratorBase
     {
-        private const string BaseClassName = "ResponseBase";
-        private const string MessageProperty = "Message";
+        private const string BaseClassName = "OperationResponse";
 
-        public ResponsesBaseTypeGenerator(GenerationContext context)
+        private readonly ResponseBaseInterfaceTypeGenerator _responseBaseInterfaceTypeGenerator;
+
+        public ResponseBaseTypeGenerator(GenerationContext context,
+            ResponseBaseInterfaceTypeGenerator responseBaseInterfaceTypeGenerator)
             : base(context)
         {
+            _responseBaseInterfaceTypeGenerator = responseBaseInterfaceTypeGenerator ??
+                                                  throw new ArgumentNullException(
+                                                      nameof(responseBaseInterfaceTypeGenerator));
         }
 
         public override TypeSyntax GetTypeName()
@@ -27,7 +33,7 @@ namespace Yardarm.Generation.Response
         {
             ClassDeclarationSyntax declaration = ClassDeclaration(BaseClassName)
                 .AddBaseListTypes(
-                    SimpleBaseType(WellKnownTypes.IDisposable()))
+                    SimpleBaseType(_responseBaseInterfaceTypeGenerator.GetTypeName()))
                 .AddModifiers(
                     Token(SyntaxKind.PublicKeyword),
                     Token(SyntaxKind.AbstractKeyword))
@@ -50,7 +56,7 @@ namespace Yardarm.Generation.Response
                     Parameter(Identifier("message")).WithType(WellKnownTypes.HttpResponseMessage()))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                        IdentifierName(MessageProperty),
+                        IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty),
                         SyntaxHelpers.ParameterWithNullCheck("message")))
                     ));
 
@@ -59,24 +65,26 @@ namespace Yardarm.Generation.Response
         #region Properties
 
         private PropertyDeclarationSyntax GenerateMessageProperty() =>
-            PropertyDeclaration(WellKnownTypes.HttpResponseMessage(), Identifier(MessageProperty))
+            PropertyDeclaration(WellKnownTypes.HttpResponseMessage(), Identifier(ResponseBaseInterfaceTypeGenerator.MessageProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
         private PropertyDeclarationSyntax GenerateIsSuccessStatusCodeProperty() =>
-            PropertyDeclaration(PredefinedType(Token(SyntaxKind.BoolKeyword)), Identifier("IsSuccessStatusCode"))
+            PropertyDeclaration(PredefinedType(Token(SyntaxKind.BoolKeyword)),
+                    Identifier(ResponseBaseInterfaceTypeGenerator.IsSuccessStatusCodeProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithExpressionBody(ArrowExpressionClause(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(MessageProperty), IdentifierName("IsSuccessStatusCode"))));
+                        IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty), IdentifierName("IsSuccessStatusCode"))));
 
         private PropertyDeclarationSyntax GenerateStatusCodeProperty() =>
-            PropertyDeclaration(WellKnownTypes.HttpStatusCode(), Identifier("StatusCode"))
+            PropertyDeclaration(WellKnownTypes.HttpStatusCode(),
+                    Identifier(ResponseBaseInterfaceTypeGenerator.StatusCodeProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithExpressionBody(ArrowExpressionClause(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(MessageProperty), IdentifierName("StatusCode"))));
+                        IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty), IdentifierName("StatusCode"))));
 
         #endregion
 
@@ -89,7 +97,7 @@ namespace Yardarm.Generation.Response
                     Token(SyntaxKind.VirtualKeyword))
                 .WithBody(Block().AddStatements(ExpressionStatement(
                     InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName("Message"),
+                        IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty),
                         IdentifierName("Dispose"))))));
 
         #endregion

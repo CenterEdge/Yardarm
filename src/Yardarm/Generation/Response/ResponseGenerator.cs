@@ -40,6 +40,7 @@ namespace Yardarm.Generation.Response
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(_document.Paths.ToLocatedElements()
                     .GetOperations()
+                    .GetResponseSets()
                     .GetResponses()
                     .Where(p => p.Element.Reference == null));
 

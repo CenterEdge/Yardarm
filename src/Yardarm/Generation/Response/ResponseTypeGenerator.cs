@@ -2,85 +2,137 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    internal class ResponseTypeGenerator : ITypeGenerator
+    internal class ResponseTypeGenerator : TypeGeneratorBase<OpenApiResponse>
     {
-        protected LocatedOpenApiElement<OpenApiResponse> ResponseElement { get; }
-        protected GenerationContext Context { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
 
-        protected OpenApiResponse Response => ResponseElement.Element;
+        protected OpenApiResponse Response => Element.Element;
 
         public ResponseTypeGenerator(LocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
+            : base(responseElement, context)
         {
-            ResponseElement = responseElement ?? throw new ArgumentNullException(nameof(responseElement));
-            Context = context ?? throw new ArgumentNullException(nameof(context));
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             HttpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
         }
 
-        public virtual void Preprocess() =>
-            GetSchemaGenerator()?.Preprocess();
-
-        public virtual TypeSyntax GetTypeName()
+        public override void Preprocess()
         {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(ResponseElement);
-            if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
+            (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
+
+            if (schemaGenerator != null && !schemaIsReference)
             {
-                throw new InvalidOperationException("No valid media type for this request");
+                schemaGenerator.Preprocess();
+            }
+        }
+
+        public override TypeSyntax GetTypeName()
+        {
+            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
+
+            return QualifiedName(ns, IdentifierName(GetClassName()));
+        }
+
+        public override IEnumerable<MemberDeclarationSyntax> Generate()
+        {
+            (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
+
+            var declaration = ClassDeclaration(GetClassName())
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddMembers(GenerateHeaderProperties().ToArray());
+
+            if (schemaGenerator != null)
+            {
+                declaration = declaration
+                    .AddMembers(PropertyDeclaration(schemaGenerator.GetTypeName(), Identifier("Body"))
+                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                        .AddAccessorListAccessors(
+                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                            AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))));
+
+                if (!schemaIsReference)
+                {
+                    declaration = declaration.AddMembers(schemaGenerator.Generate().ToArray());
+                }
             }
 
+            yield return declaration;
+        }
+
+        protected virtual IEnumerable<MemberDeclarationSyntax> GenerateHeaderProperties()
+        {
+            var nameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
+
+            foreach (var header in Response.Headers.Select(p => Element.CreateChild(p.Value, p.Key)))
+            {
+                var schemaElement = header.CreateChild(header.Element.Schema, "Header");
+
+                ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
+
+                yield return PropertyDeclaration(schemaGenerator.GetTypeName(), nameFormatter.Format(header.Key))
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .AddAccessorListAccessors(
+                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                        AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+
+                if (schemaElement.Element.Reference == null)
+                {
+                    foreach (var memberDeclaration in schemaGenerator.Generate())
+                    {
+                        yield return memberDeclaration;
+                    }
+                }
+            }
+        }
+
+        private (ITypeGenerator? schemaGenerator, bool isReference) GetSchemaGenerator()
+        {
+            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
+            if (mediaType == null)
+            {
+                return (null, false);
+            }
+
+            var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "Body");
+            return (Context.SchemaGeneratorRegistry.Get(schemaElement), schemaElement.Element.Reference != null);
+        }
+
+        private string GetClassName()
+        {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
-            NameSyntax ns = Context.NamespaceProvider.GetNamespace(ResponseElement);
 
             if (Response.Reference != null)
             {
                 // We're in the components section
 
-                return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(Response.Reference.Id + "Response")));
+                return formatter.Format(Response.Reference.Id + "Response");
             }
             else
             {
                 // We're in an operation
 
-                var operation = ResponseElement.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
+                var operation = Element.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
 
-                var responseCode = Enum.TryParse<HttpStatusCode>(ResponseElement.Key, out var statusCode)
+                var responseCode = Enum.TryParse<HttpStatusCode>(Element.Key, out var statusCode)
                     ? HttpResponseCodeNameProvider.GetName(statusCode)
-                    : ResponseElement.Key;
+                    : Element.Key;
 
-                return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format($"{operation.OperationId}{responseCode}Response")));
+                return formatter.Format($"{operation.OperationId}{responseCode}Response");
             }
-        }
-
-        public SyntaxTree? GenerateSyntaxTree() =>
-            GetSchemaGenerator()?.GenerateSyntaxTree();
-
-        public IEnumerable<MemberDeclarationSyntax> Generate() =>
-            GetSchemaGenerator()?.Generate() ?? Enumerable.Empty<MemberDeclarationSyntax>();
-
-        private ITypeGenerator? GetSchemaGenerator()
-        {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(ResponseElement);
-            if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
-            {
-                return null;
-            }
-
-            var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
-            return Context.SchemaGeneratorRegistry.Get(schemaElement);
         }
     }
 }

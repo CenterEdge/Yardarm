@@ -40,12 +40,13 @@ namespace Yardarm.Generation.Response
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(_document.Paths.ToLocatedElements()
                     .GetOperations()
-                    .GetResponses());
+                    .GetResponses()
+                    .Where(p => p.Element.Reference == null));
 
-        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
-            _responseGeneratorRegistry.Get(requestBody).Preprocess();
+        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> response) =>
+            _responseGeneratorRegistry.Get(response).Preprocess();
 
-        protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponse> requestBody) =>
-            _responseGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
+        protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponse> response) =>
+            _responseGeneratorRegistry.Get(response).GenerateSyntaxTree();
     }
 }

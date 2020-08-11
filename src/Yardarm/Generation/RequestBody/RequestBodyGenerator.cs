@@ -40,7 +40,8 @@ namespace Yardarm.Generation.RequestBody
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(_document.Paths.ToLocatedElements()
                     .GetOperations()
-                    .GetRequestBodies());
+                    .GetRequestBodies()
+                    .Where(p => p.Element.Reference == null));
 
         protected virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _requestBodyGeneratorRegistry.Get(requestBody).Preprocess();

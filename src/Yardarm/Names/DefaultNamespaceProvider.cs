@@ -47,7 +47,7 @@ namespace Yardarm.Names
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
 
         protected virtual NameSyntax GetResponseNamespace(LocatedOpenApiElement<OpenApiResponse> response) =>
-            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Models"));
+            SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Responses"));
 
         protected virtual NameSyntax GetResponsesNamespace(LocatedOpenApiElement<OpenApiResponses> responses) =>
             SyntaxFactory.QualifiedName(_rootNamespace, SyntaxFactory.IdentifierName("Responses"));

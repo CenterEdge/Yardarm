@@ -147,6 +147,11 @@ paths:
       responses:
         '200':
           description: Ok
+          headers:
+            'X-Description':
+              description: Test description
+              schema:
+                type: string
           content:
             application/json:
               schema:

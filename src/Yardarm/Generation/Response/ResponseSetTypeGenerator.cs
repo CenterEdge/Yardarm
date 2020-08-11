@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Features;
 using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -28,6 +30,23 @@ namespace Yardarm.Generation.Response
                                             throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
 
             Operation = (OpenApiOperation)element.Parents[0].Element;
+        }
+
+        public override void Preprocess()
+        {
+            TypeSyntax interfaceNameAndNamespace = GetTypeName();
+
+            IResponseBaseTypeFeature baseTypeFeature =
+                Context.Features.GetOrAdd<IResponseBaseTypeFeature, ResponseBaseTypeFeature>();
+
+            foreach (var response in Responses
+                .Select(p => Element.CreateChild(p.Value, p.Key)))
+            {
+                // Register the referenced response to implement this interface
+
+                baseTypeFeature.AddBaseType(response,
+                    SyntaxFactory.SimpleBaseType(interfaceNameAndNamespace));
+            }
         }
 
         public override TypeSyntax GetTypeName()

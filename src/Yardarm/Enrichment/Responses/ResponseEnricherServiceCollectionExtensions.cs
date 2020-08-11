@@ -9,6 +9,7 @@ namespace Yardarm.Enrichment.Responses
         public static IServiceCollection AddDefaultResponseEnrichers(this IServiceCollection services)
         {
             services
+                .AddResponseClassEnricher<BaseTypeEnricher>()
                 .AddResponseHeaderPropertyEnricher<ResponseHeaderDocumentationEnricher>();
 
             return services.AddResponseEnrichersCore();
@@ -20,6 +21,10 @@ namespace Yardarm.Enrichment.Responses
 
             return services;
         }
+
+        public static IServiceCollection AddResponseClassEnricher<T>(this IServiceCollection services)
+            where T : class, IResponseClassEnricher =>
+            services.AddTransient<IResponseClassEnricher, T>();
 
         public static IServiceCollection AddResponseHeaderPropertyEnricher<T>(this IServiceCollection services)
             where T : class, IResponseHeaderPropertyEnricher =>

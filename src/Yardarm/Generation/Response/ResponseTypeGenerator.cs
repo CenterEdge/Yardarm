@@ -61,21 +61,6 @@ namespace Yardarm.Generation.Response
                     GenerateConstructor(className))
                 .AddMembers(GenerateHeaderProperties().ToArray());
 
-            var parentResponses = Element.Parents.OfType<LocatedOpenApiElement<OpenApiResponses>>().FirstOrDefault();
-            var responsesInterfaceName = parentResponses != null
-                ? Context.TypeNameProvider.GetName(parentResponses)
-                : null;
-
-            if (responsesInterfaceName != null)
-            {
-                // This will be null if this is a response type defined globally and referenced
-                // Since it won't have a parent OpenApiResponse
-                // But for inline responses, we should add a direct reference to the interface
-                // Referenced responses will receive interfaces via enrichment
-
-                declaration = declaration.AddBaseListTypes(SimpleBaseType(responsesInterfaceName));
-            }
-
             (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
             if (schemaGenerator != null)
             {
@@ -94,7 +79,7 @@ namespace Yardarm.Generation.Response
                 }
             }
 
-            yield return declaration;
+            yield return declaration.Enrich(Context.Enrichers.Responses.Class, Element);
         }
 
         private ConstructorDeclarationSyntax GenerateConstructor(string className) =>

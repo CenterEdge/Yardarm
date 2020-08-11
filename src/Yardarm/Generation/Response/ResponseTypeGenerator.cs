@@ -5,6 +5,7 @@ using System.Net;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -87,7 +88,8 @@ namespace Yardarm.Generation.Response
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
+                    .Enrich(Context.Enrichers.Responses.HeaderProperty, header);
 
                 if (schemaElement.Element.Reference == null)
                 {

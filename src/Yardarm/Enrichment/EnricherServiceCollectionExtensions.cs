@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment.Internal;
+using Yardarm.Enrichment.Responses;
 using Yardarm.Enrichment.Schema;
 
 namespace Yardarm.Enrichment
@@ -15,7 +16,8 @@ namespace Yardarm.Enrichment
                 .AddOperationClassMethodEnricher<OperationClassMethodDocumentationEnricher>()
                 .AddOperationInterfaceMethodEnricher<OperationInterfaceMethodDocumentationEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
-                .AddDefaultSchemaEnrichers();
+                .AddDefaultSchemaEnrichers()
+                .AddDefaultResponseEnrichers();
 
             return services.AddEnrichersCore();
         }

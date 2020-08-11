@@ -2,13 +2,10 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
-using Yardarm.Enrichment.Internal;
-using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Generation.Internal;
 using Yardarm.Generation.MediaType;
-using Yardarm.Generation.Operation;
-using Yardarm.Generation.RequestBody;
+using Yardarm.Generation.Request;
 using Yardarm.Generation.Response;
 using Yardarm.Generation.Schema;
 using Yardarm.Generation.Tag;
@@ -32,7 +29,7 @@ namespace Yardarm
                 .AddTransient<ISyntaxTreeGenerator, RequestBodyGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponseGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponsesGenerator>()
-                .AddTransient<ISyntaxTreeGenerator, OperationGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, RequestGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, TagGenerator>()
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
@@ -44,7 +41,7 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponsesTypeGeneratorFactory>();
             services.TryAddSingleton<ResponsesBaseTypeGenerator>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, DefaultOperationGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
 
@@ -69,7 +66,5 @@ namespace Yardarm
 
             return services;
         }
-
-
     }
 }

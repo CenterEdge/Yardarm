@@ -4,7 +4,7 @@ using Yardarm.Generation;
 
 namespace Yardarm.Enrichment.Requests
 {
-    public interface IOperationInterfaceMethodEnricher : IEnricher<MethodDeclarationSyntax, LocatedOpenApiElement<OpenApiOperation>>
+    public interface IRequestInterfaceMethodEnricher : IEnricher<MethodDeclarationSyntax, LocatedOpenApiElement<OpenApiOperation>>
     {
     }
 }

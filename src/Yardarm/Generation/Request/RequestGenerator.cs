@@ -4,14 +4,14 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 
-namespace Yardarm.Generation.Operation
+namespace Yardarm.Generation.Request
 {
-    public class OperationGenerator : ISyntaxTreeGenerator
+    public class RequestGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
         private readonly ITypeGeneratorRegistry<OpenApiOperation> _operationTypeGeneratorRegistry;
 
-        public OperationGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiOperation> operationTypeGeneratorRegistry)
+        public RequestGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiOperation> operationTypeGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
             _operationTypeGeneratorRegistry = operationTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(operationTypeGeneratorRegistry));

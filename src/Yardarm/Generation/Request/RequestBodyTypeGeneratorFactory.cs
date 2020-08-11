@@ -2,7 +2,7 @@
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 
-namespace Yardarm.Generation.RequestBody
+namespace Yardarm.Generation.Request
 {
     public class RequestBodyTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiRequestBody>
     {

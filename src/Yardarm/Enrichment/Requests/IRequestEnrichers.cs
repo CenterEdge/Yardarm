@@ -4,8 +4,8 @@ namespace Yardarm.Enrichment.Requests
 {
     public interface IRequestEnrichers
     {
-        IList<IOperationClassMethodEnricher> OperationClassMethod { get; }
-        IList<IOperationInterfaceMethodEnricher> OperationInterfaceMethod { get; }
-        IList<IOperationParameterPropertyEnricher> OperationParameterProperty { get; }
+        IList<IRequestClassMethodEnricher> RequestClassMethod { get; }
+        IList<IRequestInterfaceMethodEnricher> RequestInterfaceMethod { get; }
+        IList<IRequestParameterPropertyEnricher> RequestParameterProperty { get; }
     }
 }

@@ -2,20 +2,20 @@
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 
-namespace Yardarm.Generation.Operation
+namespace Yardarm.Generation.Request
 {
-    public class DefaultOperationGeneratorFactory : ITypeGeneratorFactory<OpenApiOperation>
+    public class RequestTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiOperation>
     {
         private readonly GenerationContext _context;
         private readonly IMediaTypeSelector _mediaTypeSelector;
 
-        public DefaultOperationGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+        public RequestTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
         public ITypeGenerator Create(LocatedOpenApiElement<OpenApiOperation> element) =>
-            new OperationTypeGenerator(element, _context, _mediaTypeSelector);
+            new RequestTypeGenerator(element, _context, _mediaTypeSelector);
     }
 }

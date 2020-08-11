@@ -9,9 +9,9 @@ namespace Yardarm.Enrichment.Requests
         public static IServiceCollection AddDefaultRequestEnrichers(this IServiceCollection services)
         {
             services
-                .AddOperationClassMethodEnricher<OperationClassMethodDocumentationEnricher>()
-                .AddOperationInterfaceMethodEnricher<OperationInterfaceMethodDocumentationEnricher>()
-                .AddOperationParameterPropertyEnricher<OperationParameterDocumentationEnricher>();
+                .AddRequestClassMethodEnricher<RequestClassMethodDocumentationEnricher>()
+                .AddRequestInterfaceMethodEnricher<RequestInterfaceMethodDocumentationEnricher>()
+                .AddRequestParameterPropertyEnricher<RequestParameterDocumentationEnricher>();
 
             return services.AddRequestEnrichersCore();
         }
@@ -23,16 +23,16 @@ namespace Yardarm.Enrichment.Requests
             return services;
         }
 
-        public static IServiceCollection AddOperationClassMethodEnricher<T>(this IServiceCollection services)
-            where T : class, IOperationClassMethodEnricher =>
-            services.AddTransient<IOperationClassMethodEnricher, T>();
+        public static IServiceCollection AddRequestClassMethodEnricher<T>(this IServiceCollection services)
+            where T : class, IRequestClassMethodEnricher =>
+            services.AddTransient<IRequestClassMethodEnricher, T>();
 
-        public static IServiceCollection AddOperationInterfaceMethodEnricher<T>(this IServiceCollection services)
-            where T : class, IOperationInterfaceMethodEnricher =>
-            services.AddTransient<IOperationInterfaceMethodEnricher, T>();
+        public static IServiceCollection AddRequestInterfaceMethodEnricher<T>(this IServiceCollection services)
+            where T : class, IRequestInterfaceMethodEnricher =>
+            services.AddTransient<IRequestInterfaceMethodEnricher, T>();
 
-        public static IServiceCollection AddOperationParameterPropertyEnricher<T>(this IServiceCollection services)
-            where T : class, IOperationParameterPropertyEnricher =>
-            services.AddTransient<IOperationParameterPropertyEnricher, T>();
+        public static IServiceCollection AddRequestParameterPropertyEnricher<T>(this IServiceCollection services)
+            where T : class, IRequestParameterPropertyEnricher =>
+            services.AddTransient<IRequestParameterPropertyEnricher, T>();
     }
 }

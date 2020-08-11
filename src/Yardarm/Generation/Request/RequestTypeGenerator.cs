@@ -8,15 +8,15 @@ using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 
-namespace Yardarm.Generation.Operation
+namespace Yardarm.Generation.Request
 {
-    public class OperationTypeGenerator : TypeGeneratorBase<OpenApiOperation>
+    public class RequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
         protected IMediaTypeSelector MediaTypeSelector { get; }
 
         protected OpenApiOperation Operation => Element.Element;
 
-        public OperationTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
+        public RequestTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector)
             : base(operationElement, context)
         {
@@ -65,7 +65,7 @@ namespace Yardarm.Generation.Operation
             MemberDeclarationSyntax[] members = properties
                 .Select(p =>
                     CreatePropertyDeclaration(p.CreateChild(p.Element.Schema, p.Element.Name), declaration.Identifier.ValueText)
-                        .Enrich(Context.Enrichers.Requests.OperationParameterProperty, p))
+                        .Enrich(Context.Enrichers.Requests.RequestParameterProperty, p))
                 .ToArray<MemberDeclarationSyntax>();
 
             return declaration.AddMembers(members);

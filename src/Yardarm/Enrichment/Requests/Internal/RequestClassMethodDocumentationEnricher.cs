@@ -6,7 +6,7 @@ using Yardarm.Helpers;
 
 namespace Yardarm.Enrichment.Requests.Internal
 {
-    internal class OperationClassMethodDocumentationEnricher : IOperationClassMethodEnricher
+    internal class RequestClassMethodDocumentationEnricher : IRequestClassMethodEnricher
     {
         public int Priority => 100; // Run after most other enrichers
 

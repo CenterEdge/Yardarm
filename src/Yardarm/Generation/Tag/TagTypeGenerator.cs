@@ -40,7 +40,7 @@ namespace Yardarm.Generation.Tag
                             (operation, method) => new {operation, method})
                         .Select(p => p.method
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
-                            .Enrich(Context.Enrichers.Requests.OperationInterfaceMethod, p.operation))
+                            .Enrich(Context.Enrichers.Requests.RequestInterfaceMethod, p.operation))
                         .ToArray<MemberDeclarationSyntax>());
 
             return declaration;
@@ -62,7 +62,7 @@ namespace Yardarm.Generation.Tag
                                         QualifiedName(IdentifierName("System"), IdentifierName("NotImplementedException")))
                                         .WithArgumentList(ArgumentList()))
                                     .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))))
-                            .Enrich(Context.Enrichers.Requests.OperationClassMethod, p.operation))
+                            .Enrich(Context.Enrichers.Requests.RequestClassMethod, p.operation))
                         .ToArray<MemberDeclarationSyntax>());
 
             return declaration;

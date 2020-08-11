@@ -2,7 +2,7 @@
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 
-namespace Yardarm.Enrichment
+namespace Yardarm.Enrichment.Requests
 {
     public interface IOperationInterfaceMethodEnricher : IEnricher<MethodDeclarationSyntax, LocatedOpenApiElement<OpenApiOperation>>
     {

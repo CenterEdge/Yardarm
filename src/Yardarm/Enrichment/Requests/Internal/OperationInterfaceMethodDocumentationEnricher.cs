@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 using Yardarm.Helpers;
 
-namespace Yardarm.Enrichment.Internal
+namespace Yardarm.Enrichment.Requests.Internal
 {
     internal class OperationInterfaceMethodDocumentationEnricher : IOperationInterfaceMethodEnricher
     {

@@ -55,6 +55,6 @@ namespace Yardarm.Generation.Schema
         protected virtual ITypeGenerator GetStringGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
             element.Element.Enum?.Count > 0
                 ? (ITypeGenerator) new EnumSchemaGenerator(element, _context.Value)
-                : StringSchemaGenerator.Instance;
+                : new StringSchemaGenerator(element);
     }
 }

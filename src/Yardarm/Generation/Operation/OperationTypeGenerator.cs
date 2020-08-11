@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 
@@ -43,7 +44,7 @@ namespace Yardarm.Generation.Operation
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()));
 
-            declaration = AddProperties(declaration, Element, Operation.Parameters);
+            declaration = AddProperties(declaration, Operation.Parameters.Select(p => Element.CreateChild(p, "")));
 
             if (Operation.RequestBody != null)
             {
@@ -59,16 +60,18 @@ namespace Yardarm.Generation.Operation
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
-            LocatedOpenApiElement<OpenApiOperation> parent, IEnumerable<OpenApiParameter> properties)
+            IEnumerable<LocatedOpenApiElement<OpenApiParameter>> properties)
         {
             MemberDeclarationSyntax[] members = properties
-                .Select(p => CreatePropertyDeclaration(parent.CreateChild(p.Schema, p.Name), declaration.Identifier.ValueText))
-                .ToArray();
+                .Select(p =>
+                    CreatePropertyDeclaration(p.CreateChild(p.Element.Schema, p.Element.Name), declaration.Identifier.ValueText)
+                        .Enrich(Context.Enrichers.Requests.OperationParameterProperty, p))
+                .ToArray<MemberDeclarationSyntax>();
 
             return declaration.AddMembers(members);
         }
 
-        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement property, string ownerName)
+        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement property, string ownerName)
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
 

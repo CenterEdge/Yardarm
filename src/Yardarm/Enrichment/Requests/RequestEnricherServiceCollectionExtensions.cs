@@ -10,7 +10,8 @@ namespace Yardarm.Enrichment.Requests
         {
             services
                 .AddOperationClassMethodEnricher<OperationClassMethodDocumentationEnricher>()
-                .AddOperationInterfaceMethodEnricher<OperationInterfaceMethodDocumentationEnricher>();
+                .AddOperationInterfaceMethodEnricher<OperationInterfaceMethodDocumentationEnricher>()
+                .AddOperationParameterPropertyEnricher<OperationParameterDocumentationEnricher>();
 
             return services.AddRequestEnrichersCore();
         }
@@ -29,5 +30,9 @@ namespace Yardarm.Enrichment.Requests
         public static IServiceCollection AddOperationInterfaceMethodEnricher<T>(this IServiceCollection services)
             where T : class, IOperationInterfaceMethodEnricher =>
             services.AddTransient<IOperationInterfaceMethodEnricher, T>();
+
+        public static IServiceCollection AddOperationParameterPropertyEnricher<T>(this IServiceCollection services)
+            where T : class, IOperationParameterPropertyEnricher =>
+            services.AddTransient<IOperationParameterPropertyEnricher, T>();
     }
 }

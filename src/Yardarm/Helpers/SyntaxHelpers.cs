@@ -6,41 +6,9 @@ namespace Yardarm.Helpers
 {
     public static class SyntaxHelpers
     {
-        public static TypeSyntax ListT(TypeSyntax itemType) =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Collections")
-                    ),
-                    IdentifierName("Generic")),
-                GenericName(
-                        Identifier("List"),
-                        TypeArgumentList(SingletonSeparatedList(itemType))));
-
-        public static TypeSyntax TaskT(TypeSyntax resultType) =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Threading")
-                    ),
-                    IdentifierName("Tasks")),
-                GenericName(
-                    Identifier("Task"),
-                    TypeArgumentList(SingletonSeparatedList(resultType))));
-
-        public static TypeSyntax CancellationToken() =>
-            QualifiedName(
-                QualifiedName(
-                    IdentifierName("System"),
-                    IdentifierName("Threading")
-                ),
-                IdentifierName("CancellationToken"));
-
         public static ParameterSyntax DefaultedCancellationTokenParameter() =>
             Parameter(Identifier("cancellationToken"))
-                .WithType(CancellationToken())
+                .WithType(WellKnownTypes.CancellationToken())
                 .WithDefault(EqualsValueClause(
                     LiteralExpression(SyntaxKind.DefaultLiteralExpression,
                         Token(SyntaxKind.DefaultKeyword))));

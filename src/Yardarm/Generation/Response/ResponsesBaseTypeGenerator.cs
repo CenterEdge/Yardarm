@@ -9,6 +9,7 @@ namespace Yardarm.Generation.Response
     public class ResponsesBaseTypeGenerator : TypeGeneratorBase
     {
         private const string BaseClassName = "ResponseBase";
+        private const string MessageProperty = "Message";
 
         public ResponsesBaseTypeGenerator(GenerationContext context)
             : base(context)
@@ -25,40 +26,72 @@ namespace Yardarm.Generation.Response
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
             ClassDeclarationSyntax declaration = ClassDeclaration(BaseClassName)
+                .AddBaseListTypes(
+                    SimpleBaseType(WellKnownTypes.IDisposable()))
                 .AddModifiers(
                     Token(SyntaxKind.PublicKeyword),
                     Token(SyntaxKind.AbstractKeyword))
                 .AddMembers(
                     GenerateConstructor(),
-                    GenerateProperty());
+                    GenerateMessageProperty(),
+                    GenerateIsSuccessStatusCodeProperty(),
+                    GenerateStatusCodeProperty(),
+                    GenerateDisposeMethod());
 
             yield return declaration;
         }
+
+        #region Constructors
 
         private ConstructorDeclarationSyntax GenerateConstructor() =>
             ConstructorDeclaration(BaseClassName)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
-                    Parameter(Identifier("message")).WithType(HttpResponseMessage()))
+                    Parameter(Identifier("message")).WithType(WellKnownTypes.HttpResponseMessage()))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                        IdentifierName("Message"),
+                        IdentifierName(MessageProperty),
                         SyntaxHelpers.ParameterWithNullCheck("message")))
                     ));
 
-        private PropertyDeclarationSyntax GenerateProperty() =>
-            PropertyDeclaration(HttpResponseMessage(), Identifier("Message"))
+        #endregion
+
+        #region Properties
+
+        private PropertyDeclarationSyntax GenerateMessageProperty() =>
+            PropertyDeclaration(WellKnownTypes.HttpResponseMessage(), Identifier(MessageProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
-        private TypeSyntax HttpResponseMessage() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Net")),
-                    IdentifierName("Http")),
-                IdentifierName("HttpResponseMessage"));
+        private PropertyDeclarationSyntax GenerateIsSuccessStatusCodeProperty() =>
+            PropertyDeclaration(PredefinedType(Token(SyntaxKind.BoolKeyword)), Identifier("IsSuccessStatusCode"))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .WithExpressionBody(ArrowExpressionClause(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(MessageProperty), IdentifierName("IsSuccessStatusCode"))));
+
+        private PropertyDeclarationSyntax GenerateStatusCodeProperty() =>
+            PropertyDeclaration(WellKnownTypes.HttpStatusCode(), Identifier("StatusCode"))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .WithExpressionBody(ArrowExpressionClause(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(MessageProperty), IdentifierName("StatusCode"))));
+
+        #endregion
+
+        #region Methods
+
+        private MethodDeclarationSyntax GenerateDisposeMethod() =>
+            MethodDeclaration(PredefinedType(Token(SyntaxKind.VoidKeyword)), Identifier("Dispose"))
+                .AddModifiers(
+                    Token(SyntaxKind.PublicKeyword),
+                    Token(SyntaxKind.VirtualKeyword))
+                .WithBody(Block().AddStatements(ExpressionStatement(
+                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName("Message"),
+                        IdentifierName("Dispose"))))));
+
+        #endregion
     }
 }

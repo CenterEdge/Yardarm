@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Schema
 
             TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(itemElement).GetTypeName();
 
-            return SyntaxHelpers.ListT(itemTypeName);
+            return WellKnownTypes.ListT(itemTypeName);
         }
 
         public SyntaxTree? GenerateSyntaxTree() => null;

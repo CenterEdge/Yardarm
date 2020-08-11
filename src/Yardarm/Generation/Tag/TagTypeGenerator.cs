@@ -72,7 +72,7 @@ namespace Yardarm.Generation.Tag
             LocatedOpenApiElement<OpenApiOperation> operation)
         {
             TypeSyntax requestType = Context.TypeNameProvider.GetName(operation);
-            TypeSyntax responseType = SyntaxHelpers.TaskT(Context.TypeNameProvider.GetName(operation.CreateChild(operation.Element.Responses, "")));
+            TypeSyntax responseType = WellKnownTypes.TaskT(Context.TypeNameProvider.GetName(operation.CreateChild(operation.Element.Responses, "")));
 
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);

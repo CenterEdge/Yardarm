@@ -31,6 +31,7 @@ namespace Yardarm.Generation.Schema
             INameFormatter memberNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.EnumMember);
 
             EnumDeclarationSyntax declaration = SyntaxFactory.EnumDeclaration(enumName)
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(Schema.Enum
                     .Select(p => CreateEnumMember(Element, p, memberNameFormatter)!)

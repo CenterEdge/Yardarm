@@ -5,12 +5,14 @@ using Yardarm.Enrichment;
 using Yardarm.Features;
 using Yardarm.Generation;
 using Yardarm.Names;
+using Yardarm.Spec;
 
 namespace Yardarm
 {
     public class GenerationContext
     {
         private readonly Lazy<OpenApiDocument> _openApiDocument;
+        private readonly Lazy<IOpenApiElementRegistry> _elementRegistry;
         private readonly Lazy<INamespaceProvider> _namespaceProvider;
         private readonly Lazy<ITypeNameProvider> _typeNameProvider;
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
@@ -20,6 +22,7 @@ namespace Yardarm
         public FeatureCollection Features { get; } = new FeatureCollection();
 
         public OpenApiDocument Document => _openApiDocument.Value;
+        public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
         public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
         public ITypeNameProvider TypeNameProvider => _typeNameProvider.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
@@ -29,6 +32,7 @@ namespace Yardarm
         public GenerationContext(IServiceProvider serviceProvider)
         {
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
+            _elementRegistry = new Lazy<IOpenApiElementRegistry>(serviceProvider.GetRequiredService<IOpenApiElementRegistry>);
             _namespaceProvider = new Lazy<INamespaceProvider>(serviceProvider.GetRequiredService<INamespaceProvider>);
             _typeNameProvider = new Lazy<ITypeNameProvider>(serviceProvider.GetRequiredService<ITypeNameProvider>);
             _nameFormatterSelector =

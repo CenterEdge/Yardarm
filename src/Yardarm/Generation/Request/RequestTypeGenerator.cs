@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
@@ -40,6 +41,7 @@ namespace Yardarm.Generation.Request
             string className = classNameAndNamespace.Right.Identifier.Text;
 
             ClassDeclarationSyntax declaration = SyntaxFactory.ClassDeclaration(className)
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
@@ -72,7 +74,8 @@ namespace Yardarm.Generation.Request
             return declaration.AddMembers(members);
         }
 
-        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement property, string ownerName)
+        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(LocatedOpenApiElement<T> property, string ownerName)
+            where T : IOpenApiSerializable
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
 
@@ -85,6 +88,7 @@ namespace Yardarm.Generation.Request
             var typeName = Context.TypeNameProvider.GetName(property);
 
             var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
+                .AddElementAnnotation(property, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)

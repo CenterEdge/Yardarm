@@ -56,6 +56,7 @@ namespace Yardarm.Generation.Response
             var className = GetClassName();
 
             var declaration = ClassDeclaration(className)
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddBaseListTypes(SimpleBaseType(ResponseBaseTypeGenerator.GetTypeName()))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
@@ -103,6 +104,7 @@ namespace Yardarm.Generation.Response
                 ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
 
                 yield return PropertyDeclaration(schemaGenerator.GetTypeName(), nameFormatter.Format(header.Key))
+                    .AddElementAnnotation(schemaElement, Context.ElementRegistry)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)

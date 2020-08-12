@@ -12,6 +12,8 @@ using Yardarm.Generation.Tag;
 using Yardarm.Names;
 using Yardarm.Packaging;
 using Yardarm.Packaging.Internal;
+using Yardarm.Spec;
+using Yardarm.Spec.Internal;
 
 namespace Yardarm
 {
@@ -64,6 +66,8 @@ namespace Yardarm
                 .AddSingleton(settings)
                 .AddSingleton(document)
                 .AddTransient<NuGetPacker>();
+
+            services.TryAddSingleton<IOpenApiElementRegistry, OpenApiElementRegistry>();
 
             return services;
         }

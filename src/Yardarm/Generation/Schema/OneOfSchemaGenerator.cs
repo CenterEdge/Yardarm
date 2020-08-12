@@ -62,6 +62,7 @@ namespace Yardarm.Generation.Schema
             SimpleNameSyntax interfaceName = interfaceNameAndNamespace.Right;
 
             var interfaceDeclaration = SyntaxFactory.InterfaceDeclaration(interfaceName.ToString())
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
             yield return interfaceDeclaration.Enrich(Context.Enrichers.Schema.Interface, Element);

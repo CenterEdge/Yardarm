@@ -50,6 +50,7 @@ namespace Yardarm.Generation.Tag
         protected virtual MemberDeclarationSyntax GenerateClass()
         {
             var declaration = ClassDeclaration(GetClassName())
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddBaseListTypes(SimpleBaseType(GetTypeName()))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
@@ -79,6 +80,7 @@ namespace Yardarm.Generation.Tag
                 .Format(operation.Element.OperationId);
 
             var methodDeclaration = SyntaxFactory.MethodDeclaration(responseType, methodName)
+                .AddElementAnnotation(operation, Context.ElementRegistry)
                 .AddParameterListParameters(
                     SyntaxFactory.Parameter(SyntaxFactory.Identifier("request"))
                         .WithType(requestType),

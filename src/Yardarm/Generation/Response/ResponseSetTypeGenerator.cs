@@ -62,6 +62,7 @@ namespace Yardarm.Generation.Response
             var interfaceName = GetInterfaceName();
 
             InterfaceDeclarationSyntax declaration = InterfaceDeclaration(interfaceName)
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddBaseListTypes(SimpleBaseType(_responseBaseInterfaceTypeGenerator.GetTypeName()));
 

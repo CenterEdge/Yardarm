@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -25,6 +26,7 @@ namespace Yardarm.Generation.Schema
             string className = classNameAndNamespace.Right.Identifier.Text;
 
             ClassDeclarationSyntax declaration = SyntaxFactory.ClassDeclaration(className)
+                .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
@@ -76,6 +78,7 @@ namespace Yardarm.Generation.Schema
             var typeName = Context.TypeNameProvider.GetName(property);
 
             var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
+                .AddElementAnnotation(property, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)

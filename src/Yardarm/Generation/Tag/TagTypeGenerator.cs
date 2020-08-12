@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Helpers;
 using Yardarm.Names;
+using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Tag

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
 
-namespace Yardarm.Generation
+namespace Yardarm.Spec
 {
     public class LocatedOpenApiElement<T> : LocatedOpenApiElement
         where T : IOpenApiSerializable

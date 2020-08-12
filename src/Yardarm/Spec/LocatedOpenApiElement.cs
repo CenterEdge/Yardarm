@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
+using Yardarm.Generation;
 using Yardarm.Helpers;
 
-namespace Yardarm.Generation
+namespace Yardarm.Spec
 {
     /// <summary>
     /// Represents an <see cref="IOpenApiSerializable"/> element with information about the path

@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Interfaces;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation
 {

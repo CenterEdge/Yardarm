@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.OpenApi.Models;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Tag
 {

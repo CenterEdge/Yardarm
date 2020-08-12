@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
 {

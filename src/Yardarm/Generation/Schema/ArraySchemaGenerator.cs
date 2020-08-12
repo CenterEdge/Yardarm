@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
 {

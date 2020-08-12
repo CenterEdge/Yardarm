@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using Microsoft.OpenApi.Interfaces;
 using Yardarm.Helpers;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Internal
 {

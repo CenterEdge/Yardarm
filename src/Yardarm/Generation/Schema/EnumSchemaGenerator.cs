@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Names;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
 {

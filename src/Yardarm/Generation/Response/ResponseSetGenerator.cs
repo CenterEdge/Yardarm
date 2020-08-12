@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {

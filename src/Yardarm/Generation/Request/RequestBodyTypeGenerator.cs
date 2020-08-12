@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Request
 {

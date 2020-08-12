@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Request
 {

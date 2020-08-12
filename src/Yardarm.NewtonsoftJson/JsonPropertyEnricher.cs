@@ -5,6 +5,7 @@ using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Helpers;
 using Yardarm.NewtonsoftJson.Helpers;
+using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {

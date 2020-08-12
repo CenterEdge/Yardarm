@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.OpenApi.Models;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.MediaType
 {

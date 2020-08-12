@@ -2,6 +2,7 @@
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
+using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Schema
 {

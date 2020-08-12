@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 
-namespace Yardarm.Generation
+namespace Yardarm.Spec
 {
     public static class LocatedOpenApiElementExtensions
     {

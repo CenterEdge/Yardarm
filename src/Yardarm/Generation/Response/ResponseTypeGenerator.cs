@@ -9,6 +9,7 @@ using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
+using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response

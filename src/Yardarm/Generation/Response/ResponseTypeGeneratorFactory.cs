@@ -2,6 +2,7 @@
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {

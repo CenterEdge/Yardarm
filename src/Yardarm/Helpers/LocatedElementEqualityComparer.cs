@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
 using Yardarm.Generation;
+using Yardarm.Spec;
 
 namespace Yardarm.Helpers
 {

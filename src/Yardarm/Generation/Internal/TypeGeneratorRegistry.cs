@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Interfaces;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Internal
 {

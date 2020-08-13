@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
-using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Requests.Internal
 {
@@ -11,7 +10,7 @@ namespace Yardarm.Enrichment.Requests.Internal
         public int Priority => 100;
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-            LocatedOpenApiElement<OpenApiParameter> context) =>
+            OpenApiEnrichmentContext<OpenApiParameter> context) =>
             string.IsNullOrWhiteSpace(context.Element.Description)
                 ? target
                 : AddDocumentation(target, context.Element);

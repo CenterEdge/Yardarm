@@ -4,7 +4,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.Enrichment
 {
-    public interface IOpenApiSyntaxNodeEnricher<TSyntaxNode, TElement> : IEnricher<TSyntaxNode, LocatedOpenApiElement<TElement>>, IOpenApiSyntaxNodeEnricher
+    public interface IOpenApiSyntaxNodeEnricher<TSyntaxNode, TElement> : IEnricher<TSyntaxNode, OpenApiEnrichmentContext<TElement>>, IOpenApiSyntaxNodeEnricher
         where TSyntaxNode : SyntaxNode
         where TElement : IOpenApiSerializable
     {

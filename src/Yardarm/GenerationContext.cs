@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
@@ -16,14 +15,6 @@ namespace Yardarm
         private readonly Lazy<ITypeNameProvider> _typeNameProvider;
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
-
-        private CSharpCompilation _compilation;
-
-        public CSharpCompilation Compilation
-        {
-            get => _compilation;
-            set => _compilation = value ?? throw new ArgumentNullException(nameof(value));
-        }
 
         public OpenApiDocument Document => _openApiDocument.Value;
         public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
@@ -45,10 +36,6 @@ namespace Yardarm
                 new Lazy<INameFormatterSelector>(serviceProvider.GetRequiredService<INameFormatterSelector>);
             _typeGeneratorRegistry =
                 new Lazy<ITypeGeneratorRegistry>(serviceProvider.GetRequiredService<ITypeGeneratorRegistry>);
-
-            var settings = serviceProvider.GetRequiredService<YardarmGenerationSettings>();
-            _compilation = CSharpCompilation.Create(settings.AssemblyName)
-                .WithOptions(settings.CompilationOptions);
         }
     }
 }

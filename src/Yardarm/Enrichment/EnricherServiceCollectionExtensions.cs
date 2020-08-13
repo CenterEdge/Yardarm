@@ -12,6 +12,7 @@ namespace Yardarm.Enrichment
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
+                .AddCompilationEnricher<OpenApiCompilationEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
                 .AddDefaultSchemaEnrichers()
                 .AddDefaultRequestEnrichers()
@@ -20,6 +21,10 @@ namespace Yardarm.Enrichment
         public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
             where T : class, IAssemblyInfoEnricher =>
             services.AddTransient<IAssemblyInfoEnricher, T>();
+
+        public static IServiceCollection AddCompilationEnricher<T>(this IServiceCollection services)
+            where T : class, ICompilationEnricher =>
+            services.AddTransient<ICompilationEnricher, T>();
 
         public static IServiceCollection AddNuGetPackageEnricher<T>(this IServiceCollection services)
             where T : class, INuGetPackageEnricher =>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -12,29 +11,22 @@ namespace Yardarm.Enrichment.Schema.Internal
         private static readonly NameSyntax _requiredAttributeName =
             SyntaxFactory.ParseName("System.ComponentModel.DataAnnotations.Required");
 
-        private readonly GenerationContext _context;
-
         public int Priority => 0;
 
-        public RequiredPropertyEnricher(GenerationContext context)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-        }
-
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, LocatedOpenApiElement<OpenApiSchema> schema)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
         {
             bool isRequired =
-                schema.Parents.FirstOrDefault() is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
-                parentSchema.Element.Required.Contains(schema.Key);
+                context.LocatedElement.Parents.FirstOrDefault() is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
+                parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
             return isRequired
-                ? AddRequiredAttribute(syntax)
+                ? AddRequiredAttribute(syntax, context.Compilation)
                 : MakeNullable(syntax);
         }
 
-        private PropertyDeclarationSyntax AddRequiredAttribute(PropertyDeclarationSyntax syntax)
+        private PropertyDeclarationSyntax AddRequiredAttribute(PropertyDeclarationSyntax syntax, CSharpCompilation compilation)
         {
-            var semanticModel = _context.Compilation.GetSemanticModel(syntax.SyntaxTree);
+            var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
 
             var typeInfo = semanticModel.GetTypeInfo(syntax.Type);
 

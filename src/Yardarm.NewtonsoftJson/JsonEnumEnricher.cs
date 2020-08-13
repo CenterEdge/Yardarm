@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.NewtonsoftJson.Helpers;
-using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {
@@ -12,7 +11,7 @@ namespace Yardarm.NewtonsoftJson
         public int Priority => 0;
 
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
-            LocatedOpenApiElement<OpenApiSchema> context) =>
+            OpenApiEnrichmentContext<OpenApiSchema> context) =>
             context.Element.Type == "string"
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(

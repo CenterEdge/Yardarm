@@ -4,7 +4,6 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Helpers;
 using Yardarm.NewtonsoftJson.Helpers;
-using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {
@@ -13,10 +12,10 @@ namespace Yardarm.NewtonsoftJson
         public int Priority => 0;
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-            LocatedOpenApiElement<OpenApiSchema> context) =>
+            OpenApiEnrichmentContext<OpenApiSchema> context) =>
             target
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                     SyntaxFactory.Attribute(JsonHelpers.JsonPropertyAttributeName()).AddArgumentListArguments(
-                        SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.Key)))));
+                        SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
     }
 }

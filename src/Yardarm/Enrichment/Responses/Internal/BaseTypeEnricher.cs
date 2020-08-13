@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Responses.Internal
 {
@@ -19,7 +18,7 @@ namespace Yardarm.Enrichment.Responses.Internal
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            LocatedOpenApiElement<OpenApiResponse> context)
+            OpenApiEnrichmentContext<OpenApiResponse> context)
         {
             var feature = _context.GenerationServices.GetRequiredService<IResponseBaseTypeRegistry>();
             if (feature == null)
@@ -27,7 +26,7 @@ namespace Yardarm.Enrichment.Responses.Internal
                 return target;
             }
 
-            BaseTypeSyntax[] additionalBaseTypes = feature.GetBaseTypes(context).ToArray();
+            BaseTypeSyntax[] additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement).ToArray();
 
             return additionalBaseTypes.Length > 0
                 ? target.AddBaseListTypes(additionalBaseTypes)

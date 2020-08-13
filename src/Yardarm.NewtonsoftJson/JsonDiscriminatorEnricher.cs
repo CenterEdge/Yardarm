@@ -22,15 +22,15 @@ namespace Yardarm.NewtonsoftJson
         }
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
-            LocatedOpenApiElement<OpenApiSchema> context) =>
+            OpenApiEnrichmentContext<OpenApiSchema> context) =>
             context.Element.Discriminator?.PropertyName != null
                 ? AddJsonConverter(target, context)
                 : target;
 
         protected virtual InterfaceDeclarationSyntax AddJsonConverter(InterfaceDeclarationSyntax target,
-            LocatedOpenApiElement<OpenApiSchema> element)
+            OpenApiEnrichmentContext<OpenApiSchema> context)
         {
-            OpenApiSchema schema = element.Element;
+            OpenApiSchema schema = context.Element;
 
             var attribute = SyntaxFactory.Attribute(JsonHelpers.JsonConverterAttributeName()).AddArgumentListArguments(
                 SyntaxFactory.AttributeArgument(
@@ -38,7 +38,7 @@ namespace Yardarm.NewtonsoftJson
                 SyntaxFactory.AttributeArgument(
                     SyntaxHelpers.StringLiteral(schema.Discriminator.PropertyName)),
                 SyntaxFactory.AttributeArgument(
-                    SyntaxFactory.TypeOfExpression(Context.TypeNameProvider.GetName(element))));
+                    SyntaxFactory.TypeOfExpression(Context.TypeNameProvider.GetName(context.LocatedElement))));
 
             if (schema.Discriminator.Mapping != null)
             {

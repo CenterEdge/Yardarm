@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.Packaging;
-using Yardarm.Spec;
 
 namespace Yardarm
 {
@@ -31,13 +30,14 @@ namespace Yardarm
 
             var serviceProvider = settings.BuildServiceProvider(document);
 
-            var context = serviceProvider.GetRequiredService<GenerationContext>();
+            var compilation = CSharpCompilation.Create(settings.AssemblyName)
+                .WithOptions(settings.CompilationOptions);
 
-            await AddReferences(context, cancellationToken);
+            compilation = await AddReferences(compilation, serviceProvider, cancellationToken);
 
-            AddSyntaxTrees(context, cancellationToken);
+            compilation = AddSyntaxTrees(compilation, serviceProvider, cancellationToken);
 
-            var compilationResult = context.Compilation.Emit(settings.DllOutput,
+            var compilationResult = compilation.Emit(settings.DllOutput,
                 pdbStream: settings.PdbOutput,
                 xmlDocumentationStream: settings.XmlDocumentationOutput,
                 options: new EmitOptions()
@@ -57,24 +57,24 @@ namespace Yardarm
             return compilationResult;
         }
 
-        private async Task AddReferences(GenerationContext context, CancellationToken cancellationToken)
+        private async Task<CSharpCompilation> AddReferences(CSharpCompilation compilation, IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
-            List<MetadataReference> references = await context.GenerationServices
+            List<MetadataReference> references = await serviceProvider
                 .GetRequiredService<IEnumerable<IReferenceGenerator>>()
                 .ToAsyncEnumerable()
                 .SelectMany(p => p.Generate(cancellationToken))
                 .ToListAsync(cancellationToken);
 
-            context.Compilation = context.Compilation
-                .AddReferences(references);
+            return compilation.AddReferences(references);
         }
 
-        private void AddSyntaxTrees(GenerationContext context, CancellationToken cancellationToken)
+        private CSharpCompilation AddSyntaxTrees(CSharpCompilation compilation, IServiceProvider serviceProvider,
+            CancellationToken cancellationToken)
         {
             ISyntaxTreeGenerator[] syntaxTreeGenerators =
-                context.GenerationServices.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>().ToArray();
+                serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>().ToArray();
 
-            context.Compilation = context.Compilation
+            compilation = compilation
                 .AddSyntaxTrees(syntaxTreeGenerators
                     .AsParallel()
                     .AsUnordered()
@@ -82,11 +82,10 @@ namespace Yardarm
                     .SelectMany(p => p.Generate())
                     .ToArray());
 
-            var enrichers = context.GenerationServices.GetRequiredService<IEnumerable<IOpenApiSyntaxNodeEnricher>>();
-            foreach (var enricher in enrichers.OrderBy(p => p.Priority))
-            {
-                context.Compilation = context.Compilation.Enrich(enricher, context);
-            }
+            var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
+            compilation = compilation.Enrich(enrichers);
+
+            return compilation;
         }
 
         private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)

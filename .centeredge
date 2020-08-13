@@ -1,0 +1,10 @@
+{
+  "disabledValidationRules": [
+    "jira-issue-reference"
+  ],
+  "fileCountThresholds": {
+    "lowThreshold": 100,
+    "mediumThreshold": 150,
+    "highThreshold": 200
+  }
+}

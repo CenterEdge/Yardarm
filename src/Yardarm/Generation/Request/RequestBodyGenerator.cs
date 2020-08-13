@@ -18,14 +18,6 @@ namespace Yardarm.Generation.Request
             _requestBodyGeneratorRegistry = requestBodyGeneratorRegistry ?? throw new ArgumentNullException(nameof(requestBodyGeneratorRegistry));
         }
 
-        public void Preprocess()
-        {
-            foreach (var request in GetRequestBodies())
-            {
-                Preprocess(request);
-            }
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetRequestBodies()
@@ -43,9 +35,6 @@ namespace Yardarm.Generation.Request
                     .GetOperations()
                     .GetRequestBodies()
                     .Where(p => p.Element.Reference == null));
-
-        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            _requestBodyGeneratorRegistry.Get(requestBody).Preprocess();
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _requestBodyGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();

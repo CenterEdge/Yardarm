@@ -19,10 +19,6 @@ namespace Yardarm.Generation.Schema
             _schemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
         }
 
-        public void Preprocess()
-        {
-        }
-
         public TypeSyntax GetTypeName() =>
             _schemaElement.Element.Format switch
             {

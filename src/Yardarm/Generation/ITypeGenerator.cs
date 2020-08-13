@@ -6,8 +6,6 @@ namespace Yardarm.Generation
 {
     public interface ITypeGenerator
     {
-        void Preprocess();
-
         TypeSyntax GetTypeName();
 
         SyntaxTree? GenerateSyntaxTree();

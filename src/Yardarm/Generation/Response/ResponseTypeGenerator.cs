@@ -34,16 +34,6 @@ namespace Yardarm.Generation.Response
             ResponseBaseTypeGenerator = responseBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
         }
 
-        public override void Preprocess()
-        {
-            (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
-
-            if (schemaGenerator != null && !schemaIsReference)
-            {
-                schemaGenerator.Preprocess();
-            }
-        }
-
         public override TypeSyntax GetTypeName()
         {
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);

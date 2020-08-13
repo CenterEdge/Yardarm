@@ -27,9 +27,6 @@ namespace Yardarm.Generation.Request
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
-        public virtual void Preprocess() =>
-            GetSchemaGenerator()?.Preprocess();
-
         public virtual TypeSyntax GetTypeName()
         {
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);

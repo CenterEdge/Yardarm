@@ -18,15 +18,6 @@ namespace Yardarm.Generation.Tag
             _tagGeneratorRegistry = tagGeneratorRegistry ?? throw new ArgumentNullException(nameof(tagGeneratorRegistry));
         }
 
-        public void Preprocess()
-        {
-            foreach (var tagGenerator in GetTags()
-                .Select(_tagGeneratorRegistry.Get))
-            {
-                tagGenerator.Preprocess();
-            }
-        }
-
         public IEnumerable<SyntaxTree> Generate() => GetTags()
             .Select(p => _tagGeneratorRegistry.Get(p).GenerateSyntaxTree()!)
             .Where(p => p != null);

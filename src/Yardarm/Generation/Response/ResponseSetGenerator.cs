@@ -23,17 +23,6 @@ namespace Yardarm.Generation.Response
             _responsesBaseInterfaceTypeGenerator = responsesBaseInterfaceTypeGenerator ?? throw new ArgumentNullException(nameof(responsesBaseInterfaceTypeGenerator));
         }
 
-        public void Preprocess()
-        {
-            foreach (var responses in GetResponses())
-            {
-                Preprocess(responses);
-            }
-
-            _responsesBaseTypeGenerator.Preprocess();
-            _responsesBaseInterfaceTypeGenerator.Preprocess();
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetResponses()
@@ -60,10 +49,7 @@ namespace Yardarm.Generation.Response
             _document.Paths.ToLocatedElements()
                 .GetOperations()
                 .Select(p => p.CreateChild(p.Element.Responses, ""));
-
-        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponses> requestBody) =>
-            _responsesGeneratorRegistry.Get(requestBody).Preprocess();
-
+        
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponses> requestBody) =>
             _responsesGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
     }

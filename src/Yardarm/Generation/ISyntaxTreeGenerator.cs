@@ -5,7 +5,6 @@ namespace Yardarm.Generation
 {
     public interface ISyntaxTreeGenerator
     {
-        void Preprocess();
         IEnumerable<SyntaxTree> Generate();
     }
 }

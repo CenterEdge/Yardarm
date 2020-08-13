@@ -16,10 +16,6 @@ namespace Yardarm.Generation
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public virtual void Preprocess()
-        {
-        }
-
         public abstract TypeSyntax GetTypeName();
 
         public virtual SyntaxTree? GenerateSyntaxTree()

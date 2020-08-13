@@ -17,18 +17,6 @@ namespace Yardarm.Generation.Schema
             _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
         }
 
-        public void Preprocess()
-        {
-            foreach (var schema in _document.Components.Schemas)
-            {
-                var element = schema.Value.CreateRoot(schema.Key);
-
-                var generator = _typeGeneratorRegistry.Get(element);
-
-                generator.Preprocess();
-            }
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var schema in _document.Components.Schemas)

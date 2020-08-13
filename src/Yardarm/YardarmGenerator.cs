@@ -74,8 +74,6 @@ namespace Yardarm
             ISyntaxTreeGenerator[] syntaxTreeGenerators =
                 context.GenerationServices.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>().ToArray();
 
-            Parallel.ForEach(syntaxTreeGenerators, p => p.Preprocess());
-
             context.Compilation = context.Compilation
                 .AddSyntaxTrees(syntaxTreeGenerators
                     .AsParallel()

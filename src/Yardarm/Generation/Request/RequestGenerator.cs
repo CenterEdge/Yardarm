@@ -18,14 +18,6 @@ namespace Yardarm.Generation.Request
             _operationTypeGeneratorRegistry = operationTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(operationTypeGeneratorRegistry));
         }
 
-        public void Preprocess()
-        {
-            foreach (var operation in GetOperations())
-            {
-                Preprocess(operation);
-            }
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetOperations()
@@ -39,9 +31,6 @@ namespace Yardarm.Generation.Request
         private IEnumerable<LocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
             _document.Paths.ToLocatedElements()
                 .GetOperations();
-
-        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiOperation> operation) =>
-            _operationTypeGeneratorRegistry.Get(operation).Preprocess();
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
             _operationTypeGeneratorRegistry.Get(operation).GenerateSyntaxTree();

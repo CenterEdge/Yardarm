@@ -18,14 +18,6 @@ namespace Yardarm.Generation.Response
             _responseGeneratorRegistry = responseGeneratorRegistry ?? throw new ArgumentNullException(nameof(responseGeneratorRegistry));
         }
 
-        public void Preprocess()
-        {
-            foreach (var response in GetResponses())
-            {
-                Preprocess(response);
-            }
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetResponses()
@@ -44,9 +36,6 @@ namespace Yardarm.Generation.Response
                     .GetResponseSets()
                     .GetResponses()
                     .Where(p => p.Element.Reference == null));
-
-        protected virtual void Preprocess(LocatedOpenApiElement<OpenApiResponse> response) =>
-            _responseGeneratorRegistry.Get(response).Preprocess();
 
         protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponse> response) =>
             _responseGeneratorRegistry.Get(response).GenerateSyntaxTree();

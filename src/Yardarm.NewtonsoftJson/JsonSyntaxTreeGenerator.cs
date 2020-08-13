@@ -19,10 +19,6 @@ namespace Yardarm.NewtonsoftJson
             _namespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
         }
 
-        public void Preprocess()
-        {
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             yield return ParseResource("DiscriminatorConverter.txt");

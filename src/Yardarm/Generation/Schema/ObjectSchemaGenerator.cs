@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Names;
 using Yardarm.Spec;
 
@@ -34,7 +32,7 @@ namespace Yardarm.Generation.Schema
 
             declaration = AddProperties(declaration, Element, Schema.Properties);
 
-            yield return declaration.Enrich(Context.Enrichers.Schema.Class, Element);
+            yield return declaration;
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,

@@ -3,12 +3,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Features;
-using Yardarm.Generation;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Schema.Internal
 {
-    internal class BaseTypeEnricher : ISchemaClassEnricher
+    internal class BaseTypeEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
     {
         private readonly GenerationContext _context;
 

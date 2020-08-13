@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Names;
 using Yardarm.Spec;
 
@@ -30,15 +29,13 @@ namespace Yardarm.Generation.Schema
 
             INameFormatter memberNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.EnumMember);
 
-            EnumDeclarationSyntax declaration = SyntaxFactory.EnumDeclaration(enumName)
+            yield return SyntaxFactory.EnumDeclaration(enumName)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(Schema.Enum
                     .Select(p => CreateEnumMember(Element, p, memberNameFormatter)!)
                     .Where(p => p != null)
                     .ToArray());
-
-            yield return declaration.Enrich(Context.Enrichers.Schema.Enum, Element);
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
@@ -61,11 +58,9 @@ namespace Yardarm.Generation.Schema
 
             string memberName = nameFormatter.Format(stringPrimitive.Value);
 
-            var memberDeclaration = SyntaxFactory.EnumMemberDeclaration(memberName)
+            return SyntaxFactory.EnumMemberDeclaration(memberName)
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                     CreateEnumMemberAttribute(stringPrimitive.Value)));
-
-            return memberDeclaration.Enrich(Context.Enrichers.Schema.EnumMember, (schemaElement, value));
         }
 
         protected static AttributeSyntax CreateEnumMemberAttribute(string value) =>

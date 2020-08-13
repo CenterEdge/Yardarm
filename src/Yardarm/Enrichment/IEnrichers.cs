@@ -8,6 +8,5 @@ namespace Yardarm.Enrichment
     {
         IRequestEnrichers Requests { get; }
         IResponseEnrichers Responses { get; }
-        ISchemaEnrichers Schema { get; }
     }
 }

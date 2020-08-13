@@ -1,14 +1,13 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment.Schema;
-using Yardarm.Generation;
+using Yardarm.Enrichment;
 using Yardarm.NewtonsoftJson.Helpers;
 using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonEnumEnricher : ISchemaEnumEnricher
+    public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, OpenApiSchema>
     {
         public int Priority => 0;
 

@@ -3,15 +3,14 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment.Schema;
-using Yardarm.Generation;
+using Yardarm.Enrichment;
 using Yardarm.Helpers;
 using Yardarm.NewtonsoftJson.Helpers;
 using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonDiscriminatorEnricher : ISchemaInterfaceEnricher
+    public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, OpenApiSchema>
     {
         protected GenerationContext Context { get; }
 

@@ -81,7 +81,7 @@ namespace Yardarm.Generation.Response
                 }
             }
 
-            yield return declaration.Enrich(Context.Enrichers.Responses.Class, Element);
+            yield return declaration;
         }
 
         private ConstructorDeclarationSyntax GenerateConstructor(string className) =>
@@ -104,14 +104,13 @@ namespace Yardarm.Generation.Response
                 ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
 
                 yield return PropertyDeclaration(schemaGenerator.GetTypeName(), nameFormatter.Format(header.Key))
-                    .AddElementAnnotation(schemaElement, Context.ElementRegistry)
+                    .AddElementAnnotation(header, Context.ElementRegistry)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
-                    .Enrich(Context.Enrichers.Responses.HeaderProperty, header);
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
                 if (schemaElement.Element.Reference == null)
                 {

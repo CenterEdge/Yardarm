@@ -18,7 +18,6 @@ namespace Yardarm
         private readonly Lazy<ITypeNameProvider> _typeNameProvider;
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
-        private readonly Lazy<IEnrichers> _enrichers;
 
         private CSharpCompilation _compilation;
 
@@ -37,7 +36,6 @@ namespace Yardarm
         public ITypeNameProvider TypeNameProvider => _typeNameProvider.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
         public ITypeGeneratorRegistry SchemaGeneratorRegistry => _typeGeneratorRegistry.Value;
-        public IEnrichers Enrichers => _enrichers.Value;
 
         public GenerationContext(IServiceProvider serviceProvider)
         {
@@ -51,7 +49,6 @@ namespace Yardarm
                 new Lazy<INameFormatterSelector>(serviceProvider.GetRequiredService<INameFormatterSelector>);
             _typeGeneratorRegistry =
                 new Lazy<ITypeGeneratorRegistry>(serviceProvider.GetRequiredService<ITypeGeneratorRegistry>);
-            _enrichers = new Lazy<IEnrichers>(serviceProvider.GetRequiredService<IEnrichers>);
 
             var settings = serviceProvider.GetRequiredService<YardarmGenerationSettings>();
             _compilation = CSharpCompilation.Create(settings.AssemblyName)

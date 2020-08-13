@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Features;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Schema.Internal
@@ -21,7 +21,7 @@ namespace Yardarm.Enrichment.Schema.Internal
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             LocatedOpenApiElement<OpenApiSchema> context)
         {
-            var feature = _context.Features.Get<ISchemaBaseTypeFeature>();
+            var feature = _context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
             if (feature == null)
             {
                 return target;

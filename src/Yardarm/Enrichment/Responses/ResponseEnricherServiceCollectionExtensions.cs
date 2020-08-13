@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment.Responses.Internal;
 
 namespace Yardarm.Enrichment.Responses
@@ -8,6 +9,14 @@ namespace Yardarm.Enrichment.Responses
         public static IServiceCollection AddDefaultResponseEnrichers(this IServiceCollection services) =>
             services
                 .AddOpenApiSyntaxNodeEnricher<BaseTypeEnricher>()
-                .AddOpenApiSyntaxNodeEnricher<HeaderDocumentationEnricher>();
+                .AddOpenApiSyntaxNodeEnricher<HeaderDocumentationEnricher>()
+                .AddResponseEnrichersCore();
+
+        public static IServiceCollection AddResponseEnrichersCore(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IResponseBaseTypeRegistry, ResponseBaseTypeRegistry>();
+
+            return services;
+        }
     }
 }

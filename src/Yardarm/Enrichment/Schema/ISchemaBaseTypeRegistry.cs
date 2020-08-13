@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Generation;
 using Yardarm.Spec;
 
-namespace Yardarm.Features
+namespace Yardarm.Enrichment.Schema
 {
-    public interface ISchemaBaseTypeFeature
+    public interface ISchemaBaseTypeRegistry
     {
         void AddBaseType(LocatedOpenApiElement<OpenApiSchema> schema, BaseTypeSyntax type);
 

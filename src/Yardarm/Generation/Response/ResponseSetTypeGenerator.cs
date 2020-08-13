@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Features;
+using Yardarm.Enrichment.Responses;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -37,8 +38,7 @@ namespace Yardarm.Generation.Response
         {
             TypeSyntax interfaceNameAndNamespace = GetTypeName();
 
-            IResponseBaseTypeFeature baseTypeFeature =
-                Context.Features.GetOrAdd<IResponseBaseTypeFeature, ResponseBaseTypeFeature>();
+            var baseTypeFeature = Context.GenerationServices.GetRequiredService<IResponseBaseTypeRegistry>();
 
             foreach (var response in Responses
                 .Select(p => Element.CreateChild(p.Value, p.Key)))

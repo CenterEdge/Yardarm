@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Generation;
 using Yardarm.Helpers;
 using Yardarm.Spec;
 
-namespace Yardarm.Features
+namespace Yardarm.Enrichment.Schema.Internal
 {
-    public class SchemaBaseTypeFeature : ISchemaBaseTypeFeature
+    internal class SchemaBaseTypeRegistry : ISchemaBaseTypeRegistry
     {
         private readonly ConcurrentDictionary<LocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
             new ConcurrentDictionary<LocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiSchema>());

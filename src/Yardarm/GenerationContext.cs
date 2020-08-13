@@ -2,8 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
-using Yardarm.Features;
 using Yardarm.Generation;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -20,8 +18,6 @@ namespace Yardarm
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
 
         private CSharpCompilation _compilation;
-
-        public FeatureCollection Features { get; } = new FeatureCollection();
 
         public CSharpCompilation Compilation
         {

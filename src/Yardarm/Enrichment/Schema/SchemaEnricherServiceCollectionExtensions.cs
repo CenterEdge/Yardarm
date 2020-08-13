@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment.Schema.Internal;
 
 namespace Yardarm.Enrichment.Schema
@@ -9,6 +10,14 @@ namespace Yardarm.Enrichment.Schema
             services
                 .AddOpenApiSyntaxNodeEnricher<RequiredPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<DocumentationPropertyEnricher>()
-                .AddOpenApiSyntaxNodeEnricher<BaseTypeEnricher>();
+                .AddOpenApiSyntaxNodeEnricher<BaseTypeEnricher>()
+                .AddSchemaEnrichersCore();
+
+        public static IServiceCollection AddSchemaEnrichersCore(this IServiceCollection services)
+        {
+            services.TryAddSingleton<ISchemaBaseTypeRegistry, SchemaBaseTypeRegistry>();
+
+            return services;
+        }
     }
 }

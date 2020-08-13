@@ -2,8 +2,9 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Features;
+using Yardarm.Enrichment.Schema;
 using Yardarm.Names;
 using Yardarm.Spec;
 
@@ -38,7 +39,7 @@ namespace Yardarm.Generation.Schema
             TypeSyntax interfaceNameAndNamespace = GetTypeName();
 
             // Register the referenced schema to implement this interface
-            ISchemaBaseTypeFeature baseTypeFeature = Context.Features.GetOrAdd<ISchemaBaseTypeFeature, SchemaBaseTypeFeature>();
+            var baseTypeFeature = Context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
             foreach (var referencedSchema in Schema.OneOf
                 .Where(p => p.Reference != null)
                 .Select(p => ((OpenApiSchema) Context.Document.ResolveReference(p.Reference)).CreateRoot(p.Reference.Id)))

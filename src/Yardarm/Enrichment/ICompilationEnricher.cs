@@ -2,7 +2,7 @@
 
 namespace Yardarm.Enrichment
 {
-    public interface ICompilationEnricher : IEnricher<CSharpCompilation>
+    public interface ICompilationEnricher : IAsyncEnricher<CSharpCompilation>
     {
     }
 }

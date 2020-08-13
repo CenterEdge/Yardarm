@@ -33,9 +33,8 @@ namespace Yardarm
             var compilation = CSharpCompilation.Create(settings.AssemblyName)
                 .WithOptions(settings.CompilationOptions);
 
-            compilation = await AddReferences(compilation, serviceProvider, cancellationToken);
-
-            compilation = AddSyntaxTrees(compilation, serviceProvider, cancellationToken);
+            var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
+            compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
 
             var compilationResult = compilation.Emit(settings.DllOutput,
                 pdbStream: settings.PdbOutput,
@@ -55,37 +54,6 @@ namespace Yardarm
             }
 
             return compilationResult;
-        }
-
-        private async Task<CSharpCompilation> AddReferences(CSharpCompilation compilation, IServiceProvider serviceProvider, CancellationToken cancellationToken)
-        {
-            List<MetadataReference> references = await serviceProvider
-                .GetRequiredService<IEnumerable<IReferenceGenerator>>()
-                .ToAsyncEnumerable()
-                .SelectMany(p => p.Generate(cancellationToken))
-                .ToListAsync(cancellationToken);
-
-            return compilation.AddReferences(references);
-        }
-
-        private CSharpCompilation AddSyntaxTrees(CSharpCompilation compilation, IServiceProvider serviceProvider,
-            CancellationToken cancellationToken)
-        {
-            ISyntaxTreeGenerator[] syntaxTreeGenerators =
-                serviceProvider.GetRequiredService<IEnumerable<ISyntaxTreeGenerator>>().ToArray();
-
-            compilation = compilation
-                .AddSyntaxTrees(syntaxTreeGenerators
-                    .AsParallel()
-                    .AsUnordered()
-                    .WithCancellation(cancellationToken)
-                    .SelectMany(p => p.Generate())
-                    .ToArray());
-
-            var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
-            compilation = compilation.Enrich(enrichers);
-
-            return compilation;
         }
 
         private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.OpenApi.Interfaces;
@@ -19,7 +21,7 @@ namespace Yardarm.Enrichment.Internal
         private readonly IOpenApiElementRegistry _elementRegistry;
         private readonly IList<IOpenApiSyntaxNodeEnricher> _enrichers;
 
-        public int Priority => 0;
+        public int Priority => CompilationEnrichmentPriority.OpenApiSyntaxTreeEnrichment;
 
         public OpenApiCompilationEnricher(IOpenApiElementRegistry elementRegistry,
             IEnumerable<IOpenApiSyntaxNodeEnricher> enrichers)
@@ -28,8 +30,10 @@ namespace Yardarm.Enrichment.Internal
             _enrichers = enrichers.ToArray();
         }
 
-        public CSharpCompilation Enrich(CSharpCompilation target) =>
-            _enrichers.OrderBy(p => p.Priority).Aggregate(target, Enrich);
+        public ValueTask<CSharpCompilation> EnrichAsync(CSharpCompilation target,
+            CancellationToken cancellationToken = default) =>
+            new ValueTask<CSharpCompilation>(
+                _enrichers.OrderBy(p => p.Priority).Aggregate(target, Enrich));
 
         private CSharpCompilation Enrich(CSharpCompilation compilation, IOpenApiSyntaxNodeEnricher enricher)
         {

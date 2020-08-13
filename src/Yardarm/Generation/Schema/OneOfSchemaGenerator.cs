@@ -27,27 +27,6 @@ namespace Yardarm.Generation.Schema
                 ? SyntaxFactory.IdentifierName("dynamic")
                 : base.GetTypeName();
 
-        public override void Preprocess()
-        {
-            if (!HasDiscriminator)
-            {
-                // We have no discriminator, so we're just going to implement using dynamic expando objects
-                // So we shouldn't implement a specific class
-                return;
-            }
-
-            TypeSyntax interfaceNameAndNamespace = GetTypeName();
-
-            // Register the referenced schema to implement this interface
-            var baseTypeFeature = Context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
-            foreach (var referencedSchema in Schema.OneOf
-                .Where(p => p.Reference != null)
-                .Select(p => ((OpenApiSchema) Context.Document.ResolveReference(p.Reference)).CreateRoot(p.Reference.Id)))
-            {
-                baseTypeFeature.AddBaseType(referencedSchema, SyntaxFactory.SimpleBaseType(interfaceNameAndNamespace));
-            }
-        }
-
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
             if (!HasDiscriminator)
@@ -58,6 +37,15 @@ namespace Yardarm.Generation.Schema
             }
 
             var interfaceNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
+
+            // Register the referenced schema to implement this interface
+            var baseTypeRegistry = Context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
+            foreach (var referencedSchema in Schema.OneOf
+                .Where(p => p.Reference != null)
+                .Select(p => ((OpenApiSchema) Context.Document.ResolveReference(p.Reference)).CreateRoot(p.Reference.Id)))
+            {
+                baseTypeRegistry.AddBaseType(referencedSchema, SyntaxFactory.SimpleBaseType(interfaceNameAndNamespace));
+            }
 
             SimpleNameSyntax interfaceName = interfaceNameAndNamespace.Right;
 

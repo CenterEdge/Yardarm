@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -67,8 +66,7 @@ namespace Yardarm.Generation.Request
         {
             MemberDeclarationSyntax[] members = properties
                 .Select(p =>
-                    CreatePropertyDeclaration(p.CreateChild(p.Element.Schema, p.Element.Name), declaration.Identifier.ValueText)
-                        .Enrich(Context.Enrichers.Requests.RequestParameterProperty, p))
+                    CreatePropertyDeclaration(p.CreateChild(p.Element.Schema, p.Element.Name), declaration.Identifier.ValueText))
                 .ToArray<MemberDeclarationSyntax>();
 
             return declaration.AddMembers(members);

@@ -1,13 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Generation;
 using Yardarm.Helpers;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Requests.Internal
 {
-    internal class RequestParameterDocumentationEnricher : IRequestParameterPropertyEnricher
+    internal class RequestParameterDocumentationEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiParameter>
     {
         public int Priority => 100;
 

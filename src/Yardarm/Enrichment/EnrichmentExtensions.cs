@@ -78,7 +78,7 @@ namespace Yardarm.Enrichment
                 var enrichMethod =
                     _genericEnrichCompilationMethod.MakeGenericMethod(interfaceType.GetGenericArguments());
 
-                compilation = (CSharpCompilation)enrichMethod.Invoke(null, new object[] {compilation, enricher, context});
+                compilation = (CSharpCompilation)enrichMethod.Invoke(null, new object[] {compilation, enricher, context})!;
             }
 
             return compilation;

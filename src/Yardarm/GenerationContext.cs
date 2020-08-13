@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -19,10 +20,19 @@ namespace Yardarm
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
         private readonly Lazy<IEnrichers> _enrichers;
 
+        private CSharpCompilation _compilation;
+
         public FeatureCollection Features { get; } = new FeatureCollection();
+
+        public CSharpCompilation Compilation
+        {
+            get => _compilation;
+            set => _compilation = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         public OpenApiDocument Document => _openApiDocument.Value;
         public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
+        public IServiceProvider GenerationServices { get; }
         public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
         public ITypeNameProvider TypeNameProvider => _typeNameProvider.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
@@ -31,6 +41,8 @@ namespace Yardarm
 
         public GenerationContext(IServiceProvider serviceProvider)
         {
+            GenerationServices = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
             _elementRegistry = new Lazy<IOpenApiElementRegistry>(serviceProvider.GetRequiredService<IOpenApiElementRegistry>);
             _namespaceProvider = new Lazy<INamespaceProvider>(serviceProvider.GetRequiredService<INamespaceProvider>);
@@ -40,6 +52,10 @@ namespace Yardarm
             _typeGeneratorRegistry =
                 new Lazy<ITypeGeneratorRegistry>(serviceProvider.GetRequiredService<ITypeGeneratorRegistry>);
             _enrichers = new Lazy<IEnrichers>(serviceProvider.GetRequiredService<IEnrichers>);
+
+            var settings = serviceProvider.GetRequiredService<YardarmGenerationSettings>();
+            _compilation = CSharpCompilation.Create(settings.AssemblyName)
+                .WithOptions(settings.CompilationOptions);
         }
     }
 }

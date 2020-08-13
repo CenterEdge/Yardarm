@@ -1,9 +1,7 @@
 ﻿namespace Yardarm.Enrichment
 {
-    public interface IEnricher<TTarget>
+    public interface IEnricher<TTarget> : IEnricher
     {
         TTarget Enrich(TTarget target);
-
-        int Priority { get; }
     }
 }

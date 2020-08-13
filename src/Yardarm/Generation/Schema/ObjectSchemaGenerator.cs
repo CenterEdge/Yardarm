@@ -77,7 +77,7 @@ namespace Yardarm.Generation.Schema
 
             var typeName = Context.TypeNameProvider.GetName(property);
 
-            var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
+            return SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(property, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
@@ -85,8 +85,6 @@ namespace Yardarm.Generation.Schema
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
-
-            return propertyDeclaration.Enrich(Context.Enrichers.Schema.Property, property);
         }
     }
 }

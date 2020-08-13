@@ -37,6 +37,10 @@ namespace Yardarm.Enrichment
             where T : class, INuGetPackageEnricher =>
             services.AddTransient<INuGetPackageEnricher, T>();
 
+        public static IServiceCollection AddOpenApiSyntaxNodeEnricher<T>(this IServiceCollection services)
+            where T : class, IOpenApiSyntaxNodeEnricher =>
+            services.AddTransient<IOpenApiSyntaxNodeEnricher, T>();
+
         public static IServiceCollection AddPackageSpecEnricher<T>(this IServiceCollection services)
             where T : class, IPackageSpecEnricher =>
             services.AddTransient<IPackageSpecEnricher, T>();

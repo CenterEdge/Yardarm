@@ -9,8 +9,8 @@ namespace Yardarm.Enrichment.Schema
         public static IServiceCollection AddDefaultSchemaEnrichers(this IServiceCollection services)
         {
             services
-                .AddSchemaPropertyEnricher<RequiredPropertyEnricher>()
-                .AddSchemaPropertyEnricher<DocumentationPropertyEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<RequiredPropertyEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<DocumentationPropertyEnricher>()
                 .AddSchemaClassEnricher<BaseTypeEnricher>();
 
             return services.AddSchemaEnrichersCore();
@@ -38,9 +38,5 @@ namespace Yardarm.Enrichment.Schema
         public static IServiceCollection AddSchemaInterfaceEnricher<T>(this IServiceCollection services)
             where T : class, ISchemaInterfaceEnricher =>
             services.AddTransient<ISchemaInterfaceEnricher, T>();
-
-        public static IServiceCollection AddSchemaPropertyEnricher<T>(this IServiceCollection services)
-            where T : class, ISchemaPropertyEnricher =>
-            services.AddTransient<ISchemaPropertyEnricher, T>();
     }
 }

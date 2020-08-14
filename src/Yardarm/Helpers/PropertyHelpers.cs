@@ -73,7 +73,7 @@ namespace Yardarm.Helpers
                     property = property
                         .WithInitializer(EqualsValueClause(SyntaxHelpers.StringLiteral("")));
                 }
-                else if (typeInfo.Type.GetMembers()
+                else if (!typeInfo.Type.IsAbstract && typeInfo.Type.GetMembers()
                     .Where(p => p.Kind == SymbolKind.Method && p.Name == ".ctor")
                     .Cast<IMethodSymbol>()
                     .Any(p => p.Parameters.Length == 0 && p.DeclaredAccessibility == Accessibility.Public))

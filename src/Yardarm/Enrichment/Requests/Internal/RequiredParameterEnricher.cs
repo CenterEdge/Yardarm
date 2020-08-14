@@ -1,7 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Requests.Internal
 {
@@ -13,35 +14,23 @@ namespace Yardarm.Enrichment.Requests.Internal
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiParameter> context)
         {
             return context.Element.Required
-                ? AddRequiredAttribute(syntax, context.Compilation)
+                ? AddRequiredAttribute(syntax, context)
                 : syntax.MakeNullable();
         }
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiRequestBody> context)
         {
             return context.Element.Required
-                ? AddRequiredAttribute(syntax, context.Compilation)
+                ? AddRequiredAttribute(syntax, context)
                 : syntax.MakeNullable();
         }
 
-        private PropertyDeclarationSyntax AddRequiredAttribute(PropertyDeclarationSyntax syntax, CSharpCompilation compilation)
-        {
-            var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
-
-            var typeInfo = semanticModel.GetTypeInfo(syntax.Type);
-
-            syntax = syntax.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                SyntaxFactory.Attribute(WellKnownTypes.RequiredAttribute())));
-
-            if (typeInfo.Type?.IsReferenceType ?? false)
-            {
-                // Always mark reference types as nullable on schemas, even if they're required
-                // This will encourage SDK consumers to check for nulls and prevent NREs
-
-                syntax = syntax.MakeNullable();
-            }
-
-            return syntax;
-        }
+        private PropertyDeclarationSyntax AddRequiredAttribute<T>(PropertyDeclarationSyntax syntax,
+            OpenApiEnrichmentContext<T> context)
+            where T : IOpenApiSerializable =>
+            syntax
+                .MakeNullableOrInitializeIfReferenceType(context.Compilation)
+                .AddAttributeLists(AttributeList().AddAttributes(
+                    Attribute(WellKnownTypes.RequiredAttribute())));
     }
 }

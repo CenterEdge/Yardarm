@@ -81,7 +81,7 @@ namespace Yardarm.Enrichment.Internal
                     var schema = node.GetElementAnnotation<TElement>(_elementRegistry);
 
                     return schema != null
-                        ? enricher.Enrich(node, new OpenApiEnrichmentContext<TElement>(compilation, schema))
+                        ? enricher.Enrich(node, new OpenApiEnrichmentContext<TElement>(compilation, syntaxTree, schema))
                         : node;
                 });
 

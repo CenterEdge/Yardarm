@@ -491,6 +491,7 @@ components:
         - cardNumber
         - issuedAtTime
         - balance
+        - nestedArray
     Operator:
       type: object
       description: >

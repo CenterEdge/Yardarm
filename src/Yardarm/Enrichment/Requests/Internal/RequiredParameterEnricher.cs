@@ -1,23 +1,25 @@
-﻿using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
-using Yardarm.Spec;
 
-namespace Yardarm.Enrichment.Schema.Internal
+namespace Yardarm.Enrichment.Requests.Internal
 {
-    internal class RequiredPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    internal class RequiredParameterEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiParameter>,
+        IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiRequestBody>
     {
         public int Priority => 0;
 
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiParameter> context)
         {
-            bool isRequired =
-                context.LocatedElement.Parents.FirstOrDefault() is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
-                parentSchema.Element.Required.Contains(context.LocatedElement.Key);
+            return context.Element.Required
+                ? AddRequiredAttribute(syntax, context.Compilation)
+                : syntax.MakeNullable();
+        }
 
-            return isRequired
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiRequestBody> context)
+        {
+            return context.Element.Required
                 ? AddRequiredAttribute(syntax, context.Compilation)
                 : syntax.MakeNullable();
         }

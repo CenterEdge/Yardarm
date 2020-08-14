@@ -24,5 +24,11 @@ namespace Yardarm.Helpers
                     ArgumentList(SingletonSeparatedList(Argument(
                         StringLiteral(parameterName)))),
                     null)));
+
+        public static PropertyDeclarationSyntax MakeNullable(this PropertyDeclarationSyntax syntax) =>
+            syntax.Type is NullableTypeSyntax
+                ? syntax // Already nullable
+                : syntax.WithType(
+                    SyntaxFactory.NullableType(syntax.Type));
     }
 }

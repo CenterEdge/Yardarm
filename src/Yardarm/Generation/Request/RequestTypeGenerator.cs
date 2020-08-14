@@ -46,47 +46,56 @@ namespace Yardarm.Generation.Request
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()));
 
-            declaration = AddProperties(declaration, Operation.Parameters.Select(p => Element.CreateChild(p, "")));
+            declaration = AddParameterProperties(declaration,
+                Operation.Parameters.Select(p => Element.CreateChild(p, p.Name)));
 
             if (Operation.RequestBody != null)
             {
                 var requestBodyElement = Element.CreateChild(Operation.RequestBody, "Body");
-                if (MediaTypeSelector.Select(requestBodyElement)?.Element.Schema != null)
+                var schema = MediaTypeSelector.Select(requestBodyElement)?.Element.Schema;
+                if (schema != null)
                 {
+                    var locatedSchema = requestBodyElement.CreateChild(schema, "");
+
                     declaration = declaration.AddMembers(
-                        CreatePropertyDeclaration(requestBodyElement, className));
+                        CreatePropertyDeclaration(requestBodyElement, className, locatedSchema));
                 }
             }
 
             yield return declaration;
         }
 
-        protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
+        protected virtual ClassDeclarationSyntax AddParameterProperties(ClassDeclarationSyntax declaration,
             IEnumerable<LocatedOpenApiElement<OpenApiParameter>> properties)
         {
             MemberDeclarationSyntax[] members = properties
                 .Select(p =>
-                    CreatePropertyDeclaration(p.CreateChild(p.Element.Schema, p.Element.Name), declaration.Identifier.ValueText))
+                {
+                    var schema = p.CreateChild(p.Element.Schema, "");
+
+                    return CreatePropertyDeclaration(p, declaration.Identifier.ValueText, schema);
+                })
                 .ToArray<MemberDeclarationSyntax>();
 
             return declaration.AddMembers(members);
         }
 
-        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(LocatedOpenApiElement<T> property, string ownerName)
+        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(LocatedOpenApiElement<T> parameter, string className,
+            LocatedOpenApiElement<OpenApiSchema> schema)
             where T : IOpenApiSerializable
         {
-            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
+            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameter.Key);
 
-            if (propertyName == ownerName)
+            if (propertyName == className)
             {
                 // Properties can't have the same name as the class/interface
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeNameProvider.GetName(property);
+            var typeName = Context.TypeNameProvider.GetName(schema);
 
             var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
-                .AddElementAnnotation(property, Context.ElementRegistry)
+                .AddElementAnnotation(parameter, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)

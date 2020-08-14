@@ -6,7 +6,7 @@ namespace Yardarm.Helpers
     // ReSharper disable InconsistentNaming
     public static class WellKnownTypes
     {
-        public static TypeSyntax CancellationToken() =>
+        public static NameSyntax CancellationToken() =>
             QualifiedName(
                 QualifiedName(
                     IdentifierName("System"),
@@ -14,7 +14,7 @@ namespace Yardarm.Helpers
                 ),
                 IdentifierName("CancellationToken"));
 
-        public static TypeSyntax HttpResponseMessage() =>
+        public static NameSyntax HttpResponseMessage() =>
             QualifiedName(
                 QualifiedName(
                     QualifiedName(
@@ -23,7 +23,7 @@ namespace Yardarm.Helpers
                     IdentifierName("Http")),
                 IdentifierName("HttpResponseMessage"));
 
-        public static TypeSyntax HttpStatusCode() =>
+        public static NameSyntax HttpStatusCode() =>
             QualifiedName(
                 QualifiedName(
                     IdentifierName("System"),
@@ -31,10 +31,10 @@ namespace Yardarm.Helpers
                 ),
                 IdentifierName("HttpStatusCode"));
 
-        public static TypeSyntax IDisposable() =>
+        public static NameSyntax IDisposable() =>
             QualifiedName(IdentifierName("System"), IdentifierName("IDisposable"));
 
-        public static TypeSyntax ListT(TypeSyntax itemType) =>
+        public static NameSyntax ListT(TypeSyntax itemType) =>
             QualifiedName(
                 QualifiedName(
                     QualifiedName(
@@ -46,7 +46,17 @@ namespace Yardarm.Helpers
                         Identifier("List"),
                         TypeArgumentList(SingletonSeparatedList(itemType))));
 
-        public static TypeSyntax TaskT(TypeSyntax resultType) =>
+        public static NameSyntax RequiredAttribute() =>
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        IdentifierName("System"),
+                        IdentifierName("ComponentModel")
+                    ),
+                    IdentifierName("DataAnnotations")),
+                IdentifierName("Required"));
+
+        public static NameSyntax TaskT(TypeSyntax resultType) =>
             QualifiedName(
                 QualifiedName(
                     QualifiedName(

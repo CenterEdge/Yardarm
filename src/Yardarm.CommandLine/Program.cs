@@ -26,6 +26,7 @@ namespace Yardarm.CommandLine
             await using var pdbStream = File.Create("test2.pdb");
             await using var xmlDocumentationStream = File.Create("test2.xml");
             // await using var nugetStream = File.Create("test.nupkg");
+            // await using var nugetSymbolsStream = File.Create("test.snupkg");
 
             var settings = new YardarmGenerationSettings("Test")
             {
@@ -33,6 +34,7 @@ namespace Yardarm.CommandLine
                 PdbOutput = pdbStream,
                 XmlDocumentationOutput = xmlDocumentationStream,
                 // NuGetOutput = nugetStream,
+                // NuGetSymbolsOutput = nugetSymbolsStream,
                 VersionSuffix = "-beta001"
             }
                 .AddExtension(services => services.AddLogging(builder =>

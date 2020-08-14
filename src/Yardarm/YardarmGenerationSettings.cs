@@ -42,6 +42,8 @@ namespace Yardarm
 
         public Stream? NuGetOutput { get; set; }
 
+        public Stream? NuGetSymbolsOutput { get; set; }
+
         public List<Func<IServiceCollection, IServiceCollection>> Extensions { get; } =
             new List<Func<IServiceCollection, IServiceCollection>>();
 

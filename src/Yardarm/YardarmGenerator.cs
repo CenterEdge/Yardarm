@@ -63,11 +63,6 @@ namespace Yardarm
                 throw new InvalidOperationException(
                     $"{nameof(YardarmGenerationSettings.DllOutput)} must be seekable and readable to pack a NuGet package.");
             }
-            if (!settings.PdbOutput.CanRead || !settings.PdbOutput.CanSeek)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet package.");
-            }
             if (!settings.XmlDocumentationOutput.CanRead || !settings.XmlDocumentationOutput.CanSeek)
             {
                 throw new InvalidOperationException(
@@ -75,12 +70,24 @@ namespace Yardarm
             }
 
             settings.DllOutput.Seek(0, SeekOrigin.Begin);
-            settings.PdbOutput.Seek(0, SeekOrigin.Begin);
             settings.XmlDocumentationOutput.Seek(0, SeekOrigin.Begin);
 
             var packer = serviceProvider.GetRequiredService<NuGetPacker>();
 
-            packer.Pack(settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput, settings.NuGetOutput!);
+            packer.Pack(settings.DllOutput, settings.XmlDocumentationOutput, settings.NuGetOutput!);
+
+            if (settings.NuGetSymbolsOutput != null)
+            {
+                if (!settings.PdbOutput.CanRead || !settings.PdbOutput.CanSeek)
+                {
+                    throw new InvalidOperationException(
+                        $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet symbols package.");
+                }
+
+                settings.PdbOutput.Seek(0, SeekOrigin.Begin);
+
+                packer.PackSymbols(settings.PdbOutput, settings.NuGetSymbolsOutput);
+            }
         }
     }
 }

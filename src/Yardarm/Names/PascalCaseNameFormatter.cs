@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Yardarm.Names
@@ -25,14 +26,15 @@ namespace Yardarm.Names
             Suffix = suffix ?? throw new ArgumentNullException(nameof(suffix));
         }
 
-        public virtual string Format(string name)
+        [return: NotNullIfNotNull("name")]
+        public virtual string? Format(string? name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return name;
             }
 
-            var builder = new StringBuilder(Prefix, Prefix.Length + name.Length + Suffix.Length);
+            var builder = new StringBuilder(Prefix, Prefix.Length + name!.Length + Suffix.Length);
 
             bool nextCapital = true;
             foreach (char ch in name)

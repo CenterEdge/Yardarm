@@ -1,7 +1,10 @@
-﻿namespace Yardarm.Names
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Yardarm.Names
 {
     public interface INameFormatter
     {
-        string Format(string name);
+        [return: NotNullIfNotNull("name")]
+        string? Format(string? name);
     }
 }

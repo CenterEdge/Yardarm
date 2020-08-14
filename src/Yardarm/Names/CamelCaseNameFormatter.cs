@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Yardarm.Names
 {
@@ -6,14 +7,15 @@ namespace Yardarm.Names
     {
         public static CamelCaseNameFormatter Instance { get; } = new CamelCaseNameFormatter();
 
-        public virtual string Format(string name)
+        [return: NotNullIfNotNull("name")]
+        public virtual string? Format(string? name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return name;
             }
 
-            var builder = new StringBuilder(name.Length);
+            var builder = new StringBuilder(name!.Length);
 
             bool first = true;
             bool nextCapital = false;

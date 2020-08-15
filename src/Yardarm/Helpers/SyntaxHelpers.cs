@@ -6,13 +6,6 @@ namespace Yardarm.Helpers
 {
     public static class SyntaxHelpers
     {
-        public static ParameterSyntax DefaultedCancellationTokenParameter() =>
-            Parameter(Identifier("cancellationToken"))
-                .WithType(WellKnownTypes.CancellationToken())
-                .WithDefault(EqualsValueClause(
-                    LiteralExpression(SyntaxKind.DefaultLiteralExpression,
-                        Token(SyntaxKind.DefaultKeyword))));
-
         public static LiteralExpressionSyntax StringLiteral(string value) =>
             LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value));
 

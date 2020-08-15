@@ -1,22 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
+using Yardarm.Spec.Path;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Tag
 {
     public class TagTypeGenerator : TypeGeneratorBase<OpenApiTag>
     {
+        public const string RequestParameterName = "request";
+
+        private readonly IOperationMethodGenerator _operationMethodGenerator;
+
         protected OpenApiTag Tag => Element.Element;
 
-        public TagTypeGenerator(LocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context)
+        public TagTypeGenerator(LocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+            IOperationMethodGenerator operationMethodGenerator)
             : base(tagElement, context)
         {
+            _operationMethodGenerator = operationMethodGenerator ?? throw new ArgumentNullException(nameof(operationMethodGenerator));
         }
 
         public override TypeSyntax GetTypeName() =>
@@ -57,11 +66,7 @@ namespace Yardarm.Generation.Tag
                             (operation, method) => new {operation, method})
                         .Select(p => p.method
                             .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                            .WithBody(Block(
-                                ThrowStatement(ObjectCreationExpression(
-                                        QualifiedName(IdentifierName("System"), IdentifierName("NotImplementedException")))
-                                        .WithArgumentList(ArgumentList()))
-                                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))))
+                            .WithBody(_operationMethodGenerator.Generate(p.operation)))
                         .ToArray<MemberDeclarationSyntax>());
 
             return declaration;
@@ -76,12 +81,12 @@ namespace Yardarm.Generation.Tag
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);
 
-            var methodDeclaration = SyntaxFactory.MethodDeclaration(responseType, methodName)
+            var methodDeclaration = MethodDeclaration(responseType, methodName)
                 .AddElementAnnotation(operation, Context.ElementRegistry)
                 .AddParameterListParameters(
-                    SyntaxFactory.Parameter(SyntaxFactory.Identifier("request"))
+                    Parameter(Identifier(RequestParameterName))
                         .WithType(requestType),
-                    SyntaxHelpers.DefaultedCancellationTokenParameter());
+                    MethodHelpers.DefaultedCancellationTokenParameter());
 
             yield return methodDeclaration;
         }

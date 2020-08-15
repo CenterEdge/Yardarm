@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Spec.Path
 {
@@ -49,5 +52,10 @@ namespace Yardarm.Spec.Path
                 }
             }
         }
+
+        public static InterpolatedStringExpressionSyntax ToInterpolatedStringExpression(
+            this IEnumerable<PathSegment> pathSegments, Func<string, ExpressionSyntax> parameterInterpreter) =>
+            InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken),
+                List(pathSegments.Select(p => p.ToInterpolatedStringContentSyntax(parameterInterpreter))));
     }
 }

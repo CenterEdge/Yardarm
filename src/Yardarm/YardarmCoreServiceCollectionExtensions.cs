@@ -5,6 +5,7 @@ using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.Generation.Internal;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Operation;
 using Yardarm.Generation.Request;
 using Yardarm.Generation.Response;
 using Yardarm.Generation.Schema;
@@ -46,6 +47,7 @@ namespace Yardarm
             services.TryAddSingleton<ResponseBaseInterfaceTypeGenerator>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
+            services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();

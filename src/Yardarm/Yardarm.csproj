@@ -29,4 +29,12 @@
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Collect cs files from Yardarm.Client as resources so we can compile them into generated SDKs -->
+    <EmbeddedResource Include="../Yardarm.Client/**/*.cs" Exclude="../Yardarm.Client/bin/**;../Yardarm.Client/obj/**">
+      <Visible>False</Visible>
+      <LogicalName>$([System.String]::Copy('%(RelativeDir)').Substring(3).Replace('/', '.').Replace('\', '.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

@@ -31,6 +31,6 @@ namespace Yardarm.Enrichment.Requests.Internal
             syntax
                 .MakeNullableOrInitializeIfReferenceType(context.Compilation)
                 .AddAttributeLists(AttributeList().AddAttributes(
-                    Attribute(WellKnownTypes.RequiredAttribute())));
+                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)));
     }
 }

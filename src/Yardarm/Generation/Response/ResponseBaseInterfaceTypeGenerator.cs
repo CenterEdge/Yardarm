@@ -30,7 +30,7 @@ namespace Yardarm.Generation.Response
         {
             InterfaceDeclarationSyntax declaration = InterfaceDeclaration(BaseInterfaceName)
                 .AddBaseListTypes(
-                    SimpleBaseType(WellKnownTypes.IDisposable()))
+                    SimpleBaseType(WellKnownTypes.System.IDisposable.Name))
                 .AddModifiers(
                     Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
@@ -44,7 +44,7 @@ namespace Yardarm.Generation.Response
         #region Properties
 
         private PropertyDeclarationSyntax GenerateMessageProperty() =>
-            PropertyDeclaration(WellKnownTypes.HttpResponseMessage(), Identifier(MessageProperty))
+            PropertyDeclaration(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name, Identifier(MessageProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
@@ -56,7 +56,7 @@ namespace Yardarm.Generation.Response
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
         private PropertyDeclarationSyntax GenerateStatusCodeProperty() =>
-            PropertyDeclaration(WellKnownTypes.HttpStatusCode(), Identifier(StatusCodeProperty))
+            PropertyDeclaration(WellKnownTypes.System.Net.HttpStatusCode.Name, Identifier(StatusCodeProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));

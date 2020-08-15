@@ -1,133 +1,110 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Helpers
 {
     // ReSharper disable InconsistentNaming
     // ReSharper disable MemberHidesStaticFromOuterClass
-    public static class WellKnownTypes
+    public static partial class WellKnownTypes
     {
-        public static NameSyntax CancellationToken() =>
-            QualifiedName(
-                QualifiedName(
-                    IdentifierName("System"),
-                    IdentifierName("Threading")
-                ),
-                IdentifierName("CancellationToken"));
-
-        public static NameSyntax HttpMethod() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Net")),
-                    IdentifierName("Http")),
-                IdentifierName("HttpMethod"));
-
-        public static NameSyntax HttpRequestMessage() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Net")),
-                    IdentifierName("Http")),
-                IdentifierName("HttpRequestMessage"));
-
-        public static NameSyntax HttpResponseMessage() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Net")),
-                    IdentifierName("Http")),
-                IdentifierName("HttpResponseMessage"));
-
-        public static NameSyntax HttpStatusCode() =>
-            QualifiedName(
-                QualifiedName(
-                    IdentifierName("System"),
-                    IdentifierName("Net")
-                ),
-                IdentifierName("HttpStatusCode"));
-
-        public static NameSyntax IDisposable() =>
-            QualifiedName(IdentifierName("System"), IdentifierName("IDisposable"));
-
-        public static NameSyntax ListT(TypeSyntax itemType) =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Collections")
-                    ),
-                    IdentifierName("Generic")),
-                GenericName(
-                        Identifier("List"),
-                        TypeArgumentList(SingletonSeparatedList(itemType))));
-
-        public static NameSyntax MediaTypeWithQualityHeaderValue() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        QualifiedName(
-                            IdentifierName("System"),
-                            IdentifierName("Net")),
-                        IdentifierName("Http")),
-                    IdentifierName("Headers")),
-                IdentifierName("MediaTypeWithQualityHeaderValue"));
-
-        public static NameSyntax StringContent() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Net")),
-                    IdentifierName("Http")),
-                IdentifierName("StringContent"));
-
-        public static NameSyntax RequiredAttribute() =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("ComponentModel")
-                    ),
-                    IdentifierName("DataAnnotations")),
-                IdentifierName("Required"));
-
-        public static NameSyntax TaskT(TypeSyntax resultType) =>
-            QualifiedName(
-                QualifiedName(
-                    QualifiedName(
-                        IdentifierName("System"),
-                        IdentifierName("Threading")
-                    ),
-                    IdentifierName("Tasks")),
-                GenericName(
-                    Identifier("Task"),
-                    TypeArgumentList(SingletonSeparatedList(resultType))));
-
-        public static class Yardarm
+        public static partial class System
         {
-            public static NameSyntax Name => IdentifierName("Yardarm");
+            public static NameSyntax Name => IdentifierName("System");
 
-            public static class Client
+            public static class Collections
             {
                 public static NameSyntax Name => QualifiedName(
-                    Yardarm.Name,
-                    IdentifierName("Client"));
+                    System.Name,
+                    IdentifierName("Collections"));
 
-                public static class OperationHelpers
+                public static class Generic
                 {
                     public static NameSyntax Name => QualifiedName(
-                        Client.Name,
-                        IdentifierName("OperationHelpers"));
+                        Collections.Name,
+                        IdentifierName("Generic"));
 
-                    public static MemberAccessExpressionSyntax AddQueryParameters => MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        Name,
-                        IdentifierName("AddQueryParameters"));
+                    public static class ListT
+                    {
+                        public static NameSyntax Name(TypeSyntax itemType) =>
+                            QualifiedName(
+                                Generic.Name,
+                                GenericName(
+                                    Identifier("List"),
+                                    TypeArgumentList(SingletonSeparatedList(itemType))));
+                    }
+                }
+            }
+
+            public static class ComponentModel
+            {
+                public static NameSyntax Name => QualifiedName(
+                    System.Name,
+                    IdentifierName("ComponentModel"));
+
+                public static class DataAnnotations
+                {
+                    public static NameSyntax Name => QualifiedName(
+                        ComponentModel.Name,
+                        IdentifierName("DataAnnotations"));
+
+                    public static class RequiredAttribute
+                    {
+                        public static NameSyntax Name => QualifiedName(
+                            DataAnnotations.Name,
+                            IdentifierName("RequiredAttribute"));
+                    }
+                }
+            }
+
+            public static class IDisposable
+            {
+                public static NameSyntax Name => QualifiedName(
+                    System.Name,
+                    IdentifierName("IDisposable"));
+            }
+
+            public static partial class Net
+            {
+                public static NameSyntax Name => QualifiedName(
+                    System.Name,
+                    IdentifierName("Net"));
+
+                public static class HttpStatusCode
+                {
+                    public static NameSyntax Name => QualifiedName(
+                        Net.Name,
+                        IdentifierName("HttpStatusCode"));
+                }
+            }
+
+            public static class Threading
+            {
+                public static NameSyntax Name => QualifiedName(
+                    System.Name,
+                    IdentifierName("Threading"));
+
+                public static class CancellationToken
+                {
+                    public static NameSyntax Name => QualifiedName(
+                        Threading.Name,
+                        IdentifierName("CancellationToken"));
+                }
+
+                public static class Tasks
+                {
+                    public static NameSyntax Name => QualifiedName(
+                        Threading.Name,
+                        IdentifierName("Tasks"));
+
+                    public static class TaskT
+                    {
+                        public static NameSyntax Name(TypeSyntax resultType) =>
+                            QualifiedName(
+                                Tasks.Name,
+                                GenericName(
+                                    Identifier("Task"),
+                                    TypeArgumentList(SingletonSeparatedList(resultType))));
+                    }
                 }
             }
         }

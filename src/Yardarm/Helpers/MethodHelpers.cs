@@ -8,7 +8,7 @@ namespace Yardarm.Helpers
     {
         public static ParameterSyntax DefaultedCancellationTokenParameter() =>
             Parameter(Identifier("cancellationToken"))
-                .WithType(WellKnownTypes.CancellationToken())
+                .WithType(WellKnownTypes.System.Threading.CancellationToken.Name)
                 .WithDefault(EqualsValueClause(
                     LiteralExpression(SyntaxKind.DefaultLiteralExpression,
                         Token(SyntaxKind.DefaultKeyword))));

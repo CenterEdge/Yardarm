@@ -79,7 +79,7 @@ namespace Yardarm.Generation.Operation
             LocatedOpenApiElement<OpenApiOperation> operation)
         {
             return MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
-                ObjectCreationExpression(WellKnownTypes.HttpRequestMessage())
+                ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name)
                     .AddArgumentListArguments(Argument(GetRequestMethod(operation)),
                         Argument(IdentifierName(UrlVariableName))));
         }
@@ -99,7 +99,7 @@ namespace Yardarm.Generation.Operation
                 yield return ExpressionStatement(InvocationExpression(
                         SyntaxHelpers.MemberAccess(RequestMessageVariableName, "Headers", "Accept", "Add"))
                     .AddArgumentListArguments(
-                        Argument(ObjectCreationExpression(WellKnownTypes.MediaTypeWithQualityHeaderValue())
+                        Argument(ObjectCreationExpression(WellKnownTypes.System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Name)
                             .AddArgumentListArguments(
                                 Argument(SyntaxHelpers.StringLiteral(mediaType.Key))))));
             }
@@ -140,7 +140,7 @@ namespace Yardarm.Generation.Operation
             var configurationBlock = Block(
                 ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                     SyntaxHelpers.MemberAccess(RequestMessageVariableName, "Content"),
-                    ObjectCreationExpression(WellKnownTypes.StringContent())
+                    ObjectCreationExpression(WellKnownTypes.System.Net.Http.StringContent.Name)
                         .AddArgumentListArguments(
                             Argument(SyntaxHelpers.StringLiteral("")),
                             Argument(SyntaxHelpers.MemberAccess("System", "Text", "Encoding", "UTF8")),
@@ -155,15 +155,15 @@ namespace Yardarm.Generation.Operation
         protected virtual ExpressionSyntax GetRequestMethod(LocatedOpenApiElement<OpenApiOperation> operation) =>
             operation.Key switch
             {
-                "Delete" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Delete")),
-                "Get" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Get")),
-                "Head" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Head")),
-                "Options" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Options")),
-                "Patch" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Patch")),
-                "Post" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Post")),
-                "Put" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Put")),
-                "Trace" => QualifiedName(WellKnownTypes.HttpMethod(), IdentifierName("Trace")),
-                _ => ObjectCreationExpression(WellKnownTypes.HttpMethod()).AddArgumentListArguments(
+                "Delete" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Delete")),
+                "Get" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Get")),
+                "Head" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Head")),
+                "Options" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Options")),
+                "Patch" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Patch")),
+                "Post" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Post")),
+                "Put" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Put")),
+                "Trace" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Trace")),
+                _ => ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpMethod.Name).AddArgumentListArguments(
                     Argument(SyntaxHelpers.StringLiteral(operation.Key.ToUpperInvariant())))
             };
     }

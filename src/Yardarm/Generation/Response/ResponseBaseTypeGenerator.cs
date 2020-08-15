@@ -53,7 +53,7 @@ namespace Yardarm.Generation.Response
             ConstructorDeclaration(BaseClassName)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
-                    Parameter(Identifier("message")).WithType(WellKnownTypes.HttpResponseMessage()))
+                    Parameter(Identifier("message")).WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty),
@@ -65,7 +65,8 @@ namespace Yardarm.Generation.Response
         #region Properties
 
         private PropertyDeclarationSyntax GenerateMessageProperty() =>
-            PropertyDeclaration(WellKnownTypes.HttpResponseMessage(), Identifier(ResponseBaseInterfaceTypeGenerator.MessageProperty))
+            PropertyDeclaration(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name,
+                    Identifier(ResponseBaseInterfaceTypeGenerator.MessageProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
@@ -79,7 +80,7 @@ namespace Yardarm.Generation.Response
                         IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty), IdentifierName("IsSuccessStatusCode"))));
 
         private PropertyDeclarationSyntax GenerateStatusCodeProperty() =>
-            PropertyDeclaration(WellKnownTypes.HttpStatusCode(),
+            PropertyDeclaration(WellKnownTypes.System.Net.HttpStatusCode.Name,
                     Identifier(ResponseBaseInterfaceTypeGenerator.StatusCodeProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithExpressionBody(ArrowExpressionClause(

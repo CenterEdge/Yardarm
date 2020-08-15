@@ -78,7 +78,7 @@ namespace Yardarm.Generation.Response
             ConstructorDeclaration(className)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
-                    Parameter(Identifier("message")).WithType(WellKnownTypes.HttpResponseMessage()))
+                    Parameter(Identifier("message")).WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name))
                 .WithInitializer(ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(Argument(IdentifierName("message"))))
                 .WithBody(Block());

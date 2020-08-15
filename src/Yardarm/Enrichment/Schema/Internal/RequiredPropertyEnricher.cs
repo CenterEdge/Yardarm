@@ -27,6 +27,6 @@ namespace Yardarm.Enrichment.Schema.Internal
             syntax
                 .MakeNullableOrInitializeIfReferenceType(context.Compilation)
                 .AddAttributeLists(AttributeList().AddAttributes(
-                    Attribute(WellKnownTypes.RequiredAttribute())));
+                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)));
     }
 }

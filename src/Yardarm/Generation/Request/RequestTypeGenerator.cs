@@ -13,6 +13,8 @@ namespace Yardarm.Generation.Request
 {
     public class RequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
+        public const string BodyPropertyName = "Body";
+
         protected IMediaTypeSelector MediaTypeSelector { get; }
 
         protected OpenApiOperation Operation => Element.Element;
@@ -51,7 +53,7 @@ namespace Yardarm.Generation.Request
 
             if (Operation.RequestBody != null)
             {
-                var requestBodyElement = Element.CreateChild(Operation.RequestBody, "Body");
+                var requestBodyElement = Element.CreateChild(Operation.RequestBody, BodyPropertyName);
                 var schema = MediaTypeSelector.Select(requestBodyElement)?.Element.Schema;
                 if (schema != null)
                 {

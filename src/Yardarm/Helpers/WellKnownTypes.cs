@@ -75,6 +75,15 @@ namespace Yardarm.Helpers
                     IdentifierName("Headers")),
                 IdentifierName("MediaTypeWithQualityHeaderValue"));
 
+        public static NameSyntax StringContent() =>
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        IdentifierName("System"),
+                        IdentifierName("Net")),
+                    IdentifierName("Http")),
+                IdentifierName("StringContent"));
+
         public static NameSyntax RequiredAttribute() =>
             QualifiedName(
                 QualifiedName(

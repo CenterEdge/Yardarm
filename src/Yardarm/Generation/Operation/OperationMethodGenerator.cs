@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Request;
 using Yardarm.Generation.Tag;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -39,9 +40,19 @@ namespace Yardarm.Generation.Operation
 
             yield return GenerateRequestMessageVariable(operation);
 
-            foreach (var header in GenerateHeaderConfiguration(operation))
+            foreach (var statement in GenerateHeaderConfiguration(operation))
             {
-                yield return header;
+                yield return statement;
+            }
+
+            LocatedOpenApiElement<OpenApiRequestBody>? requestBody = operation.GetRequestBody();
+            if (requestBody != null)
+            {
+                var statement = GenerateRequestBodyConfiguration(requestBody);
+                if (statement != null)
+                {
+                    yield return statement;
+                }
             }
 
             // Placeholder until we actually do the request
@@ -115,6 +126,30 @@ namespace Yardarm.Generation.Operation
 
                 yield return statement;
             }
+        }
+
+        protected virtual StatementSyntax? GenerateRequestBodyConfiguration(
+            LocatedOpenApiElement<OpenApiRequestBody> requestBody)
+        {
+            LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(requestBody);
+            if (mediaType == null)
+            {
+                return null;
+            }
+
+            var configurationBlock = Block(
+                ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    SyntaxHelpers.MemberAccess(RequestMessageVariableName, "Content"),
+                    ObjectCreationExpression(WellKnownTypes.StringContent())
+                        .AddArgumentListArguments(
+                            Argument(SyntaxHelpers.StringLiteral("")),
+                            Argument(SyntaxHelpers.MemberAccess("System", "Text", "Encoding", "UTF8")),
+                            Argument(SyntaxHelpers.StringLiteral(mediaType.Key))))));
+
+            return MethodHelpers.IfNotNull(
+                SyntaxHelpers.MemberAccess(TagTypeGenerator.RequestParameterName,
+                    RequestTypeGenerator.BodyPropertyName),
+                configurationBlock);
         }
 
         protected virtual ExpressionSyntax GetRequestMethod(LocatedOpenApiElement<OpenApiOperation> operation) =>

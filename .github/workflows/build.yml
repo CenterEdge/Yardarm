@@ -28,3 +28,6 @@ jobs:
     - name: Build
       working-directory: ./src
       run: dotnet build --configuration Release --no-restore
+    - name: Test
+      working-directory: ./src
+      run: dotnet test --no-restore --verbosity normal

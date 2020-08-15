@@ -23,13 +23,23 @@ namespace Yardarm.Spec
         public static IEnumerable<LocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies(
             this IEnumerable<LocatedOpenApiElement<OpenApiOperation>> operations) =>
             operations
-                .Where(p => p.Element.RequestBody != null)
-                .Select(p => p.CreateChild(p.Element.RequestBody, "Body"));
+                .Select(GetRequestBody)
+                .Where(p => p != null)!;
+
+        public static LocatedOpenApiElement<OpenApiRequestBody>? GetRequestBody(
+            this LocatedOpenApiElement<OpenApiOperation> operation) =>
+            operation.Element.RequestBody != null
+                ? operation.CreateChild(operation.Element.RequestBody, "Body")
+                : null;
 
         public static IEnumerable<LocatedOpenApiElement<OpenApiResponses>> GetResponseSets(
             this IEnumerable<LocatedOpenApiElement<OpenApiOperation>> operations) =>
             operations
-                .Select(p => p.CreateChild(p.Element.Responses, ""));
+                .Select(GetResponseSet);
+
+        public static LocatedOpenApiElement<OpenApiResponses> GetResponseSet(
+            this LocatedOpenApiElement<OpenApiOperation> operation) =>
+            operation.CreateChild(operation.Element.Responses, "");
 
         public static IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses(
             this IEnumerable<LocatedOpenApiElement<OpenApiResponses>> operations) =>

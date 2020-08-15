@@ -14,6 +14,24 @@ namespace Yardarm.Helpers
                 ),
                 IdentifierName("CancellationToken"));
 
+        public static NameSyntax HttpMethod() =>
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        IdentifierName("System"),
+                        IdentifierName("Net")),
+                    IdentifierName("Http")),
+                IdentifierName("HttpMethod"));
+
+        public static NameSyntax HttpRequestMessage() =>
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        IdentifierName("System"),
+                        IdentifierName("Net")),
+                    IdentifierName("Http")),
+                IdentifierName("HttpRequestMessage"));
+
         public static NameSyntax HttpResponseMessage() =>
             QualifiedName(
                 QualifiedName(
@@ -45,6 +63,17 @@ namespace Yardarm.Helpers
                 GenericName(
                         Identifier("List"),
                         TypeArgumentList(SingletonSeparatedList(itemType))));
+
+        public static NameSyntax MediaTypeWithQualityHeaderValue() =>
+            QualifiedName(
+                QualifiedName(
+                    QualifiedName(
+                        QualifiedName(
+                            IdentifierName("System"),
+                            IdentifierName("Net")),
+                        IdentifierName("Http")),
+                    IdentifierName("Headers")),
+                IdentifierName("MediaTypeWithQualityHeaderValue"));
 
         public static NameSyntax RequiredAttribute() =>
             QualifiedName(

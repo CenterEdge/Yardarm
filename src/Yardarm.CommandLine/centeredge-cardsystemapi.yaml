@@ -344,6 +344,10 @@ paths:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - name: X-test
+          schema:
+            type: string
+          in: header
       responses:
         '200':
           description: 'Created, returns the new card balance'

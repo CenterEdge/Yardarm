@@ -13,6 +13,13 @@ namespace Yardarm.Helpers
                     LiteralExpression(SyntaxKind.DefaultLiteralExpression,
                         Token(SyntaxKind.DefaultKeyword))));
 
+        public static StatementSyntax IfNotNull(ExpressionSyntax expressionToTest, BlockSyntax trueBlock) =>
+            IfStatement(
+                BinaryExpression(SyntaxKind.NotEqualsExpression,
+                    expressionToTest,
+                    LiteralExpression(SyntaxKind.NullLiteralExpression)),
+                trueBlock);
+
         public static StatementSyntax LocalVariableDeclarationWithInitializer(string variableName,
             ExpressionSyntax initializer) =>
             LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))

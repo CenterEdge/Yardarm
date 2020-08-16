@@ -10,7 +10,7 @@ namespace Yardarm.Generation.Schema
     {
         public static BooleanSchemaGenerator Instance { get; } = new BooleanSchemaGenerator();
 
-        public TypeSyntax GetTypeName() =>
+        public TypeSyntax TypeName =>
             SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.BoolKeyword));
 
         public SyntaxTree? GenerateSyntaxTree() => null;

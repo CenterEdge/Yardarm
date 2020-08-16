@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Response
             ResponseBaseTypeGenerator = responseBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
         }
 
-        public override TypeSyntax GetTypeName()
+        protected override TypeSyntax GetTypeName()
         {
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
@@ -47,7 +47,7 @@ namespace Yardarm.Generation.Response
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
-                .AddBaseListTypes(SimpleBaseType(ResponseBaseTypeGenerator.GetTypeName()))
+                .AddBaseListTypes(SimpleBaseType(ResponseBaseTypeGenerator.TypeName))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
                     GenerateConstructor(className))
@@ -57,7 +57,7 @@ namespace Yardarm.Generation.Response
             if (schemaGenerator != null)
             {
                 declaration = declaration
-                    .AddMembers(PropertyDeclaration(schemaGenerator.GetTypeName(), Identifier("Body"))
+                    .AddMembers(PropertyDeclaration(schemaGenerator.TypeName, Identifier("Body"))
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -93,7 +93,7 @@ namespace Yardarm.Generation.Response
 
                 ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
 
-                yield return PropertyDeclaration(schemaGenerator.GetTypeName(), nameFormatter.Format(header.Key))
+                yield return PropertyDeclaration(schemaGenerator.TypeName, nameFormatter.Format(header.Key))
                     .AddElementAnnotation(header, Context.ElementRegistry)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .AddAccessorListAccessors(

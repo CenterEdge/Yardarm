@@ -17,7 +17,7 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public override TypeSyntax GetTypeName()
+        protected override TypeSyntax GetTypeName()
         {
             var formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
 

@@ -6,11 +6,11 @@ using Yardarm.Spec;
 
 namespace Yardarm.Names
 {
-    public class DefaultTypeNameProvider : ITypeNameProvider
+    public class DefaultElementTypeNameProvider : IElementTypeNameProvider
     {
         private readonly ITypeGeneratorRegistry _typeGeneratorRegistry;
 
-        public DefaultTypeNameProvider(ITypeGeneratorRegistry typeGeneratorRegistry)
+        public DefaultElementTypeNameProvider(ITypeGeneratorRegistry typeGeneratorRegistry)
         {
             _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
         }
@@ -34,21 +34,21 @@ namespace Yardarm.Names
             };
 
         protected virtual TypeSyntax GetOperationName(LocatedOpenApiElement<OpenApiOperation> element) =>
-            _typeGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).TypeName;
 
         protected virtual TypeSyntax GetRequestBodyName(LocatedOpenApiElement<OpenApiRequestBody> element) =>
-            _typeGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).TypeName;
 
         protected virtual TypeSyntax GetResponseName(LocatedOpenApiElement<OpenApiResponse> element) =>
-            _typeGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).TypeName;
 
         protected virtual TypeSyntax GetResponsesName(LocatedOpenApiElement<OpenApiResponses> element) =>
-            _typeGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).TypeName;
 
         protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
-            _typeGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).TypeName;
 
         protected virtual TypeSyntax GetTagName(LocatedOpenApiElement<OpenApiTag> element) =>
-            _typeGeneratorRegistry.Get(element).GetTypeName();
+            _typeGeneratorRegistry.Get(element).TypeName;
     }
 }

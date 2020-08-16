@@ -22,7 +22,7 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public override TypeSyntax GetTypeName() =>
+        protected override TypeSyntax GetTypeName() =>
             !HasDiscriminator
                 ? SyntaxFactory.IdentifierName("dynamic")
                 : base.GetTypeName();

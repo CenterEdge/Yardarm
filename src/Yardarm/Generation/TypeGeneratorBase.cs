@@ -9,6 +9,10 @@ namespace Yardarm.Generation
 {
     public abstract class TypeGeneratorBase : ITypeGenerator
     {
+        private TypeSyntax? _nameCache;
+
+        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
+
         protected GenerationContext Context { get; }
 
         protected TypeGeneratorBase(GenerationContext context)
@@ -16,7 +20,7 @@ namespace Yardarm.Generation
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public abstract TypeSyntax GetTypeName();
+        protected abstract TypeSyntax GetTypeName();
 
         public virtual SyntaxTree? GenerateSyntaxTree()
         {

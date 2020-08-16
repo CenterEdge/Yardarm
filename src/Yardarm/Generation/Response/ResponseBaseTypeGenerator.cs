@@ -22,7 +22,7 @@ namespace Yardarm.Generation.Response
                                                       nameof(responseBaseInterfaceTypeGenerator));
         }
 
-        public override TypeSyntax GetTypeName()
+        protected override TypeSyntax GetTypeName()
         {
             var ns = Context.NamespaceProvider.GetRootNamespace();
 
@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Response
         {
             ClassDeclarationSyntax declaration = ClassDeclaration(BaseClassName)
                 .AddBaseListTypes(
-                    SimpleBaseType(_responseBaseInterfaceTypeGenerator.GetTypeName()))
+                    SimpleBaseType(_responseBaseInterfaceTypeGenerator.TypeName))
                 .AddModifiers(
                     Token(SyntaxKind.PublicKeyword),
                     Token(SyntaxKind.AbstractKeyword))

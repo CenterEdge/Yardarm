@@ -40,7 +40,7 @@ namespace Yardarm.Generation.Request
                                           throw new ArgumentNullException(nameof(buildContentMethodGenerator));
         }
 
-        public override TypeSyntax GetTypeName()
+        protected override TypeSyntax GetTypeName()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);

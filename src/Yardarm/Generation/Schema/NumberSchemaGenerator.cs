@@ -11,6 +11,10 @@ namespace Yardarm.Generation.Schema
 {
     public class NumberSchemaGenerator : ITypeGenerator
     {
+        private TypeSyntax? _nameCache;
+
+        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
+
         private readonly LocatedOpenApiElement<OpenApiSchema> _schemaElement;
 
         public NumberSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement)
@@ -18,7 +22,7 @@ namespace Yardarm.Generation.Schema
             _schemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
         }
 
-        public TypeSyntax GetTypeName() =>
+        protected virtual TypeSyntax GetTypeName() =>
             (_schemaElement.Element.Type, _schemaElement.Element.Format) switch
             {
                 (_, "int32") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword)),

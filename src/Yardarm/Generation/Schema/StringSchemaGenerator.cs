@@ -12,6 +12,10 @@ namespace Yardarm.Generation.Schema
 {
     public class StringSchemaGenerator : ITypeGenerator
     {
+        private TypeSyntax? _nameCache;
+
+        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
+
         private readonly LocatedOpenApiElement<OpenApiSchema> _schemaElement;
 
         public StringSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement)
@@ -19,7 +23,7 @@ namespace Yardarm.Generation.Schema
             _schemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
         }
 
-        public TypeSyntax GetTypeName() =>
+        protected virtual TypeSyntax GetTypeName() =>
             _schemaElement.Element.Format switch
             {
                 "date"=> QualifiedName(IdentifierName("System"), IdentifierName("DateTime")),

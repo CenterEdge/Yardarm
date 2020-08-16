@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Response
             Operation = (OpenApiOperation)element.Parents[0].Element;
         }
 
-        public override TypeSyntax GetTypeName()
+        protected override TypeSyntax GetTypeName()
         {
             var ns = Context.NamespaceProvider.GetNamespace(Element);
 
@@ -61,7 +61,7 @@ namespace Yardarm.Generation.Response
             InterfaceDeclarationSyntax declaration = InterfaceDeclaration(interfaceName)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddBaseListTypes(SimpleBaseType(_responseBaseInterfaceTypeGenerator.GetTypeName()));
+                .AddBaseListTypes(SimpleBaseType(_responseBaseInterfaceTypeGenerator.TypeName));
 
             yield return declaration;
         }

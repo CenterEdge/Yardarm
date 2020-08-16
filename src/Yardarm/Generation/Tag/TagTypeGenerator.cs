@@ -27,7 +27,7 @@ namespace Yardarm.Generation.Tag
             _operationMethodGenerator = operationMethodGenerator ?? throw new ArgumentNullException(nameof(operationMethodGenerator));
         }
 
-        public override TypeSyntax GetTypeName() =>
+        protected override TypeSyntax GetTypeName() =>
             SyntaxFactory.QualifiedName(
                 Context.NamespaceProvider.GetNamespace(Element),
                 SyntaxFactory.IdentifierName(GetInterfaceName()));

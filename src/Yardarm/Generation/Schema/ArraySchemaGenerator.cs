@@ -11,6 +11,10 @@ namespace Yardarm.Generation.Schema
 {
     public class ArraySchemaGenerator : ITypeGenerator
     {
+        private TypeSyntax? _nameCache;
+
+        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
+
         protected LocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
         protected GenerationContext Context { get; }
 
@@ -22,13 +26,13 @@ namespace Yardarm.Generation.Schema
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public TypeSyntax GetTypeName()
+        protected TypeSyntax GetTypeName()
         {
             // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since
             // we're not making a custom class for the list.
             var itemElement = SchemaElement.CreateChild(Schema.Items, SchemaElement.Key);
 
-            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(itemElement).GetTypeName();
+            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(itemElement).TypeName;
 
             return WellKnownTypes.System.Collections.Generic.ListT.Name(itemTypeName);
         }

@@ -13,6 +13,10 @@ namespace Yardarm.Generation.Request
 {
     public class RequestBodyTypeGenerator : ITypeGenerator
     {
+        private TypeSyntax? _nameCache;
+
+        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
+
         protected LocatedOpenApiElement<OpenApiRequestBody> RequestBodyElement { get; }
         protected GenerationContext Context { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
@@ -27,7 +31,7 @@ namespace Yardarm.Generation.Request
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
-        public virtual TypeSyntax GetTypeName()
+        protected virtual TypeSyntax GetTypeName()
         {
             LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
             if (mediaType == null)
@@ -37,7 +41,7 @@ namespace Yardarm.Generation.Request
             else if (mediaType?.Element.Schema?.Type != "object" || mediaType?.Element.Schema.Reference != null)
             {
                 var schemaElement = mediaType!.CreateChild(mediaType.Element.Schema!, "");
-                return Context.SchemaGeneratorRegistry.Get(schemaElement).GetTypeName();
+                return Context.SchemaGeneratorRegistry.Get(schemaElement).TypeName;
             }
 
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);

@@ -10,21 +10,21 @@ namespace Yardarm.Helpers
     {
         public static class Yardarm
         {
-            public static NameSyntax Name => IdentifierName("Yardarm");
+            public static NameSyntax Name { get; } = IdentifierName("Yardarm");
 
             public static class Client
             {
-                public static NameSyntax Name => QualifiedName(
+                public static NameSyntax Name { get; } = QualifiedName(
                     Yardarm.Name,
                     IdentifierName("Client"));
 
                 public static class OperationHelpers
                 {
-                    public static NameSyntax Name => QualifiedName(
+                    public static NameSyntax Name { get; } = QualifiedName(
                         Client.Name,
                         IdentifierName("OperationHelpers"));
 
-                    public static MemberAccessExpressionSyntax AddQueryParameters => MemberAccessExpression(
+                    public static MemberAccessExpressionSyntax AddQueryParameters { get; } = MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
                         Name,
                         IdentifierName("AddQueryParameters"));

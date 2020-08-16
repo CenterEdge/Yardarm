@@ -19,7 +19,7 @@ namespace Yardarm.Generation.Response
         {
         }
 
-        public override TypeSyntax GetTypeName()
+        protected override TypeSyntax GetTypeName()
         {
             var ns = Context.NamespaceProvider.GetRootNamespace();
 

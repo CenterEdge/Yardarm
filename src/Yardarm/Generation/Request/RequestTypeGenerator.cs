@@ -18,16 +18,18 @@ namespace Yardarm.Generation.Request
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
+        protected IAddHeadersMethodGenerator AddHeadersMethodGenerator { get; }
 
         protected OpenApiOperation Operation => Element.Element;
 
         public RequestTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IBuildUriMethodGenerator buildUriMethodGenerator)
+            IBuildUriMethodGenerator buildUriMethodGenerator, IAddHeadersMethodGenerator addHeadersMethodGenerator)
             : base(operationElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             BuildUriMethodGenerator = buildUriMethodGenerator ?? throw new ArgumentNullException(nameof(buildUriMethodGenerator));
+            AddHeadersMethodGenerator = addHeadersMethodGenerator ?? throw new ArgumentNullException(nameof(addHeadersMethodGenerator));
         }
 
         public override TypeSyntax GetTypeName()
@@ -68,7 +70,9 @@ namespace Yardarm.Generation.Request
                 }
             }
 
-            declaration = declaration.AddMembers(BuildUriMethodGenerator.Generate(Element));
+            declaration = declaration.AddMembers(
+                BuildUriMethodGenerator.Generate(Element),
+                AddHeadersMethodGenerator.Generate(Element));
 
             yield return declaration;
         }

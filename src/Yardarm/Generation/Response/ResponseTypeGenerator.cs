@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Schema;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -16,6 +17,12 @@ namespace Yardarm.Generation.Response
 {
     internal class ResponseTypeGenerator : TypeGeneratorBase<OpenApiResponse>
     {
+        private static readonly LocatedOpenApiElement<OpenApiSchema> _defaultHeaderSchema =
+            new LocatedOpenApiElement<OpenApiSchema>(new OpenApiSchema
+            {
+                Type = "string"
+            }, "");
+
         protected ResponseBaseTypeGenerator ResponseBaseTypeGenerator { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
@@ -89,7 +96,9 @@ namespace Yardarm.Generation.Response
 
             foreach (var header in Response.Headers.Select(p => Element.CreateChild(p.Value, p.Key)))
             {
-                var schemaElement = header.CreateChild(header.Element.Schema, "Header");
+                LocatedOpenApiElement<OpenApiSchema> schemaElement = header.Element.Schema != null
+                    ? header.CreateChild(header.Element.Schema, "Header")
+                    : _defaultHeaderSchema;
 
                 ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
 

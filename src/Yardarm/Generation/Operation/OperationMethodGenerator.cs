@@ -17,13 +17,10 @@ namespace Yardarm.Generation.Operation
         public const string UrlVariableName = "url";
         public const string RequestMessageVariableName = "requestMessage";
 
-        private readonly IMediaTypeSelector _mediaTypeSelector;
-
         protected GenerationContext Context { get; }
 
-        public OperationMethodGenerator(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+        public OperationMethodGenerator(GenerationContext context)
         {
-            _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
@@ -42,15 +39,12 @@ namespace Yardarm.Generation.Operation
                 IdentifierName(TagTypeGenerator.RequestParameterName),
                 IdentifierName(RequestMessageVariableName)));
 
-            LocatedOpenApiElement<OpenApiRequestBody>? requestBody = operation.GetRequestBody();
-            if (requestBody != null)
-            {
-                var statement = GenerateRequestBodyConfiguration(requestBody);
-                if (statement != null)
-                {
-                    yield return statement;
-                }
-            }
+            yield return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName(RequestMessageVariableName),
+                    IdentifierName("Content")),
+                BuildContentMethodGenerator.InvokeBuildContent(
+                    IdentifierName(TagTypeGenerator.RequestParameterName))));
 
             // Placeholder until we actually do the request
             yield return ThrowStatement(ObjectCreationExpression(
@@ -71,30 +65,6 @@ namespace Yardarm.Generation.Operation
                 ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name)
                     .AddArgumentListArguments(Argument(GetRequestMethod(operation)),
                         Argument(IdentifierName(UrlVariableName))));
-        }
-
-        protected virtual StatementSyntax? GenerateRequestBodyConfiguration(
-            LocatedOpenApiElement<OpenApiRequestBody> requestBody)
-        {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(requestBody);
-            if (mediaType == null)
-            {
-                return null;
-            }
-
-            var configurationBlock = Block(
-                ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                    SyntaxHelpers.MemberAccess(RequestMessageVariableName, "Content"),
-                    ObjectCreationExpression(WellKnownTypes.System.Net.Http.StringContent.Name)
-                        .AddArgumentListArguments(
-                            Argument(SyntaxHelpers.StringLiteral("")),
-                            Argument(SyntaxHelpers.MemberAccess("System", "Text", "Encoding", "UTF8")),
-                            Argument(SyntaxHelpers.StringLiteral(mediaType.Key))))));
-
-            return MethodHelpers.IfNotNull(
-                SyntaxHelpers.MemberAccess(TagTypeGenerator.RequestParameterName,
-                    RequestTypeGenerator.BodyPropertyName),
-                configurationBlock);
         }
 
         protected virtual ExpressionSyntax GetRequestMethod(LocatedOpenApiElement<OpenApiOperation> operation) =>

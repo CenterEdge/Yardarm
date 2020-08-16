@@ -31,6 +31,13 @@ namespace Yardarm.Helpers
                         }
                     }
 
+                    public static class HttpContent
+                    {
+                        public static NameSyntax Name => QualifiedName(
+                            Http.Name,
+                            IdentifierName("HttpContent"));
+                    }
+
                     public static class HttpMethod
                     {
                         public static NameSyntax Name => QualifiedName(

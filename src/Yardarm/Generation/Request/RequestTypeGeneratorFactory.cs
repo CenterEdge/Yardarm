@@ -9,16 +9,18 @@ namespace Yardarm.Generation.Request
     {
         private readonly GenerationContext _context;
         private readonly IMediaTypeSelector _mediaTypeSelector;
+        private readonly IBuildRequestMethodGenerator _buildRequestMethodGenerator;
         private readonly IBuildUriMethodGenerator _buildUriMethodGenerator;
         private readonly IAddHeadersMethodGenerator _addHeadersMethodGenerator;
         private readonly IBuildContentMethodGenerator _buildContentMethodGenerator;
 
         public RequestTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IBuildUriMethodGenerator buildUriMethodGenerator, IAddHeadersMethodGenerator addHeadersMethodGenerator,
-            IBuildContentMethodGenerator buildContentMethodGenerator)
+            IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
+            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
+            _buildRequestMethodGenerator = buildRequestMethodGenerator ?? throw new ArgumentNullException(nameof(buildRequestMethodGenerator));
             _buildUriMethodGenerator = buildUriMethodGenerator ??
                                        throw new ArgumentNullException(nameof(buildUriMethodGenerator));
             _addHeadersMethodGenerator = addHeadersMethodGenerator ??
@@ -28,7 +30,7 @@ namespace Yardarm.Generation.Request
         }
 
         public ITypeGenerator Create(LocatedOpenApiElement<OpenApiOperation> element) =>
-            new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildUriMethodGenerator,
-                _addHeadersMethodGenerator, _buildContentMethodGenerator);
+            new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildRequestMethodGenerator,
+                _buildUriMethodGenerator, _addHeadersMethodGenerator, _buildContentMethodGenerator);
     }
 }

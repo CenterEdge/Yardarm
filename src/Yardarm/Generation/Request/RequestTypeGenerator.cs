@@ -17,6 +17,7 @@ namespace Yardarm.Generation.Request
         public const string BodyPropertyName = "Body";
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
+        protected IBuildRequestMethodGenerator BuildRequestMethodGenerator { get; }
         protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
         protected IAddHeadersMethodGenerator AddHeadersMethodGenerator { get; }
         protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
@@ -25,14 +26,18 @@ namespace Yardarm.Generation.Request
 
         public RequestTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IBuildUriMethodGenerator buildUriMethodGenerator, IAddHeadersMethodGenerator addHeadersMethodGenerator,
-            IBuildContentMethodGenerator buildContentMethodGenerator)
+            IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
+            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator)
             : base(operationElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            BuildUriMethodGenerator = buildUriMethodGenerator ?? throw new ArgumentNullException(nameof(buildUriMethodGenerator));
-            AddHeadersMethodGenerator = addHeadersMethodGenerator ?? throw new ArgumentNullException(nameof(addHeadersMethodGenerator));
-            BuildContentMethodGenerator = buildContentMethodGenerator ?? throw new ArgumentNullException(nameof(buildContentMethodGenerator));
+            BuildRequestMethodGenerator = buildRequestMethodGenerator ?? throw new ArgumentNullException(nameof(buildRequestMethodGenerator));
+            BuildUriMethodGenerator = buildUriMethodGenerator ??
+                                      throw new ArgumentNullException(nameof(buildUriMethodGenerator));
+            AddHeadersMethodGenerator = addHeadersMethodGenerator ??
+                                        throw new ArgumentNullException(nameof(addHeadersMethodGenerator));
+            BuildContentMethodGenerator = buildContentMethodGenerator ??
+                                          throw new ArgumentNullException(nameof(buildContentMethodGenerator));
         }
 
         public override TypeSyntax GetTypeName()
@@ -74,6 +79,7 @@ namespace Yardarm.Generation.Request
             }
 
             declaration = declaration.AddMembers(
+                BuildRequestMethodGenerator.Generate(Element),
                 BuildUriMethodGenerator.Generate(Element),
                 AddHeadersMethodGenerator.Generate(Element),
                 BuildContentMethodGenerator.Generate(Element));

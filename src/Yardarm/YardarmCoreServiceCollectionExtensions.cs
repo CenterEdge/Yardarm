@@ -50,6 +50,7 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<IAddHeadersMethodGenerator, AddHeadersMethodGenerator>();
             services.TryAddSingleton<IBuildContentMethodGenerator, BuildContentMethodGenerator>();
+            services.TryAddSingleton<IBuildRequestMethodGenerator, BuildRequestMethodGenerator>();
             services.TryAddSingleton<IBuildUriMethodGenerator, BuildUriMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();

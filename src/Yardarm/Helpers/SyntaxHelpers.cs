@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -8,9 +9,14 @@ namespace Yardarm.Helpers
     public static class SyntaxHelpers
     {
         public static ExpressionSyntax MemberAccess(params string[] identifierNames) =>
+            MemberAccess(IdentifierName(identifierNames[0]), identifierNames.Skip(1));
+
+        public static ExpressionSyntax MemberAccess(ExpressionSyntax left, params string[] identifierNames) =>
+            MemberAccess(IdentifierName(identifierNames[0]), identifierNames.Skip(1));
+
+        public static ExpressionSyntax MemberAccess(ExpressionSyntax left, IEnumerable<string> identifierNames) =>
             identifierNames
-                .Skip(1)
-                .Aggregate((ExpressionSyntax) IdentifierName(identifierNames[0]),
+                .Aggregate(left,
                     (agg, current) =>
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, agg, IdentifierName(current)));
 

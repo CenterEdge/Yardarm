@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
 using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
 {
@@ -16,14 +17,17 @@ namespace Yardarm.Generation.Request
         public const string BodyPropertyName = "Body";
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
+        protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
 
         protected OpenApiOperation Operation => Element.Element;
 
         public RequestTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
-            GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+            GenerationContext context, IMediaTypeSelector mediaTypeSelector,
+            IBuildUriMethodGenerator buildUriMethodGenerator)
             : base(operationElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
+            BuildUriMethodGenerator = buildUriMethodGenerator ?? throw new ArgumentNullException(nameof(buildUriMethodGenerator));
         }
 
         public override TypeSyntax GetTypeName()
@@ -31,8 +35,8 @@ namespace Yardarm.Generation.Request
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            return SyntaxFactory.QualifiedName(ns,
-                SyntaxFactory.IdentifierName(formatter.Format(Operation.OperationId + "Request")));
+            return QualifiedName(ns,
+                IdentifierName(formatter.Format(Operation.OperationId + "Request")));
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
@@ -41,12 +45,12 @@ namespace Yardarm.Generation.Request
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
-            ClassDeclarationSyntax declaration = SyntaxFactory.ClassDeclaration(className)
+            ClassDeclarationSyntax declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
-                .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                .AddMembers(SyntaxFactory.ConstructorDeclaration(className)
-                    .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                    .WithBody(SyntaxFactory.Block()));
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddMembers(ConstructorDeclaration(className)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .WithBody(Block()));
 
             declaration = AddParameterProperties(declaration,
                 Operation.Parameters.Select(p => Element.CreateChild(p, p.Name)));
@@ -63,6 +67,8 @@ namespace Yardarm.Generation.Request
                         CreatePropertyDeclaration(requestBodyElement, className, locatedSchema));
                 }
             }
+
+            declaration = declaration.AddMembers(BuildUriMethodGenerator.Generate(Element));
 
             yield return declaration;
         }
@@ -96,14 +102,14 @@ namespace Yardarm.Generation.Request
 
             var typeName = Context.TypeNameProvider.GetName(schema);
 
-            var propertyDeclaration = SyntaxFactory.PropertyDeclaration(typeName, propertyName)
+            var propertyDeclaration = PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(parameter, Context.ElementRegistry)
-                .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
-                    SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                    SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
             return propertyDeclaration;
         }

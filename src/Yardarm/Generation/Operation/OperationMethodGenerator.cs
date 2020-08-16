@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -11,7 +10,6 @@ using Yardarm.Generation.Tag;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
-using Yardarm.Spec.Path;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Operation
@@ -36,6 +34,8 @@ namespace Yardarm.Generation.Operation
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(LocatedOpenApiElement<OpenApiOperation> operation)
         {
+            yield return MethodHelpers.ThrowIfArgumentNull(TagTypeGenerator.RequestParameterName);
+
             yield return GenerateUrlVariable(operation);
 
             yield return GenerateRequestMessageVariable(operation);
@@ -62,18 +62,10 @@ namespace Yardarm.Generation.Operation
                 .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
         }
 
-        protected virtual StatementSyntax GenerateUrlVariable(LocatedOpenApiElement<OpenApiOperation> operation)
-        {
-            var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
-
-            var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parents[0];
-
-            return MethodHelpers.LocalVariableDeclarationWithInitializer(UrlVariableName,
-                PathParser.Parse(path.Key).ToInterpolatedStringExpression(parameterName =>
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(TagTypeGenerator.RequestParameterName),
-                        IdentifierName(propertyNameFormatter.Format(parameterName)))));
-        }
+        protected virtual StatementSyntax GenerateUrlVariable(LocatedOpenApiElement<OpenApiOperation> operation) =>
+            MethodHelpers.LocalVariableDeclarationWithInitializer(UrlVariableName,
+                BuildUriMethodGenerator.InvokeBuildUri(
+                    IdentifierName(TagTypeGenerator.RequestParameterName)));
 
         protected virtual StatementSyntax GenerateRequestMessageVariable(
             LocatedOpenApiElement<OpenApiOperation> operation)

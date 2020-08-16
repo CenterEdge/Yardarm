@@ -13,6 +13,13 @@ namespace Yardarm.Helpers
                     LiteralExpression(SyntaxKind.DefaultLiteralExpression,
                         Token(SyntaxKind.DefaultKeyword))));
 
+        public static StatementSyntax IfNull(ExpressionSyntax expressionToTest, BlockSyntax trueBlock) =>
+            IfStatement(
+                IsPatternExpression(
+                    expressionToTest,
+                    ConstantPattern(LiteralExpression(SyntaxKind.NullLiteralExpression))),
+                trueBlock);
+
         public static StatementSyntax IfNotNull(ExpressionSyntax expressionToTest, BlockSyntax trueBlock) =>
             IfStatement(
                 BinaryExpression(SyntaxKind.NotEqualsExpression,
@@ -24,5 +31,12 @@ namespace Yardarm.Helpers
             ExpressionSyntax initializer) =>
             LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))
                 .AddVariables(VariableDeclarator(variableName).WithInitializer(EqualsValueClause(initializer))));
+
+        public static StatementSyntax ThrowIfArgumentNull(string parameterName) =>
+            IfNull(
+                IdentifierName(parameterName),
+                Block(ThrowStatement(
+                    ObjectCreationExpression(WellKnownTypes.System.ArgumentNullException.Name)
+                        .AddArgumentListArguments(Argument(SyntaxHelpers.StringLiteral(parameterName))))));
     }
 }

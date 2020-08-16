@@ -9,14 +9,18 @@ namespace Yardarm.Generation.Request
     {
         private readonly GenerationContext _context;
         private readonly IMediaTypeSelector _mediaTypeSelector;
+        private readonly IBuildUriMethodGenerator _buildUriMethodGenerator;
 
-        public RequestTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+        public RequestTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
+            IBuildUriMethodGenerator buildUriMethodGenerator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
+            _buildUriMethodGenerator = buildUriMethodGenerator ??
+                                       throw new ArgumentNullException(nameof(buildUriMethodGenerator));
         }
 
         public ITypeGenerator Create(LocatedOpenApiElement<OpenApiOperation> element) =>
-            new RequestTypeGenerator(element, _context, _mediaTypeSelector);
+            new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildUriMethodGenerator);
     }
 }

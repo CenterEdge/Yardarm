@@ -11,6 +11,13 @@ namespace Yardarm.Helpers
         {
             public static NameSyntax Name => IdentifierName("System");
 
+            public static class ArgumentNullException
+            {
+                public static NameSyntax Name => QualifiedName(
+                    System.Name,
+                    IdentifierName("ArgumentNullException"));
+            }
+
             public static class Collections
             {
                 public static NameSyntax Name => QualifiedName(

@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Internal
             using var reader = new StreamReader(stream!, Encoding.UTF8);
 
             var rawText = reader.ReadToEnd();
-            rawText = rawText.Replace("$rootnamespace$", _namespaceProvider.GetRootNamespace().ToString());
+            rawText = rawText.Replace("RootNamespace", _namespaceProvider.GetRootNamespace().ToString());
 
             return CSharpSyntaxTree.ParseText(SourceText.From(rawText), CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp8));
         }

@@ -42,10 +42,14 @@ namespace Yardarm.Spec
             operation.CreateChild(operation.Element.Responses, "");
 
         public static IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses(
-            this IEnumerable<LocatedOpenApiElement<OpenApiResponses>> operations) =>
-            operations
-                .SelectMany(p => p.Element,
-                    (operation, response) => operation.CreateChild(response.Value, response.Key));
+            this IEnumerable<LocatedOpenApiElement<OpenApiResponses>> responseSets) =>
+            responseSets
+                .SelectMany(p => p.GetResponses());
+
+        public static IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses(
+            this LocatedOpenApiElement<OpenApiResponses> responseSet) =>
+            responseSet.Element
+                .Select(p => responseSet.CreateChild(p.Value, p.Key));
 
         public static IEnumerable<LocatedOpenApiElement<OpenApiTag>> GetTags(
             this IEnumerable<LocatedOpenApiElement<OpenApiOperation>> operations) =>

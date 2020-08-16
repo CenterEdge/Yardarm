@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Net;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -41,6 +44,8 @@ namespace Yardarm.Generation.Operation
                                 Argument(IdentifierName(RequestMessageVariableName)),
                                 Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))))))));
 
+            yield return ReturnStatement(GenerateResponse(operation, IdentifierName("responseMessage")));
+
             // Placeholder until we actually do the request
             yield return ThrowStatement(ObjectCreationExpression(
                         QualifiedName(IdentifierName("System"), IdentifierName("NotImplementedException")))
@@ -53,5 +58,38 @@ namespace Yardarm.Generation.Operation
             MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
                 BuildRequestMethodGenerator.InvokeBuildRequest(
                     IdentifierName(RequestParameterName)));
+
+        protected virtual ExpressionSyntax GenerateResponse(
+            LocatedOpenApiElement<OpenApiOperation> operation, ExpressionSyntax responseMessage) =>
+            SwitchExpression(
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    responseMessage,
+                    IdentifierName("StatusCode")),
+                SeparatedList(operation
+                    .GetResponseSet()
+                    .GetResponses()
+                    .Select(p => SwitchExpressionArm(
+                        ConstantPattern(ParseStatusCode(p.Key)),
+                        ObjectCreationExpression(
+                                Context.TypeNameProvider.GetName(p))
+                            .AddArgumentListArguments(
+                                Argument(IdentifierName("responseMessage")))))))
+                .AddArms(SwitchExpressionArm(DiscardPattern(),
+                    ThrowExpression(ObjectCreationExpression(
+                        QualifiedName(
+                            Context.NamespaceProvider.GetRootNamespace(),
+                            IdentifierName("UnknownStatusCodeException")))
+                        .AddArgumentListArguments(
+                            Argument(IdentifierName("responseMessage"))))));
+
+        [Pure]
+        private static ExpressionSyntax ParseStatusCode(string statusCodeStr) =>
+            Enum.TryParse(statusCodeStr, out HttpStatusCode statusCode)
+                ? (ExpressionSyntax)MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    WellKnownTypes.System.Net.HttpStatusCode.Name,
+                    IdentifierName(statusCode.ToString()))
+                : CastExpression(
+                    WellKnownTypes.System.Net.HttpStatusCode.Name,
+                    LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(int.Parse(statusCodeStr))));
     }
 }

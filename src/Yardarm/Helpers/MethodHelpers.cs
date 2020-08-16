@@ -6,8 +6,17 @@ namespace Yardarm.Helpers
 {
     public static class MethodHelpers
     {
+        public const string CancellationTokenParameterName = "cancellationToken";
+
+        public static ExpressionSyntax ArgumentOrThrowIfNull(string parameterName) =>
+            BinaryExpression(SyntaxKind.CoalesceExpression,
+                IdentifierName(parameterName),
+                ThrowExpression(
+                    ObjectCreationExpression(WellKnownTypes.System.ArgumentNullException.Name)
+                        .AddArgumentListArguments(Argument(SyntaxHelpers.StringLiteral(parameterName)))));
+
         public static ParameterSyntax DefaultedCancellationTokenParameter() =>
-            Parameter(Identifier("cancellationToken"))
+            Parameter(Identifier(CancellationTokenParameterName))
                 .WithType(WellKnownTypes.System.Threading.CancellationToken.Name)
                 .WithDefault(EqualsValueClause(
                     LiteralExpression(SyntaxKind.DefaultLiteralExpression,

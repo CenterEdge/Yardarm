@@ -8,14 +8,13 @@ using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
-using Yardarm.Spec.Path;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Tag
 {
     public class TagTypeGenerator : TypeGeneratorBase<OpenApiTag>
     {
-        public const string RequestParameterName = "request";
+        public const string HttpClientFieldName = "_httpClient";
 
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
@@ -56,20 +55,47 @@ namespace Yardarm.Generation.Tag
 
         protected virtual MemberDeclarationSyntax GenerateClass()
         {
-            var declaration = ClassDeclaration(GetClassName())
+            string className = GetClassName();
+
+            var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddBaseListTypes(SimpleBaseType(GetTypeName()))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddMembers(
-                    GetOperations()
-                        .SelectMany(GenerateOperationMethodHeader,
-                            (operation, method) => new {operation, method})
-                        .Select(p => p.method
-                            .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                            .WithBody(_operationMethodGenerator.Generate(p.operation)))
-                        .ToArray<MemberDeclarationSyntax>());
+                .AddMembers(GenerateFields()
+                    .Concat<MemberDeclarationSyntax>(GenerateConstructors(className))
+                    .Concat(
+                        GetOperations()
+                            .SelectMany(GenerateOperationMethodHeader,
+                                (operation, method) => new {operation, method})
+                            .Select(p => p.method
+                                .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.AsyncKeyword))
+                                .WithBody(_operationMethodGenerator.Generate(p.operation))))
+                    .ToArray());
 
             return declaration;
+        }
+
+        protected virtual IEnumerable<FieldDeclarationSyntax> GenerateFields()
+        {
+            yield return FieldDeclaration(VariableDeclaration(WellKnownTypes.System.Net.Http.HttpClient.Name)
+                    .AddVariables(
+                        VariableDeclarator(HttpClientFieldName)))
+                .AddModifiers(
+                    Token(SyntaxKind.PrivateKeyword),
+                    Token(SyntaxKind.ReadOnlyKeyword));
+        }
+
+        protected virtual IEnumerable<ConstructorDeclarationSyntax> GenerateConstructors(string className)
+        {
+            yield return ConstructorDeclaration(className)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddParameterListParameters(
+                    Parameter(Identifier("httpClient"))
+                        .WithType(WellKnownTypes.System.Net.Http.HttpClient.Name))
+                .WithBody(Block(
+                    ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName(HttpClientFieldName),
+                        MethodHelpers.ArgumentOrThrowIfNull("httpClient")))));
         }
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
@@ -85,7 +111,7 @@ namespace Yardarm.Generation.Tag
             var methodDeclaration = MethodDeclaration(responseType, methodName)
                 .AddElementAnnotation(operation, Context.ElementRegistry)
                 .AddParameterListParameters(
-                    Parameter(Identifier(RequestParameterName))
+                    Parameter(Identifier(OperationMethodGenerator.RequestParameterName))
                         .WithType(requestType),
                     MethodHelpers.DefaultedCancellationTokenParameter());
 

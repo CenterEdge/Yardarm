@@ -8,11 +8,19 @@ namespace Yardarm.Helpers
 {
     public static class SyntaxHelpers
     {
+        public static ExpressionSyntax AwaitConfiguredFalse(ExpressionSyntax awaitable) =>
+            AwaitExpression(InvocationExpression(
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    awaitable,
+                    IdentifierName("ConfigureAwait")),
+                ArgumentList(SingletonSeparatedList(
+                    Argument(LiteralExpression(SyntaxKind.FalseLiteralExpression))))));
+
         public static ExpressionSyntax MemberAccess(params string[] identifierNames) =>
             MemberAccess(IdentifierName(identifierNames[0]), identifierNames.Skip(1));
 
         public static ExpressionSyntax MemberAccess(ExpressionSyntax left, params string[] identifierNames) =>
-            MemberAccess(IdentifierName(identifierNames[0]), identifierNames.Skip(1));
+            MemberAccess(left, (IEnumerable<string>)identifierNames);
 
         public static ExpressionSyntax MemberAccess(ExpressionSyntax left, IEnumerable<string> identifierNames) =>
             identifierNames

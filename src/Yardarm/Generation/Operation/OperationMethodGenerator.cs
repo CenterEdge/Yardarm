@@ -13,6 +13,7 @@ namespace Yardarm.Generation.Operation
 {
     public class OperationMethodGenerator : IOperationMethodGenerator
     {
+        public const string RequestParameterName = "request";
         protected const string RequestMessageVariableName = "requestMessage";
 
         protected GenerationContext Context { get; }
@@ -27,9 +28,18 @@ namespace Yardarm.Generation.Operation
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(LocatedOpenApiElement<OpenApiOperation> operation)
         {
-            yield return MethodHelpers.ThrowIfArgumentNull(TagTypeGenerator.RequestParameterName);
+            yield return MethodHelpers.ThrowIfArgumentNull(RequestParameterName);
 
             yield return GenerateRequestMessageVariable(operation);
+
+            yield return LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))
+                .AddVariables(VariableDeclarator("responseMessage")
+                    .WithInitializer(EqualsValueClause(
+                        SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
+                                SyntaxHelpers.MemberAccess(TagTypeGenerator.HttpClientFieldName, "SendAsync"))
+                            .AddArgumentListArguments(
+                                Argument(IdentifierName(RequestMessageVariableName)),
+                                Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))))))));
 
             // Placeholder until we actually do the request
             yield return ThrowStatement(ObjectCreationExpression(
@@ -42,6 +52,6 @@ namespace Yardarm.Generation.Operation
             LocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
                 BuildRequestMethodGenerator.InvokeBuildRequest(
-                    IdentifierName(TagTypeGenerator.RequestParameterName)));
+                    IdentifierName(RequestParameterName)));
     }
 }

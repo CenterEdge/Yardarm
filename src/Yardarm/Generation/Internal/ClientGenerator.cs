@@ -33,7 +33,10 @@ namespace Yardarm.Generation.Internal
             var rawText = reader.ReadToEnd();
             rawText = rawText.Replace("RootNamespace", _namespaceProvider.GetRootNamespace().ToString());
 
-            return CSharpSyntaxTree.ParseText(SourceText.From(rawText), CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp8));
+            return CSharpSyntaxTree.ParseText(SourceText.From(rawText),
+                CSharpParseOptions.Default
+                    .WithLanguageVersion(LanguageVersion.CSharp8)
+                    .WithPreprocessorSymbols("NETSTANDARD2_0"));
         }
     }
 }

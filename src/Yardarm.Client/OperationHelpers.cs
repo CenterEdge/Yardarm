@@ -6,7 +6,7 @@ namespace Yardarm.Client
 {
     internal static class OperationHelpers
     {
-        public static string AddQueryParameters(string path, IEnumerable<KeyValuePair<string, string?>> parameters)
+        public static string AddQueryParameters(string path, IEnumerable<KeyValuePair<string, object?>> parameters)
         {
             if (path == null)
             {
@@ -17,7 +17,7 @@ namespace Yardarm.Client
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            var builder = new StringBuilder();
+            var builder = new StringBuilder(path);
 
             var first = true;
             foreach (var parameter in parameters)
@@ -35,7 +35,7 @@ namespace Yardarm.Client
                     }
 
                     builder.AppendFormat("{0}={1}", Uri.EscapeUriString(parameter.Key),
-                        Uri.EscapeUriString(parameter.Value));
+                        Uri.EscapeUriString(parameter.Value.ToString()));
                 }
             }
 

@@ -24,10 +24,18 @@ namespace Yardarm.Helpers
                         Client.Name,
                         IdentifierName("OperationHelpers"));
 
-                    public static MemberAccessExpressionSyntax AddQueryParameters { get; } = MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        Name,
-                        IdentifierName("AddQueryParameters"));
+                    public static InvocationExpressionSyntax AddQueryParameters(
+                        ExpressionSyntax pathExpression, ExpressionSyntax parametersExpression) =>
+                        InvocationExpression(MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                Name,
+                                IdentifierName("AddQueryParameters")),
+                            ArgumentList(
+                                SeparatedList(new[]
+                                {
+                                    Argument(pathExpression),
+                                    Argument(parametersExpression)
+                                })));
                 }
             }
         }

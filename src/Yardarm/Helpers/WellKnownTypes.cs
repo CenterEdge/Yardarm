@@ -39,6 +39,19 @@ namespace Yardarm.Helpers
                                     Identifier("List"),
                                     TypeArgumentList(SingletonSeparatedList(itemType))));
                     }
+
+                    public static class KeyValuePair
+                    {
+                        public static NameSyntax Name(TypeSyntax keyType, TypeSyntax valueType) =>
+                            QualifiedName(
+                                Generic.Name,
+                                GenericName(
+                                    Identifier("KeyValuePair"),
+                                    TypeArgumentList(SeparatedList(new[] {
+                                        keyType,
+                                        valueType
+                                    }))));
+                    }
                 }
             }
 

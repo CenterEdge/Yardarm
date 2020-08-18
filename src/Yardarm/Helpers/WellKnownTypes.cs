@@ -116,6 +116,13 @@ namespace Yardarm.Helpers
                         Threading.Name,
                         IdentifierName("Tasks"));
 
+                    public static class Task
+                    {
+                        public static NameSyntax Name => QualifiedName(
+                            Tasks.Name,
+                            IdentifierName("Task"));
+                    }
+
                     public static class TaskT
                     {
                         public static NameSyntax Name(TypeSyntax resultType) =>
@@ -123,6 +130,16 @@ namespace Yardarm.Helpers
                                 Tasks.Name,
                                 GenericName(
                                     Identifier("Task"),
+                                    TypeArgumentList(SingletonSeparatedList(resultType))));
+                    }
+
+                    public static class ValueTaskT
+                    {
+                        public static NameSyntax Name(TypeSyntax resultType) =>
+                            QualifiedName(
+                                Tasks.Name,
+                                GenericName(
+                                    Identifier("ValueTask"),
                                     TypeArgumentList(SingletonSeparatedList(resultType))));
                     }
                 }

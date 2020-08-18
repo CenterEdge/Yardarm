@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
@@ -15,5 +17,9 @@ namespace RootNamespace.Serialization
 
             return typeSerializerRegistry;
         }
+
+        public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
+            HttpContent content) =>
+            typeSerializerRegistry.Get(content.Headers.ContentType.MediaType).DeserializeAsync<T>(content);
     }
 }

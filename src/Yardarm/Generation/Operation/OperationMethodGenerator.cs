@@ -45,12 +45,6 @@ namespace Yardarm.Generation.Operation
                                 Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))))))));
 
             yield return ReturnStatement(GenerateResponse(operation, IdentifierName("responseMessage")));
-
-            // Placeholder until we actually do the request
-            yield return ThrowStatement(ObjectCreationExpression(
-                        QualifiedName(IdentifierName("System"), IdentifierName("NotImplementedException")))
-                    .WithArgumentList(ArgumentList()))
-                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
         }
 
         protected virtual StatementSyntax GenerateRequestMessageVariable(
@@ -73,7 +67,8 @@ namespace Yardarm.Generation.Operation
                         ObjectCreationExpression(
                                 Context.TypeNameProvider.GetName(p))
                             .AddArgumentListArguments(
-                                Argument(IdentifierName("responseMessage")))))))
+                                Argument(IdentifierName("responseMessage")),
+                                Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))))))
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
                     ThrowExpression(ObjectCreationExpression(
                         QualifiedName(

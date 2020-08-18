@@ -5,9 +5,7 @@ using System.Net;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Enrichment;
 using Yardarm.Generation.MediaType;
-using Yardarm.Generation.Schema;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -26,19 +24,22 @@ namespace Yardarm.Generation.Response
         protected ResponseBaseTypeGenerator ResponseBaseTypeGenerator { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
+        protected IGetBodyMethodGenerator ParseBodyMethodGenerator { get; }
 
         protected OpenApiResponse Response => Element.Element;
 
         public ResponseTypeGenerator(LocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context,
             IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
-            ResponseBaseTypeGenerator responseBaseTypeGenerator)
+            ResponseBaseTypeGenerator responseBaseTypeGenerator,
+            IGetBodyMethodGenerator parseBodyMethodGenerator)
             : base(responseElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             HttpResponseCodeNameProvider = httpResponseCodeNameProvider ??
                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
             ResponseBaseTypeGenerator = responseBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
+            ParseBodyMethodGenerator = parseBodyMethodGenerator ?? throw new ArgumentNullException(nameof(parseBodyMethodGenerator));
         }
 
         protected override TypeSyntax GetTypeName()
@@ -57,25 +58,19 @@ namespace Yardarm.Generation.Response
                 .AddBaseListTypes(SimpleBaseType(ResponseBaseTypeGenerator.TypeName))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
-                    GenerateConstructor(className))
-                .AddMembers(GenerateHeaderProperties().ToArray());
+                    new MemberDeclarationSyntax?[]
+                        {
+                            GenerateConstructor(className),
+                            ParseBodyMethodGenerator.Generate(Element)
+                        }
+                        .Concat(GenerateHeaderProperties())
+                        .Where(p => p != null)
+                        .ToArray()!);
 
             (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
-            if (schemaGenerator != null)
+            if (schemaGenerator != null && !schemaIsReference)
             {
-                declaration = declaration
-                    .AddMembers(PropertyDeclaration(schemaGenerator.TypeName, Identifier("Body"))
-                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                        .AddAccessorListAccessors(
-                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                            AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))));
-
-                if (!schemaIsReference)
-                {
-                    declaration = declaration.AddMembers(schemaGenerator.Generate().ToArray());
-                }
+                declaration = declaration.AddMembers(schemaGenerator.Generate().ToArray());
             }
 
             yield return declaration;
@@ -85,9 +80,14 @@ namespace Yardarm.Generation.Response
             ConstructorDeclaration(className)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
-                    Parameter(Identifier("message")).WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name))
+                    Parameter(Identifier("message"))
+                        .WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name),
+                    Parameter(Identifier("typeSerializerRegistry"))
+                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
                 .WithInitializer(ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
-                    .AddArgumentListArguments(Argument(IdentifierName("message"))))
+                    .AddArgumentListArguments(
+                        Argument(IdentifierName("message")),
+                        Argument(IdentifierName("typeSerializerRegistry"))))
                 .WithBody(Block());
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateHeaderProperties()

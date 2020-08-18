@@ -15,6 +15,7 @@ namespace Yardarm.Generation.Tag
     public class TagTypeGenerator : TypeGeneratorBase<OpenApiTag>
     {
         public const string HttpClientFieldName = "_httpClient";
+        public const string TypeSerializerRegistryFieldName = "_typeSerializerRegistry";
 
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
@@ -83,6 +84,13 @@ namespace Yardarm.Generation.Tag
                 .AddModifiers(
                     Token(SyntaxKind.PrivateKeyword),
                     Token(SyntaxKind.ReadOnlyKeyword));
+
+            yield return FieldDeclaration(VariableDeclaration(Context.NamespaceProvider.GetITypeSerializerRegistry())
+                    .AddVariables(
+                        VariableDeclarator(TypeSerializerRegistryFieldName)))
+                .AddModifiers(
+                    Token(SyntaxKind.PrivateKeyword),
+                    Token(SyntaxKind.ReadOnlyKeyword));
         }
 
         protected virtual IEnumerable<ConstructorDeclarationSyntax> GenerateConstructors(string className)
@@ -91,11 +99,16 @@ namespace Yardarm.Generation.Tag
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
                     Parameter(Identifier("httpClient"))
-                        .WithType(WellKnownTypes.System.Net.Http.HttpClient.Name))
+                        .WithType(WellKnownTypes.System.Net.Http.HttpClient.Name),
+                    Parameter(Identifier("typeSerializerRegistry"))
+                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(HttpClientFieldName),
-                        MethodHelpers.ArgumentOrThrowIfNull("httpClient")))));
+                        MethodHelpers.ArgumentOrThrowIfNull("httpClient"))),
+                    ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName(TypeSerializerRegistryFieldName),
+                        MethodHelpers.ArgumentOrThrowIfNull("typeSerializerRegistry")))));
         }
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(

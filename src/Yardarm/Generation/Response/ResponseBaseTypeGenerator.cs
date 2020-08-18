@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Helpers;
+using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
@@ -10,6 +11,8 @@ namespace Yardarm.Generation.Response
     public class ResponseBaseTypeGenerator : TypeGeneratorBase
     {
         private const string BaseClassName = "OperationResponse";
+
+        public const string TypeSerializerRegistryPropertyName = "TypeSerializerRegistry";
 
         private readonly ResponseBaseInterfaceTypeGenerator _responseBaseInterfaceTypeGenerator;
 
@@ -40,6 +43,7 @@ namespace Yardarm.Generation.Response
                 .AddMembers(
                     GenerateConstructor(),
                     GenerateMessageProperty(),
+                    GenerateTypeSerializerRegistryProperty(),
                     GenerateIsSuccessStatusCodeProperty(),
                     GenerateStatusCodeProperty(),
                     GenerateDisposeMethod());
@@ -53,11 +57,17 @@ namespace Yardarm.Generation.Response
             ConstructorDeclaration(BaseClassName)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
-                    Parameter(Identifier("message")).WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name))
+                    Parameter(Identifier("message"))
+                        .WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name),
+                    Parameter(Identifier("typeSerializerRegistry"))
+                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty),
-                        SyntaxHelpers.ParameterWithNullCheck("message")))
+                        SyntaxHelpers.ParameterWithNullCheck("message"))),
+                    ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName(ResponseBaseTypeGenerator.TypeSerializerRegistryPropertyName),
+                        SyntaxHelpers.ParameterWithNullCheck("typeSerializerRegistry")))
                     ));
 
         #endregion
@@ -68,6 +78,13 @@ namespace Yardarm.Generation.Response
             PropertyDeclaration(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name,
                     Identifier(ResponseBaseInterfaceTypeGenerator.MessageProperty))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddAccessorListAccessors(
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+
+        private PropertyDeclarationSyntax GenerateTypeSerializerRegistryProperty() =>
+            PropertyDeclaration(Context.NamespaceProvider.GetITypeSerializerRegistry(),
+                    Identifier(ResponseBaseTypeGenerator.TypeSerializerRegistryPropertyName))
+                .AddModifiers(Token(SyntaxKind.ProtectedKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 

@@ -12,6 +12,7 @@ namespace Yardarm.NewtonsoftJson
             settings.AddExtension(services =>
             {
                 services
+                    .AddCreateDefaultRegistryEnricher<JsonCreateDefaultRegistryEnricher>()
                     .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
                     .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()
                     .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()

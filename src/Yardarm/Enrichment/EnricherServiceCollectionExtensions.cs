@@ -15,6 +15,7 @@ namespace Yardarm.Enrichment
                 .AddCompilationEnricher<ReferenceCompilationEnricher>()
                 .AddCompilationEnricher<SyntaxTreeCompilationEnricher>()
                 .AddCompilationEnricher<OpenApiCompilationEnricher>()
+                .AddCompilationEnricher<DefaultTypeSerializersEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
                 .AddDefaultSchemaEnrichers()
                 .AddDefaultRequestEnrichers()
@@ -23,6 +24,10 @@ namespace Yardarm.Enrichment
         public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
             where T : class, IAssemblyInfoEnricher =>
             services.AddTransient<IAssemblyInfoEnricher, T>();
+
+        public static IServiceCollection AddCreateDefaultRegistryEnricher<T>(this IServiceCollection services)
+            where T : class, ICreateDefaultRegistryEnricher =>
+            services.AddTransient<ICreateDefaultRegistryEnricher, T>();
 
         public static IServiceCollection AddCompilationEnricher<T>(this IServiceCollection services)
             where T : class, ICompilationEnricher =>

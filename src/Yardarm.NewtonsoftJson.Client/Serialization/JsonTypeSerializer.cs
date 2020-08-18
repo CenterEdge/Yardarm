@@ -1,0 +1,76 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+
+// ReSharper disable once CheckNamespace
+namespace RootNamespace.Serialization
+{
+    public class JsonTypeSerializer : ITypeSerializer
+    {
+        public static string[] SupportedMediaTypes => new [] { "application/json" };
+
+        private readonly JsonSerializer _serializer;
+
+        public JsonTypeSerializer()
+            : this(new JsonSerializerSettings())
+        {
+        }
+
+        public JsonTypeSerializer(JsonSerializerSettings settings)
+        {
+            _serializer = JsonSerializer.Create(settings);
+        }
+
+        public HttpContent Serialize<T>(T value, string mediaType)
+        {
+            var stream = new MemoryStream();
+            try
+            {
+                using var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true);
+                _serializer.Serialize(writer, value, typeof(T));
+
+                stream.Position = 0;
+                return new StreamContent(stream)
+                {
+                    Headers = {ContentType = new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName}}
+                };
+            }
+            catch
+            {
+                // Be sure to cleanup the stream if there's an exception
+                stream.Dispose();
+                throw;
+            }
+        }
+
+        public string Serialize<T>(T value)
+        {
+            using var writer = new StringWriter();
+
+            _serializer.Serialize(writer, value, typeof(T));
+
+            return writer.ToString();
+        }
+
+        public async ValueTask<T> DeserializeAsync<T>(HttpContent content)
+        {
+            string str = await content.ReadAsStringAsync().ConfigureAwait(false);
+
+            using var reader = new JsonTextReader(new StringReader(str));
+
+            return _serializer.Deserialize<T>(reader)!;
+        }
+
+        [return: MaybeNull]
+        public T Deserialize<T>(IEnumerable<string> values)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

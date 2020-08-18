@@ -6,6 +6,8 @@
 
         public const int SyntaxTreeGeneration = 100;
 
-        public const int OpenApiSyntaxTreeEnrichment = 200;
+        public const int WellKnownTypeEnrichment = 200;
+
+        public const int OpenApiSyntaxTreeEnrichment = 300;
     }
 }

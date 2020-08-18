@@ -27,6 +27,16 @@ namespace Yardarm.Packaging.Internal
                     VersionRange = VersionRange.Parse("4.7.0")
                 }
             };
+
+            yield return new LibraryDependency
+            {
+                LibraryRange = new LibraryRange
+                {
+                    Name = "System.Threading.Tasks.Extensions",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("4.5.4")
+                }
+            };
         }
     }
 }

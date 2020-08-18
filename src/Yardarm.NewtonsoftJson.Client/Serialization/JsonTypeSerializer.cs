@@ -34,11 +34,16 @@ namespace RootNamespace.Serialization
             {
                 using var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true);
                 _serializer.Serialize(writer, value, typeof(T));
+                writer.Flush();
 
                 stream.Position = 0;
                 return new StreamContent(stream)
                 {
-                    Headers = {ContentType = new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName}}
+                    Headers =
+                    {
+                        ContentType = new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName},
+                        ContentLength = stream.Length
+                    }
                 };
             }
             catch

@@ -21,5 +21,9 @@ namespace RootNamespace.Serialization
         public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
             HttpContent content) =>
             typeSerializerRegistry.Get(content.Headers.ContentType.MediaType).DeserializeAsync<T>(content);
+
+        public static HttpContent Serialize<T>(this ITypeSerializerRegistry typeSerializerRegistry,
+            T value, string mediaType) =>
+            typeSerializerRegistry.Get(mediaType).Serialize(value, mediaType);
     }
 }

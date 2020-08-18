@@ -66,6 +66,13 @@ namespace Yardarm.Helpers
                             IdentifierName("HttpResponseMessage"));
                     }
 
+                    public static class StreamContent
+                    {
+                        public static NameSyntax Name { get; } = QualifiedName(
+                            Http.Name,
+                            IdentifierName("StreamContent"));
+                    }
+
                     public static class StringContent
                     {
                         public static NameSyntax Name { get; } = QualifiedName(

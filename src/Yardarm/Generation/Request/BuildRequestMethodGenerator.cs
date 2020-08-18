@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
+using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -13,11 +15,23 @@ namespace Yardarm.Generation.Request
         public const string BuildRequestMethodName = "BuildRequest";
         protected const string RequestMessageVariableName = "requestMessage";
 
+        private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
+
+        protected GenerationContext Context { get; }
+
+        public BuildRequestMethodGenerator(GenerationContext context)
+        {
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
         public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodDeclaration(
                     WellKnownTypes.System.Net.Http.HttpRequestMessage.Name,
         BuildRequestMethodName)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddParameterListParameters(
+                    Parameter(Identifier(TypeSerializerRegistryParameterName))
+                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
@@ -31,7 +45,9 @@ namespace Yardarm.Generation.Request
 
             yield return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                 SyntaxHelpers.MemberAccess(RequestMessageVariableName, "Content"),
-                BuildContentMethodGenerator.InvokeBuildContent(ThisExpression())));
+                BuildContentMethodGenerator.InvokeBuildContent(
+                    ThisExpression(),
+                    IdentifierName(TypeSerializerRegistryParameterName))));
 
             yield return ReturnStatement(IdentifierName(RequestMessageVariableName));
         }
@@ -58,10 +74,13 @@ namespace Yardarm.Generation.Request
                     Argument(SyntaxHelpers.StringLiteral(operation.Key.ToUpperInvariant())))
             };
 
-        public static InvocationExpressionSyntax InvokeBuildRequest(ExpressionSyntax requestInstance) =>
+        public static InvocationExpressionSyntax InvokeBuildRequest(ExpressionSyntax requestInstance,
+            ExpressionSyntax typeSerializerRegistry) =>
             InvocationExpression(
-                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    requestInstance,
-                    IdentifierName(BuildRequestMethodName)));
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        requestInstance,
+                        IdentifierName(BuildRequestMethodName)))
+                .AddArgumentListArguments(
+                    Argument(typeSerializerRegistry));
     }
 }

@@ -16,13 +16,15 @@ namespace Yardarm.Generation.Request
     {
         public const string BuildContentMethodName = "BuildContent";
 
-        protected IMediaTypeSelector MediaTypeSelector { get; }
-        protected INameFormatterSelector NameFormatterSelector { get; }
+        private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
 
-        public BuildContentMethodGenerator(IMediaTypeSelector mediaTypeSelector, INameFormatterSelector nameFormatterSelector)
+        protected GenerationContext Context { get; }
+        protected IMediaTypeSelector MediaTypeSelector { get; }
+
+        public BuildContentMethodGenerator(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
         {
+            Context = context ?? throw new ArgumentNullException(nameof(context));
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            NameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
         }
 
         public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
@@ -30,6 +32,9 @@ namespace Yardarm.Generation.Request
                     NullableType(WellKnownTypes.System.Net.Http.HttpContent.Name),
                     BuildContentMethodName)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddParameterListParameters(
+                    Parameter(Identifier(TypeSerializerRegistryParameterName))
+                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
@@ -45,10 +50,12 @@ namespace Yardarm.Generation.Request
             }
 
             var createContentExpression =
-                ObjectCreationExpression(WellKnownTypes.System.Net.Http.StringContent.Name)
+                InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        Context.NamespaceProvider.GetTypeSerializerRegistryExtensions(),
+                        IdentifierName("Serialize")))
                     .AddArgumentListArguments(
-                        Argument(SyntaxHelpers.StringLiteral("")),
-                        Argument(SyntaxHelpers.MemberAccess("System", "Text", "Encoding", "UTF8")),
+                        Argument(IdentifierName(TypeSerializerRegistryParameterName)),
+                        Argument(IdentifierName(RequestTypeGenerator.BodyPropertyName)),
                         Argument(SyntaxHelpers.StringLiteral(mediaType.Key)));
 
             yield return ReturnStatement(ConditionalExpression(
@@ -59,10 +66,13 @@ namespace Yardarm.Generation.Request
                 createContentExpression));
         }
 
-        public static InvocationExpressionSyntax InvokeBuildContent(ExpressionSyntax requestInstance) =>
+        public static InvocationExpressionSyntax InvokeBuildContent(ExpressionSyntax requestInstance,
+            ExpressionSyntax typeSerializerRegistry) =>
             InvocationExpression(
                 MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     requestInstance,
-                    IdentifierName(BuildContentMethodName)));
+                    IdentifierName(BuildContentMethodName)))
+                .AddArgumentListArguments(
+                    Argument(typeSerializerRegistry));
     }
 }

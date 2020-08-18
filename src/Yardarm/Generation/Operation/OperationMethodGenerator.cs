@@ -51,7 +51,8 @@ namespace Yardarm.Generation.Operation
             LocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
                 BuildRequestMethodGenerator.InvokeBuildRequest(
-                    IdentifierName(RequestParameterName)));
+                    IdentifierName(RequestParameterName),
+                    IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)));
 
         protected virtual ExpressionSyntax GenerateResponse(
             LocatedOpenApiElement<OpenApiOperation> operation, ExpressionSyntax responseMessage) =>

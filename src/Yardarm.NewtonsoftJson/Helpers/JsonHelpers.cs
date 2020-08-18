@@ -30,7 +30,7 @@ namespace Yardarm.NewtonsoftJson.Helpers
             SyntaxFactory.QualifiedName(
                 SyntaxFactory.QualifiedName(
                     namespaceProvider.GetRootNamespace(),
-                    SyntaxFactory.IdentifierName("Converters")),
+                    SyntaxFactory.IdentifierName("Serialization")),
                 SyntaxFactory.IdentifierName("DiscriminatorConverter"));
 
     }

@@ -1,10 +1,11 @@
-﻿using Yardarm.Names;
+﻿using Yardarm.Generation;
+using Yardarm.Names;
 
-namespace Yardarm.Generation.Internal
+namespace Yardarm.NewtonsoftJson.Internal
 {
     internal class ClientGenerator : ResourceSyntaxTreeGenerator
     {
-        protected override string ResourcePrefix => "Yardarm.Client.";
+        protected override string ResourcePrefix => "Yardarm.NewtonsoftJson.Client.";
 
         public ClientGenerator(INamespaceProvider namespaceProvider)
             : base(namespaceProvider)

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-
-namespace $rootnamespace$.Converters
+// ReSharper disable once CheckNamespace
+namespace RootNamespace.Serialization
 {
     public class DiscriminatorConverter : JsonConverter
     {

@@ -10,17 +10,17 @@ namespace Yardarm.Enrichment.Schema.Internal
 {
     internal class SchemaBaseTypeRegistry : ISchemaBaseTypeRegistry
     {
-        private readonly ConcurrentDictionary<LocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
-            new ConcurrentDictionary<LocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiSchema>());
+        private readonly ConcurrentDictionary<ILocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
+            new ConcurrentDictionary<ILocatedOpenApiElement<OpenApiSchema>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiSchema>());
 
-        public void AddBaseType(LocatedOpenApiElement<OpenApiSchema> schema, BaseTypeSyntax type)
+        public void AddBaseType(ILocatedOpenApiElement<OpenApiSchema> schema, BaseTypeSyntax type)
         {
             var bag = _inheritance.GetOrAdd(schema, _ => new ConcurrentBag<BaseTypeSyntax>());
 
             bag.Add(type);
         }
 
-        public IEnumerable<BaseTypeSyntax> GetBaseTypes(LocatedOpenApiElement<OpenApiSchema> schema)
+        public IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<OpenApiSchema> schema)
         {
             if (!_inheritance.TryGetValue(schema, out var list))
             {

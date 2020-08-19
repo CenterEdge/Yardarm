@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
-using Yardarm.Generation;
 using Yardarm.Spec;
 
 namespace Yardarm.Helpers
 {
-    internal class LocatedElementEqualityComparer<T> : IEqualityComparer<LocatedOpenApiElement<T>>
+    internal class LocatedElementEqualityComparer<T> : IEqualityComparer<ILocatedOpenApiElement<T>>
         where T : IOpenApiElement
     {
-        public bool Equals(LocatedOpenApiElement<T>? x, LocatedOpenApiElement<T>? y)
+        public bool Equals(ILocatedOpenApiElement<T>? x, ILocatedOpenApiElement<T>? y)
         {
             if (x == null)
             {
@@ -45,7 +44,7 @@ namespace Yardarm.Helpers
             return x.Parents.Count == 0 || Equals(x.Parents[0], y.Parents[0]);
         }
 
-        public int GetHashCode(LocatedOpenApiElement<T> obj)
+        public int GetHashCode(ILocatedOpenApiElement<T> obj)
         {
             if (obj.Element is IOpenApiReferenceable referenceable && referenceable.Reference != null)
             {

@@ -10,17 +10,17 @@ namespace Yardarm.Enrichment.Responses.Internal
 {
     internal class ResponseBaseTypeRegistry : IResponseBaseTypeRegistry
     {
-        private readonly ConcurrentDictionary<LocatedOpenApiElement<OpenApiResponse>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
-            new ConcurrentDictionary<LocatedOpenApiElement<OpenApiResponse>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiResponse>());
+        private readonly ConcurrentDictionary<ILocatedOpenApiElement<OpenApiResponse>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
+            new ConcurrentDictionary<ILocatedOpenApiElement<OpenApiResponse>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiResponse>());
 
-        public void AddBaseType(LocatedOpenApiElement<OpenApiResponse> schema, BaseTypeSyntax type)
+        public void AddBaseType(ILocatedOpenApiElement<OpenApiResponse> schema, BaseTypeSyntax type)
         {
             var bag = _inheritance.GetOrAdd(schema, _ => new ConcurrentBag<BaseTypeSyntax>());
 
             bag.Add(type);
         }
 
-        public IEnumerable<BaseTypeSyntax> GetBaseTypes(LocatedOpenApiElement<OpenApiResponse> schema)
+        public IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<OpenApiResponse> schema)
         {
             if (!_inheritance.TryGetValue(schema, out var list))
             {

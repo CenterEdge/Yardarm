@@ -10,7 +10,7 @@ namespace Yardarm.Spec
     /// Represents an <see cref="IOpenApiElement"/> element with information about the path
     /// used to reach that element in the Open API document.
     /// </summary>
-    public abstract class LocatedOpenApiElement : IEquatable<LocatedOpenApiElement>
+    public abstract class LocatedOpenApiElement : IOpenApiElement, IEquatable<LocatedOpenApiElement>
     {
         /// <summary>
         /// The element.

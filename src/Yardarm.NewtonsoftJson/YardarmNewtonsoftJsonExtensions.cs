@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.NewtonsoftJson.Internal;
@@ -18,6 +19,9 @@ namespace Yardarm.NewtonsoftJson
                     .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()
                     .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()
                     .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>();
+
+                services
+                    .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();
 
                 return services;
             });

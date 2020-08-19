@@ -17,11 +17,11 @@ namespace Yardarm.Generation.Request
 
         private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
 
-        protected GenerationContext Context { get; }
+        protected ISerializationNamespace SerializationNamespace { get; }
 
-        public BuildRequestMethodGenerator(GenerationContext context)
+        public BuildRequestMethodGenerator(ISerializationNamespace serializationNamespace)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
+            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
         public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Request
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
-                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
+                        .WithType(SerializationNamespace.ITypeSerializerRegistry))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(

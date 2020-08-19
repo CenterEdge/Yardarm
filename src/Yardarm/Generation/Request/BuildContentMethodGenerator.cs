@@ -18,12 +18,14 @@ namespace Yardarm.Generation.Request
 
         private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
 
-        protected GenerationContext Context { get; }
+        protected ISerializationNamespace SerializationNamespace { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
 
-        public BuildContentMethodGenerator(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+        public BuildContentMethodGenerator(ISerializationNamespace serializationNamespace,
+            IMediaTypeSelector mediaTypeSelector)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
+            SerializationNamespace =
+                serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
@@ -34,7 +36,7 @@ namespace Yardarm.Generation.Request
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
-                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
+                        .WithType(SerializationNamespace.ITypeSerializerRegistry))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
@@ -51,7 +53,7 @@ namespace Yardarm.Generation.Request
 
             var createContentExpression =
                 InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        Context.NamespaceProvider.GetTypeSerializerRegistryExtensions(),
+                        SerializationNamespace.TypeSerializerRegistryExtensions,
                         IdentifierName("Serialize")))
                     .AddArgumentListArguments(
                         Argument(IdentifierName(TypeSerializerRegistryParameterName)),

@@ -13,13 +13,13 @@ namespace Yardarm.Generation
 {
     public abstract class ResourceSyntaxTreeGenerator : ISyntaxTreeGenerator
     {
-        public INamespaceProvider NamespaceProvider { get; }
+        public IRootNamespace RootNamespace { get; }
 
         protected abstract string ResourcePrefix { get; }
 
-        protected ResourceSyntaxTreeGenerator(INamespaceProvider namespaceProvider)
+        protected ResourceSyntaxTreeGenerator(IRootNamespace rootNamespace)
         {
-            NamespaceProvider = namespaceProvider ?? throw new ArgumentNullException(nameof(namespaceProvider));
+            RootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
         }
 
         public virtual IEnumerable<SyntaxTree> Generate() =>
@@ -34,7 +34,7 @@ namespace Yardarm.Generation
             using var reader = new StreamReader(stream!, Encoding.UTF8);
 
             string rawText = reader.ReadToEnd();
-            rawText = rawText.Replace("RootNamespace", NamespaceProvider.GetRootNamespace().ToString());
+            rawText = rawText.Replace("RootNamespace", RootNamespace.Name.ToString());
 
             return CSharpSyntaxTree.ParseText(SourceText.From(rawText),
                 CSharpParseOptions.Default

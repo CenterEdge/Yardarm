@@ -13,12 +13,15 @@ namespace Yardarm.NewtonsoftJson
     public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, OpenApiSchema>
     {
         protected GenerationContext Context { get; }
+        protected IJsonSerializationNamespace JsonSerializationNamespace { get; }
 
         public int Priority => 0;
 
-        public JsonDiscriminatorEnricher(GenerationContext context)
+        public JsonDiscriminatorEnricher(GenerationContext context,
+            IJsonSerializationNamespace jsonSerializationNamespace)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            JsonSerializationNamespace = jsonSerializationNamespace ?? throw new ArgumentNullException(nameof(jsonSerializationNamespace));
         }
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
@@ -34,7 +37,7 @@ namespace Yardarm.NewtonsoftJson
 
             var attribute = SyntaxFactory.Attribute(JsonHelpers.JsonConverterAttributeName()).AddArgumentListArguments(
                 SyntaxFactory.AttributeArgument(
-                    SyntaxFactory.TypeOfExpression(JsonHelpers.DiscriminatorConverterName(Context.NamespaceProvider))),
+                    SyntaxFactory.TypeOfExpression(JsonSerializationNamespace.DiscriminatorConverter)),
                 SyntaxFactory.AttributeArgument(
                     SyntaxHelpers.StringLiteral(schema.Discriminator.PropertyName)),
                 SyntaxFactory.AttributeArgument(

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace.Serialization
+namespace RootNamespace.Serialization.Json
 {
     public class DiscriminatorConverter : JsonConverter
     {

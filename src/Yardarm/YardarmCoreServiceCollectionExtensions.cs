@@ -11,6 +11,7 @@ using Yardarm.Generation.Response;
 using Yardarm.Generation.Schema;
 using Yardarm.Generation.Tag;
 using Yardarm.Names;
+using Yardarm.Names.Internal;
 using Yardarm.Packaging;
 using Yardarm.Packaging.Internal;
 using Yardarm.Spec;
@@ -66,6 +67,8 @@ namespace Yardarm
             services.TryAddSingleton<IElementTypeNameProvider, DefaultElementTypeNameProvider>();
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
+            services.TryAddSingleton<IRootNamespace, RootNamespace>();
+            services.TryAddSingleton<ISerializationNamespace, SerializationNamespace>();
 
             // Other
             services

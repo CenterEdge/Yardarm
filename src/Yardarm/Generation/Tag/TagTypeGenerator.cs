@@ -17,14 +17,17 @@ namespace Yardarm.Generation.Tag
         public const string HttpClientFieldName = "_httpClient";
         public const string TypeSerializerRegistryFieldName = "_typeSerializerRegistry";
 
+        private readonly ISerializationNamespace _serializationNamespace;
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
         protected OpenApiTag Tag => Element.Element;
 
         public TagTypeGenerator(LocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+            ISerializationNamespace serializationNamespace,
             IOperationMethodGenerator operationMethodGenerator)
             : base(tagElement, context)
         {
+            _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             _operationMethodGenerator = operationMethodGenerator ?? throw new ArgumentNullException(nameof(operationMethodGenerator));
         }
 
@@ -85,7 +88,7 @@ namespace Yardarm.Generation.Tag
                     Token(SyntaxKind.PrivateKeyword),
                     Token(SyntaxKind.ReadOnlyKeyword));
 
-            yield return FieldDeclaration(VariableDeclaration(Context.NamespaceProvider.GetITypeSerializerRegistry())
+            yield return FieldDeclaration(VariableDeclaration(_serializationNamespace.ITypeSerializerRegistry)
                     .AddVariables(
                         VariableDeclarator(TypeSerializerRegistryFieldName)))
                 .AddModifiers(
@@ -101,7 +104,7 @@ namespace Yardarm.Generation.Tag
                     Parameter(Identifier("httpClient"))
                         .WithType(WellKnownTypes.System.Net.Http.HttpClient.Name),
                     Parameter(Identifier("typeSerializerRegistry"))
-                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
+                        .WithType(_serializationNamespace.ITypeSerializerRegistry))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(HttpClientFieldName),

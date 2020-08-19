@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Generation.Request;
 using Yardarm.Generation.Tag;
 using Yardarm.Helpers;
+using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -20,10 +21,12 @@ namespace Yardarm.Generation.Operation
         protected const string RequestMessageVariableName = "requestMessage";
 
         protected GenerationContext Context { get; }
+        protected IRootNamespace RootNamespace { get; }
 
-        public OperationMethodGenerator(GenerationContext context)
+        public OperationMethodGenerator(GenerationContext context, IRootNamespace rootNamespace)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            RootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
         }
 
         public BlockSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
@@ -73,7 +76,7 @@ namespace Yardarm.Generation.Operation
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
                     ThrowExpression(ObjectCreationExpression(
                         QualifiedName(
-                            Context.NamespaceProvider.GetRootNamespace(),
+                            RootNamespace.Name,
                             IdentifierName("UnknownStatusCodeException")))
                         .AddArgumentListArguments(
                             Argument(IdentifierName("responseMessage"))))));

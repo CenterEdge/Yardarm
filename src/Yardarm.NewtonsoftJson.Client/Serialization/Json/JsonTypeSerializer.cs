@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace.Serialization
+namespace RootNamespace.Serialization.Json
 {
     public class JsonTypeSerializer : ITypeSerializer
     {

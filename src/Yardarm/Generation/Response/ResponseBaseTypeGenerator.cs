@@ -14,23 +14,25 @@ namespace Yardarm.Generation.Response
 
         public const string TypeSerializerRegistryPropertyName = "TypeSerializerRegistry";
 
+        private readonly IRootNamespace _rootNamespace;
+        private readonly ISerializationNamespace _serializationNamespace;
         private readonly ResponseBaseInterfaceTypeGenerator _responseBaseInterfaceTypeGenerator;
 
         public ResponseBaseTypeGenerator(GenerationContext context,
+            IRootNamespace rootNamespace,
+            ISerializationNamespace serializationNamespace,
             ResponseBaseInterfaceTypeGenerator responseBaseInterfaceTypeGenerator)
             : base(context)
         {
+            _rootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
+            _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             _responseBaseInterfaceTypeGenerator = responseBaseInterfaceTypeGenerator ??
                                                   throw new ArgumentNullException(
                                                       nameof(responseBaseInterfaceTypeGenerator));
         }
 
-        protected override TypeSyntax GetTypeName()
-        {
-            var ns = Context.NamespaceProvider.GetRootNamespace();
-
-            return QualifiedName(ns, IdentifierName(BaseClassName));
-        }
+        protected override TypeSyntax GetTypeName() =>
+            QualifiedName(_rootNamespace.Name, IdentifierName(BaseClassName));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
@@ -60,7 +62,7 @@ namespace Yardarm.Generation.Response
                     Parameter(Identifier("message"))
                         .WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name),
                     Parameter(Identifier("typeSerializerRegistry"))
-                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
+                        .WithType(_serializationNamespace.ITypeSerializerRegistry))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty),
@@ -82,7 +84,7 @@ namespace Yardarm.Generation.Response
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
         private PropertyDeclarationSyntax GenerateTypeSerializerRegistryProperty() =>
-            PropertyDeclaration(Context.NamespaceProvider.GetITypeSerializerRegistry(),
+            PropertyDeclaration(_serializationNamespace.ITypeSerializerRegistry,
                     Identifier(ResponseBaseTypeGenerator.TypeSerializerRegistryPropertyName))
                 .AddModifiers(Token(SyntaxKind.ProtectedKeyword))
                 .AddAccessorListAccessors(

@@ -7,8 +7,8 @@ namespace Yardarm.NewtonsoftJson.Internal
     {
         protected override string ResourcePrefix => "Yardarm.NewtonsoftJson.Client.";
 
-        public ClientGenerator(INamespaceProvider namespaceProvider)
-            : base(namespaceProvider)
+        public ClientGenerator(IRootNamespace rootNamespace)
+            : base(rootNamespace)
         {
         }
     }

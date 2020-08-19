@@ -17,11 +17,14 @@ namespace Yardarm.Generation.Response
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected GenerationContext Context { get; }
+        protected ISerializationNamespace SerializationNamespace { get; }
 
-        public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, GenerationContext context)
+        public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, GenerationContext context,
+            ISerializationNamespace serializationNamespace)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
         public MethodDeclarationSyntax? Generate(LocatedOpenApiElement<OpenApiResponse> response)
@@ -54,7 +57,7 @@ namespace Yardarm.Generation.Response
         {
             yield return ReturnStatement(SyntaxHelpers.AwaitConfiguredFalse(
                 InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        Context.NamespaceProvider.GetTypeSerializerRegistryExtensions(),
+                        SerializationNamespace.TypeSerializerRegistryExtensions,
                         GenericName("DeserializeAsync")
                             .AddTypeArgumentListArguments(returnType)))
                     .AddArgumentListArguments(

@@ -6,8 +6,8 @@ namespace Yardarm.Generation.Internal
     {
         protected override string ResourcePrefix => "Yardarm.Client.";
 
-        public ClientGenerator(INamespaceProvider namespaceProvider)
-            : base(namespaceProvider)
+        public ClientGenerator(IRootNamespace rootNamespace)
+            : base(rootNamespace)
         {
         }
     }

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Helpers;
+using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
@@ -14,17 +16,16 @@ namespace Yardarm.Generation.Response
         public const string IsSuccessStatusCodeProperty = "IsSuccessStatusCode";
         public const string StatusCodeProperty = "StatusCode";
 
-        public ResponseBaseInterfaceTypeGenerator(GenerationContext context)
+        private readonly IRootNamespace _rootNamespace;
+
+        public ResponseBaseInterfaceTypeGenerator(GenerationContext context, IRootNamespace rootNamespace)
             : base(context)
         {
+            _rootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
         }
 
-        protected override TypeSyntax GetTypeName()
-        {
-            var ns = Context.NamespaceProvider.GetRootNamespace();
-
-            return QualifiedName(ns, IdentifierName(BaseInterfaceName));
-        }
+        protected override TypeSyntax GetTypeName() =>
+            QualifiedName(_rootNamespace.Name, IdentifierName(BaseInterfaceName));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

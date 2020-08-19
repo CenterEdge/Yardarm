@@ -25,13 +25,5 @@ namespace Yardarm.NewtonsoftJson.Helpers
         public static NameSyntax StringEnumConverterName() => SyntaxFactory.QualifiedName(
             NewtonsoftJsonConverters(),
             SyntaxFactory.IdentifierName("StringEnumConverter"));
-
-        public static NameSyntax DiscriminatorConverterName(INamespaceProvider namespaceProvider) =>
-            SyntaxFactory.QualifiedName(
-                SyntaxFactory.QualifiedName(
-                    namespaceProvider.GetRootNamespace(),
-                    SyntaxFactory.IdentifierName("Serialization")),
-                SyntaxFactory.IdentifierName("DiscriminatorConverter"));
-
     }
 }

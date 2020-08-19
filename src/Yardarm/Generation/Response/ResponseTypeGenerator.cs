@@ -24,6 +24,7 @@ namespace Yardarm.Generation.Response
         protected ResponseBaseTypeGenerator ResponseBaseTypeGenerator { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
+        protected ISerializationNamespace SerializationNamespace { get; }
         protected IGetBodyMethodGenerator ParseBodyMethodGenerator { get; }
 
         protected OpenApiResponse Response => Element.Element;
@@ -31,6 +32,7 @@ namespace Yardarm.Generation.Response
         public ResponseTypeGenerator(LocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context,
             IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
+            ISerializationNamespace serializationNamespace,
             ResponseBaseTypeGenerator responseBaseTypeGenerator,
             IGetBodyMethodGenerator parseBodyMethodGenerator)
             : base(responseElement, context)
@@ -38,6 +40,7 @@ namespace Yardarm.Generation.Response
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             HttpResponseCodeNameProvider = httpResponseCodeNameProvider ??
                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
+            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             ResponseBaseTypeGenerator = responseBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
             ParseBodyMethodGenerator = parseBodyMethodGenerator ?? throw new ArgumentNullException(nameof(parseBodyMethodGenerator));
         }
@@ -83,7 +86,7 @@ namespace Yardarm.Generation.Response
                     Parameter(Identifier("message"))
                         .WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name),
                     Parameter(Identifier("typeSerializerRegistry"))
-                        .WithType(Context.NamespaceProvider.GetITypeSerializerRegistry()))
+                        .WithType(SerializationNamespace.ITypeSerializerRegistry))
                 .WithInitializer(ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
                     .AddArgumentListArguments(
                         Argument(IdentifierName("message")),

@@ -27,7 +27,7 @@ namespace Yardarm.Enrichment.Requests.Internal
 
         private PropertyDeclarationSyntax AddRequiredAttribute<T>(PropertyDeclarationSyntax syntax,
             OpenApiEnrichmentContext<T> context)
-            where T : IOpenApiSerializable =>
+            where T : IOpenApiElement =>
             syntax
                 .MakeNullableOrInitializeIfReferenceType(context.Compilation)
                 .AddAttributeLists(AttributeList().AddAttributes(

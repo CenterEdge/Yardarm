@@ -5,7 +5,7 @@ using Yardarm.Spec;
 namespace Yardarm.Generation
 {
     public abstract class TypeGeneratorBase<T> : TypeGeneratorBase
-        where T : IOpenApiSerializable
+        where T : IOpenApiElement
     {
         protected LocatedOpenApiElement<T> Element { get; }
 

@@ -4,7 +4,7 @@ using Yardarm.Spec;
 namespace Yardarm.Generation
 {
     public interface ITypeGeneratorFactory<TElement>
-        where TElement : IOpenApiSerializable
+        where TElement : IOpenApiElement
     {
         ITypeGenerator Create(LocatedOpenApiElement<TElement> element);
     }

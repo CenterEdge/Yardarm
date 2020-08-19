@@ -52,7 +52,7 @@ namespace Yardarm.Enrichment.Internal
         private CSharpCompilation Enrich<TSyntaxNode, TElement>(CSharpCompilation compilation,
             IOpenApiSyntaxNodeEnricher<TSyntaxNode, TElement> enricher)
             where TSyntaxNode : SyntaxNode
-            where TElement : IOpenApiSerializable
+            where TElement : IOpenApiElement
         {
             foreach (var syntaxTree in compilation.SyntaxTrees)
             {
@@ -70,7 +70,7 @@ namespace Yardarm.Enrichment.Internal
             CSharpCompilation compilation,
             IOpenApiSyntaxNodeEnricher<TSyntaxNode, TElement> enricher)
             where TSyntaxNode : SyntaxNode
-            where TElement : IOpenApiSerializable
+            where TElement : IOpenApiElement
         {
             var rootNode = syntaxTree.GetRoot();
 

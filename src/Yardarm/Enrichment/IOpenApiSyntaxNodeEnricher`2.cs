@@ -6,7 +6,7 @@ namespace Yardarm.Enrichment
 {
     public interface IOpenApiSyntaxNodeEnricher<TSyntaxNode, TElement> : IEnricher<TSyntaxNode, OpenApiEnrichmentContext<TElement>>, IOpenApiSyntaxNodeEnricher
         where TSyntaxNode : SyntaxNode
-        where TElement : IOpenApiSerializable
+        where TElement : IOpenApiElement
     {
     }
 }

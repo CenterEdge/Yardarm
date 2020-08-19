@@ -104,7 +104,7 @@ namespace Yardarm.Generation.Request
 
         protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(LocatedOpenApiElement<T> parameter, string className,
             LocatedOpenApiElement<OpenApiSchema> schema)
-            where T : IOpenApiSerializable
+            where T : IOpenApiElement
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameter.Key);
 

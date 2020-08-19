@@ -12,7 +12,7 @@ namespace Yardarm.Spec.Internal
         private readonly ConcurrentDictionary<string, LocatedOpenApiElement> _registry =
             new ConcurrentDictionary<string, LocatedOpenApiElement>();
 
-        public LocatedOpenApiElement<T> Get<T>(string key) where T : IOpenApiSerializable
+        public LocatedOpenApiElement<T> Get<T>(string key) where T : IOpenApiElement
         {
             if (!TryGet<T>(key, out var element))
             {
@@ -23,7 +23,7 @@ namespace Yardarm.Spec.Internal
         }
 
         public bool TryGet<T>(string key, [MaybeNullWhen(false)] out LocatedOpenApiElement<T> element)
-            where T : IOpenApiSerializable
+            where T : IOpenApiElement
         {
             if (!_registry.TryGetValue(key, out var untypedElement))
             {
@@ -36,7 +36,7 @@ namespace Yardarm.Spec.Internal
         }
 
         public string Add<T>(LocatedOpenApiElement<T> element)
-            where T : IOpenApiSerializable
+            where T : IOpenApiElement
         {
             if (element == null)
             {

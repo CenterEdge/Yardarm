@@ -11,12 +11,12 @@ namespace Yardarm.Spec
     public interface IOpenApiElementRegistry
     {
         LocatedOpenApiElement<T> Get<T>(string key)
-            where T : IOpenApiSerializable;
+            where T : IOpenApiElement;
 
         bool TryGet<T>(string key, [MaybeNullWhen(false)] out LocatedOpenApiElement<T> element)
-            where T : IOpenApiSerializable;
+            where T : IOpenApiElement;
 
         string Add<T>(LocatedOpenApiElement<T> element)
-            where T : IOpenApiSerializable;
+            where T : IOpenApiElement;
     }
 }

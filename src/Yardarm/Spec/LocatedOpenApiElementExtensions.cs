@@ -8,7 +8,7 @@ namespace Yardarm.Spec
     public static class LocatedOpenApiElementExtensions
     {
         public static LocatedOpenApiElement<T> CreateRoot<T>(this T rootItem, string key)
-            where T : IOpenApiSerializable =>
+            where T : IOpenApiElement =>
             LocatedOpenApiElement.CreateRoot(rootItem, key);
 
         public static IEnumerable<LocatedOpenApiElement<OpenApiPathItem>> ToLocatedElements(this OpenApiPaths paths) =>

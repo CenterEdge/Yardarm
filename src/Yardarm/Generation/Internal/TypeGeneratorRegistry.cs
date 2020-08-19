@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Internal
         }
 
         public ITypeGenerator Get<T>(LocatedOpenApiElement<T> element)
-            where T : IOpenApiSerializable
+            where T : IOpenApiElement
         {
 
             return _serviceProvider.GetRequiredService<ITypeGeneratorRegistry<T>>().Get(element);

@@ -7,7 +7,7 @@ using Yardarm.Helpers;
 namespace Yardarm.Spec
 {
     /// <summary>
-    /// Represents an <see cref="IOpenApiSerializable"/> element with information about the path
+    /// Represents an <see cref="IOpenApiElement"/> element with information about the path
     /// used to reach that element in the Open API document.
     /// </summary>
     public abstract class LocatedOpenApiElement : IEquatable<LocatedOpenApiElement>
@@ -15,7 +15,7 @@ namespace Yardarm.Spec
         /// <summary>
         /// The element.
         /// </summary>
-        public IOpenApiSerializable Element { get; }
+        public IOpenApiElement Element { get; }
 
         /// <summary>
         /// Key in which this element was stored on its parent.
@@ -29,12 +29,12 @@ namespace Yardarm.Spec
 
         public bool IsRoot => Parents.Count == 0;
 
-        public LocatedOpenApiElement(IOpenApiSerializable element, string key)
+        public LocatedOpenApiElement(IOpenApiElement element, string key)
             : this(element, key, Array.Empty<LocatedOpenApiElement>())
         {
         }
 
-        public LocatedOpenApiElement(IOpenApiSerializable element, string key, IReadOnlyList<LocatedOpenApiElement> parents)
+        public LocatedOpenApiElement(IOpenApiElement element, string key, IReadOnlyList<LocatedOpenApiElement> parents)
         {
             Element = element ?? throw new ArgumentNullException(nameof(element));
             Key = key ?? throw new ArgumentNullException(nameof(key));
@@ -42,11 +42,11 @@ namespace Yardarm.Spec
         }
 
         public LocatedOpenApiElement<T> CreateChild<T>(T child, string key)
-            where T : IOpenApiSerializable =>
+            where T : IOpenApiElement =>
             new LocatedOpenApiElement<T>(child, key, Parents.Push(this));
 
         public static LocatedOpenApiElement<T> CreateRoot<T>(T rootItem, string key)
-            where T : IOpenApiSerializable =>
+            where T : IOpenApiElement =>
             new LocatedOpenApiElement<T>(rootItem, key);
 
         #region Equality

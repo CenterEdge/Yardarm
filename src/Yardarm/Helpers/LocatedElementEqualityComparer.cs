@@ -7,7 +7,7 @@ using Yardarm.Spec;
 namespace Yardarm.Helpers
 {
     internal class LocatedElementEqualityComparer<T> : IEqualityComparer<LocatedOpenApiElement<T>>
-        where T : IOpenApiSerializable
+        where T : IOpenApiElement
     {
         public bool Equals(LocatedOpenApiElement<T>? x, LocatedOpenApiElement<T>? y)
         {

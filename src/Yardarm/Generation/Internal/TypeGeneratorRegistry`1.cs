@@ -7,7 +7,7 @@ using Yardarm.Spec;
 namespace Yardarm.Generation.Internal
 {
     internal class TypeGeneratorRegistry<TElement> : ITypeGeneratorRegistry<TElement>
-        where TElement : IOpenApiSerializable
+        where TElement : IOpenApiElement
     {
         private readonly ITypeGeneratorFactory<TElement> _factory;
 

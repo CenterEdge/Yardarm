@@ -7,7 +7,7 @@ using Yardarm.Spec;
 namespace Yardarm.Enrichment
 {
     public class OpenApiEnrichmentContext<TElement>
-        where TElement : IOpenApiSerializable
+        where TElement : IOpenApiElement
     {
         public CSharpCompilation Compilation { get; }
 

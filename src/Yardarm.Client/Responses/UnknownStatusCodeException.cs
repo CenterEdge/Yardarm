@@ -2,7 +2,7 @@
 using System.Net.Http;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace
+namespace RootNamespace.Responses
 {
     /// <summary>
     /// A response returned an unknown status code.

@@ -21,12 +21,12 @@ namespace Yardarm.Generation.Operation
         protected const string RequestMessageVariableName = "requestMessage";
 
         protected GenerationContext Context { get; }
-        protected IRootNamespace RootNamespace { get; }
+        protected IResponsesNamespace ResponsesNamespace { get; }
 
-        public OperationMethodGenerator(GenerationContext context, IRootNamespace rootNamespace)
+        public OperationMethodGenerator(GenerationContext context, IResponsesNamespace responsesNamespace)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            RootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
+            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
         public BlockSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
@@ -74,10 +74,7 @@ namespace Yardarm.Generation.Operation
                                 Argument(IdentifierName("responseMessage")),
                                 Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))))))
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
-                    ThrowExpression(ObjectCreationExpression(
-                        QualifiedName(
-                            RootNamespace.Name,
-                            IdentifierName("UnknownStatusCodeException")))
+                    ThrowExpression(ObjectCreationExpression(ResponsesNamespace.UnknownStatusCodeException)
                         .AddArgumentListArguments(
                             Argument(IdentifierName("responseMessage"))))));
 

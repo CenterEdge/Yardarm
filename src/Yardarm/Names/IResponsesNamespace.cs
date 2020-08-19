@@ -7,5 +7,6 @@ namespace Yardarm.Names
     {
         NameSyntax IOperationResponse { get; }
         NameSyntax OperationResponse { get; }
+        NameSyntax UnknownStatusCodeException { get; }
     }
 }

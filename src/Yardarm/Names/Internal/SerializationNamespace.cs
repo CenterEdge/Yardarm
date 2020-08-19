@@ -11,6 +11,7 @@ namespace Yardarm.Names.Internal
         public NameSyntax ITypeSerializer { get; }
         public NameSyntax ITypeSerializerRegistry { get; }
         public NameSyntax TypeSerializerRegistryExtensions { get; }
+        public NameSyntax UnknownMediaTypeException { get; }
 
         public SerializationNamespace(IRootNamespace rootNamespace)
         {
@@ -32,6 +33,10 @@ namespace Yardarm.Names.Internal
             TypeSerializerRegistryExtensions = QualifiedName(
                 Name,
                 IdentifierName("TypeSerializerRegistryExtensions"));
+
+            UnknownMediaTypeException = QualifiedName(
+                Name,
+                IdentifierName("UnknownMediaTypeException"));
         }
     }
 }

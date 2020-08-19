@@ -19,11 +19,27 @@ namespace RootNamespace.Serialization
         }
 
         public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            HttpContent content) =>
-            typeSerializerRegistry.Get(content.Headers.ContentType.MediaType).DeserializeAsync<T>(content);
+            HttpContent content)
+        {
+            string mediaType = content.Headers.ContentType.MediaType;
+
+            if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
+            {
+                throw new UnknownMediaTypeException(mediaType, content);
+            }
+
+            return typeSerializer.DeserializeAsync<T>(content);
+        }
 
         public static HttpContent Serialize<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            T value, string mediaType) =>
-            typeSerializerRegistry.Get(mediaType).Serialize(value, mediaType);
+            T value, string mediaType)
+        {
+            if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
+            {
+                throw new UnknownMediaTypeException(mediaType);
+            }
+
+            return typeSerializer.Serialize(value, mediaType);
+        }
     }
 }

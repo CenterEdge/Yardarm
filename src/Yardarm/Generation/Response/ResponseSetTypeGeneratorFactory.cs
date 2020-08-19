@@ -8,22 +8,21 @@ namespace Yardarm.Generation.Response
     public class ResponseSetTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiResponses>
     {
         private readonly GenerationContext _context;
-        private readonly ResponseBaseInterfaceTypeGenerator _responseBaseInterfaceTypeGenerator;
+        private readonly IResponsesNamespace _responsesNamespace;
         private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
 
         public ResponseSetTypeGeneratorFactory(GenerationContext context,
-            ResponseBaseInterfaceTypeGenerator responseBaseInterfaceTypeGenerator,
+            IResponsesNamespace responsesNamespace,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _responseBaseInterfaceTypeGenerator = responseBaseInterfaceTypeGenerator ??
-                                                  throw new ArgumentNullException(
-                                                      nameof(responseBaseInterfaceTypeGenerator));
+            _responsesNamespace = responsesNamespace ??
+                                  throw new ArgumentNullException(nameof(responsesNamespace));
             _httpResponseCodeNameProvider = httpResponseCodeNameProvider ??
                                             throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
         }
 
         public ITypeGenerator Create(LocatedOpenApiElement<OpenApiResponses> element) =>
-            new ResponseSetTypeGenerator(element, _context, _responseBaseInterfaceTypeGenerator, _httpResponseCodeNameProvider);
+            new ResponseSetTypeGenerator(element, _context, _responsesNamespace, _httpResponseCodeNameProvider);
     }
 }

@@ -61,9 +61,9 @@ namespace Yardarm.Generation.Response
                         GenericName("DeserializeAsync")
                             .AddTypeArgumentListArguments(returnType)))
                     .AddArgumentListArguments(
-                        Argument(IdentifierName(ResponseBaseTypeGenerator.TypeSerializerRegistryPropertyName)),
+                        Argument(IdentifierName("TypeSerializerRegistry")),
                         Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(ResponseBaseInterfaceTypeGenerator.MessageProperty),
+                            IdentifierName("Message"),
                             IdentifierName("Content"))))));
         }
 

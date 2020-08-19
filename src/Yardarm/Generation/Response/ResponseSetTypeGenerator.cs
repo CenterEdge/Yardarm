@@ -14,20 +14,18 @@ namespace Yardarm.Generation.Response
 {
     public class ResponseSetTypeGenerator : TypeGeneratorBase<OpenApiResponses>
     {
-        private readonly ResponseBaseInterfaceTypeGenerator _responseBaseInterfaceTypeGenerator;
         private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
 
         protected OpenApiResponses Responses => Element.Element;
         protected OpenApiOperation Operation { get; }
+        protected IResponsesNamespace ResponsesNamespace { get; }
 
         public ResponseSetTypeGenerator(LocatedOpenApiElement<OpenApiResponses> element, GenerationContext context,
-            ResponseBaseInterfaceTypeGenerator responseBaseInterfaceTypeGenerator,
+            IResponsesNamespace responsesNamespace,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
             : base(element, context)
         {
-            _responseBaseInterfaceTypeGenerator = responseBaseInterfaceTypeGenerator ??
-                                                  throw new ArgumentNullException(
-                                                      nameof(responseBaseInterfaceTypeGenerator));
+            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
             _httpResponseCodeNameProvider = httpResponseCodeNameProvider ??
                                             throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
 
@@ -61,7 +59,7 @@ namespace Yardarm.Generation.Response
             InterfaceDeclarationSyntax declaration = InterfaceDeclaration(interfaceName)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddBaseListTypes(SimpleBaseType(_responseBaseInterfaceTypeGenerator.TypeName));
+                .AddBaseListTypes(SimpleBaseType(ResponsesNamespace.IOperationResponse));
 
             yield return declaration;
         }

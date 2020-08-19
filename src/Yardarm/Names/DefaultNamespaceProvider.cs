@@ -9,10 +9,12 @@ namespace Yardarm.Names
     public class DefaultNamespaceProvider : INamespaceProvider
     {
         private readonly IRootNamespace _rootNamespace;
+        private readonly IResponsesNamespace _responsesNamespace;
 
-        public DefaultNamespaceProvider(IRootNamespace rootNamespace)
+        public DefaultNamespaceProvider(IRootNamespace rootNamespace, IResponsesNamespace responsesNamespace)
         {
             _rootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
+            _responsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
         public NameSyntax GetNamespace(LocatedOpenApiElement element) =>
@@ -34,10 +36,10 @@ namespace Yardarm.Names
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
 
         protected virtual NameSyntax GetResponseNamespace(LocatedOpenApiElement<OpenApiResponse> response) =>
-            SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Responses"));
+            _responsesNamespace.Name;
 
         protected virtual NameSyntax GetResponsesNamespace(LocatedOpenApiElement<OpenApiResponses> responses) =>
-            SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Responses"));
+            _responsesNamespace.Name;
 
         protected virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));

@@ -21,7 +21,7 @@ namespace Yardarm.Generation.Response
                 Type = "string"
             }, "");
 
-        protected ResponseBaseTypeGenerator ResponseBaseTypeGenerator { get; }
+        protected IResponsesNamespace ResponsesNamespace { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
         protected ISerializationNamespace SerializationNamespace { get; }
@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Response
             IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             ISerializationNamespace serializationNamespace,
-            ResponseBaseTypeGenerator responseBaseTypeGenerator,
+            IResponsesNamespace responsesNamespace,
             IGetBodyMethodGenerator parseBodyMethodGenerator)
             : base(responseElement, context)
         {
@@ -41,7 +41,7 @@ namespace Yardarm.Generation.Response
             HttpResponseCodeNameProvider = httpResponseCodeNameProvider ??
                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
-            ResponseBaseTypeGenerator = responseBaseTypeGenerator ?? throw new ArgumentNullException(nameof(responseBaseTypeGenerator));
+            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
             ParseBodyMethodGenerator = parseBodyMethodGenerator ?? throw new ArgumentNullException(nameof(parseBodyMethodGenerator));
         }
 
@@ -58,7 +58,7 @@ namespace Yardarm.Generation.Response
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
-                .AddBaseListTypes(SimpleBaseType(ResponseBaseTypeGenerator.TypeName))
+                .AddBaseListTypes(SimpleBaseType(ResponsesNamespace.OperationResponse))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
                     new MemberDeclarationSyntax?[]

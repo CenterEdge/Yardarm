@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
-using Yardarm.Spec;
 
-namespace Yardarm.Helpers
+namespace Yardarm.Spec
 {
     internal class LocatedElementEqualityComparer<T> : IEqualityComparer<ILocatedOpenApiElement<T>>
         where T : IOpenApiElement

@@ -16,9 +16,9 @@ namespace Yardarm.Generation.Schema
 
         public TypeSyntax TypeName => _nameCache ??= GetTypeName();
 
-        private readonly LocatedOpenApiElement<OpenApiSchema> _schemaElement;
+        private readonly ILocatedOpenApiElement<OpenApiSchema> _schemaElement;
 
-        public StringSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement)
+        public StringSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement)
         {
             _schemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
         }

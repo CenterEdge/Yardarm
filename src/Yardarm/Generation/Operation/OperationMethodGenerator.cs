@@ -29,10 +29,10 @@ namespace Yardarm.Generation.Operation
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
-        public BlockSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        public BlockSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             Block(GenerateStatements(operation));
 
-        protected virtual IEnumerable<StatementSyntax> GenerateStatements(LocatedOpenApiElement<OpenApiOperation> operation)
+        protected virtual IEnumerable<StatementSyntax> GenerateStatements(ILocatedOpenApiElement<OpenApiOperation> operation)
         {
             yield return MethodHelpers.ThrowIfArgumentNull(RequestParameterName);
 
@@ -51,14 +51,14 @@ namespace Yardarm.Generation.Operation
         }
 
         protected virtual StatementSyntax GenerateRequestMessageVariable(
-            LocatedOpenApiElement<OpenApiOperation> operation) =>
+            ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
                 BuildRequestMethodGenerator.InvokeBuildRequest(
                     IdentifierName(RequestParameterName),
                     IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)));
 
         protected virtual ExpressionSyntax GenerateResponse(
-            LocatedOpenApiElement<OpenApiOperation> operation, ExpressionSyntax responseMessage) =>
+            ILocatedOpenApiElement<OpenApiOperation> operation, ExpressionSyntax responseMessage) =>
             SwitchExpression(
                 MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     responseMessage,

@@ -9,10 +9,10 @@ namespace Yardarm.Spec.Internal
     /// <inheritdoc />
     internal class OpenApiElementRegistry : IOpenApiElementRegistry
     {
-        private readonly ConcurrentDictionary<string, LocatedOpenApiElement> _registry =
-            new ConcurrentDictionary<string, LocatedOpenApiElement>();
+        private readonly ConcurrentDictionary<string, ILocatedOpenApiElement> _registry =
+            new ConcurrentDictionary<string, ILocatedOpenApiElement>();
 
-        public LocatedOpenApiElement<T> Get<T>(string key) where T : IOpenApiElement
+        public ILocatedOpenApiElement<T> Get<T>(string key) where T : IOpenApiElement
         {
             if (!TryGet<T>(key, out var element))
             {
@@ -22,7 +22,7 @@ namespace Yardarm.Spec.Internal
             return element;
         }
 
-        public bool TryGet<T>(string key, [MaybeNullWhen(false)] out LocatedOpenApiElement<T> element)
+        public bool TryGet<T>(string key, [MaybeNullWhen(false)] out ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement
         {
             if (!_registry.TryGetValue(key, out var untypedElement))
@@ -31,11 +31,11 @@ namespace Yardarm.Spec.Internal
                 return false;
             }
 
-            element = (LocatedOpenApiElement<T>)untypedElement;
+            element = (ILocatedOpenApiElement<T>)untypedElement;
             return true;
         }
 
-        public string Add<T>(LocatedOpenApiElement<T> element)
+        public string Add<T>(ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement
         {
             if (element == null)

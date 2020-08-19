@@ -26,7 +26,7 @@ namespace Yardarm.Generation.Request
             NameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
         }
 
-        public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodDeclaration(
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
                     AddHeadersMethodName)
@@ -37,15 +37,15 @@ namespace Yardarm.Generation.Request
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            LocatedOpenApiElement<OpenApiOperation> operation)
+            ILocatedOpenApiElement<OpenApiOperation> operation)
         {
-            LocatedOpenApiElement<OpenApiResponses> responseSet = operation.GetResponseSet();
-            LocatedOpenApiElement<OpenApiResponse> primaryResponse = responseSet.Element
+            ILocatedOpenApiElement<OpenApiResponses> responseSet = operation.GetResponseSet();
+            ILocatedOpenApiElement<OpenApiResponse> primaryResponse = responseSet.Element
                 .OrderBy(p => p.Key)
                 .Select(p => responseSet.CreateChild(p.Value, p.Key))
                 .First();
 
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
             if (mediaType != null)
             {
                 yield return ExpressionStatement(InvocationExpression(

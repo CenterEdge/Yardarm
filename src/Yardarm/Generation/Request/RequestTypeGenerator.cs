@@ -24,7 +24,7 @@ namespace Yardarm.Generation.Request
 
         protected OpenApiOperation Operation => Element.Element;
 
-        public RequestTypeGenerator(LocatedOpenApiElement<OpenApiOperation> operationElement,
+        public RequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
             IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator)
@@ -88,7 +88,7 @@ namespace Yardarm.Generation.Request
         }
 
         protected virtual ClassDeclarationSyntax AddParameterProperties(ClassDeclarationSyntax declaration,
-            IEnumerable<LocatedOpenApiElement<OpenApiParameter>> properties)
+            IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> properties)
         {
             MemberDeclarationSyntax[] members = properties
                 .Select(p =>
@@ -102,8 +102,8 @@ namespace Yardarm.Generation.Request
             return declaration.AddMembers(members);
         }
 
-        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(LocatedOpenApiElement<T> parameter, string className,
-            LocatedOpenApiElement<OpenApiSchema> schema)
+        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(ILocatedOpenApiElement<T> parameter, string className,
+            ILocatedOpenApiElement<OpenApiSchema> schema)
             where T : IOpenApiElement
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameter.Key);

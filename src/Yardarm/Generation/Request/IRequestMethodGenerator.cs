@@ -6,6 +6,6 @@ namespace Yardarm.Generation.Request
 {
     public interface IRequestMethodGenerator
     {
-        MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation);
+        MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation);
     }
 }

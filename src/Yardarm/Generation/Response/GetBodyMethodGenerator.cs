@@ -27,14 +27,14 @@ namespace Yardarm.Generation.Response
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
-        public MethodDeclarationSyntax? Generate(LocatedOpenApiElement<OpenApiResponse> response)
+        public MethodDeclarationSyntax? Generate(ILocatedOpenApiElement<OpenApiResponse> response)
         {
             if (response.Element.Content == null)
             {
                 return null;
             }
 
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
             if (mediaType?.Element.Schema == null)
             {
                 return null;
@@ -53,7 +53,7 @@ namespace Yardarm.Generation.Response
         }
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            LocatedOpenApiElement<OpenApiResponse> response, TypeSyntax returnType)
+            ILocatedOpenApiElement<OpenApiResponse> response, TypeSyntax returnType)
         {
             yield return ReturnStatement(SyntaxHelpers.AwaitConfiguredFalse(
                 InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,

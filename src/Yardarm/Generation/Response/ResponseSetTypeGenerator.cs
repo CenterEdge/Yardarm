@@ -14,20 +14,15 @@ namespace Yardarm.Generation.Response
 {
     public class ResponseSetTypeGenerator : TypeGeneratorBase<OpenApiResponses>
     {
-        private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
-
         protected OpenApiResponses Responses => Element.Element;
         protected OpenApiOperation Operation { get; }
         protected IResponsesNamespace ResponsesNamespace { get; }
 
-        public ResponseSetTypeGenerator(LocatedOpenApiElement<OpenApiResponses> element, GenerationContext context,
-            IResponsesNamespace responsesNamespace,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
+        public ResponseSetTypeGenerator(ILocatedOpenApiElement<OpenApiResponses> element, GenerationContext context,
+            IResponsesNamespace responsesNamespace)
             : base(element, context)
         {
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
-            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ??
-                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
 
             Operation = (OpenApiOperation)element.Parents[0].Element;
         }

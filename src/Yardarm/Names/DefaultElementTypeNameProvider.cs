@@ -15,13 +15,13 @@ namespace Yardarm.Names
             _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
         }
 
-        public TypeSyntax GetName(LocatedOpenApiElement element)
+        public TypeSyntax GetName(ILocatedOpenApiElement element)
         {
             return GetNameInternal(element)
                    ?? throw new InvalidOperationException("Element does not have a type name.");
         }
 
-        protected virtual TypeSyntax? GetNameInternal(LocatedOpenApiElement element) =>
+        protected virtual TypeSyntax? GetNameInternal(ILocatedOpenApiElement element) =>
             element switch
             {
                 LocatedOpenApiElement<OpenApiOperation> operationElement => GetOperationName(operationElement),
@@ -33,22 +33,22 @@ namespace Yardarm.Names
                 _ => element.Parents.Count > 0 ? GetNameInternal(element.Parents[0]) : null
             };
 
-        protected virtual TypeSyntax GetOperationName(LocatedOpenApiElement<OpenApiOperation> element) =>
+        protected virtual TypeSyntax GetOperationName(ILocatedOpenApiElement<OpenApiOperation> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
 
-        protected virtual TypeSyntax GetRequestBodyName(LocatedOpenApiElement<OpenApiRequestBody> element) =>
+        protected virtual TypeSyntax GetRequestBodyName(ILocatedOpenApiElement<OpenApiRequestBody> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
 
-        protected virtual TypeSyntax GetResponseName(LocatedOpenApiElement<OpenApiResponse> element) =>
+        protected virtual TypeSyntax GetResponseName(ILocatedOpenApiElement<OpenApiResponse> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
 
-        protected virtual TypeSyntax GetResponsesName(LocatedOpenApiElement<OpenApiResponses> element) =>
+        protected virtual TypeSyntax GetResponsesName(ILocatedOpenApiElement<OpenApiResponses> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
 
-        protected virtual TypeSyntax GetSchemaName(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual TypeSyntax GetSchemaName(ILocatedOpenApiElement<OpenApiSchema> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
 
-        protected virtual TypeSyntax GetTagName(LocatedOpenApiElement<OpenApiTag> element) =>
+        protected virtual TypeSyntax GetTagName(ILocatedOpenApiElement<OpenApiTag> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
     }
 }

@@ -12,7 +12,7 @@ namespace Yardarm.Generation.Schema
 
         protected abstract NameKind NameKind { get; }
 
-        protected SchemaGeneratorBase(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+        protected SchemaGeneratorBase(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
             : base(schemaElement, context)
         {
         }

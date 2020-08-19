@@ -12,7 +12,7 @@ namespace Yardarm.Generation.Schema
     {
         protected override NameKind NameKind => NameKind.Class;
 
-        public ObjectSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+        public ObjectSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
             : base(schemaElement, context)
         {
         }
@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
-            LocatedOpenApiElement<OpenApiSchema> parent, IEnumerable<KeyValuePair<string, OpenApiSchema>> properties)
+            ILocatedOpenApiElement<OpenApiSchema> parent, IEnumerable<KeyValuePair<string, OpenApiSchema>> properties)
         {
             MemberDeclarationSyntax[] members = properties
                 .SelectMany(p => DeclareProperty(parent.CreateChild(p.Value, p.Key), declaration.Identifier.ValueText))
@@ -46,7 +46,7 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> DeclareProperty(
-            LocatedOpenApiElement<OpenApiSchema> property, string ownerName)
+            ILocatedOpenApiElement<OpenApiSchema> property, string ownerName)
         {
             yield return CreatePropertyDeclaration(property, ownerName);
 
@@ -63,7 +63,7 @@ namespace Yardarm.Generation.Schema
             }
         }
 
-        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(LocatedOpenApiElement<OpenApiSchema> property, string ownerName)
+        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<OpenApiSchema> property, string ownerName)
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
 

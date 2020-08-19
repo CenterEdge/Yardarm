@@ -9,6 +9,6 @@ namespace Yardarm.Spec
 
         string Key { get; }
 
-        IReadOnlyList<LocatedOpenApiElement> Parents { get; }
+        IReadOnlyList<ILocatedOpenApiElement> Parents { get; }
     }
 }

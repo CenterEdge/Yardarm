@@ -10,13 +10,13 @@ namespace Yardarm.Spec
     /// </summary>
     public interface IOpenApiElementRegistry
     {
-        LocatedOpenApiElement<T> Get<T>(string key)
+        ILocatedOpenApiElement<T> Get<T>(string key)
             where T : IOpenApiElement;
 
-        bool TryGet<T>(string key, [MaybeNullWhen(false)] out LocatedOpenApiElement<T> element)
+        bool TryGet<T>(string key, [MaybeNullWhen(false)] out ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement;
 
-        string Add<T>(LocatedOpenApiElement<T> element)
+        string Add<T>(ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement;
     }
 }

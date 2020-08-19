@@ -28,11 +28,11 @@ namespace Yardarm.Generation.Request
             }
         }
 
-        private IEnumerable<LocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
             _document.Paths.ToLocatedElements()
                 .GetOperations();
 
-        protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             _operationTypeGeneratorRegistry.Get(operation).GenerateSyntaxTree();
     }
 }

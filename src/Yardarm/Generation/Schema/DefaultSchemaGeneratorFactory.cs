@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Schema
             _context = new Lazy<GenerationContext>(serviceProvider.GetRequiredService<GenerationContext>);
         }
 
-        public virtual ITypeGenerator Create(LocatedOpenApiElement<OpenApiSchema> element)
+        public virtual ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element)
         {
             OpenApiSchema schema = element.Element;
 
@@ -41,19 +41,19 @@ namespace Yardarm.Generation.Schema
             };
         }
 
-        protected virtual ITypeGenerator GetArrayGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual ITypeGenerator GetArrayGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             new ArraySchemaGenerator(element, _context.Value);
 
-        protected virtual ITypeGenerator GetBooleanGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual ITypeGenerator GetBooleanGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             BooleanSchemaGenerator.Instance;
 
-        protected virtual ITypeGenerator GetNumberGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual ITypeGenerator GetNumberGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             new NumberSchemaGenerator(element);
 
-        protected virtual ITypeGenerator GetObjectGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual ITypeGenerator GetObjectGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             new ObjectSchemaGenerator(element, _context.Value);
 
-        protected virtual ITypeGenerator GetStringGenerator(LocatedOpenApiElement<OpenApiSchema> element) =>
+        protected virtual ITypeGenerator GetStringGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             element.Element.Enum?.Count > 0
                 ? (ITypeGenerator) new EnumSchemaGenerator(element, _context.Value)
                 : new StringSchemaGenerator(element);

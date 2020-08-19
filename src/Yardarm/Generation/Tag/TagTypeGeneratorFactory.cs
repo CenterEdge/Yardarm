@@ -21,7 +21,7 @@ namespace Yardarm.Generation.Tag
             _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
-        public ITypeGenerator Create(LocatedOpenApiElement<OpenApiTag> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiTag> element) =>
             new TagTypeGenerator(element, _context, _serializationNamespace, _operationMethodGenerator);
     }
 }

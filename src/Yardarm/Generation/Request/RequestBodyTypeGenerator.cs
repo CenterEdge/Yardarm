@@ -17,13 +17,13 @@ namespace Yardarm.Generation.Request
 
         public TypeSyntax TypeName => _nameCache ??= GetTypeName();
 
-        protected LocatedOpenApiElement<OpenApiRequestBody> RequestBodyElement { get; }
+        protected ILocatedOpenApiElement<OpenApiRequestBody> RequestBodyElement { get; }
         protected GenerationContext Context { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
 
         protected OpenApiRequestBody RequestBody => RequestBodyElement.Element;
 
-        public RequestBodyTypeGenerator(LocatedOpenApiElement<OpenApiRequestBody> requestBodyElement,
+        public RequestBodyTypeGenerator(ILocatedOpenApiElement<OpenApiRequestBody> requestBodyElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector)
         {
             RequestBodyElement = requestBodyElement ?? throw new ArgumentNullException(nameof(requestBodyElement));
@@ -33,12 +33,12 @@ namespace Yardarm.Generation.Request
 
         protected virtual TypeSyntax GetTypeName()
         {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
             if (mediaType == null)
             {
                 throw new InvalidOperationException("No valid media type for this request");
             }
-            else if (mediaType?.Element.Schema?.Type != "object" || mediaType?.Element.Schema.Reference != null)
+            else if (mediaType.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
                 var schemaElement = mediaType!.CreateChild(mediaType.Element.Schema!, "");
                 return Context.SchemaGeneratorRegistry.Get(schemaElement).TypeName;
@@ -73,7 +73,7 @@ namespace Yardarm.Generation.Request
 
         private ITypeGenerator? GetSchemaGenerator()
         {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
             if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
             {
                 return null;

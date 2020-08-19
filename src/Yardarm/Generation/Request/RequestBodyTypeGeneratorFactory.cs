@@ -16,7 +16,7 @@ namespace Yardarm.Generation.Request
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
-        public ITypeGenerator Create(LocatedOpenApiElement<OpenApiRequestBody> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiRequestBody> element) =>
             new RequestBodyTypeGenerator(element, _context, _mediaTypeSelector);
     }
 }

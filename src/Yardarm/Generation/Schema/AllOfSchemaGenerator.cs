@@ -10,7 +10,7 @@ namespace Yardarm.Generation.Schema
 {
     internal class AllOfSchemaGenerator : ObjectSchemaGenerator
     {
-        public AllOfSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+        public AllOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
             : base(schemaElement, context)
         {
         }
@@ -28,7 +28,7 @@ namespace Yardarm.Generation.Schema
                         {
                             // We can inherit from the reference, but we need to load it from the reference to get the right type name
 
-                            LocatedOpenApiElement<OpenApiSchema> referencedSchema =
+                            ILocatedOpenApiElement<OpenApiSchema> referencedSchema =
                                 ((OpenApiSchema)Context.Document.ResolveReference(section.Reference)).CreateRoot(section.Reference.Id);
 
                             TypeSyntax typeName = Context.TypeNameProvider.GetName(referencedSchema);

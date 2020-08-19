@@ -16,7 +16,7 @@ namespace Yardarm.Generation.Schema
 
         protected override NameKind NameKind => NameKind.Enum;
 
-        public EnumSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+        public EnumSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
             : base(schemaElement, context)
         {
         }
@@ -39,7 +39,7 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
-            LocatedOpenApiElement<OpenApiSchema> schemaElement,
+            ILocatedOpenApiElement<OpenApiSchema> schemaElement,
             IOpenApiAny value,
             INameFormatter nameFormatter)
         {

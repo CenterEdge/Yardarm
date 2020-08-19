@@ -11,15 +11,15 @@ namespace Yardarm.Generation.Internal
     {
         private readonly ITypeGeneratorFactory<TElement> _factory;
 
-        private readonly ConcurrentDictionary<LocatedOpenApiElement<TElement>, ITypeGenerator> _registry =
-            new ConcurrentDictionary<LocatedOpenApiElement<TElement>, ITypeGenerator>(new LocatedElementEqualityComparer<TElement>());
+        private readonly ConcurrentDictionary<ILocatedOpenApiElement<TElement>, ITypeGenerator> _registry =
+            new ConcurrentDictionary<ILocatedOpenApiElement<TElement>, ITypeGenerator>(new LocatedElementEqualityComparer<TElement>());
 
         public TypeGeneratorRegistry(ITypeGeneratorFactory<TElement> factory)
         {
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public ITypeGenerator Get(LocatedOpenApiElement<TElement> element) =>
+        public ITypeGenerator Get(ILocatedOpenApiElement<TElement> element) =>
             _registry.GetOrAdd(element, _factory.Create);
     }
 }

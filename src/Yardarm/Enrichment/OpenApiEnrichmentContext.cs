@@ -13,12 +13,12 @@ namespace Yardarm.Enrichment
 
         public SyntaxTree SyntaxTree { get; }
 
-        public LocatedOpenApiElement<TElement> LocatedElement { get; }
+        public ILocatedOpenApiElement<TElement> LocatedElement { get; }
 
         public TElement Element => LocatedElement.Element;
 
         public OpenApiEnrichmentContext(CSharpCompilation compilation, SyntaxTree syntaxTree,
-            LocatedOpenApiElement<TElement> locatedElement)
+            ILocatedOpenApiElement<TElement> locatedElement)
         {
             Compilation = compilation ?? throw new ArgumentNullException(nameof(compilation));
             SyntaxTree = syntaxTree ?? throw new ArgumentNullException(nameof(syntaxTree));

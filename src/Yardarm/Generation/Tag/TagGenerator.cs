@@ -22,14 +22,14 @@ namespace Yardarm.Generation.Tag
             .Select(p => _tagGeneratorRegistry.Get(p).GenerateSyntaxTree()!)
             .Where(p => p != null);
 
-        private IEnumerable<LocatedOpenApiElement<OpenApiTag>> GetTags() => _document.Paths.ToLocatedElements()
+        private IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags() => _document.Paths.ToLocatedElements()
             .GetOperations()
             .GetTags()
             .Distinct(new TagComparer());
 
-        private class TagComparer : IEqualityComparer<LocatedOpenApiElement<OpenApiTag>>
+        private class TagComparer : IEqualityComparer<ILocatedOpenApiElement<OpenApiTag>>
         {
-            public bool Equals(LocatedOpenApiElement<OpenApiTag>? x, LocatedOpenApiElement<OpenApiTag>? y)
+            public bool Equals(ILocatedOpenApiElement<OpenApiTag>? x, ILocatedOpenApiElement<OpenApiTag>? y)
             {
                 if (x == null)
                 {
@@ -49,7 +49,7 @@ namespace Yardarm.Generation.Tag
                 return x.Element.Name == y.Element.Name;
             }
 
-            public int GetHashCode(LocatedOpenApiElement<OpenApiTag> obj) => obj.Element.Name.GetHashCode();
+            public int GetHashCode(ILocatedOpenApiElement<OpenApiTag> obj) => obj.Element.Name.GetHashCode();
         }
     }
 }

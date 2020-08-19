@@ -23,12 +23,12 @@ namespace Yardarm.Generation.Response
                 .Select(Generate)
                 .Where(p => p != null)!;
 
-        private IEnumerable<LocatedOpenApiElement<OpenApiResponses>> GetResponses() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> GetResponses() =>
             _document.Paths.ToLocatedElements()
                 .GetOperations()
                 .Select(p => p.CreateChild(p.Element.Responses, ""));
 
-        protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponses> requestBody) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponses> requestBody) =>
             _responsesGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
     }
 }

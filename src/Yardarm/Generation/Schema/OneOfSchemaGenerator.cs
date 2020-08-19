@@ -17,7 +17,7 @@ namespace Yardarm.Generation.Schema
     {
         protected override NameKind NameKind => NameKind.Interface;
 
-        public OneOfSchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+        public OneOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
             : base(schemaElement, context)
         {
         }

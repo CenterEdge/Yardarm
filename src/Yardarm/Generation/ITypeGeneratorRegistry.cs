@@ -5,7 +5,7 @@ namespace Yardarm.Generation
 {
     public interface ITypeGeneratorRegistry
     {
-        ITypeGenerator Get<T>(LocatedOpenApiElement<T> element)
+        ITypeGenerator Get<T>(ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement;
     }
 }

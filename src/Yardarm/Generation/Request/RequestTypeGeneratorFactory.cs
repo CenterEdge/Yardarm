@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Request
                                            throw new ArgumentNullException(nameof(buildContentMethodGenerator));
         }
 
-        public ITypeGenerator Create(LocatedOpenApiElement<OpenApiOperation> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiOperation> element) =>
             new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildRequestMethodGenerator,
                 _buildUriMethodGenerator, _addHeadersMethodGenerator, _buildContentMethodGenerator);
     }

@@ -8,13 +8,13 @@ namespace Yardarm.Spec
     public static class ElementSyntaxNodeExtensions
     {
         public static TSyntaxNode AddElementAnnotation<TSyntaxNode, TElement>(this TSyntaxNode node,
-            LocatedOpenApiElement<TElement> element, IOpenApiElementRegistry elementRegistry)
+            ILocatedOpenApiElement<TElement> element, IOpenApiElementRegistry elementRegistry)
             where TSyntaxNode : SyntaxNode
             where TElement : IOpenApiElement =>
             node.WithAdditionalAnnotations(
                 new SyntaxAnnotation(typeof(TElement).Name, elementRegistry.Add(element)));
 
-        public static LocatedOpenApiElement<TElement>? GetElementAnnotation<TElement>(this SyntaxNode node,
+        public static ILocatedOpenApiElement<TElement>? GetElementAnnotation<TElement>(this SyntaxNode node,
             IOpenApiElementRegistry elementRegistry)
             where TElement : IOpenApiElement
         {

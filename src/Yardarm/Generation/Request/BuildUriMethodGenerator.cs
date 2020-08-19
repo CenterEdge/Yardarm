@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Request
             Context = context;
         }
 
-        public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation)
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation)
         {
             var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 

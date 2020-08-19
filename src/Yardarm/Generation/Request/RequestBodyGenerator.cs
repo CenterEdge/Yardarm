@@ -28,7 +28,7 @@ namespace Yardarm.Generation.Request
             }
         }
 
-        private IEnumerable<LocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
             _document.Components.RequestBodies
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(_document.Paths.ToLocatedElements()
@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Request
                     .GetRequestBodies()
                     .Where(p => p.Element.Reference == null));
 
-        protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _requestBodyGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
     }
 }

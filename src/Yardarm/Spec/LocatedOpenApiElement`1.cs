@@ -13,7 +13,7 @@ namespace Yardarm.Spec
         {
         }
 
-        public LocatedOpenApiElement(T element, string key, IReadOnlyList<LocatedOpenApiElement> parents)
+        public LocatedOpenApiElement(T element, string key, IReadOnlyList<ILocatedOpenApiElement> parents)
             : base(element, key, parents)
         {
         }

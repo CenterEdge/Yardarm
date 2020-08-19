@@ -6,6 +6,6 @@ namespace Yardarm.Generation.Operation
 {
     public interface IOperationMethodGenerator
     {
-        BlockSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation);
+        BlockSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation);
     }
 }

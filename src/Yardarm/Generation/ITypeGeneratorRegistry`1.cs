@@ -3,9 +3,9 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation
 {
-    public interface ITypeGeneratorRegistry<TElement>
+    public interface ITypeGeneratorRegistry<in TElement>
         where TElement : IOpenApiElement
     {
-        public ITypeGenerator Get(LocatedOpenApiElement<TElement> element);
+        public ITypeGenerator Get(ILocatedOpenApiElement<TElement> element);
     }
 }

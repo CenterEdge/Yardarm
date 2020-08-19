@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Response
 
         protected OpenApiResponse Response => Element.Element;
 
-        public ResponseTypeGenerator(LocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context,
+        public ResponseTypeGenerator(ILocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context,
             IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             ISerializationNamespace serializationNamespace,
@@ -99,7 +99,7 @@ namespace Yardarm.Generation.Response
 
             foreach (var header in Response.Headers.Select(p => Element.CreateChild(p.Value, p.Key)))
             {
-                LocatedOpenApiElement<OpenApiSchema> schemaElement = header.Element.Schema != null
+                ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.Element.Schema != null
                     ? header.CreateChild(header.Element.Schema, "Header")
                     : _defaultHeaderSchema;
 
@@ -126,7 +126,7 @@ namespace Yardarm.Generation.Response
 
         private (ITypeGenerator? schemaGenerator, bool isReference) GetSchemaGenerator()
         {
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
             if (mediaType == null)
             {
                 return (null, false);

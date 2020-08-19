@@ -28,7 +28,7 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private IEnumerable<LocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
             _document.Components.Responses
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(_document.Paths.ToLocatedElements()
@@ -37,7 +37,7 @@ namespace Yardarm.Generation.Response
                     .GetResponses()
                     .Where(p => p.Element.Reference == null));
 
-        protected virtual SyntaxTree? Generate(LocatedOpenApiElement<OpenApiResponse> response) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponse> response) =>
             _responseGeneratorRegistry.Get(response).GenerateSyntaxTree();
     }
 }

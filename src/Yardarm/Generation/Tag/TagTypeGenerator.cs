@@ -22,7 +22,7 @@ namespace Yardarm.Generation.Tag
 
         protected OpenApiTag Tag => Element.Element;
 
-        public TagTypeGenerator(LocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+        public TagTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
             ISerializationNamespace serializationNamespace,
             IOperationMethodGenerator operationMethodGenerator)
             : base(tagElement, context)
@@ -115,7 +115,7 @@ namespace Yardarm.Generation.Tag
         }
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
-            LocatedOpenApiElement<OpenApiOperation> operation)
+            ILocatedOpenApiElement<OpenApiOperation> operation)
         {
             TypeSyntax requestType = Context.TypeNameProvider.GetName(operation);
             TypeSyntax responseType = WellKnownTypes.System.Threading.Tasks.TaskT.Name(
@@ -138,7 +138,7 @@ namespace Yardarm.Generation.Tag
 
         private string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(Tag.Name);
 
-        private IEnumerable<LocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
             Context.Document.Paths.ToLocatedElements()
                 .GetOperations()
                 .Where(p => p.Element.Tags.Any(q => q.Name == Tag.Name));

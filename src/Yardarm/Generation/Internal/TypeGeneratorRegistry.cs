@@ -14,7 +14,7 @@ namespace Yardarm.Generation.Internal
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public ITypeGenerator Get<T>(LocatedOpenApiElement<T> element)
+        public ITypeGenerator Get<T>(ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement
         {
 

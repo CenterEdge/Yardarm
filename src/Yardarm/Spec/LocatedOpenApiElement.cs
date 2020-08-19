@@ -10,7 +10,7 @@ namespace Yardarm.Spec
     /// Represents an <see cref="IOpenApiElement"/> element with information about the path
     /// used to reach that element in the Open API document.
     /// </summary>
-    public abstract class LocatedOpenApiElement : IOpenApiElement, IEquatable<LocatedOpenApiElement>
+    public abstract class LocatedOpenApiElement : ILocatedOpenApiElement, IEquatable<LocatedOpenApiElement>
     {
         /// <summary>
         /// The element.
@@ -25,25 +25,21 @@ namespace Yardarm.Spec
         /// <summary>
         /// List of parents, moving from closest ancestor to towards the root.
         /// </summary>
-        public IReadOnlyList<LocatedOpenApiElement> Parents { get; }
+        public IReadOnlyList<ILocatedOpenApiElement> Parents { get; }
 
         public bool IsRoot => Parents.Count == 0;
 
         public LocatedOpenApiElement(IOpenApiElement element, string key)
-            : this(element, key, Array.Empty<LocatedOpenApiElement>())
+            : this(element, key, Array.Empty<ILocatedOpenApiElement>())
         {
         }
 
-        public LocatedOpenApiElement(IOpenApiElement element, string key, IReadOnlyList<LocatedOpenApiElement> parents)
+        public LocatedOpenApiElement(IOpenApiElement element, string key, IReadOnlyList<ILocatedOpenApiElement> parents)
         {
             Element = element ?? throw new ArgumentNullException(nameof(element));
             Key = key ?? throw new ArgumentNullException(nameof(key));
             Parents = parents ?? throw new ArgumentNullException(nameof(parents));
         }
-
-        public LocatedOpenApiElement<T> CreateChild<T>(T child, string key)
-            where T : IOpenApiElement =>
-            new LocatedOpenApiElement<T>(child, key, Parents.Push(this));
 
         public static LocatedOpenApiElement<T> CreateRoot<T>(T rootItem, string key)
             where T : IOpenApiElement =>

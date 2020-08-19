@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Request
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
-        public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodDeclaration(
                     NullableType(WellKnownTypes.System.Net.Http.HttpContent.Name),
                     BuildContentMethodName)
@@ -40,11 +40,11 @@ namespace Yardarm.Generation.Request
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            LocatedOpenApiElement<OpenApiOperation> operation)
+            ILocatedOpenApiElement<OpenApiOperation> operation)
         {
             var requestBody = operation.GetRequestBody();
 
-            LocatedOpenApiElement<OpenApiMediaType>? mediaType;
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType;
             if (requestBody == null || (mediaType = MediaTypeSelector.Select(requestBody)) == null)
             {
                 yield return ReturnStatement(LiteralExpression(SyntaxKind.NullLiteralExpression));

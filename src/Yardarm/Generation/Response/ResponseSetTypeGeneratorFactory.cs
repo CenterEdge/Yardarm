@@ -9,7 +9,6 @@ namespace Yardarm.Generation.Response
     {
         private readonly GenerationContext _context;
         private readonly IResponsesNamespace _responsesNamespace;
-        private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
 
         public ResponseSetTypeGeneratorFactory(GenerationContext context,
             IResponsesNamespace responsesNamespace,
@@ -18,11 +17,9 @@ namespace Yardarm.Generation.Response
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _responsesNamespace = responsesNamespace ??
                                   throw new ArgumentNullException(nameof(responsesNamespace));
-            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ??
-                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
         }
 
-        public ITypeGenerator Create(LocatedOpenApiElement<OpenApiResponses> element) =>
-            new ResponseSetTypeGenerator(element, _context, _responsesNamespace, _httpResponseCodeNameProvider);
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponses> element) =>
+            new ResponseSetTypeGenerator(element, _context, _responsesNamespace);
     }
 }

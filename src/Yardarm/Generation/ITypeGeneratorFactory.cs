@@ -3,9 +3,9 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation
 {
-    public interface ITypeGeneratorFactory<TElement>
+    public interface ITypeGeneratorFactory<in TElement>
         where TElement : IOpenApiElement
     {
-        ITypeGenerator Create(LocatedOpenApiElement<TElement> element);
+        ITypeGenerator Create(ILocatedOpenApiElement<TElement> element);
     }
 }

@@ -17,34 +17,34 @@ namespace Yardarm.Names
             _responsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
-        public NameSyntax GetNamespace(LocatedOpenApiElement element) =>
+        public NameSyntax GetNamespace(ILocatedOpenApiElement element) =>
             element switch
             {
-                LocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
-                LocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
-                LocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
-                LocatedOpenApiElement<OpenApiResponses> responses => GetResponsesNamespace(responses),
-                LocatedOpenApiElement<OpenApiSchema> schema => GetSchemaNamespace(schema),
-                LocatedOpenApiElement<OpenApiTag> tag => GetTagNamespace(tag),
+                ILocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
+                ILocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
+                ILocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
+                ILocatedOpenApiElement<OpenApiResponses> responses => GetResponsesNamespace(responses),
+                ILocatedOpenApiElement<OpenApiSchema> schema => GetSchemaNamespace(schema),
+                ILocatedOpenApiElement<OpenApiTag> tag => GetTagNamespace(tag),
                 _ => throw new InvalidOperationException($"Element type {element.Element.GetType()} doesn't have a namespace.")
             };
 
-        protected virtual NameSyntax GetOperationNamespace(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        protected virtual NameSyntax GetOperationNamespace(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Requests"));
 
-        protected virtual NameSyntax GetRequestBodyNamespace(LocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
+        protected virtual NameSyntax GetRequestBodyNamespace(ILocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
 
-        protected virtual NameSyntax GetResponseNamespace(LocatedOpenApiElement<OpenApiResponse> response) =>
+        protected virtual NameSyntax GetResponseNamespace(ILocatedOpenApiElement<OpenApiResponse> response) =>
             _responsesNamespace.Name;
 
-        protected virtual NameSyntax GetResponsesNamespace(LocatedOpenApiElement<OpenApiResponses> responses) =>
+        protected virtual NameSyntax GetResponsesNamespace(ILocatedOpenApiElement<OpenApiResponses> responses) =>
             _responsesNamespace.Name;
 
-        protected virtual NameSyntax GetSchemaNamespace(LocatedOpenApiElement<OpenApiSchema> schema) =>
+        protected virtual NameSyntax GetSchemaNamespace(ILocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
 
-        protected virtual NameSyntax GetTagNamespace(LocatedOpenApiElement<OpenApiTag> tag) =>
+        protected virtual NameSyntax GetTagNamespace(ILocatedOpenApiElement<OpenApiTag> tag) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Api"));
     }
 }

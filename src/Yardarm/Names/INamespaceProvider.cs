@@ -5,6 +5,6 @@ namespace Yardarm.Names
 {
     public interface INamespaceProvider
     {
-        NameSyntax GetNamespace(LocatedOpenApiElement element);
+        NameSyntax GetNamespace(ILocatedOpenApiElement element);
     }
 }

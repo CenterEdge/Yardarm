@@ -24,7 +24,7 @@ namespace Yardarm.Generation.Request
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
-        public MethodDeclarationSyntax Generate(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodDeclaration(
                     WellKnownTypes.System.Net.Http.HttpRequestMessage.Name,
         BuildRequestMethodName)
@@ -35,7 +35,7 @@ namespace Yardarm.Generation.Request
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            LocatedOpenApiElement<OpenApiOperation> operation)
+            ILocatedOpenApiElement<OpenApiOperation> operation)
         {
             yield return GenerateRequestMessageVariable(operation);
 
@@ -53,14 +53,14 @@ namespace Yardarm.Generation.Request
         }
 
         protected virtual StatementSyntax GenerateRequestMessageVariable(
-            LocatedOpenApiElement<OpenApiOperation> operation) =>
+            ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
                 ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name)
                     .AddArgumentListArguments(
                         Argument(GetRequestMethod(operation)),
                         Argument(BuildUriMethodGenerator.InvokeBuildUri(ThisExpression()))));
 
-        protected virtual ExpressionSyntax GetRequestMethod(LocatedOpenApiElement<OpenApiOperation> operation) =>
+        protected virtual ExpressionSyntax GetRequestMethod(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             operation.Key switch
             {
                 "Delete" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Delete")),

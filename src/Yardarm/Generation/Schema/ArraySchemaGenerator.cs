@@ -15,12 +15,12 @@ namespace Yardarm.Generation.Schema
 
         public TypeSyntax TypeName => _nameCache ??= GetTypeName();
 
-        protected LocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
+        protected ILocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
         protected GenerationContext Context { get; }
 
         protected OpenApiSchema Schema => SchemaElement.Element;
 
-        public ArraySchemaGenerator(LocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+        public ArraySchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
         {
             SchemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
             Context = context ?? throw new ArgumentNullException(nameof(context));

@@ -15,7 +15,7 @@ namespace Yardarm.NewtonsoftJson
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
             target
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                    SyntaxFactory.Attribute(JsonHelpers.JsonPropertyAttributeName()).AddArgumentListArguments(
+                    SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonPropertyAttributeName).AddArgumentListArguments(
                         SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
     }
 }

@@ -15,8 +15,8 @@ namespace Yardarm.NewtonsoftJson
             context.Element.Type == "string"
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                        SyntaxFactory.Attribute(JsonHelpers.JsonConverterAttributeName()).AddArgumentListArguments(
-                            SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(JsonHelpers.StringEnumConverterName())))))
+                        SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(
+                            SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(NewtonsoftJsonTypes.StringEnumConverterName)))))
                 : target;
     }
 }

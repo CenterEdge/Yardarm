@@ -35,7 +35,7 @@ namespace Yardarm.NewtonsoftJson
         {
             OpenApiSchema schema = context.Element;
 
-            var attribute = SyntaxFactory.Attribute(JsonHelpers.JsonConverterAttributeName()).AddArgumentListArguments(
+            var attribute = SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(
                 SyntaxFactory.AttributeArgument(
                     SyntaxFactory.TypeOfExpression(JsonSerializationNamespace.DiscriminatorConverter)),
                 SyntaxFactory.AttributeArgument(

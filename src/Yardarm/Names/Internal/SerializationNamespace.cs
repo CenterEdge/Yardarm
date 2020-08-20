@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -10,6 +11,9 @@ namespace Yardarm.Names.Internal
         public NameSyntax Name { get; }
         public NameSyntax ITypeSerializer { get; }
         public NameSyntax ITypeSerializerRegistry { get; }
+        public NameSyntax PathSegmentStyle { get; }
+        public NameSyntax PathSegmentSerializer { get; }
+        public ExpressionSyntax PathSegmentSerializerInstance { get; }
         public NameSyntax TypeSerializerRegistryExtensions { get; }
         public NameSyntax UnknownMediaTypeException { get; }
 
@@ -29,6 +33,18 @@ namespace Yardarm.Names.Internal
             ITypeSerializerRegistry = QualifiedName(
                 Name,
                 IdentifierName("ITypeSerializerRegistry"));
+
+            PathSegmentStyle = QualifiedName(
+                Name,
+                IdentifierName("PathSegmentStyle"));
+
+            PathSegmentSerializer = QualifiedName(
+                Name,
+                IdentifierName("PathSegmentSerializer"));
+
+            PathSegmentSerializerInstance = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                PathSegmentSerializer,
+                IdentifierName("Instance"));
 
             TypeSerializerRegistryExtensions = QualifiedName(
                 Name,

@@ -19,10 +19,12 @@ namespace Yardarm.Generation.Request
         public const string BuildUriMethodName = "BuildUri";
 
         protected GenerationContext Context { get; }
+        protected ISerializationNamespace SerializationNamespace { get; }
 
-        public BuildUriMethodGenerator(GenerationContext context)
+        public BuildUriMethodGenerator(GenerationContext context, ISerializationNamespace serializationNamespace)
         {
-            Context = context;
+            Context = context ?? throw new ArgumentNullException(nameof(context));
+            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
         public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation)
@@ -31,8 +33,18 @@ namespace Yardarm.Generation.Request
 
             var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parents[0];
 
-            ExpressionSyntax pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(parameterName =>
-                IdentifierName(propertyNameFormatter.Format(parameterName)));
+            ExpressionSyntax pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(
+                pathSegment =>
+                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        SerializationNamespace.PathSegmentSerializerInstance,
+                        IdentifierName("Serialize")))
+                        .AddArgumentListArguments(
+                            Argument(SyntaxHelpers.StringLiteral(pathSegment.TrimmedName)),
+                            Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.TrimmedName))),
+                            Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SerializationNamespace.PathSegmentStyle,
+                                pathSegment.Style)),
+                            Argument(pathSegment.Explode)));
 
             OpenApiParameter[] queryParameters = operation.Element.Parameters
                 .Where(p => (p.In ?? ParameterLocation.Query) == ParameterLocation.Query)

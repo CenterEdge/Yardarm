@@ -54,7 +54,7 @@ namespace Yardarm.Spec.Path
         }
 
         public static InterpolatedStringExpressionSyntax ToInterpolatedStringExpression(
-            this IEnumerable<PathSegment> pathSegments, Func<string, ExpressionSyntax> parameterInterpreter) =>
+            this IEnumerable<PathSegment> pathSegments, Func<PathSegment, ExpressionSyntax> parameterInterpreter) =>
             InterpolatedStringExpression(Token(SyntaxKind.InterpolatedStringStartToken),
                 List(pathSegments.Select(p => p.ToInterpolatedStringContentSyntax(parameterInterpreter))));
     }

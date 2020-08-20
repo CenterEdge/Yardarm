@@ -7,9 +7,33 @@ namespace Yardarm.Spec.Path
 {
     public readonly struct PathSegment
     {
+        private static readonly char[] _trimChars = {'.', ';', '*'};
+
         public string Value { get; }
 
         public PathSegmentType Type { get; }
+
+        /// <summary>
+        /// Value trimmed of special chars.
+        /// </summary>
+        public string TrimmedName => Value.Trim(_trimChars);
+
+        /// <summary>
+        /// Provides the PathSegmentStyle enum value to use when serializing.
+        /// </summary>
+        public IdentifierNameSyntax Style => Value[0] switch
+        {
+            '.' => IdentifierName("Label"),
+            ';' => IdentifierName("Matrix"),
+            _ => IdentifierName("Simple")
+        };
+
+        /// <summary>
+        /// Provides the explode parameter to use when serializing.
+        /// </summary>
+        public ExpressionSyntax Explode => LiteralExpression(Value.EndsWith("*")
+            ? SyntaxKind.TrueLiteralExpression
+            : SyntaxKind.FalseLiteralExpression);
 
         public PathSegment(string value, PathSegmentType type)
         {
@@ -29,10 +53,10 @@ namespace Yardarm.Spec.Path
 
         public override int GetHashCode() => HashCode.Combine(Value, (int) Type);
 
-        public InterpolatedStringContentSyntax ToInterpolatedStringContentSyntax(Func<string, ExpressionSyntax> parameterInterpreter) =>
+        public InterpolatedStringContentSyntax ToInterpolatedStringContentSyntax(Func<PathSegment, ExpressionSyntax> parameterInterpreter) =>
             Type == PathSegmentType.Text
                 ? (InterpolatedStringContentSyntax) InterpolatedStringText(
                     Token(TriviaList(), SyntaxKind.InterpolatedStringTextToken, Value, Value, TriviaList()))
-                : Interpolation(parameterInterpreter.Invoke(Value));
+                : Interpolation(parameterInterpreter.Invoke(this));
     }
 }

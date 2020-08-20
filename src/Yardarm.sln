@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.Client", "Yardarm.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.NewtonsoftJson.Client", "Yardarm.NewtonsoftJson.Client\Yardarm.NewtonsoftJson.Client.csproj", "{F9BF417C-669B-43B4-BAB7-836E4E01EE74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.Client.UnitTests", "Yardarm.Client.UnitTests\Yardarm.Client.UnitTests.csproj", "{764A21AF-D4BB-40FD-859C-59679AB7E4FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{F9BF417C-669B-43B4-BAB7-836E4E01EE74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9BF417C-669B-43B4-BAB7-836E4E01EE74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9BF417C-669B-43B4-BAB7-836E4E01EE74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

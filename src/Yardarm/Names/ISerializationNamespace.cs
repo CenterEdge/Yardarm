@@ -7,6 +7,9 @@ namespace Yardarm.Names
     {
         NameSyntax ITypeSerializer { get; }
         NameSyntax ITypeSerializerRegistry { get; }
+        NameSyntax PathSegmentStyle { get; }
+        NameSyntax PathSegmentSerializer { get; }
+        ExpressionSyntax PathSegmentSerializerInstance { get; }
         NameSyntax TypeSerializerRegistryExtensions { get; }
         NameSyntax UnknownMediaTypeException { get; }
     }

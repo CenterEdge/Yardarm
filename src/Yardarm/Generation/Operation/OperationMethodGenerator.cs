@@ -74,9 +74,11 @@ namespace Yardarm.Generation.Operation
                                 Argument(IdentifierName("responseMessage")),
                                 Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))))))
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
-                    ThrowExpression(ObjectCreationExpression(ResponsesNamespace.UnknownStatusCodeException)
+                    ObjectCreationExpression(
+                        Context.TypeNameProvider.GetName(operation.CreateChild(new OpenApiUnknownResponse(), OpenApiUnknownResponse.Key)))
                         .AddArgumentListArguments(
-                            Argument(IdentifierName("responseMessage"))))));
+                            Argument(IdentifierName("responseMessage")),
+                            Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))));
 
         [Pure]
         private static ExpressionSyntax ParseStatusCode(string statusCodeStr) =>

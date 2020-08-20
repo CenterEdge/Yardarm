@@ -22,6 +22,7 @@ namespace Yardarm.Names
             {
                 ILocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
                 ILocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
+                ILocatedOpenApiElement<OpenApiUnknownResponse> response => GetUnknownResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponses> responses => GetResponsesNamespace(responses),
                 ILocatedOpenApiElement<OpenApiSchema> schema => GetSchemaNamespace(schema),
@@ -46,5 +47,8 @@ namespace Yardarm.Names
 
         protected virtual NameSyntax GetTagNamespace(ILocatedOpenApiElement<OpenApiTag> tag) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Api"));
+
+        protected virtual NameSyntax GetUnknownResponseNamespace(ILocatedOpenApiElement<OpenApiUnknownResponse> responses) =>
+            _responsesNamespace.Name;
     }
 }

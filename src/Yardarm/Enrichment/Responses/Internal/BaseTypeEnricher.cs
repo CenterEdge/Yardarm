@@ -8,25 +8,20 @@ namespace Yardarm.Enrichment.Responses.Internal
 {
     internal class BaseTypeEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiResponse>
     {
-        private readonly GenerationContext _context;
+        private readonly IResponseBaseTypeRegistry _responseBaseTypeRegistry;
 
         public int Priority => 0;
 
-        public BaseTypeEnricher(GenerationContext context)
+        public BaseTypeEnricher(IResponseBaseTypeRegistry responseBaseTypeRegistry)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _responseBaseTypeRegistry = responseBaseTypeRegistry ?? throw new ArgumentNullException(nameof(responseBaseTypeRegistry));
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiResponse> context)
         {
-            var feature = _context.GenerationServices.GetRequiredService<IResponseBaseTypeRegistry>();
-            if (feature == null)
-            {
-                return target;
-            }
-
-            BaseTypeSyntax[] additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement).ToArray();
+            BaseTypeSyntax[] additionalBaseTypes = _responseBaseTypeRegistry
+                .GetBaseTypes(context.LocatedElement).ToArray();
 
             return additionalBaseTypes.Length > 0
                 ? target.AddBaseListTypes(additionalBaseTypes)

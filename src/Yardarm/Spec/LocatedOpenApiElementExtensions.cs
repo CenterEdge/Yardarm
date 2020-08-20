@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
@@ -8,6 +10,9 @@ namespace Yardarm.Spec
 {
     public static class LocatedOpenApiElementExtensions
     {
+        private static readonly ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse> _unknownResponses =
+            new ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse>();
+
         public static ILocatedOpenApiElement<T> CreateRoot<T>(this T rootItem, string key)
             where T : IOpenApiElement =>
             LocatedOpenApiElement.CreateRoot(rootItem, key);
@@ -62,5 +67,17 @@ namespace Yardarm.Spec
             operations
                 .SelectMany(p => p.Element.Tags,
                     (operation, tag) => operation.CreateChild(tag, ""));
+
+        public static ILocatedOpenApiElement<OpenApiUnknownResponse> GetUnknownResponse(
+            this ILocatedOpenApiElement<OpenApiResponses> responses)
+        {
+            if (responses == null)
+            {
+                throw new ArgumentNullException(nameof(responses));
+            }
+
+            return responses.CreateChild(_unknownResponses.GetOrCreateValue(responses.Element),
+                OpenApiUnknownResponse.Key);
+        }
     }
 }

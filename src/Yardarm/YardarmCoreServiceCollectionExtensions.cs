@@ -47,6 +47,7 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiUnknownResponse>, UnknownResponseTypeGeneratorFactory>();
             services.TryAddSingleton<IAddHeadersMethodGenerator, AddHeadersMethodGenerator>();
             services.TryAddSingleton<IBuildContentMethodGenerator, BuildContentMethodGenerator>();
             services.TryAddSingleton<IBuildRequestMethodGenerator, BuildRequestMethodGenerator>();

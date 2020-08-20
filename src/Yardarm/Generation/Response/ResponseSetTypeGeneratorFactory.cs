@@ -11,8 +11,7 @@ namespace Yardarm.Generation.Response
         private readonly IResponsesNamespace _responsesNamespace;
 
         public ResponseSetTypeGeneratorFactory(GenerationContext context,
-            IResponsesNamespace responsesNamespace,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
+            IResponsesNamespace responsesNamespace)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _responsesNamespace = responsesNamespace ??

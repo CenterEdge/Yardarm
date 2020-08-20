@@ -46,8 +46,11 @@ namespace Yardarm.Generation.Response
                 // Register the referenced response to implement this interface
 
                 baseTypeFeature.AddBaseType(response,
-                    SyntaxFactory.SimpleBaseType(interfaceNameAndNamespace));
+                    SimpleBaseType(interfaceNameAndNamespace));
             }
+
+            baseTypeFeature.AddBaseType(Element.GetUnknownResponse(),
+                SimpleBaseType(interfaceNameAndNamespace));
 
             var interfaceName = GetInterfaceName();
 

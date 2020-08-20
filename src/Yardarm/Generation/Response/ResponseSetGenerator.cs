@@ -11,24 +11,35 @@ namespace Yardarm.Generation.Response
     {
         private readonly OpenApiDocument _document;
         private readonly ITypeGeneratorRegistry<OpenApiResponses> _responsesGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<OpenApiUnknownResponse> _unknownResponseGeneratorRegistry;
 
-        public ResponseSetGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiResponses> responsesGeneratorRegistry)
+        public ResponseSetGenerator(OpenApiDocument document,
+            ITypeGeneratorRegistry<OpenApiResponses> responsesGeneratorRegistry,
+            ITypeGeneratorRegistry<OpenApiUnknownResponse> unknownResponseGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
             _responsesGeneratorRegistry = responsesGeneratorRegistry ?? throw new ArgumentNullException(nameof(responsesGeneratorRegistry));
+            _unknownResponseGeneratorRegistry = unknownResponseGeneratorRegistry ?? throw new ArgumentNullException(nameof(unknownResponseGeneratorRegistry));
         }
 
         public IEnumerable<SyntaxTree> Generate() =>
-            GetResponses()
+            GetResponseSets()
                 .Select(Generate)
+                .Concat(
+                    GetResponseSets()
+                        .Select(p => p.GetUnknownResponse())
+                        .Select(Generate))
                 .Where(p => p != null)!;
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> GetResponses() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> GetResponseSets() =>
             _document.Paths.ToLocatedElements()
                 .GetOperations()
-                .Select(p => p.CreateChild(p.Element.Responses, ""));
+                .GetResponseSets();
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponses> requestBody) =>
-            _responsesGeneratorRegistry.Get(requestBody).GenerateSyntaxTree();
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponses> responseSet) =>
+            _responsesGeneratorRegistry.Get(responseSet).GenerateSyntaxTree();
+
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiUnknownResponse> unknownResponse) =>
+            _unknownResponseGeneratorRegistry.Get(unknownResponse).GenerateSyntaxTree();
     }
 }

@@ -24,12 +24,13 @@ namespace Yardarm.Names
         protected virtual TypeSyntax? GetNameInternal(ILocatedOpenApiElement element) =>
             element switch
             {
-                LocatedOpenApiElement<OpenApiOperation> operationElement => GetOperationName(operationElement),
-                LocatedOpenApiElement<OpenApiRequestBody> requestBodyElement => GetRequestBodyName(requestBodyElement),
-                LocatedOpenApiElement<OpenApiResponse> responseElement => GetResponseName(responseElement),
-                LocatedOpenApiElement<OpenApiResponses> responsesElement => GetResponsesName(responsesElement),
-                LocatedOpenApiElement<OpenApiSchema> schemaElement => GetSchemaName(schemaElement),
-                LocatedOpenApiElement<OpenApiTag> tagElement => GetTagName(tagElement),
+                ILocatedOpenApiElement<OpenApiOperation> operationElement => GetOperationName(operationElement),
+                ILocatedOpenApiElement<OpenApiRequestBody> requestBodyElement => GetRequestBodyName(requestBodyElement),
+                ILocatedOpenApiElement<OpenApiUnknownResponse> responseElement => GetUnknownResponseName(responseElement),
+                ILocatedOpenApiElement<OpenApiResponse> responseElement => GetResponseName(responseElement),
+                ILocatedOpenApiElement<OpenApiResponses> responsesElement => GetResponsesName(responsesElement),
+                ILocatedOpenApiElement<OpenApiSchema> schemaElement => GetSchemaName(schemaElement),
+                ILocatedOpenApiElement<OpenApiTag> tagElement => GetTagName(tagElement),
                 _ => element.Parents.Count > 0 ? GetNameInternal(element.Parents[0]) : null
             };
 
@@ -49,6 +50,9 @@ namespace Yardarm.Names
             _typeGeneratorRegistry.Get(element).TypeName;
 
         protected virtual TypeSyntax GetTagName(ILocatedOpenApiElement<OpenApiTag> element) =>
+            _typeGeneratorRegistry.Get(element).TypeName;
+
+        protected virtual TypeSyntax GetUnknownResponseName(ILocatedOpenApiElement<OpenApiUnknownResponse> element) =>
             _typeGeneratorRegistry.Get(element).TypeName;
     }
 }

@@ -144,6 +144,10 @@ paths:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - in: header
+          name: X-Test
+          schema:
+            type: string
       responses:
         '200':
           description: Ok

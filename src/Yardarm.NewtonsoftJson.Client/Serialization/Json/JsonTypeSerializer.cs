@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+﻿using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -54,15 +51,6 @@ namespace RootNamespace.Serialization.Json
             }
         }
 
-        public string Serialize<T>(T value)
-        {
-            using var writer = new StringWriter();
-
-            _serializer.Serialize(writer, value, typeof(T));
-
-            return writer.ToString();
-        }
-
         public async ValueTask<T> DeserializeAsync<T>(HttpContent content)
         {
             string str = await content.ReadAsStringAsync().ConfigureAwait(false);
@@ -70,12 +58,6 @@ namespace RootNamespace.Serialization.Json
             using var reader = new JsonTextReader(new StringReader(str));
 
             return _serializer.Deserialize<T>(reader)!;
-        }
-
-        [return: MaybeNull]
-        public T Deserialize<T>(IEnumerable<string> values)
-        {
-            throw new NotImplementedException();
         }
     }
 }

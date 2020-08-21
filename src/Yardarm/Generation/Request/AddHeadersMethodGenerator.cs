@@ -19,11 +19,14 @@ namespace Yardarm.Generation.Request
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected INameFormatterSelector NameFormatterSelector { get; }
+        protected ISerializationNamespace SerializationNamespace { get; }
 
-        public AddHeadersMethodGenerator(IMediaTypeSelector mediaTypeSelector, INameFormatterSelector nameFormatterSelector)
+        public AddHeadersMethodGenerator(IMediaTypeSelector mediaTypeSelector, INameFormatterSelector nameFormatterSelector,
+            ISerializationNamespace serializationNamespace)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             NameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
+            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
         public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
@@ -65,10 +68,14 @@ namespace Yardarm.Generation.Request
                         SyntaxHelpers.MemberAccess(RequestMessageParameterName, "Headers", "Add"))
                     .AddArgumentListArguments(
                         Argument(SyntaxHelpers.StringLiteral(headerParameter.Name)),
-                        Argument(InvocationExpression(
-                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(propertyName),
-                                IdentifierName("ToString"))))));
+                        Argument(InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SerializationNamespace.HeaderSerializerInstance,
+                            IdentifierName("Serialize")))
+                            .AddArgumentListArguments(
+                                Argument(IdentifierName(propertyName)),
+                                Argument(headerParameter.Explode
+                                    ? LiteralExpression(SyntaxKind.TrueLiteralExpression)
+                                    : LiteralExpression(SyntaxKind.FalseLiteralExpression))))));
 
                 if (!headerParameter.Required)
                 {

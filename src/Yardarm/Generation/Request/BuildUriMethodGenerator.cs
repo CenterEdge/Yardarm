@@ -35,16 +35,25 @@ namespace Yardarm.Generation.Request
 
             ExpressionSyntax pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(
                 pathSegment =>
-                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        SerializationNamespace.PathSegmentSerializerInstance,
-                        IdentifierName("Serialize")))
+                {
+                    OpenApiParameter? parameter = operation.Element.Parameters.FirstOrDefault(
+                        p => p.Name == pathSegment.Value);
+
+                    if (parameter == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Missing path parameter '{pathSegment.Value}' in operation '{operation.Element.OperationId}'.");
+                    }
+
+                    return InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SerializationNamespace.PathSegmentSerializerInstance,
+                            IdentifierName("Serialize")))
                         .AddArgumentListArguments(
-                            Argument(SyntaxHelpers.StringLiteral(pathSegment.TrimmedName)),
-                            Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.TrimmedName))),
-                            Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                SerializationNamespace.PathSegmentStyle,
-                                pathSegment.Style)),
-                            Argument(pathSegment.Explode)));
+                            Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
+                            Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
+                            Argument(GetStyleExpression(parameter)),
+                            Argument(GetExplodeExpression(parameter)));
+                });
 
             OpenApiParameter[] queryParameters = operation.Element.Parameters
                 .Where(p => (p.In ?? ParameterLocation.Query) == ParameterLocation.Query)
@@ -83,5 +92,20 @@ namespace Yardarm.Generation.Request
                 MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     requestInstance,
                     IdentifierName(BuildUriMethodName)));
+
+        protected ExpressionSyntax GetStyleExpression(OpenApiParameter parameter) =>
+            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                SerializationNamespace.PathSegmentStyle,
+                (parameter.Style ?? ParameterStyle.Simple) switch
+                {
+                    ParameterStyle.Label => IdentifierName("Label"),
+                    ParameterStyle.Matrix => IdentifierName("Matrix"),
+                    _ => IdentifierName("Simple")
+                });
+
+        protected ExpressionSyntax GetExplodeExpression(OpenApiParameter parameter) =>
+            parameter.Explode
+                ? LiteralExpression(SyntaxKind.TrueLiteralExpression)
+                : LiteralExpression(SyntaxKind.FalseLiteralExpression);
     }
 }

@@ -83,6 +83,7 @@ paths:
         required: true
   /capabilities:
     get:
+      deprecated: true
       tags:
         - Capabilities
       summary: Gets the capabilities of the API.

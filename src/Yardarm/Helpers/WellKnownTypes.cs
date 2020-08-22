@@ -107,6 +107,13 @@ namespace Yardarm.Helpers
                 }
             }
 
+            public static class ObsoleteAttribute
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("ObsoleteAttribute"));
+            }
+
             public static class Threading
             {
                 public static NameSyntax Name { get; } = QualifiedName(

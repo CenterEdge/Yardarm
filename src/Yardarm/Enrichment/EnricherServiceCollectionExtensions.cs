@@ -3,6 +3,7 @@ using Yardarm.Enrichment.Internal;
 using Yardarm.Enrichment.Requests;
 using Yardarm.Enrichment.Responses;
 using Yardarm.Enrichment.Schema;
+using Yardarm.Enrichment.Tags;
 
 namespace Yardarm.Enrichment
 {
@@ -19,7 +20,8 @@ namespace Yardarm.Enrichment
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
                 .AddDefaultSchemaEnrichers()
                 .AddDefaultRequestEnrichers()
-                .AddDefaultResponseEnrichers();
+                .AddDefaultResponseEnrichers()
+                .AddDefaultTagEnrichers();
 
         public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
             where T : class, IAssemblyInfoEnricher =>

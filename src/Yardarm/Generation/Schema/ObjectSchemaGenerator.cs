@@ -30,16 +30,16 @@ namespace Yardarm.Generation.Schema
                     .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                     .WithBody(SyntaxFactory.Block()));
 
-            declaration = AddProperties(declaration, Element, Schema.Properties);
+            declaration = AddProperties(declaration, Element.GetProperties());
 
             yield return declaration;
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
-            ILocatedOpenApiElement<OpenApiSchema> parent, IEnumerable<KeyValuePair<string, OpenApiSchema>> properties)
+            IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> properties)
         {
             MemberDeclarationSyntax[] members = properties
-                .SelectMany(p => DeclareProperty(parent.CreateChild(p.Value, p.Key), declaration.Identifier.ValueText))
+                .SelectMany(p => DeclareProperty(p, declaration.Identifier.ValueText))
                 .ToArray();
 
             return declaration.AddMembers(members);

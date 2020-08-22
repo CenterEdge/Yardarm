@@ -75,7 +75,7 @@ namespace Yardarm.Generation.Operation
                                 Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))))))
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
                     ObjectCreationExpression(
-                        Context.TypeNameProvider.GetName(operation.CreateChild(new OpenApiUnknownResponse(), OpenApiUnknownResponse.Key)))
+                        Context.TypeNameProvider.GetName(operation.GetResponseSet().GetUnknownResponse()))
                         .AddArgumentListArguments(
                             Argument(IdentifierName("responseMessage")),
                             Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))));

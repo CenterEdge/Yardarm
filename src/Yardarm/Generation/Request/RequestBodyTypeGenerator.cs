@@ -38,9 +38,11 @@ namespace Yardarm.Generation.Request
             {
                 throw new InvalidOperationException("No valid media type for this request");
             }
-            else if (mediaType.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
+
+            ILocatedOpenApiElement<OpenApiSchema>? schemaElement = mediaType.GetSchema();
+            if (schemaElement != null &&
+                (schemaElement.Element.Type != "object" || schemaElement.Element.Reference != null))
             {
-                var schemaElement = mediaType!.CreateChild(mediaType.Element.Schema!, "");
                 return Context.SchemaGeneratorRegistry.Get(schemaElement).TypeName;
             }
 
@@ -74,12 +76,14 @@ namespace Yardarm.Generation.Request
         private ITypeGenerator? GetSchemaGenerator()
         {
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(RequestBodyElement);
-            if (mediaType?.Element.Schema?.Type != "object" || mediaType.Element.Schema.Reference != null)
+
+            ILocatedOpenApiElement<OpenApiSchema>? schemaElement = mediaType?.GetSchema();
+            if (schemaElement == null || schemaElement.Element.Type != "object" ||
+                schemaElement.Element.Reference != null)
             {
                 return null;
             }
 
-            var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "");
             return Context.SchemaGeneratorRegistry.Get(schemaElement);
         }
     }

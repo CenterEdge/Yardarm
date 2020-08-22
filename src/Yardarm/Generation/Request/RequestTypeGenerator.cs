@@ -62,19 +62,16 @@ namespace Yardarm.Generation.Request
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
-            declaration = AddParameterProperties(declaration,
-                Operation.Parameters.Select(p => Element.CreateChild(p, p.Name)));
+            declaration = AddParameterProperties(declaration, Element.GetParameters());
 
-            if (Operation.RequestBody != null)
+            var requestBodyElement = Element.GetRequestBody();
+            if (requestBodyElement != null)
             {
-                var requestBodyElement = Element.CreateChild(Operation.RequestBody, BodyPropertyName);
-                var schema = MediaTypeSelector.Select(requestBodyElement)?.Element.Schema;
+                var schema = MediaTypeSelector.Select(requestBodyElement)?.GetSchema();
                 if (schema != null)
                 {
-                    var locatedSchema = requestBodyElement.CreateChild(schema, "");
-
                     declaration = declaration.AddMembers(
-                        CreatePropertyDeclaration(requestBodyElement, className, locatedSchema));
+                        CreatePropertyDeclaration(requestBodyElement, className, schema, "Body"));
                 }
             }
 
@@ -93,7 +90,7 @@ namespace Yardarm.Generation.Request
             MemberDeclarationSyntax[] members = properties
                 .Select(p =>
                 {
-                    var schema = p.CreateChild(p.Element.Schema, "");
+                    var schema = p.GetSchemaOrDefault();
 
                     return CreatePropertyDeclaration(p, declaration.Identifier.ValueText, schema);
                 })
@@ -103,10 +100,11 @@ namespace Yardarm.Generation.Request
         }
 
         protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(ILocatedOpenApiElement<T> parameter, string className,
-            ILocatedOpenApiElement<OpenApiSchema> schema)
+            ILocatedOpenApiElement<OpenApiSchema> schema, string? nameOverride = null)
             where T : IOpenApiElement
         {
-            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameter.Key);
+            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(
+                nameOverride ?? parameter.Key);
 
             if (propertyName == className)
             {

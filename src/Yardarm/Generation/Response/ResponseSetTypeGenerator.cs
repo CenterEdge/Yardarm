@@ -14,7 +14,7 @@ namespace Yardarm.Generation.Response
 {
     public class ResponseSetTypeGenerator : TypeGeneratorBase<OpenApiResponses>
     {
-        protected OpenApiResponses Responses => Element.Element;
+        protected OpenApiResponses ResponseSet => Element.Element;
         protected OpenApiOperation Operation { get; }
         protected IResponsesNamespace ResponsesNamespace { get; }
 
@@ -40,8 +40,7 @@ namespace Yardarm.Generation.Response
 
             var baseTypeFeature = Context.GenerationServices.GetRequiredService<IResponseBaseTypeRegistry>();
 
-            foreach (var response in Responses
-                .Select(p => Element.CreateChild(p.Value, p.Key)))
+            foreach (var response in Element.GetResponses())
             {
                 // Register the referenced response to implement this interface
 

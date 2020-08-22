@@ -132,7 +132,12 @@ namespace Yardarm.Generation.Response
                 return (null, false);
             }
 
-            var schemaElement = mediaType.CreateChild(mediaType.Element.Schema, "Body");
+            ILocatedOpenApiElement<OpenApiSchema>? schemaElement = mediaType.GetSchema();
+            if (schemaElement == null)
+            {
+                return (null, false);
+            }
+
             return (Context.SchemaGeneratorRegistry.Get(schemaElement), schemaElement.Element.Reference != null);
         }
 

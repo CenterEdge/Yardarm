@@ -46,7 +46,8 @@ namespace Yardarm.Generation.Schema
                         }
                         else
                         {
-                            classDeclaration = AddProperties(classDeclaration, Element, section.Properties);
+                            classDeclaration = AddProperties(classDeclaration, section.Properties
+                                .Select(p => Element.CreateChild(p.Value, p.Key)));
                         }
                     }
 

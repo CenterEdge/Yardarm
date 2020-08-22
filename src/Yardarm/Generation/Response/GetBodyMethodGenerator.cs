@@ -35,13 +35,13 @@ namespace Yardarm.Generation.Response
             }
 
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
-            if (mediaType?.Element.Schema == null)
+            ILocatedOpenApiElement<OpenApiSchema>? schema = mediaType?.GetSchema();
+            if (schema == null)
             {
                 return null;
             }
 
-            ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(
-                mediaType.CreateChild(mediaType.Element.Schema, "Body"));
+            ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schema);
 
             TypeSyntax returnType = schemaGenerator.TypeName;
 

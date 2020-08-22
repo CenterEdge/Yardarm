@@ -119,7 +119,7 @@ namespace Yardarm.Generation.Tag
         {
             TypeSyntax requestType = Context.TypeNameProvider.GetName(operation);
             TypeSyntax responseType = WellKnownTypes.System.Threading.Tasks.TaskT.Name(
-                Context.TypeNameProvider.GetName(operation.CreateChild(operation.Element.Responses, "")));
+                Context.TypeNameProvider.GetName(operation.GetResponseSet()));
 
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);

@@ -43,9 +43,9 @@ namespace Yardarm.Generation.Request
             ILocatedOpenApiElement<OpenApiOperation> operation)
         {
             ILocatedOpenApiElement<OpenApiResponses> responseSet = operation.GetResponseSet();
-            ILocatedOpenApiElement<OpenApiResponse> primaryResponse = responseSet.Element
+            ILocatedOpenApiElement<OpenApiResponse> primaryResponse = responseSet
+                .GetResponses()
                 .OrderBy(p => p.Key)
-                .Select(p => responseSet.CreateChild(p.Value, p.Key))
                 .First();
 
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);

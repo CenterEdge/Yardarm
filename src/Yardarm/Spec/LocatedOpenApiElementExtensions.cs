@@ -13,6 +13,12 @@ namespace Yardarm.Spec
         private static readonly ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse> _unknownResponses =
             new ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse>();
 
+        private static readonly LocatedOpenApiElement<OpenApiSchema> _defaultHeaderSchema =
+            new LocatedOpenApiElement<OpenApiSchema>(new OpenApiSchema
+            {
+                Type = "string"
+            }, "schema");
+
         public static ILocatedOpenApiElement<T> CreateRoot<T>(this T rootItem, string key)
             where T : IOpenApiElement =>
             LocatedOpenApiElement.CreateRoot(rootItem, key);
@@ -79,5 +85,20 @@ namespace Yardarm.Spec
             return responses.CreateChild(_unknownResponses.GetOrCreateValue(responses.Element),
                 OpenApiUnknownResponse.Key);
         }
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiHeader>> GetHeaders(
+            this ILocatedOpenApiElement<OpenApiResponse> response) =>
+            response.Element.Headers
+                .Select(p => response.CreateChild(p.Value, p.Key));
+
+        public static ILocatedOpenApiElement<OpenApiSchema>? GetSchema(
+            this ILocatedOpenApiElement<OpenApiHeader> header) =>
+            header.Element.Schema != null
+                ? header.CreateChild(header.Element.Schema, "schema")
+                : null;
+
+        public static ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault(
+            this ILocatedOpenApiElement<OpenApiHeader> header) =>
+            header.GetSchema() ?? _defaultHeaderSchema;
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Helpers
@@ -22,6 +23,24 @@ namespace Yardarm.Helpers
                         public static NameSyntax Name { get; } = QualifiedName(
                             Http.Name,
                             IdentifierName("Headers"));
+
+                        public static class HttpHeaders
+                        {
+                            public static NameSyntax Name { get; } = QualifiedName(
+                                Headers.Name,
+                                IdentifierName("HttpHeaders"));
+
+                            public static InvocationExpressionSyntax TryGetValues(
+                                ExpressionSyntax httpHeaders,
+                                ExpressionSyntax headerName,
+                                ExpressionSyntax outValues) =>
+                                InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                        httpHeaders,
+                                        IdentifierName("TryGetValues")))
+                                    .AddArgumentListArguments(
+                                        Argument(headerName),
+                                        Argument(null, Token(SyntaxKind.OutKeyword), outValues));
+                        }
 
                         public static class MediaTypeWithQualityHeaderValue
                         {

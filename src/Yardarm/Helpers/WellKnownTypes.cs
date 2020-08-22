@@ -30,6 +30,16 @@ namespace Yardarm.Helpers
                         Collections.Name,
                         IdentifierName("Generic"));
 
+                    public static class IEnumerableT
+                    {
+                        public static NameSyntax Name(TypeSyntax itemType) =>
+                            QualifiedName(
+                                Generic.Name,
+                                GenericName(
+                                    Identifier("IEnumerable"),
+                                    TypeArgumentList(SingletonSeparatedList(itemType))));
+                    }
+
                     public static class ListT
                     {
                         public static NameSyntax Name(TypeSyntax itemType) =>

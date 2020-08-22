@@ -15,17 +15,12 @@ namespace Yardarm.Generation.Response
 {
     internal class ResponseTypeGenerator : TypeGeneratorBase<OpenApiResponse>
     {
-        private static readonly LocatedOpenApiElement<OpenApiSchema> _defaultHeaderSchema =
-            new LocatedOpenApiElement<OpenApiSchema>(new OpenApiSchema
-            {
-                Type = "string"
-            }, "");
-
         protected IResponsesNamespace ResponsesNamespace { get; }
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
         protected ISerializationNamespace SerializationNamespace { get; }
-        protected IGetBodyMethodGenerator ParseBodyMethodGenerator { get; }
+        protected IGetBodyMethodGenerator GetBodyMethodGenerator { get; }
+        protected IParseHeadersMethodGenerator ParseHeadersMethodGenerator { get; }
 
         protected OpenApiResponse Response => Element.Element;
 
@@ -34,7 +29,8 @@ namespace Yardarm.Generation.Response
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             ISerializationNamespace serializationNamespace,
             IResponsesNamespace responsesNamespace,
-            IGetBodyMethodGenerator parseBodyMethodGenerator)
+            IGetBodyMethodGenerator getBodyMethodGenerator,
+            IParseHeadersMethodGenerator parseHeadersMethodGenerator)
             : base(responseElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
@@ -42,7 +38,9 @@ namespace Yardarm.Generation.Response
                                            throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
-            ParseBodyMethodGenerator = parseBodyMethodGenerator ?? throw new ArgumentNullException(nameof(parseBodyMethodGenerator));
+            GetBodyMethodGenerator = getBodyMethodGenerator ?? throw new ArgumentNullException(nameof(getBodyMethodGenerator));
+            ParseHeadersMethodGenerator = parseHeadersMethodGenerator ??
+                                          throw new ArgumentNullException(nameof(parseHeadersMethodGenerator));
         }
 
         protected override TypeSyntax GetTypeName()
@@ -64,7 +62,8 @@ namespace Yardarm.Generation.Response
                     new MemberDeclarationSyntax?[]
                         {
                             GenerateConstructor(className),
-                            ParseBodyMethodGenerator.Generate(Element)
+                            GetBodyMethodGenerator.Generate(Element),
+                            ParseHeadersMethodGenerator.Generate(Element)
                         }
                         .Concat(GenerateHeaderProperties())
                         .Where(p => p != null)
@@ -91,17 +90,18 @@ namespace Yardarm.Generation.Response
                     .AddArgumentListArguments(
                         Argument(IdentifierName("message")),
                         Argument(IdentifierName("typeSerializerRegistry"))))
-                .WithBody(Block());
+                .WithBody(Block(
+                    ExpressionStatement(
+                        Generation.Response.ParseHeadersMethodGenerator.InvokeParseHeaders(ThisExpression()))
+                ));
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateHeaderProperties()
         {
             var nameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-            foreach (var header in Response.Headers.Select(p => Element.CreateChild(p.Value, p.Key)))
+            foreach (var header in Element.GetHeaders())
             {
-                ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.Element.Schema != null
-                    ? header.CreateChild(header.Element.Schema, "Header")
-                    : _defaultHeaderSchema;
+                ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 
                 ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Names;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Request
@@ -13,24 +14,29 @@ namespace Yardarm.Generation.Request
         private readonly IBuildUriMethodGenerator _buildUriMethodGenerator;
         private readonly IAddHeadersMethodGenerator _addHeadersMethodGenerator;
         private readonly IBuildContentMethodGenerator _buildContentMethodGenerator;
+        private readonly IRequestsNamespace _requestsNamespace;
 
         public RequestTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
-            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator)
+            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator,
+            IRequestsNamespace requestsNamespace)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            _buildRequestMethodGenerator = buildRequestMethodGenerator ?? throw new ArgumentNullException(nameof(buildRequestMethodGenerator));
+            _buildRequestMethodGenerator = buildRequestMethodGenerator ??
+                                           throw new ArgumentNullException(nameof(buildRequestMethodGenerator));
             _buildUriMethodGenerator = buildUriMethodGenerator ??
                                        throw new ArgumentNullException(nameof(buildUriMethodGenerator));
             _addHeadersMethodGenerator = addHeadersMethodGenerator ??
                                          throw new ArgumentNullException(nameof(addHeadersMethodGenerator));
             _buildContentMethodGenerator = buildContentMethodGenerator ??
                                            throw new ArgumentNullException(nameof(buildContentMethodGenerator));
+            _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiOperation> element) =>
             new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildRequestMethodGenerator,
-                _buildUriMethodGenerator, _addHeadersMethodGenerator, _buildContentMethodGenerator);
+                _buildUriMethodGenerator, _addHeadersMethodGenerator, _buildContentMethodGenerator,
+                _requestsNamespace);
     }
 }

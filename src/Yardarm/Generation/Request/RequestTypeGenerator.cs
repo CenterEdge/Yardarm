@@ -21,13 +21,15 @@ namespace Yardarm.Generation.Request
         protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
         protected IAddHeadersMethodGenerator AddHeadersMethodGenerator { get; }
         protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
+        protected IRequestsNamespace RequestsNamespace { get; }
 
         protected OpenApiOperation Operation => Element.Element;
 
         public RequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
-            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator)
+            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator,
+            IRequestsNamespace requestsNamespace)
             : base(operationElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
@@ -38,6 +40,7 @@ namespace Yardarm.Generation.Request
                                         throw new ArgumentNullException(nameof(addHeadersMethodGenerator));
             BuildContentMethodGenerator = buildContentMethodGenerator ??
                                           throw new ArgumentNullException(nameof(buildContentMethodGenerator));
+            RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
         }
 
         protected override TypeSyntax GetTypeName()
@@ -58,6 +61,7 @@ namespace Yardarm.Generation.Request
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddBaseListTypes(SimpleBaseType(RequestsNamespace.OperationRequest))
                 .AddMembers(ConstructorDeclaration(className)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));

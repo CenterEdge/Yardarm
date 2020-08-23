@@ -72,6 +72,7 @@ namespace Yardarm
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
             services.TryAddSingleton<IRootNamespace, RootNamespace>();
             services.TryAddSingleton<IAuthenticationNamespace, AuthenticationNamespace>();
+            services.TryAddSingleton<IRequestsNamespace, RequestsNamespace>();
             services.TryAddSingleton<IResponsesNamespace, ResponsesNamespace>();
             services.TryAddSingleton<ISerializationNamespace, SerializationNamespace>();
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+// ReSharper disable once CheckNamespace
 namespace Yardarm.Client
 {
     internal static class OperationHelpers

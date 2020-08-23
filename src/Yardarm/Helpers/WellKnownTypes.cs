@@ -150,6 +150,13 @@ namespace Yardarm.Helpers
                                     TypeArgumentList(SingletonSeparatedList(resultType))));
                     }
 
+                    public static class ValueTask
+                    {
+                        public static NameSyntax Name => QualifiedName(
+                            Tasks.Name,
+                            IdentifierName("ValueTask"));
+                    }
+
                     public static class ValueTaskT
                     {
                         public static NameSyntax Name(TypeSyntax resultType) =>

@@ -24,6 +24,13 @@ namespace Yardarm.Helpers
                             Http.Name,
                             IdentifierName("Headers"));
 
+                        public static class AuthenticationHeaderValue
+                        {
+                            public static NameSyntax Name { get; } = QualifiedName(
+                                Headers.Name,
+                                IdentifierName("AuthenticationHeaderValue"));
+                        }
+
                         public static class HttpHeaders
                         {
                             public static NameSyntax Name { get; } = QualifiedName(

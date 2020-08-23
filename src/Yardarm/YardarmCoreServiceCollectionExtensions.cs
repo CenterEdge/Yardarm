@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
+using Yardarm.Generation.Authentication;
 using Yardarm.Generation.Internal;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Operation;
@@ -31,6 +32,7 @@ namespace Yardarm
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ClientGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, SecuritySchemeGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, RequestBodyGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponseGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponseSetGenerator>()
@@ -42,6 +44,7 @@ namespace Yardarm
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
 
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
@@ -68,6 +71,7 @@ namespace Yardarm
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
             services.TryAddSingleton<IRootNamespace, RootNamespace>();
+            services.TryAddSingleton<IAuthenticationNamespace, AuthenticationNamespace>();
             services.TryAddSingleton<IResponsesNamespace, ResponsesNamespace>();
             services.TryAddSingleton<ISerializationNamespace, SerializationNamespace>();
 

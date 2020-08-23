@@ -10,11 +10,15 @@ namespace Yardarm.Names
     {
         private readonly IRootNamespace _rootNamespace;
         private readonly IResponsesNamespace _responsesNamespace;
+        private readonly IAuthenticationNamespace _authenticationNamespace;
 
-        public DefaultNamespaceProvider(IRootNamespace rootNamespace, IResponsesNamespace responsesNamespace)
+        public DefaultNamespaceProvider(IRootNamespace rootNamespace, IResponsesNamespace responsesNamespace,
+            IAuthenticationNamespace authenticationNamespace)
         {
             _rootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
             _responsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
+            _authenticationNamespace = authenticationNamespace ??
+                                       throw new ArgumentNullException(nameof(authenticationNamespace));
         }
 
         public NameSyntax GetNamespace(ILocatedOpenApiElement element) =>
@@ -26,6 +30,7 @@ namespace Yardarm.Names
                 ILocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponses> responses => GetResponsesNamespace(responses),
                 ILocatedOpenApiElement<OpenApiSchema> schema => GetSchemaNamespace(schema),
+                ILocatedOpenApiElement<OpenApiSecurityScheme> securityScheme => GetSecuritySchemeNamespace(securityScheme),
                 ILocatedOpenApiElement<OpenApiTag> tag => GetTagNamespace(tag),
                 _ => throw new InvalidOperationException($"Element type {element.Element.GetType()} doesn't have a namespace.")
             };
@@ -44,6 +49,9 @@ namespace Yardarm.Names
 
         protected virtual NameSyntax GetSchemaNamespace(ILocatedOpenApiElement<OpenApiSchema> schema) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
+
+        protected virtual NameSyntax GetSecuritySchemeNamespace(ILocatedOpenApiElement<OpenApiSecurityScheme> schema) =>
+            _authenticationNamespace.Name;
 
         protected virtual NameSyntax GetTagNamespace(ILocatedOpenApiElement<OpenApiTag> tag) =>
             SyntaxFactory.QualifiedName(_rootNamespace.Name, SyntaxFactory.IdentifierName("Api"));

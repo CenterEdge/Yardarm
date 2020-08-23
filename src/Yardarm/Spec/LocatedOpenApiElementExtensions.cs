@@ -200,5 +200,25 @@ namespace Yardarm.Spec
             parameter.GetSchema() ?? parameter.CreateChild(_defaultSchema, "schema");
 
         #endregion
+
+        #region SecurityRequirement
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSecurityRequirement>> GetSecurityRequirements(
+            this ILocatedOpenApiElement<OpenApiOperation> operation) =>
+            operation.Element.Security
+                .Select((requirement, index) => operation.CreateChild(requirement, index.ToString()));
+
+        #endregion
+
+        #region SecurityRequirement
+
+        public static IEnumerable<KeyValuePair<ILocatedOpenApiElement<OpenApiSecurityScheme>, IList<string>>>
+            GetSecuritySchemes(this ILocatedOpenApiElement<OpenApiSecurityRequirement> requirement) =>
+            requirement.Element
+                .Select((p, index) =>
+                    new KeyValuePair<ILocatedOpenApiElement<OpenApiSecurityScheme>, IList<string>>(
+                        requirement.CreateChild(p.Key, index.ToString()), p.Value));
+
+        #endregion
     }
 }

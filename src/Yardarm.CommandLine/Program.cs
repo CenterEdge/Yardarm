@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Readers;
 using Yardarm.NewtonsoftJson;
@@ -37,13 +36,13 @@ namespace Yardarm.CommandLine
                 // NuGetSymbolsOutput = nugetSymbolsStream,
                 VersionSuffix = "-beta001"
             }
-                .AddExtension(services => services.AddLogging(builder =>
+                .AddLogging(builder =>
                 {
                     builder
                         .SetMinimumLevel(LogLevel.Information)
                         .AddConsole();
-                }))
-                .AddNewtonsoftJson();
+                })
+                .AddExtension<NewtonsoftJsonExtension>();
 
             var compilationResult = await generator.EmitAsync(document, settings);
 

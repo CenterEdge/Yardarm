@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 
@@ -15,6 +17,9 @@ namespace Yardarm
         private Stream? _dllOutput;
         private Stream? _pdbOutput;
         private Stream? _xmlDocumentationOutput;
+
+        private readonly List<YardarmExtension> _extensions = new List<YardarmExtension>();
+        private readonly List<Action<ILoggingBuilder>> _loggingBuilders = new List<Action<ILoggingBuilder>>();
 
         public string AssemblyName { get; set; } = "Yardarm.Sdk";
         public string RootNamespace { get; set; } = "Yardarm.Sdk";
@@ -44,9 +49,6 @@ namespace Yardarm
 
         public Stream? NuGetSymbolsOutput { get; set; }
 
-        public List<Func<IServiceCollection, IServiceCollection>> Extensions { get; } =
-            new List<Func<IServiceCollection, IServiceCollection>>();
-
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithDeterministic(true)
@@ -69,23 +71,67 @@ namespace Yardarm
 
         public IServiceProvider BuildServiceProvider(OpenApiDocument document)
         {
-            IServiceCollection services = new ServiceCollection();
+            IServiceCollection services = new ServiceCollection()
+                .AddLogging(builder =>
+                {
+                    foreach (var configuredBuilder in _loggingBuilders)
+                    {
+                        configuredBuilder(builder);
+                    }
+                });
 
-            services = Extensions.Aggregate(services, (p, extension) => extension.Invoke(p));
+            services = _extensions.Aggregate(services, (p, extension) => extension.ConfigureServices(p));
 
             services.AddYardarm(this, document);
 
             return services.BuildServiceProvider();
         }
 
-        public YardarmGenerationSettings AddExtension(Func<IServiceCollection, IServiceCollection> extension)
+        public YardarmGenerationSettings AddExtension(Type type)
         {
-            if (extension == null)
+            if (type == null)
             {
-                throw new ArgumentNullException(nameof(extension));
+                throw new ArgumentNullException(nameof(type));
+            }
+            if (!typeof(YardarmExtension).IsAssignableFrom(type))
+            {
+                throw new ArgumentException($"Type {type.FullName} must inherit from YardarmExtension.");
             }
 
-            Extensions.Add(extension);
+            var constructor = type.GetConstructor(Type.EmptyTypes);
+            if (constructor == null)
+            {
+                throw new ArgumentException($"Type {type.FullName} must have a default constructor.");
+            }
+
+            _extensions.Add((YardarmExtension) constructor.Invoke(null));
+
+            return this;
+        }
+
+        public YardarmGenerationSettings AddExtension<T>()
+            where T : YardarmExtension =>
+            AddExtension(typeof(T));
+
+        public YardarmGenerationSettings AddExtension(Assembly assembly)
+        {
+            foreach (var type in assembly.GetExportedTypes()
+                .Where(p => p.IsClass && !p.IsAbstract && typeof(YardarmExtension).IsAssignableFrom(p)))
+            {
+                AddExtension(type);
+            }
+
+            return this;
+        }
+
+        public YardarmGenerationSettings AddLogging(Action<ILoggingBuilder> buildAction)
+        {
+            if (buildAction == null)
+            {
+                throw new ArgumentNullException(nameof(buildAction));
+            }
+
+            _loggingBuilders.Add(buildAction);
 
             return this;
         }

@@ -6,5 +6,6 @@ namespace Yardarm.Names
     public interface IAuthenticationNamespace : IKnownNamespace
     {
         NameSyntax IAuthenticator { get; }
+        NameSyntax MultiAuthenticator { get; }
     }
 }

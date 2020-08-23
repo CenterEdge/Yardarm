@@ -34,21 +34,45 @@ namespace Yardarm.Enrichment.Authentication.Internal
 
             foreach (var securityRequirement in operation.GetSecurityRequirements())
             {
-                // TODO: Support logical AND schemes
-                var securityScheme = securityRequirement.GetSecuritySchemes().First();
+                ILocatedOpenApiElement<OpenApiSecurityScheme>[] securitySchemes = securityRequirement.GetSecuritySchemes()
+                    .Select(p => p.Key)
+                    .ToArray();
 
-                var schemeTypeName = _context.TypeNameProvider.GetName(securityScheme.Key);
+                if (securitySchemes.Length == 1)
+                {
+                    TypeSyntax schemeTypeName = _context.TypeNameProvider.GetName(securitySchemes[0]);
 
-                target = target.AddMembers(MethodDeclaration(className, "WithAuthenticator")
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                    .AddParameterListParameters(
-                        Parameter(Identifier("authenticator"))
-                            .WithType(schemeTypeName))
-                    .WithBody(Block(
-                        ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName("Authenticator"),
-                            IdentifierName("authenticator"))),
-                        ReturnStatement(ThisExpression()))));
+                    target = target.AddMembers(MethodDeclaration(className, "WithAuthenticator")
+                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                        .AddParameterListParameters(
+                            Parameter(Identifier("authenticator"))
+                                .WithType(schemeTypeName))
+                        .WithBody(Block(
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName("Authenticator"),
+                                IdentifierName("authenticator"))),
+                            ReturnStatement(ThisExpression()))));
+                }
+                else if (securitySchemes.Length > 1)
+                {
+                    target = target.AddMembers(MethodDeclaration(className, "WithAuthenticator")
+                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                        .AddParameterListParameters(
+                            securitySchemes
+                                .Select((p, index) =>
+                                    Parameter(Identifier($"authenticator{index}"))
+                                        .WithType(_context.TypeNameProvider.GetName(p)))
+                                .ToArray())
+                        .WithBody(Block(
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName("Authenticator"),
+                                ObjectCreationExpression(_authenticationNamespace.MultiAuthenticator)
+                                    .AddArgumentListArguments(
+                                        securitySchemes
+                                            .Select((_, index) => Argument(IdentifierName($"authenticator{index}")))
+                                            .ToArray()))),
+                            ReturnStatement(ThisExpression()))));
+                }
             }
 
             return target;

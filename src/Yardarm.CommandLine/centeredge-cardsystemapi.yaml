@@ -376,6 +376,9 @@ components:
     bearer_auth:
       type: http
       scheme: bearer
+    basic:
+      type: http
+      scheme: basic
   schemas:
     Login:
       type: object

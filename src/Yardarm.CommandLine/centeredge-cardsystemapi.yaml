@@ -376,6 +376,7 @@ components:
     bearer_auth:
       type: http
       scheme: bearer
+      description: This is the most common form of authentication, using a token from a login request.
     basic:
       type: http
       scheme: basic

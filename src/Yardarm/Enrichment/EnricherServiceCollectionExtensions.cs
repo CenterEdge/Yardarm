@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Yardarm.Enrichment.Authentication;
 using Yardarm.Enrichment.Internal;
 using Yardarm.Enrichment.Requests;
 using Yardarm.Enrichment.Responses;
@@ -18,6 +19,7 @@ namespace Yardarm.Enrichment
                 .AddCompilationEnricher<OpenApiCompilationEnricher>()
                 .AddCompilationEnricher<DefaultTypeSerializersEnricher>()
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>()
+                .AddDefaultAuthenticationEnrichers()
                 .AddDefaultSchemaEnrichers()
                 .AddDefaultRequestEnrichers()
                 .AddDefaultResponseEnrichers()

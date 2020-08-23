@@ -16,18 +16,22 @@ namespace Yardarm.Generation.Tag
     {
         public const string HttpClientFieldName = "_httpClient";
         public const string TypeSerializerRegistryFieldName = "_typeSerializerRegistry";
+        public const string AuthenticatorPropertyName = "Authenticator";
 
         private readonly ISerializationNamespace _serializationNamespace;
+        private readonly IAuthenticationNamespace _authenticationNamespace;
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
         protected OpenApiTag Tag => Element.Element;
 
         public TagTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
-            ISerializationNamespace serializationNamespace,
+            ISerializationNamespace serializationNamespace, IAuthenticationNamespace authenticationNamespace,
             IOperationMethodGenerator operationMethodGenerator)
             : base(tagElement, context)
         {
             _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            _authenticationNamespace = authenticationNamespace ??
+                                       throw new ArgumentNullException(nameof(authenticationNamespace));
             _operationMethodGenerator = operationMethodGenerator ?? throw new ArgumentNullException(nameof(operationMethodGenerator));
         }
 
@@ -47,12 +51,14 @@ namespace Yardarm.Generation.Tag
             var declaration = InterfaceDeclaration(GetInterfaceName())
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
-                    GetOperations()
-                        .SelectMany(GenerateOperationMethodHeader,
-                            (operation, method) => new {operation, method})
-                        .Select(p => p.method
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
-                        .ToArray<MemberDeclarationSyntax>());
+                    new MemberDeclarationSyntax[] {GenerateAuthenticatorProperty()}
+                        .Concat(
+                            GetOperations()
+                                .SelectMany(GenerateOperationMethodHeader,
+                                    (operation, method) => new {operation, method})
+                                .Select(p => p.method
+                                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))))
+                        .ToArray());
 
             return declaration;
         }
@@ -67,6 +73,7 @@ namespace Yardarm.Generation.Tag
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(GenerateFields()
                     .Concat<MemberDeclarationSyntax>(GenerateConstructors(className))
+                    .Concat(new[] {GenerateAuthenticatorProperty()})
                     .Concat(
                         GetOperations()
                             .SelectMany(GenerateOperationMethodHeader,
@@ -78,6 +85,15 @@ namespace Yardarm.Generation.Tag
 
             return declaration;
         }
+
+        protected virtual PropertyDeclarationSyntax GenerateAuthenticatorProperty() =>
+            PropertyDeclaration(NullableType(_authenticationNamespace.IAuthenticator), AuthenticatorPropertyName)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddAccessorListAccessors(
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
         protected virtual IEnumerable<FieldDeclarationSyntax> GenerateFields()
         {

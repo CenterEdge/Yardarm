@@ -18,14 +18,18 @@ namespace Yardarm.Generation.Operation
     public class OperationMethodGenerator : IOperationMethodGenerator
     {
         public const string RequestParameterName = "request";
+
+        protected const string AuthenticatorVariableName = "authenticator";
         protected const string RequestMessageVariableName = "requestMessage";
 
         protected GenerationContext Context { get; }
+        protected IRequestsNamespace RequestsNamespace { get; }
         protected IResponsesNamespace ResponsesNamespace { get; }
 
-        public OperationMethodGenerator(GenerationContext context, IResponsesNamespace responsesNamespace)
+        public OperationMethodGenerator(GenerationContext context, IRequestsNamespace requestsNamespace, IResponsesNamespace responsesNamespace)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
+            RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
@@ -36,7 +40,19 @@ namespace Yardarm.Generation.Operation
         {
             yield return MethodHelpers.ThrowIfArgumentNull(RequestParameterName);
 
+            yield return GenerateAuthenticatorVariable();
+
             yield return GenerateRequestMessageVariable(operation);
+
+            yield return MethodHelpers.IfNotNull(
+                IdentifierName(AuthenticatorVariableName),
+                Block(ExpressionStatement(SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName(AuthenticatorVariableName),
+                            IdentifierName("ApplyAsync")))
+                    .AddArgumentListArguments(
+                        Argument(IdentifierName(RequestMessageVariableName)),
+                        Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName)))))));
 
             yield return LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))
                 .AddVariables(VariableDeclarator("responseMessage")
@@ -47,8 +63,26 @@ namespace Yardarm.Generation.Operation
                                 Argument(IdentifierName(RequestMessageVariableName)),
                                 Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))))))));
 
+            yield return MethodHelpers.IfNotNull(
+                IdentifierName(AuthenticatorVariableName),
+                Block(ExpressionStatement(SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName(AuthenticatorVariableName),
+                            IdentifierName("ProcessResponseAsync")))
+                    .AddArgumentListArguments(
+                        Argument(IdentifierName("responseMessage")),
+                        Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName)))))));
+
             yield return ReturnStatement(GenerateResponse(operation, IdentifierName("responseMessage")));
         }
+
+        protected virtual StatementSyntax GenerateAuthenticatorVariable() =>
+            MethodHelpers.LocalVariableDeclarationWithInitializer(AuthenticatorVariableName,
+                BinaryExpression(SyntaxKind.CoalesceExpression,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(RequestParameterName),
+                        IdentifierName("Authenticator")),
+                    IdentifierName(TagTypeGenerator.AuthenticatorPropertyName)));
 
         protected virtual StatementSyntax GenerateRequestMessageVariable(
             ILocatedOpenApiElement<OpenApiOperation> operation) =>

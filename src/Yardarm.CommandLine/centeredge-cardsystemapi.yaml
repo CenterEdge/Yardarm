@@ -143,6 +143,8 @@ paths:
       operationId: getCard
       security:
         - bearer_auth: []
+        - bearer_auth: []
+          basic: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
         - in: header

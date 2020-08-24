@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Yardarm.CommandLine": {
+      "commandName": "Project",
+      "commandLineArgs": "generate -x Yardarm.NewtonsoftJson.dll -o Test.dll --xml Test.xml --pdb Test.pdb -i centeredge-cardsystemapi.yaml -n Test"
+    }
+  }
+}

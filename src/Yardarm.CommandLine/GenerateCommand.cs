@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -33,6 +34,8 @@ namespace Yardarm.CommandLine
             ApplyVersion(settings);
 
             ApplyExtensions(settings);
+
+            ApplyStrongNaming(settings);
 
             List<Stream> streams = ApplyFileStreams(settings);
             try
@@ -167,6 +170,18 @@ namespace Yardarm.CommandLine
 
                 throw;
             }
+        }
+
+        private void ApplyStrongNaming(YardarmGenerationSettings settings)
+        {
+            if (string.IsNullOrEmpty(_options.KeyFile))
+            {
+                return;
+            }
+
+            settings.CompilationOptions = settings.CompilationOptions
+                .WithStrongNameProvider(new DesktopStrongNameProvider(ImmutableArray.Create(Directory.GetCurrentDirectory())))
+                .WithCryptoKeyFile(_options.KeyFile);
         }
     }
 }

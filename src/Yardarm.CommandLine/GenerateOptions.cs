@@ -17,6 +17,9 @@ namespace Yardarm.CommandLine
         [Option('v', "version", Default = "1.0.0", HelpText = "Generated assembly version")]
         public string Version { get; set; }
 
+        [Option("keyfile", HelpText = "Key file to create a strongly-named assembly")]
+        public string KeyFile { get; set; }
+
         #region DLL
 
         [Option('o', "output", HelpText = "Output .dll file", SetName = "dll")]

@@ -24,8 +24,6 @@ namespace Yardarm.Spec
         /// </summary>
         public ILocatedOpenApiElement? Parent { get; }
 
-        public bool IsRoot => Parent is null;
-
         protected LocatedOpenApiElement(IOpenApiElement element, string key)
             : this(element, key, null)
         {

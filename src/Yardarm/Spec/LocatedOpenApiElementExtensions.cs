@@ -18,6 +18,8 @@ namespace Yardarm.Spec
                 Type = "string"
             };
 
+        public static bool IsRoot(this ILocatedOpenApiElement element) => element.Parent is null;
+
         public static ILocatedOpenApiElement<T> CreateRoot<T>(this T rootItem, string key)
             where T : IOpenApiElement =>
             LocatedOpenApiElement.CreateRoot(rootItem, key);

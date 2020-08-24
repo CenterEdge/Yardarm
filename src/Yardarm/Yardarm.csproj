@@ -6,9 +6,11 @@
 
     <Nullable>enable</Nullable>
     <LangVersion>8</LangVersion>
+
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Description>Generate C# SDKs directly from OpenAPI 3 specifications using the Roslyn compiler.</Description>
   </PropertyGroup>
 
   <ItemGroup>

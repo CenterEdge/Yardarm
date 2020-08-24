@@ -5,9 +5,11 @@
 
     <Nullable>enable</Nullable>
     <LangVersion>8</LangVersion>
+
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Description>Extension for Yardarm to generate SDKs that use Newtonsoft.Json for JSON serialization.</Description>
   </PropertyGroup>
 
   <ItemGroup>

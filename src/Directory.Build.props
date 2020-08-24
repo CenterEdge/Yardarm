@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Company>CenterEdge Software</Company>
+    <Product>Yardarm</Product>
+    <Authors>CenterEdge;btburnett3</Authors>
+    <Copyright>Copyright © 2020 Pathfinder Software, LLC D/B/A CenterEdge Software. All Rights Reserved.</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CenterEdge/Yardarm</PackageProjectUrl>
+  </PropertyGroup>
+</Project>

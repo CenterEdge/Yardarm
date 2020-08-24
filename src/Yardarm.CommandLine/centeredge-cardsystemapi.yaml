@@ -382,6 +382,10 @@ components:
     basic:
       type: http
       scheme: basic
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-ApiKey
   schemas:
     Login:
       type: object

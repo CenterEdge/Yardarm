@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Names;
@@ -32,9 +33,9 @@ namespace Yardarm.Generation.Schema
             var parent = Element.Parent!;
             var parentName = Context.TypeNameProvider.GetName(parent);
 
-            if (Element.Key == "")
+            if (parent.Parents().OfType<ILocatedOpenApiElement<OpenApiRequestBody>>().Any())
             {
-                // This can occur for request bodies
+                // We just want to name this based on the request body, without appending SchemaModel
                 return parentName;
             }
 

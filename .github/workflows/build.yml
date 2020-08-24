@@ -25,12 +25,25 @@ jobs:
     - name: Install dependencies
       working-directory: ./src
       run: dotnet restore
+    - run: echo "::set-env name=VERSION::${GITHUB_REF/refs\/tags\/release\//}"
+      if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
+    - run: echo "::set-env name=VERSION::0.1.0-local"
+      if: ${{ !startsWith(github.ref, 'refs/tags/release/') }}
     - name: Build
       working-directory: ./src
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --configuration Release -p:Version=${{ env.VERSION }} --no-restore
     - name: Test
       working-directory: ./src
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --configuration Release --no-build --verbosity normal
+    - name: Pack
+      if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
+      working-directory: ./src
+      run: dotnet pack --configuration Release -p:Version=${{ env.VERSION }} --no-build
+    - name: Push to NuGet.org
+      if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
+      working-directory: ./src
+      run: |
+        dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
 
   docker:
 

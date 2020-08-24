@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Request
         {
             var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-            var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parents[0];
+            var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parent!;
 
             ExpressionSyntax pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(
                 pathSegment =>

@@ -35,12 +35,12 @@ namespace Yardarm.Spec
 
             // Neither are references, so compare the paths
 
-            if (!ReferenceEquals(x.Element, y.Element) || x.Key != y.Key || x.Parents.Count != y.Parents.Count)
+            if (!ReferenceEquals(x.Element, y.Element) || x.Key != y.Key || (x.Parent is null) != (y.Parent is null))
             {
                 return false;
             }
 
-            return x.Parents.Count == 0 || Equals(x.Parents[0], y.Parents[0]);
+            return x.Parent is null || Equals(x.Parent, y.Parent);
         }
 
         public int GetHashCode(ILocatedOpenApiElement<T> obj)
@@ -55,12 +55,7 @@ namespace Yardarm.Spec
 
                 hashCode.Add(obj.Element);
                 hashCode.Add(obj.Key);
-
-                // ReSharper disable once ForCanBeConvertedToForeach
-                for (int i = 0; i < obj.Parents.Count; i++)
-                {
-                    hashCode.Add(obj.Parents[i].Key);
-                }
+                hashCode.Add(obj.Parent);
 
                 return hashCode.ToHashCode();
             }

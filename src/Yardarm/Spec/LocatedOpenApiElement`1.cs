@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.OpenApi.Interfaces;
+﻿using Microsoft.OpenApi.Interfaces;
 
 namespace Yardarm.Spec
 {
@@ -13,8 +12,8 @@ namespace Yardarm.Spec
         {
         }
 
-        public LocatedOpenApiElement(T element, string key, IReadOnlyList<ILocatedOpenApiElement> parents)
-            : base(element, key, parents)
+        public LocatedOpenApiElement(T element, string key, ILocatedOpenApiElement? parent)
+            : base(element, key, parent)
         {
         }
     }

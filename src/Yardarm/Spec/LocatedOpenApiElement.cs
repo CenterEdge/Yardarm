@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
-using Yardarm.Generation;
-using Yardarm.Helpers;
 
 namespace Yardarm.Spec
 {
@@ -23,22 +20,22 @@ namespace Yardarm.Spec
         public string Key { get; }
 
         /// <summary>
-        /// List of parents, moving from closest ancestor to towards the root.
+        /// Parent of this element.
         /// </summary>
-        public IReadOnlyList<ILocatedOpenApiElement> Parents { get; }
+        public ILocatedOpenApiElement? Parent { get; }
 
-        public bool IsRoot => Parents.Count == 0;
+        public bool IsRoot => Parent is null;
 
-        public LocatedOpenApiElement(IOpenApiElement element, string key)
-            : this(element, key, Array.Empty<ILocatedOpenApiElement>())
+        protected LocatedOpenApiElement(IOpenApiElement element, string key)
+            : this(element, key, null)
         {
         }
 
-        public LocatedOpenApiElement(IOpenApiElement element, string key, IReadOnlyList<ILocatedOpenApiElement> parents)
+        protected LocatedOpenApiElement(IOpenApiElement element, string key, ILocatedOpenApiElement? parent)
         {
             Element = element ?? throw new ArgumentNullException(nameof(element));
             Key = key ?? throw new ArgumentNullException(nameof(key));
-            Parents = parents ?? throw new ArgumentNullException(nameof(parents));
+            Parent = parent;
         }
 
         public static LocatedOpenApiElement<T> CreateRoot<T>(T rootItem, string key)
@@ -59,18 +56,25 @@ namespace Yardarm.Spec
                 return true;
             }
 
-            if (!Element.Equals(other.Element) && Key != other.Key || Parents.Count != other.Parents.Count)
+            if (!Element.Equals(other.Element) && Key != other.Key)
             {
                 return false;
             }
 
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            for (int i = 0; i < Parents.Count; i++)
+            if (Parent is null)
             {
-                if (!Parents[i].Equals(other.Parents[i]))
+                if (!(other.Parent is null))
                 {
                     return false;
                 }
+            }
+            else if (other.Parent is null)
+            {
+                return false;
+            }
+            else if (!Parent.Equals(other.Parent))
+            {
+                return false;
             }
 
             return true;
@@ -102,12 +106,7 @@ namespace Yardarm.Spec
 
             hashCode.Add(Element);
             hashCode.Add(Key);
-
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (int i = 0; i < Parents.Count; i++)
-            {
-                hashCode.Add(Parents[i]);
-            }
+            hashCode.Add(Parent);
 
             return hashCode.ToHashCode();
         }

@@ -24,7 +24,7 @@ namespace Yardarm.Generation.Response
         {
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
 
-            Operation = (OpenApiOperation)element.Parents[0].Element;
+            Operation = element.Parent?.Element as OpenApiOperation ?? throw new ArgumentException("Parent must be an OpenApiOperation", nameof(element));
         }
 
         protected override TypeSyntax GetTypeName()

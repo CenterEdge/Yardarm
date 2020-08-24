@@ -4,7 +4,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
-using Yardarm.Helpers;
 
 namespace Yardarm.Spec
 {
@@ -26,7 +25,17 @@ namespace Yardarm.Spec
         public static ILocatedOpenApiElement<T> CreateChild<T>(this ILocatedOpenApiElement element,
             T child, string key)
             where T : IOpenApiElement =>
-            new LocatedOpenApiElement<T>(child, key, element.Parents.Push(element));
+            new LocatedOpenApiElement<T>(child, key, element);
+
+        public static IEnumerable<ILocatedOpenApiElement> Parents(this ILocatedOpenApiElement element)
+        {
+            var current = element;
+            while (current.Parent != null)
+            {
+                current = current.Parent;
+                yield return current;
+            }
+        }
 
         #region PathItem
 

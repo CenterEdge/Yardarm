@@ -14,7 +14,7 @@ namespace Yardarm.Enrichment.Schema.Internal
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
         {
             bool isRequired =
-                context.LocatedElement.Parents.FirstOrDefault() is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
+                context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
                 parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
             return isRequired

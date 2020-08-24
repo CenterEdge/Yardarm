@@ -65,7 +65,7 @@ namespace Yardarm.Generation.Response
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
             OpenApiOperation operation =
-                Element.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
+                Element.Parents().OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
 
             return formatter.Format($"{operation.OperationId}UnknownResponse");
         }

@@ -32,7 +32,7 @@ namespace Yardarm.Names
                 ILocatedOpenApiElement<OpenApiSchema> schemaElement => GetSchemaName(schemaElement),
                 ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement => GetSecuritySchemeName(securitySchemeElement),
                 ILocatedOpenApiElement<OpenApiTag> tagElement => GetTagName(tagElement),
-                _ => element.Parents.Count > 0 ? GetNameInternal(element.Parents[0]) : null
+                _ => element.Parent != null ? GetNameInternal(element.Parent) : null
             };
 
         protected virtual TypeSyntax GetOperationName(ILocatedOpenApiElement<OpenApiOperation> element) =>

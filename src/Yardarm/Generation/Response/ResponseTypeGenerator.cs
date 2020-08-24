@@ -155,7 +155,7 @@ namespace Yardarm.Generation.Response
             {
                 // We're in an operation
 
-                var operation = Element.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
+                var operation = Element.Parents().OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
 
                 var responseCode = Enum.TryParse<HttpStatusCode>(Element.Key, out var statusCode)
                     ? HttpResponseCodeNameProvider.GetName(statusCode)

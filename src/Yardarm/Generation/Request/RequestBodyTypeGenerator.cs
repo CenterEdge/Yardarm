@@ -60,7 +60,7 @@ namespace Yardarm.Generation.Request
             {
                 // We're in an operation
 
-                var operation = RequestBodyElement.Parents.OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
+                var operation = RequestBodyElement.Parents().OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
 
                 return SyntaxFactory.QualifiedName(ns,
                     SyntaxFactory.IdentifierName(formatter.Format(operation.OperationId + "RequestBody")));

@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' ">
+    <!-- We must do this in targets, not props, so that we have the values set in the csproj file for the condition -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Yardarm.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+</Project>

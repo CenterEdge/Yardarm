@@ -87,8 +87,6 @@ namespace Yardarm.Generation.Authentication
                 MethodHelpers.ThrowIfArgumentNull(MessageParameterName));
 
         protected virtual string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class)
-            .Format(string.IsNullOrWhiteSpace(SecurityScheme.Name)
-                ? Element.Key
-                : SecurityScheme.Name);
+            .Format(Element.Element.Reference.Id);
     }
 }

@@ -7,7 +7,12 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 ## Features
 
 - Works with valid OpenAPI 3 specs, in JSON or YAML format
-- Generates an SDK within the project
+- Many generation options
+  - Command Line Application
+  - Docker Image
+  - In-code via library
+  - .NET Core Global Tool
+  - Support C# 9 Source Generators???
 - Generates a SDK using modern C# patterns and practices as follows:
   - Asynchronous methods with cancellation tokens
   - Nullable reference types
@@ -34,16 +39,31 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 
 ## Using Yardarm
 
-In order to generate an SDK from an OpenAPI specification, open up the project and change the input OpenAPI spec and then run the project. The SDK will be generated.
+### .NET Core Global Tool
 
-## Project Goals
+```sh
+dotnet tool install --global Yardarm.CommandLine --version 0.1.0-alpha003
 
-- More generation options
-  - Command Line Application
-  - Docker Image
-  - In-code via library
-  - .NET Core Global Tool
-  - Support C# 9 Source Generators?
+yardarm help generate
+```
+
+### Docker
+
+```sh
+docker run -it centeredge/yardarm:release-0.1.0-alpha003
+
+yardarm help generate
+```
+
+### Example Command
+
+```sh
+# Generate a DLL and related files, with Newtonsoft.Json support
+yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -o MySpec.dll --xml MySpec.xml --pdb MySpec.pdb -x Yardarm.NewtonsoftJson.dll
+
+# Generate a NuGet package and symbols package, with Newtonsoft.Json support
+yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -nupkg MySpec.nupkg --snupkg MySpec.snupkg -x Yardarm.NewtonsoftJson.dll
+```
 
 ## Contributing
 
@@ -57,4 +77,4 @@ See also the list of [contributors](https://github.com/CenterEdge/Yardarm/graphs
 
 ## License
 
-This project is licensed under the Apache License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache 2.0 License - see the [LICENSE.md](LICENSE.md) file for details

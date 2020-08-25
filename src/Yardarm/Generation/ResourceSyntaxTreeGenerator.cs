@@ -36,10 +36,18 @@ namespace Yardarm.Generation
             string rawText = reader.ReadToEnd();
             rawText = rawText.Replace("RootNamespace", RootNamespace.Name.ToString());
 
-            return CSharpSyntaxTree.ParseText(SourceText.From(rawText),
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(rawText),
                 CSharpParseOptions.Default
                     .WithLanguageVersion(LanguageVersion.CSharp8)
                     .WithPreprocessorSymbols("NETSTANDARD2_0"));
+
+            // Annotate the compilation root so we know which resource file it came from
+            syntaxTree = syntaxTree.WithRootAndOptions(
+                syntaxTree.GetCompilationUnitRoot()
+                    .AddResourceNameAnnotation(resourceName),
+                syntaxTree.Options);
+
+            return syntaxTree;
         }
     }
 }

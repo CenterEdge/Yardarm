@@ -8,6 +8,7 @@ namespace Yardarm.Enrichment.Authentication
         public static IServiceCollection AddDefaultAuthenticationEnrichers(this IServiceCollection services) =>
             services
                 .AddOpenApiSyntaxNodeEnricher<SecuritySchemeDocumentationEnricher>()
-                .AddOpenApiSyntaxNodeEnricher<SecuritySchemeRequestEnricher>();
+                .AddOpenApiSyntaxNodeEnricher<SecuritySchemeRequestEnricher>()
+                .AddResourceFileEnricher<AuthenticatorsSchemeEnricher>();
     }
 }

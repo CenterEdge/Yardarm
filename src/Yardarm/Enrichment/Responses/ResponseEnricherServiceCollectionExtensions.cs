@@ -11,6 +11,7 @@ namespace Yardarm.Enrichment.Responses
                 .AddOpenApiSyntaxNodeEnricher<BaseTypeEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<HeaderDocumentationEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<HeaderParsingEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<ResponseTypeCastExtensionEnricher>()
                 .AddResponseEnrichersCore();
 
         public static IServiceCollection AddResponseEnrichersCore(this IServiceCollection services)

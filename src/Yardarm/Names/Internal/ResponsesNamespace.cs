@@ -10,6 +10,7 @@ namespace Yardarm.Names.Internal
         public NameSyntax Name { get; }
         public NameSyntax IOperationResponse { get; }
         public NameSyntax OperationResponse { get; }
+        public NameSyntax StatusCodeMismatchException { get; }
         public NameSyntax UnknownResponse { get; }
 
         public ResponsesNamespace(IRootNamespace rootNamespace)
@@ -28,6 +29,10 @@ namespace Yardarm.Names.Internal
             OperationResponse = QualifiedName(
                 Name,
                 IdentifierName("OperationResponse"));
+
+            StatusCodeMismatchException = QualifiedName(
+                Name,
+                IdentifierName("StatusCodeMismatchException"));
 
             UnknownResponse = QualifiedName(
                 Name,

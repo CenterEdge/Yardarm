@@ -30,16 +30,21 @@ namespace Yardarm.Generation
                 return null;
             }
 
+            var compilationUnit = GenerateCompilationUnit(members);
+
+            return CSharpSyntaxTree.Create(compilationUnit);
+        }
+
+        public virtual CompilationUnitSyntax GenerateCompilationUnit(MemberDeclarationSyntax[] members)
+        {
             var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
 
             NameSyntax ns = classNameAndNamespace.Left;
 
-            var compilationUnit = SyntaxFactory.CompilationUnit()
+            return SyntaxFactory.CompilationUnit()
                 .AddMembers(
                     SyntaxFactory.NamespaceDeclaration(ns)
                         .AddMembers(members));
-
-            return CSharpSyntaxTree.Create(compilationUnit);
         }
 
         public abstract IEnumerable<MemberDeclarationSyntax> Generate();

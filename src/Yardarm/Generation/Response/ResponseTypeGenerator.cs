@@ -20,7 +20,6 @@ namespace Yardarm.Generation.Response
         protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
         protected ISerializationNamespace SerializationNamespace { get; }
         protected IGetBodyMethodGenerator GetBodyMethodGenerator { get; }
-        protected IParseHeadersMethodGenerator ParseHeadersMethodGenerator { get; }
 
         protected OpenApiResponse Response => Element.Element;
 
@@ -29,8 +28,7 @@ namespace Yardarm.Generation.Response
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             ISerializationNamespace serializationNamespace,
             IResponsesNamespace responsesNamespace,
-            IGetBodyMethodGenerator getBodyMethodGenerator,
-            IParseHeadersMethodGenerator parseHeadersMethodGenerator)
+            IGetBodyMethodGenerator getBodyMethodGenerator)
             : base(responseElement, context)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
@@ -39,8 +37,6 @@ namespace Yardarm.Generation.Response
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
             GetBodyMethodGenerator = getBodyMethodGenerator ?? throw new ArgumentNullException(nameof(getBodyMethodGenerator));
-            ParseHeadersMethodGenerator = parseHeadersMethodGenerator ??
-                                          throw new ArgumentNullException(nameof(parseHeadersMethodGenerator));
         }
 
         protected override TypeSyntax GetTypeName()
@@ -52,7 +48,7 @@ namespace Yardarm.Generation.Response
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var className = GetClassName();
+            string className = GetClassName();
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
@@ -62,8 +58,7 @@ namespace Yardarm.Generation.Response
                     new MemberDeclarationSyntax?[]
                         {
                             GenerateConstructor(className),
-                            GetBodyMethodGenerator.Generate(Element),
-                            ParseHeadersMethodGenerator.Generate(Element)
+                            GetBodyMethodGenerator.Generate(Element)
                         }
                         .Concat(GenerateHeaderProperties())
                         .Where(p => p != null)
@@ -90,10 +85,7 @@ namespace Yardarm.Generation.Response
                     .AddArgumentListArguments(
                         Argument(IdentifierName("message")),
                         Argument(IdentifierName("typeSerializerRegistry"))))
-                .WithBody(Block(
-                    ExpressionStatement(
-                        Generation.Response.ParseHeadersMethodGenerator.InvokeParseHeaders(ThisExpression()))
-                ));
+                .WithBody(Block());
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateHeaderProperties()
         {

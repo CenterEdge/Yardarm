@@ -20,6 +20,16 @@ namespace RootNamespace.Responses
         {
             Message = message ?? throw new ArgumentNullException(nameof(message));
             TypeSerializerRegistry = typeSerializerRegistry ?? throw new ArgumentNullException(nameof(typeSerializerRegistry));
+
+            // ReSharper disable once VirtualMemberCallInConstructor
+            ParseHeaders();
+        }
+
+        /// <summary>
+        /// Called during construction to parse headers from the message into properties.
+        /// </summary>
+        protected virtual void ParseHeaders()
+        {
         }
 
         public virtual void Dispose() => Message.Dispose();

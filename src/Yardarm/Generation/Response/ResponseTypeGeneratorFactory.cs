@@ -14,12 +14,11 @@ namespace Yardarm.Generation.Response
         private readonly IResponsesNamespace _responsesNamespace;
         private readonly IGetBodyMethodGenerator _parseBodyMethodGenerator;
         private readonly ISerializationNamespace _serializationNamespace;
-        private readonly IParseHeadersMethodGenerator _parseHeadersMethodGenerator;
 
         public ResponseTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
             IResponsesNamespace responsesNamespace, IGetBodyMethodGenerator parseBodyMethodGenerator,
-            ISerializationNamespace serializationNamespace, IParseHeadersMethodGenerator parseHeadersMethodGenerator)
+            ISerializationNamespace serializationNamespace)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
@@ -31,12 +30,10 @@ namespace Yardarm.Generation.Response
                                         throw new ArgumentNullException(nameof(parseBodyMethodGenerator));
             _serializationNamespace = serializationNamespace ??
                                       throw new ArgumentNullException(nameof(serializationNamespace));
-            _parseHeadersMethodGenerator = parseHeadersMethodGenerator ??
-                                           throw new ArgumentNullException(nameof(parseHeadersMethodGenerator));
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponse> element) =>
             new ResponseTypeGenerator(element, _context, _mediaTypeSelector, _httpResponseCodeNameProvider,
-                _serializationNamespace, _responsesNamespace, _parseBodyMethodGenerator, _parseHeadersMethodGenerator);
+                _serializationNamespace, _responsesNamespace, _parseBodyMethodGenerator);
     }
 }

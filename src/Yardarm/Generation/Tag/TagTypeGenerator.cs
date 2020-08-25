@@ -16,7 +16,7 @@ namespace Yardarm.Generation.Tag
     {
         public const string HttpClientFieldName = "_httpClient";
         public const string TypeSerializerRegistryFieldName = "_typeSerializerRegistry";
-        public const string AuthenticatorPropertyName = "Authenticator";
+        public const string AuthenticatorsFieldName = "_authenticators";
 
         private readonly ISerializationNamespace _serializationNamespace;
         private readonly IAuthenticationNamespace _authenticationNamespace;
@@ -51,14 +51,12 @@ namespace Yardarm.Generation.Tag
             var declaration = InterfaceDeclaration(GetInterfaceName())
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(
-                    new MemberDeclarationSyntax[] {GenerateAuthenticatorProperty()}
-                        .Concat(
-                            GetOperations()
-                                .SelectMany(GenerateOperationMethodHeader,
-                                    (operation, method) => new {operation, method})
-                                .Select(p => p.method
-                                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))))
-                        .ToArray());
+                    GetOperations()
+                        .SelectMany(GenerateOperationMethodHeader,
+                            (operation, method) => new {operation, method})
+                        .Select(p => p.method
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
+                        .ToArray<MemberDeclarationSyntax>());
 
             return declaration;
         }
@@ -73,7 +71,6 @@ namespace Yardarm.Generation.Tag
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(GenerateFields()
                     .Concat<MemberDeclarationSyntax>(GenerateConstructors(className))
-                    .Concat(new[] {GenerateAuthenticatorProperty()})
                     .Concat(
                         GetOperations()
                             .SelectMany(GenerateOperationMethodHeader,
@@ -85,15 +82,6 @@ namespace Yardarm.Generation.Tag
 
             return declaration;
         }
-
-        protected virtual PropertyDeclarationSyntax GenerateAuthenticatorProperty() =>
-            PropertyDeclaration(NullableType(_authenticationNamespace.IAuthenticator), AuthenticatorPropertyName)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
         protected virtual IEnumerable<FieldDeclarationSyntax> GenerateFields()
         {
@@ -110,6 +98,13 @@ namespace Yardarm.Generation.Tag
                 .AddModifiers(
                     Token(SyntaxKind.PrivateKeyword),
                     Token(SyntaxKind.ReadOnlyKeyword));
+
+            yield return FieldDeclaration(VariableDeclaration(_authenticationNamespace.Authenticators)
+                    .AddVariables(
+                        VariableDeclarator(AuthenticatorsFieldName)))
+                .AddModifiers(
+                    Token(SyntaxKind.PrivateKeyword),
+                    Token(SyntaxKind.ReadOnlyKeyword));
         }
 
         protected virtual IEnumerable<ConstructorDeclarationSyntax> GenerateConstructors(string className)
@@ -120,14 +115,19 @@ namespace Yardarm.Generation.Tag
                     Parameter(Identifier("httpClient"))
                         .WithType(WellKnownTypes.System.Net.Http.HttpClient.Name),
                     Parameter(Identifier("typeSerializerRegistry"))
-                        .WithType(_serializationNamespace.ITypeSerializerRegistry))
+                        .WithType(_serializationNamespace.ITypeSerializerRegistry),
+                    Parameter(Identifier("authenticators"))
+                        .WithType(_authenticationNamespace.Authenticators))
                 .WithBody(Block(
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(HttpClientFieldName),
                         MethodHelpers.ArgumentOrThrowIfNull("httpClient"))),
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(TypeSerializerRegistryFieldName),
-                        MethodHelpers.ArgumentOrThrowIfNull("typeSerializerRegistry")))));
+                        MethodHelpers.ArgumentOrThrowIfNull("typeSerializerRegistry"))),
+                    ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName(AuthenticatorsFieldName),
+                        MethodHelpers.ArgumentOrThrowIfNull("authenticators")))));
         }
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(

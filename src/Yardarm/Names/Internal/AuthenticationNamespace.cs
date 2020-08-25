@@ -9,9 +9,13 @@ namespace Yardarm.Names.Internal
     {
         public NameSyntax Name { get; }
 
+        public NameSyntax Authenticators { get; }
+
         public NameSyntax IAuthenticator { get; }
 
         public NameSyntax MultiAuthenticator { get; }
+
+        public NameSyntax SecuritySchemeSetAttribute { get; }
 
         public AuthenticationNamespace(IRootNamespace rootNamespace)
         {
@@ -22,6 +26,10 @@ namespace Yardarm.Names.Internal
 
             Name = QualifiedName(rootNamespace.Name, IdentifierName("Authentication"));
 
+            Authenticators = QualifiedName(
+                Name,
+                IdentifierName("Authenticators"));
+
             IAuthenticator = QualifiedName(
                 Name,
                 IdentifierName("IAuthenticator"));
@@ -29,6 +37,10 @@ namespace Yardarm.Names.Internal
             MultiAuthenticator = QualifiedName(
                 Name,
                 IdentifierName("MultiAuthenticator"));
+
+            SecuritySchemeSetAttribute = QualifiedName(
+                Name,
+                IdentifierName("SecuritySchemeSetAttribute"));
         }
     }
 }

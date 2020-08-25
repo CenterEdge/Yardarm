@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -32,11 +33,19 @@ namespace Yardarm.Enrichment.Authentication.Internal
         {
             var className = IdentifierName(target.Identifier);
 
+            var attributes = new List<AttributeSyntax>();
+
             foreach (var securityRequirement in operation.GetSecurityRequirements())
             {
                 ILocatedOpenApiElement<OpenApiSecurityScheme>[] securitySchemes = securityRequirement.GetSecuritySchemes()
                     .Select(p => p.Key)
                     .ToArray();
+
+                attributes.Add(Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
+                    .AddArgumentListArguments(
+                        securitySchemes.Select(securityScheme =>
+                                AttributeArgument(TypeOfExpression(_context.TypeNameProvider.GetName(securityScheme))))
+                            .ToArray()));
 
                 if (securitySchemes.Length == 1)
                 {
@@ -73,6 +82,11 @@ namespace Yardarm.Enrichment.Authentication.Internal
                                             .ToArray()))),
                             ReturnStatement(ThisExpression()))));
                 }
+            }
+
+            if (attributes.Count > 0)
+            {
+                target = target.AddAttributeLists(AttributeList(null, SeparatedList(attributes)));
             }
 
             return target;

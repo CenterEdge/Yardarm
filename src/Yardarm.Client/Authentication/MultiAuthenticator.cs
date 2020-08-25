@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -12,7 +13,7 @@ namespace RootNamespace.Authentication
     /// </summary>
     public class MultiAuthenticator : IAuthenticator
     {
-        private readonly IAuthenticator[] _authenticators;
+        public ReadOnlyCollection<IAuthenticator> Authenticators { get; }
 
         public MultiAuthenticator(params IAuthenticator[] authenticators)
             : this((IEnumerable<IAuthenticator>)authenticators)
@@ -26,13 +27,13 @@ namespace RootNamespace.Authentication
                 throw new ArgumentNullException(nameof(authenticators));
             }
 
-            _authenticators = authenticators.ToArray();
+            Authenticators = new ReadOnlyCollection<IAuthenticator>(authenticators.ToArray());
         }
 
         /// <inheritdoc />
         public async ValueTask ApplyAsync(HttpRequestMessage message, CancellationToken cancellationToken = default)
         {
-            foreach (var authenticator in _authenticators)
+            foreach (var authenticator in Authenticators)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -44,7 +45,7 @@ namespace RootNamespace.Authentication
         public async ValueTask ProcessResponseAsync(HttpResponseMessage message,
             CancellationToken cancellationToken = default)
         {
-            foreach (var authenticator in _authenticators)
+            foreach (var authenticator in Authenticators)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

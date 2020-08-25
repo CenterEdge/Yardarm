@@ -78,11 +78,11 @@ namespace Yardarm.Generation.Operation
 
         protected virtual StatementSyntax GenerateAuthenticatorVariable() =>
             MethodHelpers.LocalVariableDeclarationWithInitializer(AuthenticatorVariableName,
-                BinaryExpression(SyntaxKind.CoalesceExpression,
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(RequestParameterName),
-                        IdentifierName("Authenticator")),
-                    IdentifierName(TagTypeGenerator.AuthenticatorPropertyName)));
+                InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(TagTypeGenerator.AuthenticatorsFieldName),
+                        IdentifierName("SelectAuthenticator")))
+                    .AddArgumentListArguments(
+                        Argument(IdentifierName(RequestParameterName))));
 
         protected virtual StatementSyntax GenerateRequestMessageVariable(
             ILocatedOpenApiElement<OpenApiOperation> operation) =>

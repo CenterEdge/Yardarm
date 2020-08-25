@@ -1,6 +1,9 @@
-![Build](https://github.com/CenterEdge/Yardarm/workflows/Build/badge.svg?branch=main&event=push)
-
 # Yardarm
+
+![Build](https://github.com/CenterEdge/Yardarm/workflows/Build/badge.svg?branch=main&event=push)
+[![NuGet](https://img.shields.io/nuget/dt/Yardarm?label=NuGet&logo=NuGet)](https://www.nuget.org/packages/Yardarm)
+[![Docker](https://img.shields.io/docker/pulls/centeredge/yardarm?label=Docker&logo=docker)](https://hub.docker.com/repository/docker/centeredge/yardarm)
+[![Join the chat at https://gitter.im/CenterEdgeYardarm/community](https://badges.gitter.im/CenterEdgeYardarm/community.svg)](https://gitter.im/CenterEdgeYardarm/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that will generate an SDK for a valid OpenAPI specification.
 

@@ -33,9 +33,12 @@ namespace Yardarm.Generation.Schema
             var parent = Element.Parent!;
             var parentName = Context.TypeNameProvider.GetName(parent);
 
-            if (parent.Parents().OfType<ILocatedOpenApiElement<OpenApiRequestBody>>().Any())
+            if (Schema.Reference is null && !(parent is ILocatedOpenApiElement<OpenApiSchema>) &&
+                parent.Parents().OfType<ILocatedOpenApiElement<OpenApiRequestBody>>().Any())
             {
-                // We just want to name this based on the request body, without appending SchemaModel
+                // We just want to name this based on the request body, without appending SchemaModel, if the immediate
+                // parent is NOT a schema but we're within a request body. If the immediate parent is a schema, we're nested
+                // further and still need to apply naming rules from the parent's key
                 return parentName;
             }
 

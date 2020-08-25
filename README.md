@@ -2,6 +2,8 @@
 
 # Yardarm
 
+[![Join the chat at https://gitter.im/CenterEdgeYardarm/community](https://badges.gitter.im/CenterEdgeYardarm/community.svg)](https://gitter.im/CenterEdgeYardarm/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that will generate an SDK for a valid OpenAPI specification.
 
 ## Features

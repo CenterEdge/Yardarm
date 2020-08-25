@@ -34,8 +34,7 @@ namespace Yardarm.Generation.Response
                 .Concat(_document.Paths.ToLocatedElements()
                     .GetOperations()
                     .GetResponseSets()
-                    .GetResponses()
-                    .Where(p => p.Element.Reference == null));
+                    .GetResponses());
 
         protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponse> response) =>
             _responseGeneratorRegistry.Get(response).GenerateSyntaxTree();

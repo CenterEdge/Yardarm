@@ -39,6 +39,11 @@ namespace Yardarm.Spec
             }
         }
 
+        public static ILocatedOpenApiElement<T> ResolveComponentReference<T>(this OpenApiDocument document,
+            OpenApiReference reference)
+            where T : IOpenApiElement =>
+            ((T)document.ResolveReference(reference)).CreateRoot(reference.Id);
+
         #region PathItem
 
         public static IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> ToLocatedElements(this OpenApiPaths paths) =>

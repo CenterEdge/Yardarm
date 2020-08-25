@@ -1,12 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi.Models;
 
 namespace Yardarm.Spec
 {
     internal class LocatedElementEqualityComparer<T> : IEqualityComparer<ILocatedOpenApiElement<T>>
         where T : IOpenApiElement
     {
+        /// <summary>
+        /// If true, indicates that two elements with the same reference are considered equal.
+        /// </summary>
+        public bool IsReferenceEqual { get; }
+
+        public LocatedElementEqualityComparer() : this(GetIsReferenceEqualDefault())
+        {
+        }
+
+        public LocatedElementEqualityComparer(bool isReferenceEqual)
+        {
+            IsReferenceEqual = isReferenceEqual;
+        }
+
         public bool Equals(ILocatedOpenApiElement<T>? x, ILocatedOpenApiElement<T>? y)
         {
             if (x == null)
@@ -19,7 +34,9 @@ namespace Yardarm.Spec
                 return false;
             }
 
-            if (x.Element is IOpenApiReferenceable referenceableX && y.Element is IOpenApiReferenceable referenceableY)
+            if (IsReferenceEqual &&
+                x.Element is IOpenApiReferenceable referenceableX &&
+                y.Element is IOpenApiReferenceable referenceableY)
             {
                 if (referenceableX.Reference != null)
                 {
@@ -60,5 +77,10 @@ namespace Yardarm.Spec
                 return hashCode.ToHashCode();
             }
         }
+
+        // For OpenApiResponse, treat the element in the components section as unequal to an element
+        // referencing it in an operation, allowing us to define a separate class for each case.
+        private static bool GetIsReferenceEqualDefault() =>
+            typeof(T) != typeof(OpenApiResponse);
     }
 }

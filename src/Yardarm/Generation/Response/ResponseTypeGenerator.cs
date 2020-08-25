@@ -50,19 +50,32 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
+            bool isPrimaryImplementation = Element.IsRoot() || Response.Reference == null;
+
+            // For non-primary implementations (referencing a response in the components section),
+            // inherit from the primary implementation
+            TypeSyntax baseType = isPrimaryImplementation
+                ? ResponsesNamespace.OperationResponse
+                : Context.TypeNameProvider.GetName(
+                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!));
+
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
-                .AddBaseListTypes(SimpleBaseType(ResponsesNamespace.OperationResponse))
+                .AddBaseListTypes(SimpleBaseType(baseType))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddMembers(
+                .AddMembers(GenerateConstructor(className));
+
+            if (isPrimaryImplementation)
+            {
+                declaration = declaration.AddMembers(
                     new MemberDeclarationSyntax?[]
                         {
-                            GenerateConstructor(className),
-                            GetBodyMethodGenerator.Generate(Element)
+                            isPrimaryImplementation ? GetBodyMethodGenerator.Generate(Element) : null
                         }
                         .Concat(GenerateHeaderProperties())
                         .Where(p => p != null)
                         .ToArray()!);
+            }
 
             (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
             if (schemaGenerator != null && !schemaIsReference)
@@ -137,7 +150,7 @@ namespace Yardarm.Generation.Response
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
-            if (Response.Reference != null)
+            if (Element.IsRoot())
             {
                 // We're in the components section
 
@@ -147,9 +160,12 @@ namespace Yardarm.Generation.Response
             {
                 // We're in an operation
 
-                var operation = Element.Parents().OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
+                OpenApiOperation operation = Element.Parents()
+                    .OfType<LocatedOpenApiElement<OpenApiOperation>>()
+                    .First()
+                    .Element;
 
-                var responseCode = Enum.TryParse<HttpStatusCode>(Element.Key, out var statusCode)
+                string responseCode = Enum.TryParse<HttpStatusCode>(Element.Key, out var statusCode)
                     ? HttpResponseCodeNameProvider.GetName(statusCode)
                     : Element.Key;
 

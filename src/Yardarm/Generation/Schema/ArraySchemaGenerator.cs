@@ -28,17 +28,27 @@ namespace Yardarm.Generation.Schema
 
         protected TypeSyntax GetTypeName()
         {
-            // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since
-            // we're not making a custom class for the list.
-            var itemElement = SchemaElement.CreateChild(Schema.Items, SchemaElement.Key);
-
-            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(itemElement).TypeName;
+            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(GetItemSchema()).TypeName;
 
             return WellKnownTypes.System.Collections.Generic.ListT.Name(itemTypeName);
         }
 
         public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate() => Enumerable.Empty<MemberDeclarationSyntax>();
+        public IEnumerable<MemberDeclarationSyntax> Generate()
+        {
+            ILocatedOpenApiElement<OpenApiSchema> itemSchema = GetItemSchema();
+
+            return itemSchema.Element.Reference is null
+                ? Context.SchemaGeneratorRegistry.Get(itemSchema).Generate()
+                : Enumerable.Empty<MemberDeclarationSyntax>();
+        }
+
+        private ILocatedOpenApiElement<OpenApiSchema> GetItemSchema() =>
+            // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since
+            // we're not making a custom class for the list.
+            SchemaElement.Parent != null
+                ? SchemaElement.Parent.CreateChild(Schema.Items, SchemaElement.Key + "-Item")
+                : Schema.Items.CreateRoot(SchemaElement.Key + "-Item");
     }
 }

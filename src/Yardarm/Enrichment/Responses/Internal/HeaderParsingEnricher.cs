@@ -64,7 +64,7 @@ namespace Yardarm.Enrichment.Responses.Internal
             {
                 ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 
-                TypeSyntax typeName = _context.TypeNameProvider.GetName(schemaElement);
+                TypeSyntax typeName = _context.TypeInfoProvider.Get(schemaElement).Name;
 
                 InvocationExpressionSyntax deserializeExpression =
                     InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,

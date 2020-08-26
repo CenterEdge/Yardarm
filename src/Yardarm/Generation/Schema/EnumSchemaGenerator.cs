@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Schema
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var fullName = (QualifiedNameSyntax) GetTypeName();
+            var fullName = (QualifiedNameSyntax) TypeInfo.Name;
 
             string enumName = fullName.Right.Identifier.Text;
 

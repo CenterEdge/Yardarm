@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,16 +26,18 @@ namespace Yardarm.Generation.Response
             Operation = element.Parent?.Element as OpenApiOperation ?? throw new ArgumentException("Parent must be an OpenApiOperation", nameof(element));
         }
 
-        protected override TypeSyntax GetTypeName()
+        protected override YardarmTypeInfo GetTypeInfo()
         {
             var ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            return QualifiedName(ns, IdentifierName(GetInterfaceName()));
+            return new YardarmTypeInfo(
+                QualifiedName(ns, IdentifierName(GetInterfaceName())),
+                NameKind.Interface);
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            TypeSyntax interfaceNameAndNamespace = GetTypeName();
+            TypeSyntax interfaceNameAndNamespace = TypeInfo.Name;
 
             var baseTypeFeature = Context.GenerationServices.GetRequiredService<IResponseBaseTypeRegistry>();
 

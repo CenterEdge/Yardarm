@@ -43,7 +43,7 @@ namespace Yardarm.Generation.Response
 
             ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schema);
 
-            TypeSyntax returnType = schemaGenerator.TypeName;
+            TypeSyntax returnType = schemaGenerator.TypeInfo.Name;
 
             return MethodDeclaration(
                     WellKnownTypes.System.Threading.Tasks.ValueTaskT.Name(returnType),

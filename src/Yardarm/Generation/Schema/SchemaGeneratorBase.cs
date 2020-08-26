@@ -18,7 +18,7 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        protected override TypeSyntax GetTypeName()
+        protected override YardarmTypeInfo GetTypeInfo()
         {
             var formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
 
@@ -26,14 +26,16 @@ namespace Yardarm.Generation.Schema
             {
                 var ns = Context.NamespaceProvider.GetNamespace(Element);
 
-                return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(Schema.Reference.Id)));
+                return new YardarmTypeInfo(
+                    SyntaxFactory.QualifiedName(ns,
+                        SyntaxFactory.IdentifierName(formatter.Format(Schema.Reference.Id))),
+                    NameKind);
             }
 
             if (Element.Parent != null)
             {
                 var parent = Element.Parent;
-                var parentName = Context.TypeNameProvider.GetName(parent);
+                var parentTypeInfo = Context.TypeInfoProvider.Get(parent);
 
                 if (Schema.Reference is null && !(parent is ILocatedOpenApiElement<OpenApiSchema>) &&
                     parent.Parents().OfType<ILocatedOpenApiElement<OpenApiRequestBody>>().Any())
@@ -41,11 +43,12 @@ namespace Yardarm.Generation.Schema
                     // We just want to name this based on the request body, without appending SchemaModel, if the immediate
                     // parent is NOT a schema but we're within a request body. If the immediate parent is a schema, we're nested
                     // further and still need to apply naming rules from the parent's key
-                    return parentName;
+                    return parentTypeInfo;
                 }
 
-                return SyntaxFactory.QualifiedName((QualifiedNameSyntax)parentName,
-                    SyntaxFactory.IdentifierName(formatter.Format(Element.Key + "Model")));
+                return new YardarmTypeInfo(SyntaxFactory.QualifiedName((QualifiedNameSyntax)parentTypeInfo.Name,
+                    SyntaxFactory.IdentifierName(formatter.Format(Element.Key + "Model"))),
+                    NameKind);
             }
             else
             {
@@ -54,8 +57,9 @@ namespace Yardarm.Generation.Schema
 
                 var ns = Context.NamespaceProvider.GetNamespace(Element);
 
-                return SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(Element.Key)));
+                return new YardarmTypeInfo(SyntaxFactory.QualifiedName(ns,
+                    SyntaxFactory.IdentifierName(formatter.Format(Element.Key))),
+                    NameKind);
             }
         }
     }

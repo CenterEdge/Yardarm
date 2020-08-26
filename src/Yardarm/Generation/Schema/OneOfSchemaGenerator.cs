@@ -22,10 +22,10 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        protected override TypeSyntax GetTypeName() =>
+        protected override YardarmTypeInfo GetTypeInfo() =>
             !HasDiscriminator
-                ? SyntaxFactory.IdentifierName("dynamic")
-                : base.GetTypeName();
+                ? new YardarmTypeInfo(SyntaxFactory.IdentifierName("dynamic"), isGenerated: false)
+                : base.GetTypeInfo();
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Schema
                 yield break;
             }
 
-            var interfaceNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
+            var interfaceNameAndNamespace = (QualifiedNameSyntax)TypeInfo.Name;
 
             // Register the referenced schema to implement this interface
             var baseTypeRegistry = Context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();

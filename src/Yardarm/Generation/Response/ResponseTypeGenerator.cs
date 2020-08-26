@@ -39,11 +39,11 @@ namespace Yardarm.Generation.Response
             GetBodyMethodGenerator = getBodyMethodGenerator ?? throw new ArgumentNullException(nameof(getBodyMethodGenerator));
         }
 
-        protected override TypeSyntax GetTypeName()
+        protected override YardarmTypeInfo GetTypeInfo()
         {
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            return QualifiedName(ns, IdentifierName(GetClassName()));
+            return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(GetClassName())));
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
@@ -56,8 +56,8 @@ namespace Yardarm.Generation.Response
             // inherit from the primary implementation
             TypeSyntax baseType = isPrimaryImplementation
                 ? ResponsesNamespace.OperationResponse
-                : Context.TypeNameProvider.GetName(
-                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!));
+                : Context.TypeInfoProvider.Get(
+                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!)).Name;
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
@@ -110,7 +110,7 @@ namespace Yardarm.Generation.Response
 
                 ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
 
-                yield return PropertyDeclaration(schemaGenerator.TypeName, nameFormatter.Format(header.Key))
+                yield return PropertyDeclaration(schemaGenerator.TypeInfo.Name, nameFormatter.Format(header.Key))
                     .AddElementAnnotation(header, Context.ElementRegistry)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .AddAccessorListAccessors(

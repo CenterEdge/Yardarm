@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
 {
@@ -10,8 +11,10 @@ namespace Yardarm.Generation.Schema
     {
         public static BooleanSchemaGenerator Instance { get; } = new BooleanSchemaGenerator();
 
-        public TypeSyntax TypeName =>
-            SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.BoolKeyword));
+        public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
+            SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.BoolKeyword)),
+            NameKind.Struct,
+            isGenerated: false);
 
         public SyntaxTree? GenerateSyntaxTree() => null;
 

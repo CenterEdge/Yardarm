@@ -5,7 +5,7 @@ using Yardarm.Names;
 
 namespace Yardarm.Generation
 {
-    public interface ITypeGenerator : ITypeNameProvider
+    public interface ITypeGenerator : IYardarmTypeInfoProvider
     {
         SyntaxTree? GenerateSyntaxTree();
 

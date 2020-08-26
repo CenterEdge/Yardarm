@@ -35,10 +35,12 @@ namespace Yardarm.Generation.Tag
             _operationMethodGenerator = operationMethodGenerator ?? throw new ArgumentNullException(nameof(operationMethodGenerator));
         }
 
-        protected override TypeSyntax GetTypeName() =>
-            SyntaxFactory.QualifiedName(
+        protected override YardarmTypeInfo GetTypeInfo() =>
+            new YardarmTypeInfo(
+            QualifiedName(
                 Context.NamespaceProvider.GetNamespace(Element),
-                SyntaxFactory.IdentifierName(GetInterfaceName()));
+                IdentifierName(GetInterfaceName())),
+                    NameKind.Interface);
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
@@ -67,7 +69,7 @@ namespace Yardarm.Generation.Tag
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
-                .AddBaseListTypes(SimpleBaseType(GetTypeName()))
+                .AddBaseListTypes(SimpleBaseType(TypeInfo.Name))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(GenerateFields()
                     .Concat<MemberDeclarationSyntax>(GenerateConstructors(className))
@@ -133,9 +135,9 @@ namespace Yardarm.Generation.Tag
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
             ILocatedOpenApiElement<OpenApiOperation> operation)
         {
-            TypeSyntax requestType = Context.TypeNameProvider.GetName(operation);
+            TypeSyntax requestType = Context.TypeInfoProvider.Get(operation).Name;
             TypeSyntax responseType = WellKnownTypes.System.Threading.Tasks.TaskT.Name(
-                Context.TypeNameProvider.GetName(operation.GetResponseSet()));
+                Context.TypeInfoProvider.Get(operation.GetResponseSet()).Name);
 
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);

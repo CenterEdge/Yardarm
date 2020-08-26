@@ -27,10 +27,10 @@ namespace Yardarm.Generation.Authentication
             AuthenticationNamespace = authenticationNamespace ?? throw new ArgumentNullException(nameof(authenticationNamespace));
         }
 
-        protected override TypeSyntax GetTypeName() =>
-            QualifiedName(
+        protected override YardarmTypeInfo GetTypeInfo() =>
+            new YardarmTypeInfo(QualifiedName(
                 Context.NamespaceProvider.GetNamespace(Element),
-                IdentifierName(GetClassName()));
+                IdentifierName(GetClassName())));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

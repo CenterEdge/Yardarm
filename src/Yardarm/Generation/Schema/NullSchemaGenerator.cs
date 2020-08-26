@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Yardarm.Names;
 
 namespace Yardarm.Generation.Schema
 {
@@ -14,8 +15,9 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public TypeSyntax TypeName =>
-            SyntaxFactory.IdentifierName("dynamic");
+        public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
+            SyntaxFactory.IdentifierName("dynamic"),
+            isGenerated: false);
 
         public SyntaxTree? GenerateSyntaxTree() => null;
 

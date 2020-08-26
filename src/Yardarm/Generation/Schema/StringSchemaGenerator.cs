@@ -1,45 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
-    public class StringSchemaGenerator : ITypeGenerator
+    public class StringSchemaGenerator : TypeGeneratorBase<OpenApiSchema>
     {
-        private TypeSyntax? _nameCache;
-
-        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
-
-        private readonly ILocatedOpenApiElement<OpenApiSchema> _schemaElement;
-
-        public StringSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement)
+        public StringSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+            : base(schemaElement, context)
         {
-            _schemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
         }
 
-        protected virtual TypeSyntax GetTypeName() =>
-            _schemaElement.Element.Format switch
-            {
-                "date"=> QualifiedName(IdentifierName("System"), IdentifierName("DateTime")),
-                "date-time" => QualifiedName(IdentifierName("System"), IdentifierName("DateTimeOffset")),
-                "uuid" => QualifiedName(IdentifierName("System"), IdentifierName("Guid")),
-                "uri" => QualifiedName(IdentifierName("System"), IdentifierName("Uri")),
-                "byte" => ArrayType(PredefinedType(Token(SyntaxKind.ByteKeyword)),
-                    SingletonList(ArrayRankSpecifier(
-                        SingletonSeparatedList<ExpressionSyntax>(OmittedArraySizeExpression())))),
-                "binary" => QualifiedName(QualifiedName(IdentifierName("System"), IdentifierName("IO")), IdentifierName("Stream")),
-                _ => PredefinedType(Token(SyntaxKind.StringKeyword))
-            };
+        protected override YardarmTypeInfo GetTypeInfo() =>
+            new YardarmTypeInfo(
+                Element.Element.Format switch
+                {
+                    "date" => QualifiedName(IdentifierName("System"), IdentifierName("DateTime")),
+                    "date-time" => QualifiedName(IdentifierName("System"), IdentifierName("DateTimeOffset")),
+                    "uuid" => QualifiedName(IdentifierName("System"), IdentifierName("Guid")),
+                    "uri" => QualifiedName(IdentifierName("System"), IdentifierName("Uri")),
+                    "byte" => ArrayType(PredefinedType(Token(SyntaxKind.ByteKeyword)),
+                        SingletonList(ArrayRankSpecifier(
+                            SingletonSeparatedList<ExpressionSyntax>(OmittedArraySizeExpression())))),
+                    "binary" => QualifiedName(QualifiedName(IdentifierName("System"), IdentifierName("IO")),
+                        IdentifierName("Stream")),
+                    _ => PredefinedType(Token(SyntaxKind.StringKeyword))
+                },
+                isGenerated: false);
 
-        public SyntaxTree? GenerateSyntaxTree() => null;
+        public override SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate() =>
+        public override IEnumerable<MemberDeclarationSyntax> Generate() =>
             Enumerable.Empty<MemberDeclarationSyntax>();
     }
 }

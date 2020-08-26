@@ -59,7 +59,7 @@ namespace Yardarm.Enrichment.Responses.Internal
         {
             var nameFormatter = _context.NameFormatterSelector.GetFormatter(NameKind.Method);
 
-            TypeSyntax interfaceTypeName = _context.TypeNameProvider.GetName(responseSet);
+            TypeSyntax interfaceTypeName = _context.TypeInfoProvider.Get(responseSet).Name;
 
             foreach (var response in responseSet.GetResponses())
             {
@@ -67,7 +67,7 @@ namespace Yardarm.Enrichment.Responses.Internal
                     ? _httpResponseCodeNameProvider.GetName(statusCode)
                     : response.Key;
 
-                TypeSyntax typeName = _context.TypeNameProvider.GetName(response);
+                TypeSyntax typeName = _context.TypeInfoProvider.Get(response).Name;
 
                 yield return MethodDeclaration(typeName, nameFormatter.Format("As-" + responseCode))
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))

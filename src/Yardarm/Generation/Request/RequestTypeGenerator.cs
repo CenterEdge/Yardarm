@@ -43,18 +43,18 @@ namespace Yardarm.Generation.Request
             RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
         }
 
-        protected override TypeSyntax GetTypeName()
+        protected override YardarmTypeInfo GetTypeInfo()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            return QualifiedName(ns,
-                IdentifierName(formatter.Format(Operation.OperationId + "Request")));
+            return new YardarmTypeInfo(QualifiedName(ns,
+                IdentifierName(formatter.Format(Operation.OperationId + "Request"))));
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
+            var classNameAndNamespace = (QualifiedNameSyntax)TypeInfo.Name;
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
@@ -116,7 +116,7 @@ namespace Yardarm.Generation.Request
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeNameProvider.GetName(schema);
+            var typeName = Context.TypeInfoProvider.Get(schema).Name;
 
             var propertyDeclaration = PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(parameter, Context.ElementRegistry)

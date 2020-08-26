@@ -25,11 +25,11 @@ namespace Yardarm.Generation.Response
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
-        protected override TypeSyntax GetTypeName()
+        protected override YardarmTypeInfo GetTypeInfo()
         {
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            return QualifiedName(ns, IdentifierName(GetClassName()));
+            return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(GetClassName())));
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()

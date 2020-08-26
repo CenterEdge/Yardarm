@@ -48,7 +48,7 @@ namespace Yardarm.Generation.Schema
             BooleanSchemaGenerator.Instance;
 
         protected virtual ITypeGenerator GetNumberGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
-            new NumberSchemaGenerator(element);
+            new NumberSchemaGenerator(element, _context.Value);
 
         protected virtual ITypeGenerator GetObjectGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             new ObjectSchemaGenerator(element, _context.Value);
@@ -56,6 +56,6 @@ namespace Yardarm.Generation.Schema
         protected virtual ITypeGenerator GetStringGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             element.Element.Enum?.Count > 0
                 ? (ITypeGenerator) new EnumSchemaGenerator(element, _context.Value)
-                : new StringSchemaGenerator(element);
+                : new StringSchemaGenerator(element, _context.Value);
     }
 }

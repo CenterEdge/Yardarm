@@ -3,6 +3,7 @@
     public enum NameKind
     {
         Class,
+        Struct,
         Property,
         Enum,
         EnumMember,

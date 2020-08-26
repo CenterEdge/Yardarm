@@ -1,41 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
+using Yardarm.Names;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
 {
-    public class ArraySchemaGenerator : ITypeGenerator
+    public class ArraySchemaGenerator : TypeGeneratorBase<OpenApiSchema>
     {
-        private TypeSyntax? _nameCache;
-
-        public TypeSyntax TypeName => _nameCache ??= GetTypeName();
-
-        protected ILocatedOpenApiElement<OpenApiSchema> SchemaElement { get; }
-        protected GenerationContext Context { get; }
-
-        protected OpenApiSchema Schema => SchemaElement.Element;
+        protected OpenApiSchema Schema => Element.Element;
 
         public ArraySchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
+            : base(schemaElement, context)
         {
-            SchemaElement = schemaElement ?? throw new ArgumentNullException(nameof(schemaElement));
-            Context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        protected TypeSyntax GetTypeName()
+        protected override YardarmTypeInfo GetTypeInfo()
         {
-            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(GetItemSchema()).TypeName;
+            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(GetItemSchema()).TypeInfo.Name;
 
-            return WellKnownTypes.System.Collections.Generic.ListT.Name(itemTypeName);
+            return new YardarmTypeInfo(
+                WellKnownTypes.System.Collections.Generic.ListT.Name(itemTypeName),
+                isGenerated: false);
         }
 
-        public SyntaxTree? GenerateSyntaxTree() => null;
+        public override SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate()
+        public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
             ILocatedOpenApiElement<OpenApiSchema> itemSchema = GetItemSchema();
 
@@ -47,8 +41,8 @@ namespace Yardarm.Generation.Schema
         private ILocatedOpenApiElement<OpenApiSchema> GetItemSchema() =>
             // Treat the items as having the same parent as the array, otherwise we get into an infinite name loop since
             // we're not making a custom class for the list.
-            SchemaElement.Parent != null
-                ? SchemaElement.Parent.CreateChild(Schema.Items, SchemaElement.Key + "-Item")
-                : Schema.Items.CreateRoot(SchemaElement.Key + "-Item");
+            Element.Parent != null
+                ? Element.Parent.CreateChild(Schema.Items, Element.Key + "-Item")
+                : Schema.Items.CreateRoot(Element.Key + "-Item");
     }
 }

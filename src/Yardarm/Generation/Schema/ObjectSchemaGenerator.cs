@@ -19,7 +19,7 @@ namespace Yardarm.Generation.Schema
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var classNameAndNamespace = (QualifiedNameSyntax)GetTypeName();
+            var classNameAndNamespace = (QualifiedNameSyntax)TypeInfo.Name;
 
             string className = classNameAndNamespace.Right.Identifier.Text;
 
@@ -73,7 +73,7 @@ namespace Yardarm.Generation.Schema
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeNameProvider.GetName(property);
+            var typeName = Context.TypeInfoProvider.Get(property).Name;
 
             return SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(property, Context.ElementRegistry)

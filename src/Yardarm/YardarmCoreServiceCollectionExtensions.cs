@@ -31,6 +31,7 @@ namespace Yardarm
                 .AddTransient<IReferenceGenerator, NuGetReferenceGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ClientGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, ParameterGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SecuritySchemeGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, RequestBodyGenerator>()
@@ -51,7 +52,7 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiParameter>, NoopTypeGeneratorFactory<OpenApiParameter>>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiParameter>, ParameterTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiPathItem>, NoopTypeGeneratorFactory<OpenApiPathItem>>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiUnknownResponse>, UnknownResponseTypeGeneratorFactory>();

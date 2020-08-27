@@ -351,6 +351,14 @@ paths:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - $ref: '#/components/parameters/enumParameter'
+        - name: inlineEnum
+          in : query
+          schema:
+            type: string
+            enum:
+            - Option1
+            - Option2
         - name: X-test
           schema:
             type: string
@@ -612,6 +620,14 @@ components:
           removeValue: '#/components/schemas/ValueTransaction'
           gamePlay: '#/components/schemas/GamePlayTransaction'
   parameters:
+    enumParameter:
+      name: enum
+      in: query
+      schema:
+        type: string
+        enum:
+          - OptionA
+          - OptionB
     cardNumber:
       name: cardNumber
       in: path

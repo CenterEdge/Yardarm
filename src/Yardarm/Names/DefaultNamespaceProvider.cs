@@ -14,6 +14,7 @@ namespace Yardarm.Names
 
         private readonly NameSyntax _apiNamespace;
         private readonly NameSyntax _modelsNamespace;
+        private readonly NameSyntax _parametersNamespace;
 
         public DefaultNamespaceProvider(IRootNamespace rootNamespace, IResponsesNamespace responsesNamespace,
             IAuthenticationNamespace authenticationNamespace, IRequestsNamespace requestsNamespace)
@@ -30,12 +31,14 @@ namespace Yardarm.Names
 
             _apiNamespace = SyntaxFactory.QualifiedName(rootNamespace.Name, SyntaxFactory.IdentifierName("Api"));
             _modelsNamespace = SyntaxFactory.QualifiedName(rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
+            _parametersNamespace = SyntaxFactory.QualifiedName(_requestsNamespace.Name, SyntaxFactory.IdentifierName("Parameters"));
         }
 
         public NameSyntax GetNamespace(ILocatedOpenApiElement element) =>
             element switch
             {
                 ILocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
+                ILocatedOpenApiElement<OpenApiParameter> parameter => GetParameterNamespace(parameter),
                 ILocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
                 ILocatedOpenApiElement<OpenApiUnknownResponse> response => GetUnknownResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
@@ -48,6 +51,9 @@ namespace Yardarm.Names
 
         protected virtual NameSyntax GetOperationNamespace(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             _requestsNamespace.Name;
+
+        protected virtual NameSyntax GetParameterNamespace(ILocatedOpenApiElement<OpenApiParameter> operation) =>
+            _parametersNamespace;
 
         protected virtual NameSyntax GetRequestBodyNamespace(ILocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
             _modelsNamespace;

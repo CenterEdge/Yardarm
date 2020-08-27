@@ -52,6 +52,11 @@ namespace Yardarm.Generation.Request
                 IdentifierName(formatter.Format(Operation.OperationId + "Request"))));
         }
 
+        public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
+            NameKind nameKind) =>
+            QualifiedName((NameSyntax)TypeInfo.Name, IdentifierName(
+                Context.NameFormatterSelector.GetFormatter(nameKind).Format(child.Key + "-Model")));
+
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
             var classNameAndNamespace = (QualifiedNameSyntax)TypeInfo.Name;
@@ -91,16 +96,25 @@ namespace Yardarm.Generation.Request
         protected virtual ClassDeclarationSyntax AddParameterProperties(ClassDeclarationSyntax declaration,
             IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> properties)
         {
-            MemberDeclarationSyntax[] members = properties
-                .Select(p =>
+            IEnumerable<MemberDeclarationSyntax> AddParameterProperty(
+                ILocatedOpenApiElement<OpenApiParameter> parameter)
+            {
+                var schema = parameter.GetSchemaOrDefault();
+
+                yield return CreatePropertyDeclaration(parameter, declaration.Identifier.ValueText, schema);
+
+                if (parameter.Element.Reference == null && schema.Element.Reference == null)
                 {
-                    var schema = p.GetSchemaOrDefault();
+                    foreach (var member in Context.TypeGeneratorRegistry.Get(schema).Generate())
+                    {
+                        yield return member;
+                    }
+                }
+            }
 
-                    return CreatePropertyDeclaration(p, declaration.Identifier.ValueText, schema);
-                })
-                .ToArray<MemberDeclarationSyntax>();
-
-            return declaration.AddMembers(members);
+            return declaration.AddMembers(properties
+                .SelectMany(AddParameterProperty)
+                .ToArray());
         }
 
         protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(ILocatedOpenApiElement<T> parameter, string className,

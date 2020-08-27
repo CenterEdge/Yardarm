@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Response
             ISerializationNamespace serializationNamespace,
             IResponsesNamespace responsesNamespace,
             IGetBodyMethodGenerator getBodyMethodGenerator)
-            : base(responseElement, context)
+            : base(responseElement, context, null)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
             HttpResponseCodeNameProvider = httpResponseCodeNameProvider ??
@@ -45,6 +45,12 @@ namespace Yardarm.Generation.Response
 
             return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(GetClassName())));
         }
+
+        public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
+            NameKind nameKind) =>
+            QualifiedName(
+                (QualifiedNameSyntax)TypeInfo.Name,
+                IdentifierName(Context.NameFormatterSelector.GetFormatter(nameKind).Format(child.Key + "-Model")));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

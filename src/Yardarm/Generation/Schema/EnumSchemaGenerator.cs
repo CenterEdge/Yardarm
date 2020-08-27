@@ -16,8 +16,9 @@ namespace Yardarm.Generation.Schema
 
         protected override NameKind NameKind => NameKind.Enum;
 
-        public EnumSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        public EnumSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+            ITypeGenerator? parent)
+            : base(schemaElement, context, parent)
         {
         }
 

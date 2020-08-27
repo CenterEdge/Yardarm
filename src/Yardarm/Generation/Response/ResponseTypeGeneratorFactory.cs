@@ -32,7 +32,7 @@ namespace Yardarm.Generation.Response
                                       throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponse> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponse> element, ITypeGenerator? parent) =>
             new ResponseTypeGenerator(element, _context, _mediaTypeSelector, _httpResponseCodeNameProvider,
                 _serializationNamespace, _responsesNamespace, _parseBodyMethodGenerator);
     }

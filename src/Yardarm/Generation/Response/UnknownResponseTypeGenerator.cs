@@ -19,7 +19,7 @@ namespace Yardarm.Generation.Response
         public UnknownResponseTypeGenerator(ILocatedOpenApiElement<OpenApiUnknownResponse> responseElement, GenerationContext context,
             ISerializationNamespace serializationNamespace,
             IResponsesNamespace responsesNamespace)
-            : base(responseElement, context)
+            : base(responseElement, context, null)
         {
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));

@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Names;
@@ -17,8 +18,9 @@ namespace Yardarm.Generation.Schema
     {
         protected override NameKind NameKind => NameKind.Interface;
 
-        public OneOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        public OneOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+            ITypeGenerator? parent)
+            : base(schemaElement, context, parent)
         {
         }
 
@@ -26,6 +28,10 @@ namespace Yardarm.Generation.Schema
             !HasDiscriminator
                 ? new YardarmTypeInfo(SyntaxFactory.IdentifierName("dynamic"), isGenerated: false)
                 : base.GetTypeInfo();
+
+        public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
+            NameKind nameKind) =>
+            null;
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

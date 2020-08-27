@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Tag
             _authenticationNamespace = authenticationNamespace ?? throw new ArgumentNullException(nameof(authenticationNamespace));
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiTag> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiTag> element, ITypeGenerator? parent) =>
             new TagTypeGenerator(element, _context, _serializationNamespace, _authenticationNamespace, _operationMethodGenerator);
     }
 }

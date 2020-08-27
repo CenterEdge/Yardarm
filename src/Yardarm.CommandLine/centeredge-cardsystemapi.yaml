@@ -387,6 +387,13 @@ components:
       in: header
       name: X-ApiKey
   schemas:
+    ListWithEnum:
+      type: array
+      items:
+        type: string
+        enum:
+          - OptionA
+          - OptionB
     Login:
       type: object
       properties:
@@ -500,6 +507,9 @@ components:
           type: array
           items:
             type: string
+            enum:
+            - Option1
+            - Option2
         nestedRefArray:
           type: array
           items:

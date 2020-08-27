@@ -43,15 +43,19 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
 
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiMediaType>, MediaTypeGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiHeader>, NoopTypeGeneratorFactory<OpenApiHeader>>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiMediaType>, NoopTypeGeneratorFactory<OpenApiMediaType>>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiParameter>, NoopTypeGeneratorFactory<OpenApiParameter>>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiPathItem>, NoopTypeGeneratorFactory<OpenApiPathItem>>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiUnknownResponse>, UnknownResponseTypeGeneratorFactory>();
+
             services.TryAddSingleton<IAddHeadersMethodGenerator, AddHeadersMethodGenerator>();
             services.TryAddSingleton<IBuildContentMethodGenerator, BuildContentMethodGenerator>();
             services.TryAddSingleton<IBuildRequestMethodGenerator, BuildRequestMethodGenerator>();

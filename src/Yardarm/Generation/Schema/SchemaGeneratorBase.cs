@@ -1,9 +1,10 @@
-﻿using System.Linq;
+﻿using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Names;
 using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
@@ -13,18 +14,19 @@ namespace Yardarm.Generation.Schema
 
         protected abstract NameKind NameKind { get; }
 
-        protected SchemaGeneratorBase(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        protected SchemaGeneratorBase(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+            ITypeGenerator? parent)
+            : base(schemaElement, context, parent)
         {
         }
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
-            var formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
-
             if (Schema.Reference != null)
             {
-                var ns = Context.NamespaceProvider.GetNamespace(Element);
+                NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
+
+                var formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
 
                 return new YardarmTypeInfo(
                     SyntaxFactory.QualifiedName(ns,
@@ -32,35 +34,23 @@ namespace Yardarm.Generation.Schema
                     NameKind);
             }
 
-            if (Element.Parent != null)
+            if (Parent == null)
             {
-                var parent = Element.Parent;
-                var parentTypeInfo = Context.TypeGeneratorRegistry.Get(parent).TypeInfo;
-
-                if (Schema.Reference is null && !(parent is ILocatedOpenApiElement<OpenApiSchema>) &&
-                    parent.Parents().OfType<ILocatedOpenApiElement<OpenApiRequestBody>>().Any())
-                {
-                    // We just want to name this based on the request body, without appending SchemaModel, if the immediate
-                    // parent is NOT a schema but we're within a request body. If the immediate parent is a schema, we're nested
-                    // further and still need to apply naming rules from the parent's key
-                    return parentTypeInfo;
-                }
-
-                return new YardarmTypeInfo(SyntaxFactory.QualifiedName((QualifiedNameSyntax)parentTypeInfo.Name,
-                    SyntaxFactory.IdentifierName(formatter.Format(Element.Key + "Model"))),
-                    NameKind);
+                throw new InvalidOperationException(
+                    $"Unable to generate schema for '{Element.Key}', it has no parent is not a component.");
             }
-            else
+
+            QualifiedNameSyntax? name = Parent.GetChildName(Element, NameKind);
+            if (name == null)
             {
-                // This is probably an array item from a components array schema. We don't have a parent class to put this in,
-                // since we're using List<T> to hold the items.
-
-                var ns = Context.NamespaceProvider.GetNamespace(Element);
-
-                return new YardarmTypeInfo(SyntaxFactory.QualifiedName(ns,
-                    SyntaxFactory.IdentifierName(formatter.Format(Element.Key))),
-                    NameKind);
+                throw new InvalidOperationException($"Unable to generate schema for '{Element.Key}', parent did not provide a name.");
             }
+
+            return new YardarmTypeInfo(name, NameKind);
         }
+
+        public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind) =>
+            QualifiedName((NameSyntax)TypeInfo.Name, IdentifierName(
+                Context.NameFormatterSelector.GetFormatter(nameKind).Format(child.Key + "-Model")));
     }
 }

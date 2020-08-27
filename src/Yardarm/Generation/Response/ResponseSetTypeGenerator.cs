@@ -19,7 +19,7 @@ namespace Yardarm.Generation.Response
 
         public ResponseSetTypeGenerator(ILocatedOpenApiElement<OpenApiResponses> element, GenerationContext context,
             IResponsesNamespace responsesNamespace)
-            : base(element, context)
+            : base(element, context, null)
         {
             ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
 

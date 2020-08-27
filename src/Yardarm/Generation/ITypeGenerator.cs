@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation
 {
@@ -10,5 +12,8 @@ namespace Yardarm.Generation
         SyntaxTree? GenerateSyntaxTree();
 
         IEnumerable<MemberDeclarationSyntax> Generate();
+
+        QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
+            where TChild : IOpenApiElement;
     }
 }

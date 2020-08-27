@@ -7,30 +7,29 @@ using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
 using Yardarm.Spec;
 
-namespace Yardarm.Generation.Schema
+namespace Yardarm.Generation
 {
-    public class NullSchemaGenerator : ITypeGenerator
+    public class NoopTypeGenerator<T> : ITypeGenerator
+        where T : IOpenApiElement
     {
-        public static NullSchemaGenerator Instance { get; } = new NullSchemaGenerator();
-
-        private NullSchemaGenerator()
-        {
-        }
+        public ITypeGenerator? Parent { get; }
 
         public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
-            SyntaxFactory.IdentifierName("dynamic"),
+            SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword)),
+            NameKind.Struct,
             isGenerated: false);
 
-        public string GetChildName<TChild>(ILocatedOpenApiElement<TChild> child)
-            where TChild : IOpenApiElement => "";
+        public NoopTypeGenerator(ITypeGenerator? parent)
+        {
+            Parent = parent;
+        }
 
         public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate() =>
-            Enumerable.Empty<MemberDeclarationSyntax>();
+        public IEnumerable<MemberDeclarationSyntax> Generate() => Enumerable.Empty<MemberDeclarationSyntax>();
 
         public QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
             where TChild : IOpenApiElement =>
-            null;
+            Parent?.GetChildName(child, nameKind);
     }
 }

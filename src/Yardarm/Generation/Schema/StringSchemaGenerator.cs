@@ -12,8 +12,9 @@ namespace Yardarm.Generation.Schema
 {
     public class StringSchemaGenerator : TypeGeneratorBase<OpenApiSchema>
     {
-        public StringSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        public StringSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+            ITypeGenerator? parent)
+            : base(schemaElement, context, parent)
         {
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -11,8 +12,9 @@ namespace Yardarm.Generation.Schema
 {
     public class NumberSchemaGenerator : TypeGeneratorBase<OpenApiSchema>
     {
-        public NumberSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        public NumberSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+            ITypeGenerator? parent)
+            : base(schemaElement, context, parent)
         {
         }
 

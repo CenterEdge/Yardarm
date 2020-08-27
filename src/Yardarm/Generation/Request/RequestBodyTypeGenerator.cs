@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
@@ -19,7 +20,7 @@ namespace Yardarm.Generation.Request
 
         public RequestBodyTypeGenerator(ILocatedOpenApiElement<OpenApiRequestBody> requestBodyElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector)
-            : base(requestBodyElement, context)
+            : base(requestBodyElement, context, null)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
@@ -63,6 +64,12 @@ namespace Yardarm.Generation.Request
                 return new YardarmTypeInfo(name);
             }
         }
+
+        public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
+            NameKind nameKind) =>
+            // This should only be called in the case of one of the two "RequestBody" names above in TypeInfo, and
+            // only by the child schema requesting it's name. So just give that name.
+            (QualifiedNameSyntax) TypeInfo.Name;
 
         public override SyntaxTree? GenerateSyntaxTree() =>
             GetSchemaGenerator()?.GenerateSyntaxTree();

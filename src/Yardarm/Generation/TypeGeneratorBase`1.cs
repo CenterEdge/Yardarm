@@ -10,8 +10,8 @@ namespace Yardarm.Generation
     {
         protected ILocatedOpenApiElement<T> Element { get; }
 
-        protected TypeGeneratorBase(ILocatedOpenApiElement<T> element, GenerationContext context)
-            : base(context)
+        protected TypeGeneratorBase(ILocatedOpenApiElement<T> element, GenerationContext context, ITypeGenerator? parent)
+            : base(context, parent)
         {
             Element = element ?? throw new ArgumentNullException(nameof(element));
         }

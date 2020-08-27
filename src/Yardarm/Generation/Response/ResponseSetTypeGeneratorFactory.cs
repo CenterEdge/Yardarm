@@ -18,7 +18,7 @@ namespace Yardarm.Generation.Response
                                   throw new ArgumentNullException(nameof(responsesNamespace));
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponses> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponses> element, ITypeGenerator? parent) =>
             new ResponseSetTypeGenerator(element, _context, _responsesNamespace);
     }
 }

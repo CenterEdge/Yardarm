@@ -22,7 +22,7 @@ namespace Yardarm.Generation.Authentication
 
         protected SecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
-            : base(securitySchemeElement, context)
+            : base(securitySchemeElement, context, null)
         {
             AuthenticationNamespace = authenticationNamespace ?? throw new ArgumentNullException(nameof(authenticationNamespace));
         }

@@ -10,8 +10,9 @@ namespace Yardarm.Generation.Schema
 {
     internal class AllOfSchemaGenerator : ObjectSchemaGenerator
     {
-        public AllOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context)
-            : base(schemaElement, context)
+        public AllOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+            ITypeGenerator? parent)
+            : base(schemaElement, context, parent)
         {
         }
 

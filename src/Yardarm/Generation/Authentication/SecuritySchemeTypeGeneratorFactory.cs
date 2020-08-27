@@ -20,7 +20,7 @@ namespace Yardarm.Generation.Authentication
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSecurityScheme> element)
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSecurityScheme> element, ITypeGenerator? parent)
         {
             return element.Element.Type switch
             {

@@ -183,6 +183,16 @@ namespace Yardarm.Spec
 
         #region Schema
 
+        public static ILocatedOpenApiElement<OpenApiSchema>? GetItemSchema(
+            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
+            schema.Element.Items != null
+                ? schema.CreateChild(schema.Element.Items, "items")
+                : null;
+
+        public static ILocatedOpenApiElement<OpenApiSchema> GetItemSchemaOrDefault(
+            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
+            GetItemSchema(schema) ?? schema.CreateChild(_defaultSchema, "items");
+
         public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetProperties(
             this ILocatedOpenApiElement<OpenApiSchema> schema) =>
             schema.Element.Properties?

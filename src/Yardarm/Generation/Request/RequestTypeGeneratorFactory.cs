@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Request
             _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiOperation> element) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiOperation> element, ITypeGenerator? parent) =>
             new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildRequestMethodGenerator,
                 _buildUriMethodGenerator, _addHeadersMethodGenerator, _buildContentMethodGenerator,
                 _requestsNamespace);

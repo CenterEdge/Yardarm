@@ -3,7 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
+using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
 {
@@ -16,9 +18,16 @@ namespace Yardarm.Generation.Schema
             NameKind.Struct,
             isGenerated: false);
 
+        public string GetChildName<TChild>(ILocatedOpenApiElement<TChild> child)
+            where TChild : IOpenApiElement => "";
+
         public SyntaxTree? GenerateSyntaxTree() => null;
 
         public IEnumerable<MemberDeclarationSyntax> Generate() =>
             Enumerable.Empty<MemberDeclarationSyntax>();
+
+        public QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
+            where TChild : IOpenApiElement =>
+            null;
     }
 }

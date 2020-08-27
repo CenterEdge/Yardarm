@@ -20,7 +20,7 @@ namespace Yardarm.Generation.Schema
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
-            TypeSyntax itemTypeName = Context.SchemaGeneratorRegistry.Get(GetItemSchema()).TypeInfo.Name;
+            TypeSyntax itemTypeName = Context.TypeGeneratorRegistry.Get(GetItemSchema()).TypeInfo.Name;
 
             return new YardarmTypeInfo(
                 WellKnownTypes.System.Collections.Generic.ListT.Name(itemTypeName),
@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Schema
             ILocatedOpenApiElement<OpenApiSchema> itemSchema = GetItemSchema();
 
             return itemSchema.Element.Reference is null
-                ? Context.SchemaGeneratorRegistry.Get(itemSchema).Generate()
+                ? Context.TypeGeneratorRegistry.Get(itemSchema).Generate()
                 : Enumerable.Empty<MemberDeclarationSyntax>();
         }
 

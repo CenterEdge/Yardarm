@@ -44,12 +44,12 @@ namespace Yardarm.Enrichment.Authentication.Internal
                 attributes.Add(Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
                     .AddArgumentListArguments(
                         securitySchemes.Select(securityScheme =>
-                                AttributeArgument(TypeOfExpression(_context.TypeInfoProvider.Get(securityScheme).Name)))
+                                AttributeArgument(TypeOfExpression(_context.TypeGeneratorRegistry.Get(securityScheme).TypeInfo.Name)))
                             .ToArray()));
 
                 if (securitySchemes.Length == 1)
                 {
-                    TypeSyntax schemeTypeName = _context.TypeInfoProvider.Get(securitySchemes[0]).Name;
+                    TypeSyntax schemeTypeName = _context.TypeGeneratorRegistry.Get(securitySchemes[0]).TypeInfo.Name;
 
                     target = target.AddMembers(MethodDeclaration(className, "WithAuthenticator")
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
@@ -70,7 +70,7 @@ namespace Yardarm.Enrichment.Authentication.Internal
                             securitySchemes
                                 .Select((p, index) =>
                                     Parameter(Identifier($"authenticator{index}"))
-                                        .WithType(_context.TypeInfoProvider.Get(p).Name))
+                                        .WithType(_context.TypeGeneratorRegistry.Get(p).TypeInfo.Name))
                                 .ToArray())
                         .WithBody(Block(
                             ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,

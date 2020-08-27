@@ -116,7 +116,7 @@ namespace Yardarm.Generation.Request
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeInfoProvider.Get(schema).Name;
+            var typeName = Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name;
 
             var propertyDeclaration = PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(parameter, Context.ElementRegistry)

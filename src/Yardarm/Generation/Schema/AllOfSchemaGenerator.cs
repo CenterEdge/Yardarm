@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Schema
                             ILocatedOpenApiElement<OpenApiSchema> referencedSchema =
                                 ((OpenApiSchema)Context.Document.ResolveReference(section.Reference)).CreateRoot(section.Reference.Id);
 
-                            TypeSyntax typeName = Context.TypeInfoProvider.Get(referencedSchema).Name;
+                            TypeSyntax typeName = Context.TypeGeneratorRegistry.Get(referencedSchema).TypeInfo.Name;
 
                             BaseListSyntax baseList = classDeclaration.BaseList != null
                                 ? classDeclaration.BaseList.WithTypes(SyntaxFactory.SeparatedList(

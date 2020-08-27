@@ -103,13 +103,13 @@ namespace Yardarm.Generation.Operation
                     .Select(p => SwitchExpressionArm(
                         ConstantPattern(ParseStatusCode(p.Key)),
                         ObjectCreationExpression(
-                                Context.TypeInfoProvider.Get(p).Name)
+                                Context.TypeGeneratorRegistry.Get(p).TypeInfo.Name)
                             .AddArgumentListArguments(
                                 Argument(IdentifierName("responseMessage")),
                                 Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))))))
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
                     ObjectCreationExpression(
-                        Context.TypeInfoProvider.Get(operation.GetResponseSet().GetUnknownResponse()).Name)
+                        Context.TypeGeneratorRegistry.Get(operation.GetResponseSet().GetUnknownResponse()).TypeInfo.Name)
                         .AddArgumentListArguments(
                             Argument(IdentifierName("responseMessage")),
                             Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))));

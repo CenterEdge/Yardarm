@@ -12,7 +12,6 @@ namespace Yardarm
         private readonly Lazy<OpenApiDocument> _openApiDocument;
         private readonly Lazy<IOpenApiElementRegistry> _elementRegistry;
         private readonly Lazy<INamespaceProvider> _namespaceProvider;
-        private readonly Lazy<IElementTypeInfoProvider> _typeInfoProvider;
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
 
@@ -20,9 +19,8 @@ namespace Yardarm
         public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
         public IServiceProvider GenerationServices { get; }
         public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
-        public IElementTypeInfoProvider TypeInfoProvider => _typeInfoProvider.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
-        public ITypeGeneratorRegistry SchemaGeneratorRegistry => _typeGeneratorRegistry.Value;
+        public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
 
         public GenerationContext(IServiceProvider serviceProvider)
         {
@@ -31,7 +29,6 @@ namespace Yardarm
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
             _elementRegistry = new Lazy<IOpenApiElementRegistry>(serviceProvider.GetRequiredService<IOpenApiElementRegistry>);
             _namespaceProvider = new Lazy<INamespaceProvider>(serviceProvider.GetRequiredService<INamespaceProvider>);
-            _typeInfoProvider = new Lazy<IElementTypeInfoProvider>(serviceProvider.GetRequiredService<IElementTypeInfoProvider>);
             _nameFormatterSelector =
                 new Lazy<INameFormatterSelector>(serviceProvider.GetRequiredService<INameFormatterSelector>);
             _typeGeneratorRegistry =

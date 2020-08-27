@@ -42,8 +42,9 @@ namespace Yardarm
 
             services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
 
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiMediaType>, MediaTypeGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
@@ -66,7 +67,6 @@ namespace Yardarm
             services.TryAddSingleton<CamelCaseNameFormatter>();
             services.TryAddSingleton<PascalCaseNameFormatter>();
             services.TryAddSingleton<INameFormatterSelector, DefaultNameFormatterSelector>();
-            services.TryAddSingleton<IElementTypeInfoProvider, DefaultElementTypeInfoProvider>();
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
             services.TryAddSingleton<IRootNamespace, RootNamespace>();

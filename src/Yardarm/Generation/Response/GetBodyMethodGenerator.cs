@@ -41,7 +41,7 @@ namespace Yardarm.Generation.Response
                 return null;
             }
 
-            ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schema);
+            ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schema);
 
             TypeSyntax returnType = schemaGenerator.TypeInfo.Name;
 

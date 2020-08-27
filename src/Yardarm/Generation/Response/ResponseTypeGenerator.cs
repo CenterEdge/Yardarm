@@ -56,8 +56,8 @@ namespace Yardarm.Generation.Response
             // inherit from the primary implementation
             TypeSyntax baseType = isPrimaryImplementation
                 ? ResponsesNamespace.OperationResponse
-                : Context.TypeInfoProvider.Get(
-                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!)).Name;
+                : Context.TypeGeneratorRegistry.Get(
+                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!)).TypeInfo.Name;
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
@@ -108,7 +108,7 @@ namespace Yardarm.Generation.Response
             {
                 ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 
-                ITypeGenerator schemaGenerator = Context.SchemaGeneratorRegistry.Get(schemaElement);
+                ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schemaElement);
 
                 yield return PropertyDeclaration(schemaGenerator.TypeInfo.Name, nameFormatter.Format(header.Key))
                     .AddElementAnnotation(header, Context.ElementRegistry)
@@ -143,7 +143,7 @@ namespace Yardarm.Generation.Response
                 return (null, false);
             }
 
-            return (Context.SchemaGeneratorRegistry.Get(schemaElement), schemaElement.Element.Reference != null);
+            return (Context.TypeGeneratorRegistry.Get(schemaElement), schemaElement.Element.Reference != null);
         }
 
         private string GetClassName()

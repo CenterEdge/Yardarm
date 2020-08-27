@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Request
             if (schemaElement != null &&
                 (schemaElement.Element.Type != "object" || schemaElement.Element.Reference != null))
             {
-                return Context.SchemaGeneratorRegistry.Get(schemaElement).TypeInfo;
+                return Context.TypeGeneratorRegistry.Get(schemaElement).TypeInfo;
             }
 
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
@@ -81,7 +81,7 @@ namespace Yardarm.Generation.Request
                 return null;
             }
 
-            return Context.SchemaGeneratorRegistry.Get(schemaElement);
+            return Context.TypeGeneratorRegistry.Get(schemaElement);
         }
     }
 }

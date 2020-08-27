@@ -54,7 +54,7 @@ namespace Yardarm.Generation.Schema
             {
                 // This isn't a reference, so we must generate the child schema
 
-                ITypeGenerator generator = Context.SchemaGeneratorRegistry.Get(property);
+                ITypeGenerator generator = Context.TypeGeneratorRegistry.Get(property);
 
                 foreach (MemberDeclarationSyntax child in generator.Generate())
                 {
@@ -73,7 +73,7 @@ namespace Yardarm.Generation.Schema
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeInfoProvider.Get(property).Name;
+            var typeName = Context.TypeGeneratorRegistry.Get(property).TypeInfo.Name;
 
             return SyntaxFactory.PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(property, Context.ElementRegistry)

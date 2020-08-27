@@ -50,7 +50,7 @@ namespace Yardarm.Enrichment.Authentication.Internal
 
             foreach (var scheme in _context.Document.Components.SecuritySchemes.Select(p => p.Value.CreateRoot(p.Key)))
             {
-                TypeSyntax typeName = _context.TypeInfoProvider.Get(scheme).Name;
+                TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(scheme).TypeInfo.Name;
 
                 string propertyName = nameFormatter.Format(scheme.Key);
 

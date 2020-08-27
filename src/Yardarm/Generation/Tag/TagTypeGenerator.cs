@@ -135,9 +135,9 @@ namespace Yardarm.Generation.Tag
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
             ILocatedOpenApiElement<OpenApiOperation> operation)
         {
-            TypeSyntax requestType = Context.TypeInfoProvider.Get(operation).Name;
+            TypeSyntax requestType = Context.TypeGeneratorRegistry.Get(operation).TypeInfo.Name;
             TypeSyntax responseType = WellKnownTypes.System.Threading.Tasks.TaskT.Name(
-                Context.TypeInfoProvider.Get(operation.GetResponseSet()).Name);
+                Context.TypeGeneratorRegistry.Get(operation.GetResponseSet()).TypeInfo.Name);
 
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);

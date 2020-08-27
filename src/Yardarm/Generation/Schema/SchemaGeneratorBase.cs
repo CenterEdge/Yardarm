@@ -35,7 +35,7 @@ namespace Yardarm.Generation.Schema
             if (Element.Parent != null)
             {
                 var parent = Element.Parent;
-                var parentTypeInfo = Context.TypeInfoProvider.Get(parent);
+                var parentTypeInfo = Context.TypeGeneratorRegistry.Get(parent).TypeInfo;
 
                 if (Schema.Reference is null && !(parent is ILocatedOpenApiElement<OpenApiSchema>) &&
                     parent.Parents().OfType<ILocatedOpenApiElement<OpenApiRequestBody>>().Any())

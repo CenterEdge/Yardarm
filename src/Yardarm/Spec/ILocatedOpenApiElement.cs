@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Microsoft.OpenApi.Interfaces;
 
 namespace Yardarm.Spec
@@ -6,6 +6,8 @@ namespace Yardarm.Spec
     public interface ILocatedOpenApiElement
     {
         IOpenApiElement Element { get; }
+
+        Type ElementType { get; }
 
         string Key { get; }
 

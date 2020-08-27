@@ -15,6 +15,11 @@ namespace Yardarm.Spec
         public IOpenApiElement Element { get; }
 
         /// <summary>
+        /// Type of the element.
+        /// </summary>
+        public abstract Type ElementType { get; }
+
+        /// <summary>
         /// Key in which this element was stored on its parent.
         /// </summary>
         public string Key { get; }

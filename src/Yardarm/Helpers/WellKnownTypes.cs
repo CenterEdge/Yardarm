@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Helpers
@@ -65,6 +66,24 @@ namespace Yardarm.Helpers
                 }
             }
 
+            public static class Convert
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("Convert"));
+
+                public static InvocationExpressionSyntax ToBase64String(
+                    ExpressionSyntax bytesExpression) =>
+                    InvocationExpression(MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            Name,
+                            IdentifierName("ToBase64String")),
+                        ArgumentList(
+                            SingletonSeparatedList(
+                                Argument(bytesExpression)
+                            )));
+            }
+
             public static class ComponentModel
             {
                 public static NameSyntax Name { get; } = QualifiedName(
@@ -112,6 +131,35 @@ namespace Yardarm.Helpers
                 public static NameSyntax Name { get; } = QualifiedName(
                     System.Name,
                     IdentifierName("ObsoleteAttribute"));
+            }
+
+            public static class Text
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("Text"));
+
+                public static class Encoding
+                {
+                    public static NameSyntax Name { get; } = QualifiedName(
+                        Text.Name,
+                        IdentifierName("Encoding"));
+
+                    public static ExpressionSyntax UTF8 { get; } = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        Encoding.Name,
+                        IdentifierName("UTF8"));
+
+                    public static InvocationExpressionSyntax GetBytes(
+                        ExpressionSyntax encodingExpression, ExpressionSyntax stringExpression) =>
+                        InvocationExpression(MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                encodingExpression,
+                                IdentifierName("GetBytes")),
+                            ArgumentList(
+                                SingletonSeparatedList(
+                                    Argument(stringExpression)
+                                )));
+                }
             }
 
             public static class Threading

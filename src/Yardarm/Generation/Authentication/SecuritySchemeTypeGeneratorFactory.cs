@@ -27,6 +27,7 @@ namespace Yardarm.Generation.Authentication
                 SecuritySchemeType.Http => element.Element.Scheme switch
                 {
                     "bearer" => new BearerSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace),
+                    "basic" => new BasicSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace),
                     _ => new NoopSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace, _logger)
                 },
                 SecuritySchemeType.ApiKey => element.Element.In switch

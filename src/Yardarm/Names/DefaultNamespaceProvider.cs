@@ -13,6 +13,7 @@ namespace Yardarm.Names
         private readonly IAuthenticationNamespace _authenticationNamespace;
 
         private readonly NameSyntax _apiNamespace;
+        private readonly NameSyntax _headersNamespace;
         private readonly NameSyntax _modelsNamespace;
         private readonly NameSyntax _parametersNamespace;
 
@@ -30,6 +31,7 @@ namespace Yardarm.Names
             _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
 
             _apiNamespace = SyntaxFactory.QualifiedName(rootNamespace.Name, SyntaxFactory.IdentifierName("Api"));
+            _headersNamespace = SyntaxFactory.QualifiedName(_responsesNamespace.Name, SyntaxFactory.IdentifierName("Headers"));
             _modelsNamespace = SyntaxFactory.QualifiedName(rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
             _parametersNamespace = SyntaxFactory.QualifiedName(_requestsNamespace.Name, SyntaxFactory.IdentifierName("Parameters"));
         }
@@ -37,6 +39,7 @@ namespace Yardarm.Names
         public NameSyntax GetNamespace(ILocatedOpenApiElement element) =>
             element switch
             {
+                ILocatedOpenApiElement<OpenApiHeader> header => GetHeaderNamespace(header),
                 ILocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
                 ILocatedOpenApiElement<OpenApiParameter> parameter => GetParameterNamespace(parameter),
                 ILocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
@@ -48,6 +51,9 @@ namespace Yardarm.Names
                 ILocatedOpenApiElement<OpenApiTag> tag => GetTagNamespace(tag),
                 _ => throw new InvalidOperationException($"Element type {element.Element.GetType()} doesn't have a namespace.")
             };
+
+        protected virtual NameSyntax GetHeaderNamespace(ILocatedOpenApiElement<OpenApiHeader> header) =>
+            _headersNamespace;
 
         protected virtual NameSyntax GetOperationNamespace(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             _requestsNamespace.Name;

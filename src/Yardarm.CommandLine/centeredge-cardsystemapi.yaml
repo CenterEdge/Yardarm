@@ -156,9 +156,13 @@ paths:
           description: Ok
           headers:
             'X-Description':
-              description: Test description
+              $ref: '#/components/headers/X-Description'
+            'X-Test':
               schema:
                 type: string
+                enum:
+                  - Test1
+                  - Test2
           content:
             application/json:
               schema:
@@ -619,6 +623,14 @@ components:
           addValue: '#/components/schemas/ValueTransaction'
           removeValue: '#/components/schemas/ValueTransaction'
           gamePlay: '#/components/schemas/GamePlayTransaction'
+  headers:
+    X-Description:
+      description: Test description
+      schema:
+        type: string
+        enum:
+        - Desc1
+        - Desc2
   parameters:
     enumParameter:
       name: enum

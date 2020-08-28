@@ -110,7 +110,7 @@ namespace Yardarm.Generation.Response
         {
             var nameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-            foreach (var header in Element.GetHeaders())
+            foreach (var header in Element.GetHeaders(Context.Document))
             {
                 ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 
@@ -125,7 +125,7 @@ namespace Yardarm.Generation.Response
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
-                if (schemaElement.Element.Reference == null)
+                if (header.Element.Reference == null && schemaElement.Element.Reference == null)
                 {
                     foreach (var memberDeclaration in schemaGenerator.Generate())
                     {

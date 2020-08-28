@@ -31,6 +31,7 @@ namespace Yardarm
                 .AddTransient<IReferenceGenerator, NuGetReferenceGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ClientGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, HeaderGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ParameterGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SecuritySchemeGenerator>()
@@ -46,6 +47,7 @@ namespace Yardarm
 
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorFactory<>),
                 typeof(NoopTypeGeneratorFactory<>), ServiceLifetime.Singleton));
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiHeader>, HeaderTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();

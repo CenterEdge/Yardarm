@@ -149,9 +149,18 @@ namespace Yardarm.Spec
         #region Header
 
         public static IEnumerable<ILocatedOpenApiElement<OpenApiHeader>> GetHeaders(
-            this ILocatedOpenApiElement<OpenApiResponse> response) =>
+            this ILocatedOpenApiElement<OpenApiResponse> response, OpenApiDocument document) =>
             response.Element.Headers
-                .Select(p => response.CreateChild(p.Value, p.Key));
+                .Select(p =>
+                {
+                    // Workaround for OpenAPI issue where header references are not resolved
+                    // https://github.com/microsoft/OpenAPI.NET/issues/515
+                    var header = p.Value.Reference != null
+                        ? (OpenApiHeader)document.ResolveReference(p.Value.Reference)
+                        : p.Value;
+
+                    return response.CreateChild(header, p.Key);
+                });
 
         #endregion
 

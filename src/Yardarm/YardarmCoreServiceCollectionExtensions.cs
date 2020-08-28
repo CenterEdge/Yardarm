@@ -44,8 +44,8 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
 
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiHeader>, NoopTypeGeneratorFactory<OpenApiHeader>>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiMediaType>, NoopTypeGeneratorFactory<OpenApiMediaType>>();
+            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorFactory<>),
+                typeof(NoopTypeGeneratorFactory<>), ServiceLifetime.Singleton));
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
@@ -53,7 +53,6 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiParameter>, ParameterTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiPathItem>, NoopTypeGeneratorFactory<OpenApiPathItem>>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiUnknownResponse>, UnknownResponseTypeGeneratorFactory>();
 

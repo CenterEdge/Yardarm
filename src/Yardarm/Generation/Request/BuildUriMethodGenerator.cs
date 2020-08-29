@@ -63,7 +63,7 @@ namespace Yardarm.Generation.Request
             {
                 NameSyntax keyValuePairType = WellKnownTypes.System.Collections.Generic.KeyValuePair.Name(
                     PredefinedType(Token(SyntaxKind.StringKeyword)),
-                    PredefinedType(Token(SyntaxKind.ObjectKeyword)));
+                    NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword))));
 
                 ExpressionSyntax buildArrayExpression = ArrayCreationExpression(
                         ArrayType(keyValuePairType)

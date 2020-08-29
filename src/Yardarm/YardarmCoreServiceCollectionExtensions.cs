@@ -72,8 +72,9 @@ namespace Yardarm
             // Names
             services.TryAddSingleton<CamelCaseNameFormatter>();
             services.TryAddSingleton<PascalCaseNameFormatter>();
-            services.TryAddSingleton<INameFormatterSelector, DefaultNameFormatterSelector>();
+            services.TryAddSingleton<INameFormatterSelector, NameFormatterSelector>();
             services.TryAddSingleton<INamespaceProvider, DefaultNamespaceProvider>();
+            services.TryAddSingleton<INameConverterRegistry>(_ => NameConverterRegistry.CreateDefaultRegistry());
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
             services.TryAddSingleton<IRootNamespace, RootNamespace>();
             services.TryAddSingleton<IAuthenticationNamespace, AuthenticationNamespace>();

@@ -6,22 +6,20 @@ namespace Yardarm.Names
 {
     public class PascalCaseNameFormatter : INameFormatter
     {
-        public static PascalCaseNameFormatter Instance { get; } = new PascalCaseNameFormatter();
-
-        public static PascalCaseNameFormatter InterfacePrefix { get; } = new PascalCaseNameFormatter("I", "");
-
-        public static PascalCaseNameFormatter AsyncSuffix { get; } = new PascalCaseNameFormatter("", "Async");
+        private readonly INameConverterRegistry _nameConverterRegistry;
 
         public string Prefix { get; }
 
         public string Suffix { get; }
 
-        public PascalCaseNameFormatter() : this("", "")
+        public PascalCaseNameFormatter(INameConverterRegistry nameConverterRegistry)
+            : this(nameConverterRegistry, "", "")
         {
         }
 
-        public PascalCaseNameFormatter(string prefix, string suffix)
+        public PascalCaseNameFormatter(INameConverterRegistry nameConverterRegistry, string prefix, string suffix)
         {
+            _nameConverterRegistry = nameConverterRegistry ?? throw new ArgumentNullException(nameof(nameConverterRegistry));
             Prefix = prefix ?? throw new ArgumentNullException(nameof(prefix));
             Suffix = suffix ?? throw new ArgumentNullException(nameof(suffix));
         }
@@ -34,7 +32,9 @@ namespace Yardarm.Names
                 return name;
             }
 
-            var builder = new StringBuilder(Prefix, Prefix.Length + name!.Length + Suffix.Length);
+            name = _nameConverterRegistry.Convert(name!);
+
+            var builder = new StringBuilder(Prefix, Prefix.Length + name.Length + Suffix.Length);
 
             bool nextCapital = true;
             foreach (char ch in name)

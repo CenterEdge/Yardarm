@@ -1,11 +1,17 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Yardarm.Names
 {
     public class CamelCaseNameFormatter : INameFormatter
     {
-        public static CamelCaseNameFormatter Instance { get; } = new CamelCaseNameFormatter();
+        private readonly INameConverterRegistry _nameConverterRegistry;
+
+        public CamelCaseNameFormatter(INameConverterRegistry nameConverterRegistry)
+        {
+            _nameConverterRegistry = nameConverterRegistry ?? throw new ArgumentNullException(nameof(nameConverterRegistry));
+        }
 
         [return: NotNullIfNotNull("name")]
         public virtual string? Format(string? name)
@@ -15,7 +21,9 @@ namespace Yardarm.Names
                 return name;
             }
 
-            var builder = new StringBuilder(name!.Length);
+            name = _nameConverterRegistry.Convert(name!);
+
+            var builder = new StringBuilder(name.Length);
 
             bool first = true;
             bool nextCapital = false;

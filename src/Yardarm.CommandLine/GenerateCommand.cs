@@ -29,6 +29,9 @@ namespace Yardarm.CommandLine
 
         public async Task<int> ExecuteAsync()
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             var document = await ReadDocumentAsync();
 
             var generator = new YardarmGenerator();
@@ -51,9 +54,6 @@ namespace Yardarm.CommandLine
                             .SetMinimumLevel(LogLevel.Information)
                             .AddSerilog();
                     });
-
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
 
                 YardarmGenerationResult generationResult = await generator.EmitAsync(document, settings);
 

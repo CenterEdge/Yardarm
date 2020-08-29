@@ -19,5 +19,10 @@ namespace Yardarm.Spec
             : base(element, key, parent)
         {
         }
+
+        public override string ToString() =>
+            Parent != null
+                ? $"{Parent}/{Key}:{typeof(T).Name}"
+                : $"{Key}:{typeof(T).Name}";
     }
 }

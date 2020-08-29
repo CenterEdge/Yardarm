@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Emit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using Serilog;
+using Serilog.Events;
+using Yardarm.Helpers;
+using Yardarm.Spec;
 
 namespace Yardarm.CommandLine
 {
@@ -45,19 +49,45 @@ namespace Yardarm.CommandLine
                     {
                         builder
                             .SetMinimumLevel(LogLevel.Information)
-                            .AddConsole();
+                            .AddSerilog();
                     });
 
-                EmitResult compilationResult = await generator.EmitAsync(document, settings);
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
 
-                await using var stdError = new StreamWriter(Console.OpenStandardError(), new UTF8Encoding(false));
-                foreach (Diagnostic diagnostic in compilationResult.Diagnostics.Where(p =>
-                    p.Severity == DiagnosticSeverity.Error))
+                YardarmGenerationResult generationResult = await generator.EmitAsync(document, settings);
+
+                foreach (Diagnostic diagnostic in generationResult.CompilationResult.Diagnostics
+                    .Where(p => p.Severity >= DiagnosticSeverity.Info))
                 {
-                    stdError.WriteLine(diagnostic);
+                    Log.Logger.Write(
+                        diagnostic.Severity switch
+                        {
+                            DiagnosticSeverity.Error => LogEventLevel.Error,
+                            DiagnosticSeverity.Warning => LogEventLevel.Warning,
+                            _ => LogEventLevel.Information
+                        },
+                        diagnostic.GetMessageWithSource(
+                            generationResult.Context.GenerationServices.GetRequiredService<IOpenApiElementRegistry>())
+                    );
                 }
 
-                return compilationResult.Success ? 0 : 1;
+                stopwatch.Stop();
+                if (generationResult.Success)
+                {
+                    Log.Information("Generation complete in {0:f3}s", stopwatch.Elapsed.TotalSeconds);
+                }
+                else
+                {
+                    Log.Error("Generation failed in {0:f3}s", stopwatch.Elapsed.TotalSeconds);
+                }
+
+                return generationResult.Success ? 0 : 1;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error generating SDK");
+                return 1;
             }
             finally
             {

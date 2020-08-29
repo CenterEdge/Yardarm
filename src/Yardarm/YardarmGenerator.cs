@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
-using Yardarm.Generation;
 using Yardarm.Packaging;
 
 namespace Yardarm
 {
     public class YardarmGenerator
     {
-        public async Task<EmitResult> EmitAsync(OpenApiDocument document, YardarmGenerationSettings settings, CancellationToken cancellationToken = default)
+        public async Task<YardarmGenerationResult> EmitAsync(OpenApiDocument document, YardarmGenerationSettings settings, CancellationToken cancellationToken = default)
         {
             if (document == null)
             {
@@ -43,17 +40,15 @@ namespace Yardarm
                     .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
                     .WithHighEntropyVirtualAddressSpace(true));
 
-            if (!compilationResult.Success)
+            if (compilationResult.Success)
             {
-                return compilationResult;
+                if (settings.NuGetOutput != null)
+                {
+                    PackNuGet(serviceProvider, settings);
+                }
             }
 
-            if (settings.NuGetOutput != null)
-            {
-                PackNuGet(serviceProvider, settings);
-            }
-
-            return compilationResult;
+            return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(), compilationResult);
         }
 
         private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)

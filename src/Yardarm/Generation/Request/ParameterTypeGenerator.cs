@@ -33,10 +33,11 @@ namespace Yardarm.Generation.Request
 
             if (name == null)
             {
-                // At the components root, use the parameters namespace
+                // At the components root, use the parameters namespace. In this case, use the key on the components
+                // dictionary and not the parameter name, since multiple component parameters may have the same name.
                 return QualifiedName(
                     GetNamespace(),
-                    IdentifierName(formatter.Format(Element.Element.Name)));
+                    IdentifierName(formatter.Format(Element.Key)));
 
             }
 

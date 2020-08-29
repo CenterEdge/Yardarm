@@ -22,6 +22,16 @@ namespace Yardarm.Packaging.Internal
             {
                 LibraryRange = new LibraryRange
                 {
+                    Name = "Microsoft.CSharp",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("4.7.0")
+                }
+            };
+
+            yield return new LibraryDependency
+            {
+                LibraryRange = new LibraryRange
+                {
                     Name = "System.ComponentModel.Annotations",
                     TypeConstraint = LibraryDependencyTarget.Package,
                     VersionRange = VersionRange.Parse("4.7.0")

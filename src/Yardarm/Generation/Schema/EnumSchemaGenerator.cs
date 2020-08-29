@@ -30,11 +30,13 @@ namespace Yardarm.Generation.Schema
 
             INameFormatter memberNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.EnumMember);
 
+            var namingContext = new NamingContext();
+
             yield return SyntaxFactory.EnumDeclaration(enumName)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                 .AddMembers(Schema.Enum
-                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter)!)
+                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter, namingContext)!)
                     .Where(p => p != null)
                     .ToArray());
         }
@@ -42,7 +44,8 @@ namespace Yardarm.Generation.Schema
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
             ILocatedOpenApiElement<OpenApiSchema> schemaElement,
             IOpenApiAny value,
-            INameFormatter nameFormatter)
+            INameFormatter nameFormatter,
+            NamingContext namingContext)
         {
             if (value.AnyType != AnyType.Primitive)
             {
@@ -57,7 +60,7 @@ namespace Yardarm.Generation.Schema
 
             var stringPrimitive = (OpenApiPrimitive<string>)primitive;
 
-            string memberName = nameFormatter.Format(stringPrimitive.Value);
+            string memberName = namingContext.RegisterName(nameFormatter.Format(stringPrimitive.Value));
 
             return SyntaxFactory.EnumMemberDeclaration(memberName)
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(

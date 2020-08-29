@@ -69,32 +69,33 @@ namespace Yardarm.Generation.Authentication
                             IdentifierName(CacheFieldName), LiteralExpression(SyntaxKind.NullLiteralExpression))))));
         }
 
-        protected override BlockSyntax GenerateApplyAsyncBody() =>
-            Block(
-                MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
+        protected override BlockSyntax GenerateApplyAsyncBody() => Block(
+            MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
 
-                MethodHelpers.IfNull(IdentifierName(CacheFieldName), Block(
-                    ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                        IdentifierName(CacheFieldName),
-                        WellKnownTypes.System.Convert.ToBase64String(WellKnownTypes.System.Text.Encoding.GetBytes(
-                            WellKnownTypes.System.Text.Encoding.UTF8,
-                            BinaryExpression(SyntaxKind.AddExpression,
-                                BinaryExpression(SyntaxKind.AddExpression,
-                                    IdentifierName(UsernamePropertyName),
-                                    SyntaxHelpers.StringLiteral(":")),
-                                IdentifierName(PasswordPropertyName))
-                        ))))
-                )),
-
+            MethodHelpers.IfNull(IdentifierName(CacheFieldName), Block(
                 ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    IdentifierName(CacheFieldName),
+                    WellKnownTypes.System.Convert.ToBase64String(WellKnownTypes.System.Text.Encoding.GetBytes(
+                        WellKnownTypes.System.Text.Encoding.UTF8,
+                        BinaryExpression(SyntaxKind.AddExpression,
+                            BinaryExpression(SyntaxKind.AddExpression,
+                                IdentifierName(UsernamePropertyName),
+                                SyntaxHelpers.StringLiteral(":")),
+                            IdentifierName(PasswordPropertyName))
+                    ))))
+            )),
+
+            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(MessageParameterName),
-                            IdentifierName("Headers")),
-                        IdentifierName("Authorization")),
-                    ObjectCreationExpression(WellKnownTypes.System.Net.Http.Headers.AuthenticationHeaderValue.Name)
-                        .AddArgumentListArguments(
-                            Argument(SyntaxHelpers.StringLiteral("Basic")),
-                            Argument(IdentifierName(CacheFieldName))))));
+                        IdentifierName(MessageParameterName),
+                        IdentifierName("Headers")),
+                    IdentifierName("Authorization")),
+                ObjectCreationExpression(WellKnownTypes.System.Net.Http.Headers.AuthenticationHeaderValue.Name)
+                    .AddArgumentListArguments(
+                        Argument(SyntaxHelpers.StringLiteral("Basic")),
+                        Argument(IdentifierName(CacheFieldName))))),
+
+            ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
     }
 }

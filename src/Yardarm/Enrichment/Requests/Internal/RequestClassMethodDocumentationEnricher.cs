@@ -19,8 +19,6 @@ namespace Yardarm.Enrichment.Requests.Internal
 
         private MethodDeclarationSyntax AddDocumentation(MethodDeclarationSyntax target) =>
             target.WithLeadingTrivia(
-                target.GetLeadingTrivia().Insert(0,
-                    DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                        DocumentationSyntaxHelpers.BuildInheritDocElement())));
+                target.GetLeadingTrivia().Insert(0, DocumentationSyntaxHelpers.InheritDocTrivia));
     }
 }

@@ -14,11 +14,21 @@ namespace Yardarm.Generation.Authentication
 {
     public abstract class SecuritySchemeTypeGenerator : TypeGeneratorBase<OpenApiSecurityScheme>
     {
+        private static readonly SyntaxTokenList _withAsyncModifiers = new SyntaxTokenList(
+            Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword), Token(SyntaxKind.AsyncKeyword));
+
+        private static readonly SyntaxTokenList _withoutAsyncModifiers = new SyntaxTokenList(
+            Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword));
+
         protected const string MessageParameterName = "message";
 
         protected IAuthenticationNamespace AuthenticationNamespace { get; set; }
 
         protected OpenApiSecurityScheme SecurityScheme => Element.Element;
+
+        protected virtual bool ApplyUsesAsyncAwait => false;
+
+        protected virtual bool ProcessResponseUsesAsyncAwait => false;
 
         protected SecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
@@ -56,11 +66,8 @@ namespace Yardarm.Generation.Authentication
 
         protected virtual MethodDeclarationSyntax GenerateApplyAsyncMethod() =>
             MethodDeclaration(WellKnownTypes.System.Threading.Tasks.ValueTask.Name, "ApplyAsync")
-                .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword),
-                    Token(SyntaxKind.AsyncKeyword))
-                .WithLeadingTrivia(
-                    DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                        DocumentationSyntaxHelpers.BuildInheritDocElement()))
+                .WithModifiers(ApplyUsesAsyncAwait ? _withAsyncModifiers : _withoutAsyncModifiers)
+                .WithLeadingTrivia(DocumentationSyntaxHelpers.InheritDocTrivia)
                 .AddParameterListParameters(
                     Parameter(Identifier(MessageParameterName))
                         .WithType(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name),
@@ -69,11 +76,8 @@ namespace Yardarm.Generation.Authentication
 
         protected virtual MethodDeclarationSyntax GenerateProcessResponseAsyncMethod() =>
             MethodDeclaration(WellKnownTypes.System.Threading.Tasks.ValueTask.Name, "ProcessResponseAsync")
-                .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword),
-                    Token(SyntaxKind.AsyncKeyword))
-                .WithLeadingTrivia(
-                    DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                        DocumentationSyntaxHelpers.BuildInheritDocElement()))
+                .WithModifiers(ProcessResponseUsesAsyncAwait ? _withAsyncModifiers : _withoutAsyncModifiers)
+                .WithLeadingTrivia(DocumentationSyntaxHelpers.InheritDocTrivia)
                 .AddParameterListParameters(
                     Parameter(Identifier(MessageParameterName))
                         .WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name),
@@ -82,9 +86,10 @@ namespace Yardarm.Generation.Authentication
 
         protected abstract BlockSyntax GenerateApplyAsyncBody();
 
-        protected virtual BlockSyntax GenerateProcessResponseAsyncBody() =>
-            Block(
-                MethodHelpers.ThrowIfArgumentNull(MessageParameterName));
+        protected virtual BlockSyntax GenerateProcessResponseAsyncBody() => Block(
+            MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
+
+            ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
 
         protected virtual string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class)
             .Format(Element.Element.Reference.Id);

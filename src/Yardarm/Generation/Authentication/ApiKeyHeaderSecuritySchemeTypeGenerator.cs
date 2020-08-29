@@ -47,18 +47,19 @@ namespace Yardarm.Generation.Authentication
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
         }
 
-        protected override BlockSyntax GenerateApplyAsyncBody() =>
-            Block(
-                MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
-                MethodHelpers.IfNotNull(IdentifierName(_apiKeyPropertyName!), Block(
-                    ExpressionStatement(InvocationExpression(
+        protected override BlockSyntax GenerateApplyAsyncBody() => Block(
+            MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
+            MethodHelpers.IfNotNull(IdentifierName(_apiKeyPropertyName!), Block(
+                ExpressionStatement(InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                    IdentifierName(MessageParameterName),
-                                    IdentifierName("Headers")),
-                                IdentifierName("Add")))
-                        .AddArgumentListArguments(
-                            Argument(SyntaxHelpers.StringLiteral(SecurityScheme.Name)),
-                            Argument(IdentifierName(_apiKeyPropertyName!)))))));
+                                IdentifierName(MessageParameterName),
+                                IdentifierName("Headers")),
+                            IdentifierName("Add")))
+                    .AddArgumentListArguments(
+                        Argument(SyntaxHelpers.StringLiteral(SecurityScheme.Name)),
+                        Argument(IdentifierName(_apiKeyPropertyName!)))))),
+
+            ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
     }
 }

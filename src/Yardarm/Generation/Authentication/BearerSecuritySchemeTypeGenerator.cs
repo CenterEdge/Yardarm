@@ -35,19 +35,20 @@ namespace Yardarm.Generation.Authentication
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
         }
 
-        protected override BlockSyntax GenerateApplyAsyncBody() =>
-            Block(
-                MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
-                MethodHelpers.IfNotNull(IdentifierName(BearerTokenPropertyName), Block(
-                    ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+        protected override BlockSyntax GenerateApplyAsyncBody() => Block(
+            MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
+            MethodHelpers.IfNotNull(IdentifierName(BearerTokenPropertyName), Block(
+                ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(MessageParameterName),
-                                IdentifierName("Headers")),
-                            IdentifierName("Authorization")),
-                        ObjectCreationExpression(WellKnownTypes.System.Net.Http.Headers.AuthenticationHeaderValue.Name)
-                            .AddArgumentListArguments(
-                                Argument(SyntaxHelpers.StringLiteral("Bearer")),
-                                Argument(IdentifierName(BearerTokenPropertyName))))))));
+                            IdentifierName(MessageParameterName),
+                            IdentifierName("Headers")),
+                        IdentifierName("Authorization")),
+                    ObjectCreationExpression(WellKnownTypes.System.Net.Http.Headers.AuthenticationHeaderValue.Name)
+                        .AddArgumentListArguments(
+                            Argument(SyntaxHelpers.StringLiteral("Bearer")),
+                            Argument(IdentifierName(BearerTokenPropertyName))))))),
+
+            ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
     }
 }

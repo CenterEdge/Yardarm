@@ -12,6 +12,8 @@ namespace Yardarm.Helpers
     {
         private static readonly char[] _newLineChars = {'\r', '\n'};
 
+        public static SyntaxTrivia InheritDocTrivia { get; } = BuildXmlCommentTrivia(BuildInheritDocElement());
+
         public static SyntaxTrivia BuildXmlCommentTrivia(params XmlNodeSyntax[] elements)
         {
             var nodes = new XmlNodeSyntax[elements.Length * 2 + 1];

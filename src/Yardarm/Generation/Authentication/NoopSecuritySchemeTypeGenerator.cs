@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -28,7 +29,9 @@ namespace Yardarm.Generation.Authentication
             return base.Generate();
         }
 
-        protected override BlockSyntax GenerateApplyAsyncBody() =>
-            Block(MethodHelpers.ThrowIfArgumentNull(MessageParameterName));
+        protected override BlockSyntax GenerateApplyAsyncBody() => Block(
+            MethodHelpers.ThrowIfArgumentNull(MessageParameterName),
+
+            ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
     }
 }

@@ -110,7 +110,7 @@ namespace Yardarm.Generation.Response
         {
             var nameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-            foreach (var header in Element.GetHeaders(Context.Document))
+            foreach (var header in Element.GetHeaders())
             {
                 ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 

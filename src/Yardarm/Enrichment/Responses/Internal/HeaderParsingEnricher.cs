@@ -60,7 +60,7 @@ namespace Yardarm.Enrichment.Responses.Internal
 
             NameSyntax valuesName = IdentifierName("values");
 
-            foreach (var header in response.GetHeaders(_context.Document))
+            foreach (var header in response.GetHeaders())
             {
                 ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 

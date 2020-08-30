@@ -30,5 +30,13 @@ namespace Yardarm.NewtonsoftJson.Internal
                 Name,
                 IdentifierName("JsonTypeSerializer"));
         }
+
+        public TypeSyntax AdditionalPropertiesDictionary(TypeSyntax valueType) =>
+            QualifiedName(
+                Name,
+                GenericName(
+                    Identifier("AdditionalPropertiesDictionary"),
+                    TypeArgumentList(SingletonSeparatedList(valueType))));
+
     }
 }

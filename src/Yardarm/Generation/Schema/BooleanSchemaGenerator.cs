@@ -18,9 +18,6 @@ namespace Yardarm.Generation.Schema
             NameKind.Struct,
             isGenerated: false);
 
-        public string GetChildName<TChild>(ILocatedOpenApiElement<TChild> child)
-            where TChild : IOpenApiElement => "";
-
         public SyntaxTree? GenerateSyntaxTree() => null;
 
         public IEnumerable<MemberDeclarationSyntax> Generate() =>

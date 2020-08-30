@@ -31,6 +31,26 @@ namespace Yardarm.Helpers
                         Collections.Name,
                         IdentifierName("Generic"));
 
+                    public static class DictionaryT
+                    {
+                        public static NameSyntax Name(TypeSyntax keyType, TypeSyntax valueType) =>
+                            QualifiedName(
+                                Generic.Name,
+                                GenericName(
+                                    Identifier("Dictionary"),
+                                    TypeArgumentList(SeparatedList(new [] {keyType, valueType}))));
+                    }
+
+                    public static class IDictionaryT
+                    {
+                        public static NameSyntax Name(TypeSyntax keyType, TypeSyntax valueType) =>
+                            QualifiedName(
+                                Generic.Name,
+                                GenericName(
+                                    Identifier("IDictionary"),
+                                    TypeArgumentList(SeparatedList(new [] {keyType, valueType}))));
+                    }
+
                     public static class IEnumerableT
                     {
                         public static NameSyntax Name(TypeSyntax itemType) =>

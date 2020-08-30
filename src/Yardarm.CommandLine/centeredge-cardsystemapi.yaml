@@ -450,6 +450,9 @@ components:
         - username
         - passwordHash
         - requestTimestamp
+      additionalProperties:
+        type: string
+        nullable: true
     Error:
       type: object
       properties:

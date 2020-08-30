@@ -21,9 +21,6 @@ namespace Yardarm.Generation.Schema
             SyntaxFactory.IdentifierName("dynamic"),
             isGenerated: false);
 
-        public string GetChildName<TChild>(ILocatedOpenApiElement<TChild> child)
-            where TChild : IOpenApiElement => "";
-
         public SyntaxTree? GenerateSyntaxTree() => null;
 
         public IEnumerable<MemberDeclarationSyntax> Generate() =>

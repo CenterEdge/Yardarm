@@ -13,6 +13,7 @@ namespace Yardarm.NewtonsoftJson
         {
             services
                 .AddCreateDefaultRegistryEnricher<JsonCreateDefaultRegistryEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<JsonAdditionalPropertiesEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()

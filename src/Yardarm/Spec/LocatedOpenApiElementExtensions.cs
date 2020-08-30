@@ -12,11 +12,7 @@ namespace Yardarm.Spec
         private static readonly ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse> _unknownResponses =
             new ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse>();
 
-        private static readonly OpenApiSchema _defaultSchema =
-            new OpenApiSchema
-            {
-                Type = "string"
-            };
+        private static readonly OpenApiSchema _defaultSchema = new OpenApiSchema();
 
         public static bool IsRoot(this ILocatedOpenApiElement element) => element.Parent is null;
 
@@ -191,6 +187,16 @@ namespace Yardarm.Spec
         #endregion
 
         #region Schema
+
+        public static ILocatedOpenApiElement<OpenApiSchema>? GetAdditionalProperties(
+            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
+            schema.Element.AdditionalProperties != null
+                ? schema.CreateChild(schema.Element.AdditionalProperties, "additionalProperties")
+                : null;
+
+        public static ILocatedOpenApiElement<OpenApiSchema> GetAdditionalPropertiesOrDefault(
+            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
+            GetAdditionalProperties(schema) ?? schema.CreateChild(_defaultSchema, "additionalProperties");
 
         public static ILocatedOpenApiElement<OpenApiSchema>? GetItemSchema(
             this ILocatedOpenApiElement<OpenApiSchema> schema) =>

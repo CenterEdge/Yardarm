@@ -13,6 +13,18 @@ namespace Yardarm.NewtonsoftJson.Helpers
             NewtonsoftJson,
             IdentifierName("Converters"));
 
+        public static NameSyntax NewtonsoftJsonLinq { get; } = QualifiedName(
+            NewtonsoftJson,
+            IdentifierName("Linq"));
+
+        public static NameSyntax JsonExtensionDataAttributeName { get; } = QualifiedName(
+            NewtonsoftJson,
+            IdentifierName("JsonExtensionDataAttribute"));
+
+        public static NameSyntax JsonIgnoreAttributeName { get; } = QualifiedName(
+            NewtonsoftJson,
+            IdentifierName("JsonIgnoreAttribute"));
+
         public static NameSyntax JsonPropertyAttributeName { get; } = QualifiedName(
             NewtonsoftJson,
             IdentifierName("JsonProperty"));
@@ -20,6 +32,10 @@ namespace Yardarm.NewtonsoftJson.Helpers
         public static NameSyntax JsonConverterAttributeName { get; } = QualifiedName(
             NewtonsoftJson,
             IdentifierName("JsonConverter"));
+
+        public static NameSyntax JTokenName { get; } = QualifiedName(
+            NewtonsoftJsonLinq,
+            IdentifierName("JToken"));
 
         public static NameSyntax StringEnumConverterName { get; } = QualifiedName(
             NewtonsoftJsonConverters,

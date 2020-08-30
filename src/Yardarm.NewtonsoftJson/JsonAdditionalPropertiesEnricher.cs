@@ -54,8 +54,10 @@ namespace Yardarm.NewtonsoftJson
             var members = target.GetSpecialMembers(SpecialMembers.AdditionalProperties)
                 .OfType<PropertyDeclarationSyntax>().ToArray();
 
+            target = target.TrackNodes((IEnumerable<PropertyDeclarationSyntax>) members);
+
             return members.Aggregate(target,
-                (current, member) => current.ReplaceNode(member, GenerateNewNodes(member)));
+                (current, member) => current.ReplaceNode(current.GetCurrentNode(member), GenerateNewNodes(member)));
         }
 
         private IEnumerable<MemberDeclarationSyntax> GenerateNewNodes(PropertyDeclarationSyntax property)
@@ -74,7 +76,7 @@ namespace Yardarm.NewtonsoftJson
                     SingletonSeparatedList(VariableDeclarator(Identifier(WrapperFieldName)))))
                 .AddModifiers(Token(SyntaxKind.PrivateKeyword));
 
-            property = property
+            yield return property
                 // Remove the getters and setters
                 .WithAccessorList(null)
                 // Remove the old initializer
@@ -88,8 +90,6 @@ namespace Yardarm.NewtonsoftJson
                         ObjectCreationExpression(wrapperType)
                             .AddArgumentListArguments(
                                 Argument(IdentifierName(BackingFieldName))))));
-
-            yield return property;
         }
     }
 }

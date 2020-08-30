@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,6 +16,31 @@ namespace Yardarm.Helpers
                     IdentifierName("ConfigureAwait")),
                 ArgumentList(SingletonSeparatedList(
                     Argument(LiteralExpression(SyntaxKind.FalseLiteralExpression))))));
+
+        public static bool IsDynamic(TypeSyntax typeSyntax, out bool isNullable)
+        {
+            isNullable = IsNullable(typeSyntax, out TypeSyntax? innerTypeSyntax);
+            if (isNullable)
+            {
+                typeSyntax = innerTypeSyntax!;
+            }
+
+            return typeSyntax is IdentifierNameSyntax nameSyntax && nameSyntax.Identifier.ValueText == "dynamic";
+        }
+
+        public static bool IsNullable(TypeSyntax typeSyntax, [MaybeNullWhen(false)] out TypeSyntax innerTypeSyntax)
+        {
+            if (typeSyntax is NullableTypeSyntax nullableSyntax)
+            {
+                innerTypeSyntax = nullableSyntax.ElementType;
+                return true;
+            }
+            else
+            {
+                innerTypeSyntax = null;
+                return false;
+            }
+        }
 
         public static ExpressionSyntax MemberAccess(params string[] identifierNames) =>
             MemberAccess(IdentifierName(identifierNames[0]), identifierNames.Skip(1));

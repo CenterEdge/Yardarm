@@ -6,7 +6,9 @@ namespace Yardarm.NewtonsoftJson
     {
         NameSyntax Name { get; }
         NameSyntax DiscriminatorConverter { get; }
+        NameSyntax DynamicAdditionalPropertiesDictionary { get; }
         NameSyntax JsonTypeSerializer { get; }
+        NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; }
 
         TypeSyntax AdditionalPropertiesDictionary(TypeSyntax valueType);
     }

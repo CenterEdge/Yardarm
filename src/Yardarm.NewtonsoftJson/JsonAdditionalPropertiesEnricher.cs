@@ -62,14 +62,20 @@ namespace Yardarm.NewtonsoftJson
 
         private IEnumerable<MemberDeclarationSyntax> GenerateNewNodes(PropertyDeclarationSyntax property)
         {
-            yield return _backingFieldDeclaration;
-
             TypeSyntax valueType = property.Type.DescendantNodes()
                 .OfType<GenericNameSyntax>()
                 .First()
                 .TypeArgumentList.Arguments[1];
 
-            TypeSyntax wrapperType = _jsonSerializationNamespace.AdditionalPropertiesDictionary(valueType);
+            bool isDynamic = SyntaxHelpers.IsDynamic(valueType, out bool isNullable);
+
+            TypeSyntax wrapperType = isDynamic
+                ? isNullable
+                    ? _jsonSerializationNamespace.NullableDynamicAdditionalPropertiesDictionary
+                    : _jsonSerializationNamespace.DynamicAdditionalPropertiesDictionary
+                : _jsonSerializationNamespace.AdditionalPropertiesDictionary(valueType);
+
+            yield return _backingFieldDeclaration;
 
             yield return FieldDeclaration(VariableDeclaration(
                     NullableType(wrapperType),

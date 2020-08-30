@@ -18,10 +18,11 @@ namespace RootNamespace.Serialization.Json
         }
 
 #pragma warning disable 8603
-        private static TValue ToValue(JToken token) => token.ToObject<TValue>();
+        protected virtual TValue ToValue(JToken token) =>
+            token.ToObject<TValue>();
 #pragma warning restore 8603
 
-        private static JToken ToJToken(TValue value) =>
+        protected virtual JToken ToJToken(TValue value) =>
             value == null
                 ? JValue.CreateNull()
                 : value switch
@@ -29,6 +30,7 @@ namespace RootNamespace.Serialization.Json
                 string str => new JValue(str),
                 Uri uri => new JValue(uri),
                 object obj when obj.GetType().IsValueType => new JValue(obj),
+                JToken jToken => jToken,
                 _ => JToken.FromObject(value)
             };
 

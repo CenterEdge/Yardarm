@@ -9,7 +9,9 @@ namespace Yardarm.NewtonsoftJson.Internal
     {
         public NameSyntax Name { get; }
         public NameSyntax DiscriminatorConverter { get; }
+        public NameSyntax DynamicAdditionalPropertiesDictionary { get; }
         public NameSyntax JsonTypeSerializer { get; }
+        public NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; }
 
         public JsonSerializationNamespace(ISerializationNamespace serializationNamespace)
         {
@@ -26,9 +28,17 @@ namespace Yardarm.NewtonsoftJson.Internal
                 Name,
                 IdentifierName("DiscriminatorConverter"));
 
+            DynamicAdditionalPropertiesDictionary = QualifiedName(
+                Name,
+                IdentifierName("DynamicAdditionalPropertiesDictionary"));
+
             JsonTypeSerializer = QualifiedName(
                 Name,
                 IdentifierName("JsonTypeSerializer"));
+
+            NullableDynamicAdditionalPropertiesDictionary = QualifiedName(
+                Name,
+                IdentifierName("NullableDynamicAdditionalPropertiesDictionary"));
         }
 
         public TypeSyntax AdditionalPropertiesDictionary(TypeSyntax valueType) =>

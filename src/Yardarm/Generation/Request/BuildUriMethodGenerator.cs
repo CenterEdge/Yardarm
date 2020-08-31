@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Generation.Tag;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -26,6 +23,11 @@ namespace Yardarm.Generation.Request
             Context = context ?? throw new ArgumentNullException(nameof(context));
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
+
+        public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+            MethodDeclaration(
+                PredefinedType(Token(SyntaxKind.StringKeyword)),
+                BuildUriMethodName);
 
         public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation)
         {
@@ -79,9 +81,7 @@ namespace Yardarm.Generation.Request
                     pathExpression, buildArrayExpression);
             }
 
-            return MethodDeclaration(
-                    PredefinedType(Token(SyntaxKind.StringKeyword)),
-                    BuildUriMethodName)
+            return GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithExpressionBody(ArrowExpressionClause(
                     pathExpression));

@@ -27,10 +27,20 @@ namespace Yardarm.Enrichment.Requests.Internal
 
         private PropertyDeclarationSyntax AddRequiredAttribute<T>(PropertyDeclarationSyntax syntax,
             OpenApiEnrichmentContext<T> context)
-            where T : IOpenApiElement =>
-            syntax
-                .MakeNullableOrInitializeIfReferenceType(context.Compilation)
+            where T : IOpenApiElement
+        {
+            bool forInterface = syntax.Parent is InterfaceDeclarationSyntax;
+
+            if (!forInterface)
+            {
+                syntax = syntax.MakeNullableOrInitializeIfReferenceType(context.Compilation);
+            }
+
+            syntax = syntax
                 .AddAttributeLists(AttributeList().AddAttributes(
                     Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)));
+
+            return syntax;
+        }
     }
 }

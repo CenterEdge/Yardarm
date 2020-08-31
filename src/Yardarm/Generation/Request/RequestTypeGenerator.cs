@@ -25,6 +25,8 @@ namespace Yardarm.Generation.Request
 
         protected OpenApiOperation Operation => Element.Element;
 
+        protected string ClassName => Operation.OperationId + "Request";
+
         public RequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
@@ -45,11 +47,11 @@ namespace Yardarm.Generation.Request
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
-            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Interface);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
             return new YardarmTypeInfo(QualifiedName(ns,
-                IdentifierName(formatter.Format(Operation.OperationId + "Request"))));
+                IdentifierName(formatter.Format(ClassName))));
         }
 
         public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
@@ -59,19 +61,43 @@ namespace Yardarm.Generation.Request
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            var classNameAndNamespace = (QualifiedNameSyntax)TypeInfo.Name;
+            yield return GenerateInterface();
 
-            string className = classNameAndNamespace.Right.Identifier.Text;
+            yield return GenerateClass();
+        }
+
+        protected virtual InterfaceDeclarationSyntax GenerateInterface()
+        {
+            string interfaceName = ((QualifiedNameSyntax)TypeInfo.Name).Right.Identifier.ValueText;
+
+            InterfaceDeclarationSyntax declaration = InterfaceDeclaration(interfaceName)
+                .AddElementAnnotation(Element, Context.ElementRegistry)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddBaseListTypes(SimpleBaseType(RequestsNamespace.IOperationRequest));
+
+            declaration = declaration.AddMembers(
+                GenerateParameterProperties(Element.GetParameters(), false).ToArray());
+
+            return declaration.AddMembers(
+                BuildRequestMethodGenerator.GenerateHeader(Element));
+        }
+
+        protected virtual ClassDeclarationSyntax GenerateClass()
+        {
+            string className = Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(ClassName);
 
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddBaseListTypes(SimpleBaseType(RequestsNamespace.OperationRequest))
+                .AddBaseListTypes(
+                    SimpleBaseType(RequestsNamespace.OperationRequest),
+                    SimpleBaseType(TypeInfo.Name))
                 .AddMembers(ConstructorDeclaration(className)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
-            declaration = AddParameterProperties(declaration, Element.GetParameters());
+            declaration = declaration.AddMembers(
+                GenerateParameterProperties(Element.GetParameters(), true).ToArray());
 
             var requestBodyElement = Element.GetRequestBody();
             if (requestBodyElement != null)
@@ -80,30 +106,34 @@ namespace Yardarm.Generation.Request
                 if (schema != null)
                 {
                     declaration = declaration.AddMembers(
-                        CreatePropertyDeclaration(requestBodyElement, className, schema, "Body"));
+                        CreatePropertyDeclaration(requestBodyElement, className, schema, "Body")
+                            .AddModifiers(Token(SyntaxKind.PublicKeyword)));
                 }
             }
 
-            declaration = declaration.AddMembers(
+            return declaration.AddMembers(
                 BuildRequestMethodGenerator.Generate(Element),
                 BuildUriMethodGenerator.Generate(Element),
                 AddHeadersMethodGenerator.Generate(Element),
                 BuildContentMethodGenerator.Generate(Element));
-
-            yield return declaration;
         }
 
-        protected virtual ClassDeclarationSyntax AddParameterProperties(ClassDeclarationSyntax declaration,
-            IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> properties)
+        protected virtual IEnumerable<MemberDeclarationSyntax> GenerateParameterProperties(
+            IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> properties, bool forClass)
         {
-            IEnumerable<MemberDeclarationSyntax> AddParameterProperty(
-                ILocatedOpenApiElement<OpenApiParameter> parameter)
+            foreach (var parameter in properties)
             {
                 var schema = parameter.GetSchemaOrDefault();
 
-                yield return CreatePropertyDeclaration(parameter, declaration.Identifier.ValueText, schema);
+                PropertyDeclarationSyntax propertyDeclaration = CreatePropertyDeclaration(parameter, ClassName, schema);
+                if (forClass)
+                {
+                    propertyDeclaration = propertyDeclaration.AddModifiers(Token(SyntaxKind.PublicKeyword));
+                }
 
-                if (parameter.Element.Reference == null && schema.Element.Reference == null)
+                yield return propertyDeclaration;
+
+                if (!forClass && parameter.Element.Reference == null && schema.Element.Reference == null)
                 {
                     foreach (var member in Context.TypeGeneratorRegistry.Get(schema).Generate())
                     {
@@ -111,10 +141,6 @@ namespace Yardarm.Generation.Request
                     }
                 }
             }
-
-            return declaration.AddMembers(properties
-                .SelectMany(AddParameterProperty)
-                .ToArray());
         }
 
         protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(ILocatedOpenApiElement<T> parameter, string className,
@@ -134,7 +160,6 @@ namespace Yardarm.Generation.Request
 
             var propertyDeclaration = PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(parameter, Context.ElementRegistry)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),

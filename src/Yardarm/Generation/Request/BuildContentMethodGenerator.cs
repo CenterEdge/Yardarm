@@ -29,14 +29,17 @@ namespace Yardarm.Generation.Request
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
         }
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodDeclaration(
                     NullableType(WellKnownTypes.System.Net.Http.HttpContent.Name),
                     BuildContentMethodName)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddParameterListParameters(
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
-                        .WithType(SerializationNamespace.ITypeSerializerRegistry))
+                        .WithType(SerializationNamespace.ITypeSerializerRegistry));
+
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+            GenerateHeader(operation)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(

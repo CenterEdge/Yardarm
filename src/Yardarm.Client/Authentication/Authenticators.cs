@@ -1,4 +1,5 @@
-﻿using RootNamespace.Authentication.Internal;
+﻿using System;
+using RootNamespace.Authentication.Internal;
 using RootNamespace.Requests;
 
 namespace RootNamespace.Authentication
@@ -15,8 +16,14 @@ namespace RootNamespace.Authentication
             _securitySchemeSetRegistry = new SecuritySchemeSetRegistry<Authenticators>(this);
         }
 
-        public IAuthenticator? SelectAuthenticator<T>(T request)
-            where T : IOperationRequest =>
-            request.Authenticator ?? _securitySchemeSetRegistry.SelectAuthenticator(typeof(T));
+        public IAuthenticator? SelectAuthenticator(IOperationRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            return request.Authenticator ?? _securitySchemeSetRegistry.SelectAuthenticator(request.GetType());
+        }
     }
 }

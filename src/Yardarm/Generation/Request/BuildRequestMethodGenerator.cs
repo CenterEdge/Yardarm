@@ -24,14 +24,17 @@ namespace Yardarm.Generation.Request
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             MethodDeclaration(
                     WellKnownTypes.System.Net.Http.HttpRequestMessage.Name,
-        BuildRequestMethodName)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    BuildRequestMethodName)
                 .AddParameterListParameters(
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
-                        .WithType(SerializationNamespace.ITypeSerializerRegistry))
+                        .WithType(SerializationNamespace.ITypeSerializerRegistry));
+
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+            GenerateHeader(operation)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(

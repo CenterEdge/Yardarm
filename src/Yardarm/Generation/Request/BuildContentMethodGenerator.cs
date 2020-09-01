@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -37,35 +36,45 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
                         .WithType(SerializationNamespace.ITypeSerializerRegistry));
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
-            GenerateHeader(operation)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .WithBody(Block(GenerateStatements(operation)));
-
-        protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            ILocatedOpenApiElement<OpenApiOperation> operation)
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
         {
-            var requestBody = operation.GetRequestBody();
+            MethodDeclarationSyntax methodDeclaration = GenerateHeader(operation);
 
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType;
-            if (requestBody == null || (mediaType = MediaTypeSelector.Select(requestBody)) == null)
+            if (mediaType == null)
             {
-                yield return ReturnStatement(LiteralExpression(SyntaxKind.NullLiteralExpression));
-                yield break;
+                // In the base request class which has no body
+                methodDeclaration = methodDeclaration
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword))
+                    .WithExpressionBody(ArrowExpressionClause(
+                        LiteralExpression(SyntaxKind.NullLiteralExpression)));
+            }
+            else
+            {
+                // In an inherited request class which adds a body
+                methodDeclaration = methodDeclaration
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword))
+                    .WithBody(Block(GenerateStatements(operation, mediaType)));
             }
 
+            return methodDeclaration;
+        }
+
+        protected virtual IEnumerable<StatementSyntax> GenerateStatements(
+            ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<OpenApiMediaType> mediaType)
+        {
             var createContentExpression =
                 InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         SerializationNamespace.TypeSerializerRegistryExtensions,
                         IdentifierName("Serialize")))
                     .AddArgumentListArguments(
                         Argument(IdentifierName(TypeSerializerRegistryParameterName)),
-                        Argument(IdentifierName(RequestTypeGenerator.BodyPropertyName)),
+                        Argument(IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)),
                         Argument(SyntaxHelpers.StringLiteral(mediaType.Key)));
 
             yield return ReturnStatement(ConditionalExpression(
                 IsPatternExpression(
-                    IdentifierName(RequestTypeGenerator.BodyPropertyName),
+                    IdentifierName(RequestMediaTypeGenerator.BodyPropertyName),
                     ConstantPattern(LiteralExpression(SyntaxKind.NullLiteralExpression))),
                 LiteralExpression(SyntaxKind.NullLiteralExpression),
                 createContentExpression));

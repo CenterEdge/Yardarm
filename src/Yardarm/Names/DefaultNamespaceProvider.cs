@@ -40,9 +40,9 @@ namespace Yardarm.Names
             element switch
             {
                 ILocatedOpenApiElement<OpenApiHeader> header => GetHeaderNamespace(header),
+                ILocatedOpenApiElement<OpenApiMediaType> mediaType => GetMediaTypeNamespace(mediaType),
                 ILocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
                 ILocatedOpenApiElement<OpenApiParameter> parameter => GetParameterNamespace(parameter),
-                ILocatedOpenApiElement<OpenApiRequestBody> requestBody => GetRequestBodyNamespace(requestBody),
                 ILocatedOpenApiElement<OpenApiUnknownResponse> response => GetUnknownResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponses> responses => GetResponsesNamespace(responses),
@@ -55,14 +55,14 @@ namespace Yardarm.Names
         protected virtual NameSyntax GetHeaderNamespace(ILocatedOpenApiElement<OpenApiHeader> header) =>
             _headersNamespace;
 
+        protected virtual NameSyntax GetMediaTypeNamespace(ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
+            _requestsNamespace.Name;
+
         protected virtual NameSyntax GetOperationNamespace(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             _requestsNamespace.Name;
 
         protected virtual NameSyntax GetParameterNamespace(ILocatedOpenApiElement<OpenApiParameter> operation) =>
             _parametersNamespace;
-
-        protected virtual NameSyntax GetRequestBodyNamespace(ILocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            _modelsNamespace;
 
         protected virtual NameSyntax GetResponseNamespace(ILocatedOpenApiElement<OpenApiResponse> response) =>
             _responsesNamespace.Name;

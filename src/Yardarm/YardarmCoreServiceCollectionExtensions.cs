@@ -32,10 +32,10 @@ namespace Yardarm
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ClientGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, HeaderGenerator>()
+                .AddTransient<ISyntaxTreeGenerator, MediaTypeGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ParameterGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SchemaGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, SecuritySchemeGenerator>()
-                .AddTransient<ISyntaxTreeGenerator, RequestBodyGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponseGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ResponseSetGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, RequestGenerator>()
@@ -48,9 +48,9 @@ namespace Yardarm
             services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorFactory<>),
                 typeof(NoopTypeGeneratorFactory<>), ServiceLifetime.Singleton));
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiHeader>, HeaderTypeGeneratorFactory>();
+            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiMediaType>, MediaTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiRequestBody>, RequestBodyTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();

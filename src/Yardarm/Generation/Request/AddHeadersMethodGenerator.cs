@@ -37,7 +37,8 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(RequestMessageParameterName))
                         .WithType(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name));
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
             GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithBody(Block(GenerateStatements(operation)));

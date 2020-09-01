@@ -8,7 +8,7 @@ namespace Yardarm.Generation
     public abstract class TypeGeneratorBase<T> : TypeGeneratorBase
         where T : IOpenApiElement
     {
-        protected ILocatedOpenApiElement<T> Element { get; }
+        public ILocatedOpenApiElement<T> Element { get; }
 
         protected TypeGeneratorBase(ILocatedOpenApiElement<T> element, GenerationContext context, ITypeGenerator? parent)
             : base(context, parent)

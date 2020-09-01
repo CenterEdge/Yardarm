@@ -9,6 +9,8 @@ namespace Yardarm.Generation
 {
     public interface ITypeGenerator : IYardarmTypeInfoProvider
     {
+        ITypeGenerator? Parent { get; }
+
         SyntaxTree? GenerateSyntaxTree();
 
         IEnumerable<MemberDeclarationSyntax> Generate();

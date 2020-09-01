@@ -7,6 +7,6 @@ namespace Yardarm.Generation.Request
     public interface IRequestMethodGenerator
     {
         MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation);
-        MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation);
+        MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<OpenApiMediaType>? mediaType);
     }
 }

@@ -221,6 +221,10 @@ namespace Yardarm.Spec
                 ? mediaType.CreateChild(mediaType.Element.Schema, "schema")
                 : null;
 
+        public static ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault(
+            this ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
+            mediaType.GetSchema() ?? mediaType.CreateChild(_defaultSchema, "schema");
+
         public static ILocatedOpenApiElement<OpenApiSchema>? GetSchema(
             this ILocatedOpenApiElement<OpenApiParameter> parameter) =>
             parameter.Element.Schema != null

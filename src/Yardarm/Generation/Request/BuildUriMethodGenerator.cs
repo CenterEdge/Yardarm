@@ -29,7 +29,8 @@ namespace Yardarm.Generation.Request
                 PredefinedType(Token(SyntaxKind.StringKeyword)),
                 BuildUriMethodName);
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation)
+        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
         {
             var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 

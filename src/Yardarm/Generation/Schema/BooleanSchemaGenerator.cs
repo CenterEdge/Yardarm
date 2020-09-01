@@ -13,6 +13,8 @@ namespace Yardarm.Generation.Schema
     {
         public static BooleanSchemaGenerator Instance { get; } = new BooleanSchemaGenerator();
 
+        public ITypeGenerator? Parent => null;
+
         public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
             SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.BoolKeyword)),
             NameKind.Struct,

@@ -13,6 +13,8 @@ namespace Yardarm.Generation.Schema
     {
         public static NullSchemaGenerator Instance { get; } = new NullSchemaGenerator();
 
+        public ITypeGenerator? Parent => null;
+
         private NullSchemaGenerator()
         {
         }

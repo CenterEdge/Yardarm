@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Names;
@@ -14,18 +13,15 @@ namespace Yardarm.Generation.Request
 {
     public class RequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
-        public const string BodyPropertyName = "Body";
-
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IBuildRequestMethodGenerator BuildRequestMethodGenerator { get; }
         protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
         protected IAddHeadersMethodGenerator AddHeadersMethodGenerator { get; }
         protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
+
         protected IRequestsNamespace RequestsNamespace { get; }
 
         protected OpenApiOperation Operation => Element.Element;
-
-        protected string ClassName => Operation.OperationId + "Request";
 
         public RequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
@@ -47,93 +43,46 @@ namespace Yardarm.Generation.Request
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
-            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Interface);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
             return new YardarmTypeInfo(QualifiedName(ns,
-                IdentifierName(formatter.Format(ClassName))));
+                IdentifierName(formatter.Format(Operation.OperationId + "Request"))));
         }
 
-        public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
+        public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
             NameKind nameKind) =>
             QualifiedName((NameSyntax)TypeInfo.Name, IdentifierName(
                 Context.NameFormatterSelector.GetFormatter(nameKind).Format(child.Key + "-Model")));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            yield return GenerateInterface();
-
-            yield return GenerateClass();
-        }
-
-        protected virtual InterfaceDeclarationSyntax GenerateInterface()
-        {
-            string interfaceName = ((QualifiedNameSyntax)TypeInfo.Name).Right.Identifier.ValueText;
-
-            InterfaceDeclarationSyntax declaration = InterfaceDeclaration(interfaceName)
-                .AddElementAnnotation(Element, Context.ElementRegistry)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddBaseListTypes(SimpleBaseType(RequestsNamespace.IOperationRequest));
-
-            declaration = declaration.AddMembers(
-                GenerateParameterProperties(Element.GetParameters(), false).ToArray());
-
-            return declaration.AddMembers(
-                BuildRequestMethodGenerator.GenerateHeader(Element));
-        }
-
-        protected virtual ClassDeclarationSyntax GenerateClass()
-        {
-            string className = Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(ClassName);
+            string className = ((QualifiedNameSyntax)TypeInfo.Name).Right.Identifier.ValueText;
 
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddBaseListTypes(
-                    SimpleBaseType(RequestsNamespace.OperationRequest),
-                    SimpleBaseType(TypeInfo.Name))
-                .AddMembers(ConstructorDeclaration(className)
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                    .WithBody(Block()));
+                .AddBaseListTypes(SimpleBaseType(RequestsNamespace.OperationRequest));
 
             declaration = declaration.AddMembers(
-                GenerateParameterProperties(Element.GetParameters(), true).ToArray());
+                GenerateParameterProperties(className).ToArray());
 
-            var requestBodyElement = Element.GetRequestBody();
-            if (requestBodyElement != null)
-            {
-                var schema = MediaTypeSelector.Select(requestBodyElement)?.GetSchema();
-                if (schema != null)
-                {
-                    declaration = declaration.AddMembers(
-                        CreatePropertyDeclaration(requestBodyElement, className, schema, "Body")
-                            .AddModifiers(Token(SyntaxKind.PublicKeyword)));
-                }
-            }
-
-            return declaration.AddMembers(
-                BuildRequestMethodGenerator.Generate(Element),
-                BuildUriMethodGenerator.Generate(Element),
-                AddHeadersMethodGenerator.Generate(Element),
-                BuildContentMethodGenerator.Generate(Element));
+            yield return declaration.AddMembers(
+                BuildRequestMethodGenerator.Generate(Element, null),
+                BuildUriMethodGenerator.Generate(Element, null),
+                AddHeadersMethodGenerator.Generate(Element, null),
+                BuildContentMethodGenerator.Generate(Element, null));
         }
 
-        protected virtual IEnumerable<MemberDeclarationSyntax> GenerateParameterProperties(
-            IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> properties, bool forClass)
+        protected virtual IEnumerable<MemberDeclarationSyntax> GenerateParameterProperties(string className)
         {
-            foreach (var parameter in properties)
+            foreach (var parameter in Element.GetParameters())
             {
                 var schema = parameter.GetSchemaOrDefault();
 
-                PropertyDeclarationSyntax propertyDeclaration = CreatePropertyDeclaration(parameter, ClassName, schema);
-                if (forClass)
-                {
-                    propertyDeclaration = propertyDeclaration.AddModifiers(Token(SyntaxKind.PublicKeyword));
-                }
+                yield return CreatePropertyDeclaration(parameter, schema, className);
 
-                yield return propertyDeclaration;
-
-                if (!forClass && parameter.Element.Reference == null && schema.Element.Reference == null)
+                if (parameter.Element.Reference == null && schema.Element.Reference == null)
                 {
                     foreach (var member in Context.TypeGeneratorRegistry.Get(schema).Generate())
                     {
@@ -143,16 +92,13 @@ namespace Yardarm.Generation.Request
             }
         }
 
-        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration<T>(ILocatedOpenApiElement<T> parameter, string className,
-            ILocatedOpenApiElement<OpenApiSchema> schema, string? nameOverride = null)
-            where T : IOpenApiElement
+        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<OpenApiParameter> parameter,
+            ILocatedOpenApiElement<OpenApiSchema> schema, string className)
         {
-            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(
-                nameOverride ?? parameter.Key);
+            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameter.Key);
 
             if (propertyName == className)
             {
-                // Properties can't have the same name as the class/interface
                 propertyName += "Value";
             }
 

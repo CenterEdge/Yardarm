@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.Request;
 using Yardarm.Names;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -20,11 +21,12 @@ namespace Yardarm.Generation.MediaType
         protected RequestTypeGenerator RequestTypeGenerator { get; }
 
         protected IRequestsNamespace RequestsNamespace { get; }
+        protected ISerializerSelector SerializerSelector { get; }
         protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
 
         public RequestMediaTypeGenerator(ILocatedOpenApiElement<OpenApiMediaType> mediaTypeElement,
             GenerationContext context, ITypeGenerator parent, IRequestsNamespace requestsNamespace,
-            IBuildContentMethodGenerator buildContentMethodGenerator)
+            ISerializerSelector serializerSelector, IBuildContentMethodGenerator buildContentMethodGenerator)
             : base(mediaTypeElement, context, parent)
         {
             if (parent == null)
@@ -33,6 +35,7 @@ namespace Yardarm.Generation.MediaType
             }
 
             RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
+            SerializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
             BuildContentMethodGenerator = buildContentMethodGenerator ??
                                           throw new ArgumentNullException(nameof(buildContentMethodGenerator));
 
@@ -58,11 +61,17 @@ namespace Yardarm.Generation.MediaType
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
+            SerializerDescriptor? serializerDescriptor = SerializerSelector.Select(Element);
+            if (serializerDescriptor == null)
+            {
+                throw new InvalidOperationException($"No serializer configured for {Element}.");
+            }
+
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(RequestTypeGenerator.Element);
 
             TypeSyntax name = QualifiedName(ns,
-                IdentifierName(formatter.Format($"{RequestTypeGenerator.Element.Element.OperationId}-Json-Request")));
+                IdentifierName(formatter.Format($"{RequestTypeGenerator.Element.Element.OperationId}-{serializerDescriptor.NameSegment}-Request")));
 
             return new YardarmTypeInfo(name);
         }

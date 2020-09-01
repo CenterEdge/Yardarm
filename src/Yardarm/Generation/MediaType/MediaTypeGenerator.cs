@@ -11,32 +11,32 @@ namespace Yardarm.Generation.MediaType
     {
         private readonly OpenApiDocument _document;
         private readonly ITypeGeneratorRegistry<OpenApiMediaType> _mediaTypeGeneratorRegistry;
-        private readonly IMediaTypeSelector _mediaTypeSelector;
+        private readonly ISerializerSelector _serializerSelector;
 
         public MediaTypeGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiMediaType> mediaTypeGeneratorRegistry,
-            IMediaTypeSelector mediaTypeSelector)
+            ISerializerSelector serializerSelector)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
             _mediaTypeGeneratorRegistry = mediaTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(mediaTypeGeneratorRegistry));
-            _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
+            _serializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
         }
 
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var syntaxTree in GetRequestBodies()
-                .Select(_mediaTypeSelector.Select)
-                .Where(p => p != null)
-                .Select(Generate!)
+            foreach (var syntaxTree in GetMediaTypes()
+                .Where(p => _serializerSelector.Select(p) != null)
+                .Select(Generate)
                 .Where(p => p != null))
             {
                 yield return syntaxTree!;
             }
         }
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
+        private IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes() =>
             _document.Paths.ToLocatedElements()
                 .GetOperations()
-                .GetRequestBodies();
+                .GetRequestBodies()
+                .GetMediaTypes();
 
         protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
             _mediaTypeGeneratorRegistry.Get(mediaType).GenerateSyntaxTree();

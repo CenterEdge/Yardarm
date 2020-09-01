@@ -79,6 +79,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Login'
+          text/xml:
+            schema:
+              $ref: '#/components/schemas/Login'
         description: Card transaction to create
         required: true
   /capabilities:

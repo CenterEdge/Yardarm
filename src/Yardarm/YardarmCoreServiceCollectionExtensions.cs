@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -15,6 +16,7 @@ using Yardarm.Names;
 using Yardarm.Names.Internal;
 using Yardarm.Packaging;
 using Yardarm.Packaging.Internal;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 using Yardarm.Spec.Internal;
 
@@ -65,6 +67,7 @@ namespace Yardarm
             services.TryAddSingleton<IGetBodyMethodGenerator, GetBodyMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
+            services.TryAddSingleton<ISerializerSelector, DefaultSerializerSelector>();
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();
             services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IPackageSpecGenerator>().Generate());
@@ -94,5 +97,13 @@ namespace Yardarm
 
             return services;
         }
+
+        public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
+            SerializerDescriptor descriptor) =>
+            services.AddSingleton(descriptor ?? throw new ArgumentNullException(nameof(descriptor)));
+
+        public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
+            Func<IServiceProvider, SerializerDescriptor> descriptorFactory) =>
+            services.AddSingleton(descriptorFactory ?? throw new ArgumentNullException(nameof(descriptorFactory)));
     }
 }

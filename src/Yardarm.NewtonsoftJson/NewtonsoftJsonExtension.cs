@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Immutable;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.NewtonsoftJson.Internal;
 using Yardarm.Packaging;
+using Yardarm.Serialization;
 
 namespace Yardarm.NewtonsoftJson
 {
@@ -22,6 +24,12 @@ namespace Yardarm.NewtonsoftJson
 
             services
                 .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();
+
+            services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
+                ImmutableHashSet.Create("application/json"),
+                "Json",
+                serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
+            ));
 
             return services;
         }

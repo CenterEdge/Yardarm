@@ -11,13 +11,15 @@ namespace Yardarm.Generation.MediaType
     {
         private readonly GenerationContext _context;
         private readonly IRequestsNamespace _requestsNamespace;
+        private readonly ISerializerSelector _serializerSelector;
         private readonly IBuildContentMethodGenerator _buildContentMethodGenerator;
 
         public MediaTypeGeneratorFactory(GenerationContext context, IRequestsNamespace requestsNamespace,
-            IBuildContentMethodGenerator buildContentMethodGenerator)
+            ISerializerSelector serializerSelector, IBuildContentMethodGenerator buildContentMethodGenerator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
+            _serializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
             _buildContentMethodGenerator = buildContentMethodGenerator ??
                                            throw new ArgumentNullException(nameof(buildContentMethodGenerator));
         }
@@ -32,7 +34,7 @@ namespace Yardarm.Generation.MediaType
             return parent switch
             {
                 NoopTypeGenerator<OpenApiRequestBody> requestBodyParent => new RequestMediaTypeGenerator(element, _context,
-                    requestBodyParent, _requestsNamespace, _buildContentMethodGenerator),
+                    requestBodyParent, _requestsNamespace, _serializerSelector, _buildContentMethodGenerator),
                 ResponseTypeGenerator noop => new NoopTypeGenerator<OpenApiMediaType>(noop),
                 _ => throw new ArgumentException("Unknown parent type for OpenApiMediaType", nameof(parent))
             };

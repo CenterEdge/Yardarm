@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Request.Internal;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -18,6 +19,7 @@ namespace Yardarm.Generation.Request
         protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
         protected IAddHeadersMethodGenerator AddHeadersMethodGenerator { get; }
         protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
+        protected ISerializerSelector SerializerSelector { get; }
 
         protected IRequestsNamespace RequestsNamespace { get; }
 
@@ -27,7 +29,7 @@ namespace Yardarm.Generation.Request
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
             IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator,
-            IRequestsNamespace requestsNamespace)
+            IRequestsNamespace requestsNamespace, ISerializerSelector serializerSelector)
             : base(operationElement, context, null)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
@@ -39,6 +41,7 @@ namespace Yardarm.Generation.Request
             BuildContentMethodGenerator = buildContentMethodGenerator ??
                                           throw new ArgumentNullException(nameof(buildContentMethodGenerator));
             RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
+            SerializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
         }
 
         protected override YardarmTypeInfo GetTypeInfo()
@@ -72,6 +75,17 @@ namespace Yardarm.Generation.Request
                 BuildUriMethodGenerator.Generate(Element, null),
                 AddHeadersMethodGenerator.Generate(Element, null),
                 BuildContentMethodGenerator.Generate(Element, null));
+
+            if (Element.GetRequestBody()?.GetMediaTypes().Any(p => SerializerSelector.Select(p) == null) ?? false)
+            {
+                var httpContentGenerator =
+                    new HttpContentRequestTypeGenerator(Element, Context, this, BuildContentMethodGenerator);
+
+                foreach (var otherMember in httpContentGenerator.Generate())
+                {
+                    yield return otherMember;
+                }
+            }
         }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateParameterProperties(string className)

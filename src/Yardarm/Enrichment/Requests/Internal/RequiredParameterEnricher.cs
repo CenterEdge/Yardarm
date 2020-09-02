@@ -6,19 +6,11 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Requests.Internal
 {
-    internal class RequiredParameterEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiParameter>,
-        IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiRequestBody>
+    internal class RequiredParameterEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiParameter>
     {
         public int Priority => 0;
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiParameter> context)
-        {
-            return context.Element.Required
-                ? AddRequiredAttribute(syntax, context)
-                : syntax.MakeNullable();
-        }
-
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiRequestBody> context)
         {
             return context.Element.Required
                 ? AddRequiredAttribute(syntax, context)

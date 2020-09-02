@@ -15,11 +15,12 @@ namespace Yardarm.Generation.Request
         private readonly IAddHeadersMethodGenerator _addHeadersMethodGenerator;
         private readonly IBuildContentMethodGenerator _buildContentMethodGenerator;
         private readonly IRequestsNamespace _requestsNamespace;
+        private readonly ISerializerSelector _serializerSelector;
 
         public RequestTypeGeneratorFactory(GenerationContext context, IMediaTypeSelector mediaTypeSelector,
             IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
             IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator,
-            IRequestsNamespace requestsNamespace)
+            IRequestsNamespace requestsNamespace, ISerializerSelector serializerSelector)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
@@ -32,11 +33,12 @@ namespace Yardarm.Generation.Request
             _buildContentMethodGenerator = buildContentMethodGenerator ??
                                            throw new ArgumentNullException(nameof(buildContentMethodGenerator));
             _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
+            _serializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiOperation> element, ITypeGenerator? parent) =>
             new RequestTypeGenerator(element, _context, _mediaTypeSelector, _buildRequestMethodGenerator,
                 _buildUriMethodGenerator, _addHeadersMethodGenerator, _buildContentMethodGenerator,
-                _requestsNamespace);
+                _requestsNamespace, _serializerSelector);
     }
 }

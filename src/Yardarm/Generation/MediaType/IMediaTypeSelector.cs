@@ -13,12 +13,6 @@ namespace Yardarm.Generation.MediaType
         /// Selects the media type which is used to generate models.
         /// Returns null if no valid media types are found.
         /// </summary>
-        ILocatedOpenApiElement<OpenApiMediaType>? Select(ILocatedOpenApiElement<OpenApiRequestBody> requestBody);
-
-        /// <summary>
-        /// Selects the media type which is used to generate models.
-        /// Returns null if no valid media types are found.
-        /// </summary>
         ILocatedOpenApiElement<OpenApiMediaType>? Select(ILocatedOpenApiElement<OpenApiResponse> response);
     }
 }

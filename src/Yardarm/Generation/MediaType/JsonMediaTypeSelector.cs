@@ -6,11 +6,6 @@ namespace Yardarm.Generation.MediaType
 {
     public class JsonMediaTypeSelector : IMediaTypeSelector
     {
-        public ILocatedOpenApiElement<OpenApiMediaType>? Select(ILocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            requestBody
-                .GetMediaTypes()
-                .FirstOrDefault(p => p.Key == "application/json");
-
         public ILocatedOpenApiElement<OpenApiMediaType>? Select(ILocatedOpenApiElement<OpenApiResponse> response) =>
             response
                 .GetMediaTypes()

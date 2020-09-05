@@ -5,7 +5,7 @@ namespace Yardarm.Names
     public class NameConverterRegistry : Dictionary<string, string>, INameConverterRegistry
     {
         public string Convert(string name) =>
-            TryGetValue(name, out string newName)
+            TryGetValue(name, out string? newName)
                 ? newName
                 : name;
 

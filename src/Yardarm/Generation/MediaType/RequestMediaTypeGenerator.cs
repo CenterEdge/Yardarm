@@ -61,7 +61,7 @@ namespace Yardarm.Generation.MediaType
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
-            SerializerDescriptor? serializerDescriptor = SerializerSelector.Select(Element);
+            SerializerDescriptor? serializerDescriptor = SerializerSelector.Select(Element)?.Descriptor;
             if (serializerDescriptor == null)
             {
                 throw new InvalidOperationException($"No serializer configured for {Element}.");

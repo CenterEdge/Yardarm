@@ -66,7 +66,7 @@ namespace Yardarm
             services.TryAddSingleton<IBuildUriMethodGenerator, BuildUriMethodGenerator>();
             services.TryAddSingleton<IGetBodyMethodGenerator, GetBodyMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
-            services.TryAddSingleton<IMediaTypeSelector, JsonMediaTypeSelector>();
+            services.TryAddSingleton<IMediaTypeSelector, PriorityMediaTypeSelector>();
             services.TryAddSingleton<ISerializerSelector, DefaultSerializerSelector>();
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();

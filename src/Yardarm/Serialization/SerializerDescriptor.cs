@@ -6,13 +6,13 @@ namespace Yardarm.Serialization
 {
     public class SerializerDescriptor
     {
-        public IImmutableSet<string> MediaTypes { get; }
+        public IImmutableSet<SerializerMediaType> MediaTypes { get; }
 
         public string NameSegment { get; }
 
         public TypeSyntax SerializerType { get; }
 
-        public SerializerDescriptor(IImmutableSet<string> mediaTypes, string nameSegment, TypeSyntax serializerType)
+        public SerializerDescriptor(IImmutableSet<SerializerMediaType> mediaTypes, string nameSegment, TypeSyntax serializerType)
         {
             MediaTypes = mediaTypes ?? throw new ArgumentNullException(nameof(mediaTypes));
             NameSegment = nameSegment ?? throw new ArgumentNullException(nameof(nameSegment));

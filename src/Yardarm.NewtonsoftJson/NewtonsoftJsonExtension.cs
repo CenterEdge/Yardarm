@@ -26,7 +26,7 @@ namespace Yardarm.NewtonsoftJson
                 .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();
 
             services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
-                ImmutableHashSet.Create("application/json"),
+                ImmutableHashSet.Create(new SerializerMediaType("application/json", 1.0)),
                 "Json",
                 serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
             ));

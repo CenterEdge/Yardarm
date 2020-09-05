@@ -9,7 +9,7 @@ namespace Yardarm.Generation.MediaType
 {
     public class DefaultSerializerSelector : ISerializerSelector
     {
-        private readonly Dictionary<string, SerializerDescriptor> _descriptors;
+        private readonly Dictionary<string, SerializerDescriptorWithPriority> _descriptors;
 
         public DefaultSerializerSelector(IEnumerable<SerializerDescriptor> descriptors)
         {
@@ -23,13 +23,16 @@ namespace Yardarm.Generation.MediaType
                     p => p.MediaTypes,
                     (descriptor, mediaType) => (descriptor, mediaType))
                 .ToDictionary(
-                    p => p.mediaType,
-                    p => p.descriptor);
+                    p => p.mediaType.MediaType,
+                    p => new SerializerDescriptorWithPriority
+                    {
+                        Descriptor = p.descriptor, Quality = p.mediaType.Quality
+                    });
         }
 
-        public SerializerDescriptor? Select(ILocatedOpenApiElement<OpenApiMediaType> mediaType)
+        public SerializerDescriptorWithPriority? Select(ILocatedOpenApiElement<OpenApiMediaType> mediaType)
         {
-            if (_descriptors.TryGetValue(mediaType.Key, out SerializerDescriptor descriptor))
+            if (_descriptors.TryGetValue(mediaType.Key, out SerializerDescriptorWithPriority descriptor))
             {
                 return descriptor;
             }

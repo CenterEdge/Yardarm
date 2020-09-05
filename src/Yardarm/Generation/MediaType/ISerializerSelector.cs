@@ -6,6 +6,6 @@ namespace Yardarm.Generation.MediaType
 {
     public interface ISerializerSelector
     {
-        SerializerDescriptor? Select(ILocatedOpenApiElement<OpenApiMediaType> mediaType);
+        SerializerDescriptorWithPriority? Select(ILocatedOpenApiElement<OpenApiMediaType> mediaType);
     }
 }

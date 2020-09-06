@@ -9,6 +9,7 @@ namespace Yardarm.Names
         ExpressionSyntax HeaderSerializerInstance { get; }
         NameSyntax ITypeSerializer { get; }
         NameSyntax ITypeSerializerRegistry { get; }
+        NameSyntax MultipartFormDataSerializer { get; }
         NameSyntax PathSegmentStyle { get; }
         NameSyntax PathSegmentSerializer { get; }
         ExpressionSyntax PathSegmentSerializerInstance { get; }

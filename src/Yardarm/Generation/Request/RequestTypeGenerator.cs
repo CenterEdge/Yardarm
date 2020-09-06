@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Request.Internal;
 using Yardarm.Names;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 

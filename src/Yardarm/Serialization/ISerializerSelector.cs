@@ -1,8 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
-using Yardarm.Serialization;
 using Yardarm.Spec;
 
-namespace Yardarm.Generation.MediaType
+namespace Yardarm.Serialization
 {
     public interface ISerializerSelector
     {

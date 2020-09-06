@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
@@ -67,7 +68,6 @@ namespace Yardarm
             services.TryAddSingleton<IGetBodyMethodGenerator, GetBodyMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IMediaTypeSelector, PriorityMediaTypeSelector>();
-            services.TryAddSingleton<ISerializerSelector, DefaultSerializerSelector>();
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();
             services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IPackageSpecGenerator>().Generate());
@@ -84,6 +84,13 @@ namespace Yardarm
             services.TryAddSingleton<IRequestsNamespace, RequestsNamespace>();
             services.TryAddSingleton<IResponsesNamespace, ResponsesNamespace>();
             services.TryAddSingleton<ISerializationNamespace, SerializationNamespace>();
+
+            // Serialization
+            services.TryAddSingleton<ISerializerSelector, DefaultSerializerSelector>();
+            services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
+                ImmutableHashSet.Create(new SerializerMediaType("multipart/form-data", 0.9)),
+                "Multipart",
+                serviceProvider.GetRequiredService<ISerializationNamespace>().MultipartFormDataSerializer));
 
             // Other
             services

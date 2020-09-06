@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Generation.Request;
 using Yardarm.Generation.Response;
 using Yardarm.Names;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.MediaType

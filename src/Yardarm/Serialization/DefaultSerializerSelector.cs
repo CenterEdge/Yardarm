@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.OpenApi.Models;
-using Yardarm.Serialization;
 using Yardarm.Spec;
 
-namespace Yardarm.Generation.MediaType
+namespace Yardarm.Serialization
 {
     public class DefaultSerializerSelector : ISerializerSelector
     {

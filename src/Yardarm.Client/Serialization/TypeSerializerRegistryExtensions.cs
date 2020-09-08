@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
@@ -16,6 +18,18 @@ namespace RootNamespace.Serialization
             }
 
             return typeSerializerRegistry;
+        }
+
+        public static ITypeSerializerRegistry Add<T>(this ITypeSerializerRegistry typeSerializerRegistry,
+            IEnumerable<string> mediaTypes)
+            where T : ITypeSerializer
+        {
+            ConstructorInfo? constructor = typeof(T).GetConstructor(new[] {typeof(ITypeSerializerRegistry)});
+
+            ITypeSerializer serializer = (ITypeSerializer?)constructor?.Invoke(new object[] {typeSerializerRegistry}) ??
+                                         Activator.CreateInstance<T>();
+
+            return typeSerializerRegistry.Add(mediaTypes, serializer);
         }
 
         public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,

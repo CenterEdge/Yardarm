@@ -7,6 +7,15 @@ namespace RootNamespace.Serialization
 {
     public class MultipartFormDataSerializer : ITypeSerializer
     {
+        public static string[] SupportedMediaTypes => new [] { "multipart/form-data" };
+
+        private readonly ITypeSerializerRegistry _typeSerializerRegistry;
+
+        public MultipartFormDataSerializer(ITypeSerializerRegistry typeSerializerRegistry)
+        {
+            _typeSerializerRegistry = typeSerializerRegistry ?? throw new ArgumentNullException(nameof(typeSerializerRegistry));
+        }
+
         public HttpContent Serialize<T>(T value, string mediaType, MultipartFormDataSerializationData serializationData)
         {
             var content = new MultipartFormDataContent();

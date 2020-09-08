@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace RootNamespace.Serialization
                 .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
                 .Single(p => p.Name == nameof(Deserialize) && p.GetParameters()[0].ParameterType == typeof(string));
 
-        public static string[] SupportedMediaTypes => new [] { "text/plain" };
+        public static string[] SupportedMediaTypes => new [] { MediaTypeNames.Text.Plain };
 
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
             new StringContent(Serialize<T>(value), Encoding.UTF8, mediaType);

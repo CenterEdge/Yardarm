@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
@@ -32,6 +33,7 @@ namespace RootNamespace.Serialization
 
         public static ITypeSerializerRegistry CreateDefaultRegistry() =>
             new TypeSerializerRegistry()
-                .Add(PlainTextSerializer.SupportedMediaTypes, new PlainTextSerializer());
+                .Add<PlainTextSerializer>(PlainTextSerializer.SupportedMediaTypes)
+                .Add<MultipartFormDataSerializer>(MultipartFormDataSerializer.SupportedMediaTypes);
     }
 }

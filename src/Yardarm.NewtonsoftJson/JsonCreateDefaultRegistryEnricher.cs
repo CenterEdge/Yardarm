@@ -21,11 +21,12 @@ namespace Yardarm.NewtonsoftJson
         public ExpressionSyntax Enrich(ExpressionSyntax target) =>
             InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     target,
-                    IdentifierName("Add")))
+                    GenericName(
+                        Identifier("Add"),
+                        TypeArgumentList(SingletonSeparatedList<TypeSyntax>(_jsonSerializationNamespace.JsonTypeSerializer)))))
                 .AddArgumentListArguments(
                     Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         _jsonSerializationNamespace.JsonTypeSerializer,
-                        IdentifierName("SupportedMediaTypes"))),
-                    Argument(ObjectCreationExpression(_jsonSerializationNamespace.JsonTypeSerializer)));
+                        IdentifierName("SupportedMediaTypes"))));
     }
 }

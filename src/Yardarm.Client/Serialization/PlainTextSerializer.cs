@@ -20,12 +20,12 @@ namespace RootNamespace.Serialization
 
         public static string[] SupportedMediaTypes => new [] { "text/plain" };
 
-        public HttpContent Serialize<T>(T value, string mediaType) =>
+        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
             new StringContent(Serialize<T>(value), Encoding.UTF8, mediaType);
 
         public string Serialize<T>(T value) => value?.ToString() ?? "";
 
-        public async ValueTask<T> DeserializeAsync<T>(HttpContent content)
+        public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
         {
             string value = await content.ReadAsStringAsync().ConfigureAwait(false);
 

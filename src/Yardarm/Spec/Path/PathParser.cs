@@ -21,12 +21,13 @@ namespace Yardarm.Spec.Path
 
         private static IEnumerable<PathSegment> ParseInternal(string path)
         {
+            int index = 0;
+
             if (path.StartsWith("/"))
             {
-                path = path.Substring(1);
+                index = 1;
             }
 
-            int index = 0;
             while (index < path.Length)
             {
                 int nextParameter = path.IndexOf('{', index);

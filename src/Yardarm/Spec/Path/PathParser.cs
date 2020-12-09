@@ -21,6 +21,11 @@ namespace Yardarm.Spec.Path
 
         private static IEnumerable<PathSegment> ParseInternal(string path)
         {
+            if (path.StartsWith("/"))
+            {
+                path = path.Substring(1);
+            }
+
             int index = 0;
             while (index < path.Length)
             {

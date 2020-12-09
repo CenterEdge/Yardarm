@@ -39,7 +39,7 @@ namespace Yardarm.UnitTests.Spec.Path
 
             result.Should().BeEquivalentTo(new[]
             {
-                new PathSegment("/some/path", PathSegmentType.Text)
+                new PathSegment("some/path", PathSegmentType.Text)
             });
         }
 
@@ -54,7 +54,7 @@ namespace Yardarm.UnitTests.Spec.Path
 
             result.Should().BeEquivalentTo(new[]
             {
-                new PathSegment("/some/", PathSegmentType.Text),
+                new PathSegment("some/", PathSegmentType.Text),
                 new PathSegment("path", PathSegmentType.Parameter)
             });
         }
@@ -70,7 +70,7 @@ namespace Yardarm.UnitTests.Spec.Path
 
             result.Should().BeEquivalentTo(new[]
             {
-                new PathSegment("/some/", PathSegmentType.Text),
+                new PathSegment("some/", PathSegmentType.Text),
                 new PathSegment("path", PathSegmentType.Parameter),
                 new PathSegment("/withtrailer", PathSegmentType.Text),
             });
@@ -103,7 +103,7 @@ namespace Yardarm.UnitTests.Spec.Path
 
             result.Should().BeEquivalentTo(new[]
             {
-                new PathSegment("/some/", PathSegmentType.Text),
+                new PathSegment("some/", PathSegmentType.Text),
                 new PathSegment("path", PathSegmentType.Parameter),
                 new PathSegment("/and/", PathSegmentType.Text),
                 new PathSegment("someotherpath", PathSegmentType.Parameter),

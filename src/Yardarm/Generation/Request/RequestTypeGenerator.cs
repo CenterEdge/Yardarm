@@ -121,6 +121,7 @@ namespace Yardarm.Generation.Request
 
             var propertyDeclaration = PropertyDeclaration(typeName, propertyName)
                 .AddElementAnnotation(parameter, Context.ElementRegistry)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),

@@ -31,7 +31,8 @@ namespace Yardarm.Enrichment.Schema.Internal
             if (target.BaseList != null)
             {
                 additionalBaseTypes = additionalBaseTypes.Where(additionalBaseType =>
-                    !target.BaseList.Types.Any(currentType => additionalBaseType.ToString() == currentType.ToString()));
+                    !target.BaseList.Types.Any(currentType => additionalBaseType.ToString() == currentType.ToString()))
+                    .ToArray();
             }
 
             return additionalBaseTypes.Length > 0

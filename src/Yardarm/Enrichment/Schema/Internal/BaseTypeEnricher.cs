@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Helpers;
 
 namespace Yardarm.Enrichment.Schema.Internal
 {
@@ -15,7 +14,7 @@ namespace Yardarm.Enrichment.Schema.Internal
 
         public BaseTypeEnricher(GenerationContext context)
         {
-            _context = context ?? throw new WellKnownTypes.System.ArgumentNullException(nameof(context));
+            _context = context ?? throw new System.ArgumentNullException(nameof(context));
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
@@ -29,7 +28,7 @@ namespace Yardarm.Enrichment.Schema.Internal
 
             BaseTypeSyntax[] additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement).ToArray();
 
-            if (target.AddBaseListTypes( != null))
+            if (target.BaseList != null)
             {
                 additionalBaseTypes = additionalBaseTypes.Where(additionalBaseType =>
                     !target.BaseList.Types.Any(currentType => additionalBaseType.ToString() == currentType.ToString()));

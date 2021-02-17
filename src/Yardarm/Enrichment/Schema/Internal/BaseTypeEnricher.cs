@@ -14,7 +14,7 @@ namespace Yardarm.Enrichment.Schema.Internal
 
         public BaseTypeEnricher(GenerationContext context)
         {
-            _context = context ?? throw new System.ArgumentNullException(nameof(context));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,

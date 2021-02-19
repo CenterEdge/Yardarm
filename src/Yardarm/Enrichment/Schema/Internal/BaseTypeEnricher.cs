@@ -34,10 +34,7 @@ namespace Yardarm.Enrichment.Schema.Internal
                     target.BaseList.Types.Any(currentType => !currentType.IsEquivalentTo(additionalBaseType)));
             }
 
-            var typesToAdd = additionalBaseTypes.ToArray();
-            return typesToAdd.Length > 0
-                ? target.AddBaseListTypes(typesToAdd)
-                : target;
+            return target.AddBaseListTypes(additionalBaseTypes.ToArray());
         }
     }
 }

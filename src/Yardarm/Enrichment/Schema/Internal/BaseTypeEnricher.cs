@@ -26,11 +26,15 @@ namespace Yardarm.Enrichment.Schema.Internal
                 return target;
             }
 
-            BaseTypeSyntax[] additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement).ToArray();
+            var additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement);
 
-            return additionalBaseTypes.Length > 0
-                ? target.AddBaseListTypes(additionalBaseTypes)
-                : target;
+            if (target.BaseList != null)
+            {
+                additionalBaseTypes = additionalBaseTypes.Where(additionalBaseType =>
+                    target.BaseList.Types.Any(currentType => !currentType.IsEquivalentTo(additionalBaseType)));
+            }
+
+            return target.AddBaseListTypes(additionalBaseTypes.ToArray());
         }
     }
 }

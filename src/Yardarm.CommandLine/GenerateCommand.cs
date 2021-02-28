@@ -134,13 +134,26 @@ namespace Yardarm.CommandLine
             {
                 try
                 {
-                    string fullPath = !Path.IsPathFullyQualified(extensionFile)
-                        ? Path.Combine(Directory.GetCurrentDirectory(), extensionFile)
-                        : extensionFile;
+                    if (extensionFile.EndsWith(".dll"))
+                    {
+                        // Appears to be a file reference
 
-                    Assembly assembly = Assembly.LoadFile(fullPath);
+                        string fullPath = !Path.IsPathFullyQualified(extensionFile)
+                            ? Path.Combine(Directory.GetCurrentDirectory(), extensionFile)
+                            : extensionFile;
 
-                    settings.AddExtension(assembly);
+                        Assembly assembly = Assembly.LoadFile(fullPath);
+
+                        settings.AddExtension(assembly);
+                    }
+                    else
+                    {
+                        // Appears to be an assembly name
+
+                        Assembly assembly = Assembly.Load(extensionFile);
+
+                        settings.AddExtension(assembly);
+                    }
                 }
                 catch (Exception ex)
                 {

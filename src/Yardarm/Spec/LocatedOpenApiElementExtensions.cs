@@ -16,6 +16,10 @@ namespace Yardarm.Spec
 
         public static bool IsRoot(this ILocatedOpenApiElement element) => element.Parent is null;
 
+        public static bool IsReference<T>(this ILocatedOpenApiElement<T> element)
+            where T : IOpenApiReferenceable =>
+            element.Element.Reference != null;
+
         public static ILocatedOpenApiElement<T> CreateRoot<T>(this T rootItem, string key)
             where T : IOpenApiElement =>
             LocatedOpenApiElement.CreateRoot(rootItem, key);

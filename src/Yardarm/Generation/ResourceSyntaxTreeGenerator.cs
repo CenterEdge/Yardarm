@@ -38,7 +38,7 @@ namespace Yardarm.Generation
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(rawText),
                 CSharpParseOptions.Default
-                    .WithLanguageVersion(LanguageVersion.CSharp8)
+                    .WithLanguageVersion(LanguageVersion.CSharp9)
                     .WithPreprocessorSymbols("NETSTANDARD2_0"));
 
             // Annotate the compilation root so we know which resource file it came from

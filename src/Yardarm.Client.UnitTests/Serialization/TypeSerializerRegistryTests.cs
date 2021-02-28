@@ -50,11 +50,11 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         public class DefaultConstructorSerializer : ITypeSerializer
         {
-            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
+            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null) =>
                 throw new NotImplementedException();
 
             public ValueTask<T>
-                DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null) =>
+                DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null) =>
                 throw new NotImplementedException();
         }
 
@@ -72,11 +72,11 @@ namespace Yardarm.Client.UnitTests.Serialization
                 Registry = registry;
             }
 
-            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
+            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null) =>
                 throw new NotImplementedException();
 
             public ValueTask<T>
-                DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null) =>
+                DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null) =>
                 throw new NotImplementedException();
         }
 

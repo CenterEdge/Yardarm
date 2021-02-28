@@ -28,7 +28,7 @@ namespace RootNamespace.Serialization
                 }
                 : "";
 
-        [return: MaybeNull]
+        [return: NotNullIfNotNull("value")]
         public T Deserialize<T>(string? value) =>
             value != null
                 ? (T) TypeDescriptor.GetConverter(typeof(T)).ConvertFromString(value)!

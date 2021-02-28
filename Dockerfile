@@ -1,6 +1,6 @@
 ARG VERSION=0.1.0-local
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 ARG VERSION
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN dotnet restore Yardarm.sln
 COPY ./src ./
 RUN dotnet pack -c Release -p:VERSION=${VERSION} ./Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1
+FROM mcr.microsoft.com/dotnet/sdk:5.0
 ARG VERSION
 WORKDIR /app
 

@@ -42,7 +42,8 @@ namespace Yardarm.Packaging.Internal
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputPath = tempPath,
-                    ProjectName = _packageSpec.Name
+                    ProjectName = _packageSpec.Name,
+                    ProjectStyle = ProjectStyle.PackageReference
                 };
 
                 var settings = Settings.LoadDefaultSettings(tempPath);

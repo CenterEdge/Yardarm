@@ -80,7 +80,7 @@ namespace Yardarm.Spec
 
         // For OpenApiResponse, treat the element in the components section as unequal to an element
         // referencing it in an operation, allowing us to define a separate class for each case.
-        private static bool GetIsReferenceEqualDefault() =>
+        public static bool GetIsReferenceEqualDefault() =>
             typeof(T) != typeof(OpenApiResponse);
     }
 }

@@ -112,11 +112,9 @@ namespace Yardarm.Generation.Response
 
             foreach (var header in Element.GetHeaders())
             {
-                ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
+                var headerGenerator = Context.TypeGeneratorRegistry.Get(header);
 
-                ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schemaElement);
-
-                yield return PropertyDeclaration(schemaGenerator.TypeInfo.Name, nameFormatter.Format(header.Key))
+                yield return PropertyDeclaration(headerGenerator.TypeInfo.Name, nameFormatter.Format(header.Key))
                     .AddElementAnnotation(header, Context.ElementRegistry)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .AddAccessorListAccessors(
@@ -125,11 +123,15 @@ namespace Yardarm.Generation.Response
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
-                if (header.Element.Reference == null && schemaElement.Element.Reference == null)
+                if (!header.IsReference())
                 {
-                    foreach (var memberDeclaration in schemaGenerator.Generate())
+                    ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
+                    if (!schemaElement.IsReference())
                     {
-                        yield return memberDeclaration;
+                        foreach (var memberDeclaration in headerGenerator.Generate())
+                        {
+                            yield return memberDeclaration;
+                        }
                     }
                 }
             }

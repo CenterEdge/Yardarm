@@ -15,7 +15,8 @@ namespace Yardarm.Generation.Response
         {
         }
 
-        protected override YardarmTypeInfo GetTypeInfo() => throw new NotImplementedException();
+        protected override YardarmTypeInfo GetTypeInfo() =>
+            Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).TypeInfo;
 
         public override IEnumerable<MemberDeclarationSyntax> Generate() =>
             Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();

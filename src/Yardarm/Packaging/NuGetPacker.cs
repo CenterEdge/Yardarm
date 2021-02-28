@@ -43,8 +43,8 @@ namespace Yardarm.Packaging
                 Authors = { _settings.Author },
                 Files =
                 {
-                    new StreamPackageFile(dllStream, $"lib/netstandard2.0/{_settings.AssemblyName}.dll"),
-                    new StreamPackageFile(xmlDocumentationStream, $"lib/netstandard2.0/{_settings.AssemblyName}.xml")
+                    new StreamPackageFile(dllStream, $"lib/netstandard2.0/{_settings.AssemblyName}.dll", "netstandard2.0"),
+                    new StreamPackageFile(xmlDocumentationStream, $"lib/netstandard2.0/{_settings.AssemblyName}.xml", "netstandard2.0")
                 },
                 DependencyGroups =
                 {
@@ -78,7 +78,7 @@ namespace Yardarm.Packaging
                 Authors = { _settings.Author },
                 Files =
                 {
-                    new StreamPackageFile(pdbStream, $"lib/netstandard2.0/{_settings.AssemblyName}.pdb"),
+                    new StreamPackageFile(pdbStream, $"lib/netstandard2.0/{_settings.AssemblyName}.pdb", "netstandard2.0"),
                 },
                 DependencyGroups =
                 {

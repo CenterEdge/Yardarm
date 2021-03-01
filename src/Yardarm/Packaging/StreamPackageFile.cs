@@ -26,7 +26,7 @@ namespace Yardarm.Packaging
 
         public string Path { get; }
         public string EffectivePath => Path;
-        public FrameworkName TargetFramework => null;
+        public FrameworkName? TargetFramework => null;
         public NuGetFramework NuGetFramework { get; }
         public DateTimeOffset LastWriteTime { get; }
 

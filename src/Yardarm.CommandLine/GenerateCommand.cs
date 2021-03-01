@@ -169,18 +169,57 @@ namespace Yardarm.CommandLine
             {
                 if (!string.IsNullOrEmpty(_options.OutputFile))
                 {
+                    bool isDirectory = Path.EndsInDirectorySeparator(_options.OutputFile);
+                    if (isDirectory)
+                    {
+                        string directory = _options.OutputFile;
+                        if (!Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
+                        _options.OutputFile = Path.Combine(directory, $"{_options.AssemblyName}.dll");
+
+                        if (string.IsNullOrEmpty(_options.OutputXmlFile))
+                        {
+                            _options.OutputXmlFile = Path.Combine(directory, $"{_options.AssemblyName}.xml");
+                        }
+
+                        if (string.IsNullOrEmpty(_options.OutputDebugSymbols))
+                        {
+                            _options.OutputDebugSymbols = Path.Combine(directory, $"{_options.AssemblyName}.pdb");
+                        }
+                    }
+                    else
+                    {
+                        var directory = Path.GetDirectoryName(_options.OutputPackageFile) ??
+                                        Directory.GetCurrentDirectory();
+
+                        if (string.IsNullOrEmpty(_options.OutputXmlFile))
+                        {
+                            _options.OutputXmlFile = Path.Combine(directory,
+                                $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.xml");
+                        }
+
+                        if (string.IsNullOrEmpty(_options.OutputDebugSymbols))
+                        {
+                            _options.OutputDebugSymbols = Path.Combine(directory,
+                                $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.pdb");
+                        }
+                    }
+
                     var dllStream = File.Create(_options.OutputFile);
                     streams.Add(dllStream);
                     settings.DllOutput = dllStream;
 
-                    if (!string.IsNullOrEmpty(_options.OutputXmlFile))
+                    if (!_options.NoXmlFile && !string.IsNullOrEmpty(_options.OutputXmlFile))
                     {
                         var xmlStream = File.Create(_options.OutputXmlFile);
                         streams.Add(xmlStream);
                         settings.XmlDocumentationOutput = xmlStream;
                     }
 
-                    if (!string.IsNullOrEmpty(_options.OutputDebugSymbols))
+                    if (!_options.NoDebugSymbols && !string.IsNullOrEmpty(_options.OutputDebugSymbols))
                     {
                         var pdbStream = File.Create(_options.OutputDebugSymbols);
                         streams.Add(pdbStream);
@@ -189,11 +228,36 @@ namespace Yardarm.CommandLine
                 }
                 else if (!string.IsNullOrEmpty(_options.OutputPackageFile))
                 {
+                    bool isDirectory = Path.EndsInDirectorySeparator(_options.OutputPackageFile);
+                    if (isDirectory)
+                    {
+                        string directory = _options.OutputPackageFile;
+                        if (!Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
+                        _options.OutputPackageFile =
+                            Path.Combine(directory, $"{_options.AssemblyName}.{_options.Version}.nupkg");
+
+                        if (string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
+                        {
+                            _options.OutputSymbolsPackageFile = Path.Combine(directory,
+                                $"{_options.AssemblyName}.{_options.Version}.snupkg");
+                        }
+                    }
+                    else if (string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
+                    {
+                        _options.OutputSymbolsPackageFile = Path.Combine(
+                            Path.GetDirectoryName(_options.OutputPackageFile) ?? Directory.GetCurrentDirectory(),
+                            $"{Path.GetFileNameWithoutExtension(_options.OutputSymbolsPackageFile)}.snupkg");
+                    }
+
                     var nupkgStream = File.Create(_options.OutputPackageFile);
                     streams.Add(nupkgStream);
                     settings.NuGetOutput = nupkgStream;
 
-                    if (!string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
+                    if (!_options.NoSymbolsPackageFile && !string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
                     {
                         var snupkgStream = File.Create(_options.OutputSymbolsPackageFile);
                         streams.Add(snupkgStream);

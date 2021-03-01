@@ -22,24 +22,33 @@ namespace Yardarm.CommandLine
 
         #region DLL
 
-        [Option('o', "output", HelpText = "Output .dll file", SetName = "dll")]
+        [Option('o', "output", HelpText = "Output directory or .dll file. Indicate a directory with a trailing slash.", SetName = "dll")]
         public string OutputFile { get; set; }
 
         [Option("xml", HelpText = "Output .xml documentation file", SetName = "dll")]
         public string OutputXmlFile { get; set; }
 
+        [Option("no-xml", HelpText = "Suppress output of .xml documentation", SetName = "dll")]
+        public bool NoXmlFile { get; set; }
+
         [Option("pdb", HelpText = "Output .pdb debug symbols files", SetName = "dll")]
         public string OutputDebugSymbols { get; set; }
+
+        [Option("no-pdb", HelpText = "Suppress output of .pdb debug symbols", SetName = "dll")]
+        public bool NoDebugSymbols { get; set; }
 
         #endregion
 
         #region NuGet
 
-        [Option("nupkg", HelpText = "Output .nupkg package file", SetName = "nuget")]
+        [Option("nupkg", HelpText = "Output directory or .nupkg package file. Indicate a directory with a trailing slash.", SetName = "nuget")]
         public string OutputPackageFile { get; set; }
 
         [Option("snupkg", HelpText = "Output .snupkg symbols package file", SetName = "nuget")]
         public string OutputSymbolsPackageFile { get; set; }
+
+        [Option("no-snupkg", HelpText = "Suppress output of .snupkg symbols package file", SetName = "nuget")]
+        public bool NoSymbolsPackageFile { get; set; }
 
         #endregion
 

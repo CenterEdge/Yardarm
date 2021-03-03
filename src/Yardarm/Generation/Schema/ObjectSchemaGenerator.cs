@@ -97,27 +97,10 @@ namespace Yardarm.Generation.Schema
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateAdditionalPropertiesMember(
             ILocatedOpenApiElement<OpenApiSchema> additionalProperties)
         {
+            // The AdditionalProperties element isn't generated here, it's done by the AdditionalPropertiesEnricher
+            // However, we do need to generate the schema now
+
             ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(additionalProperties);
-
-            TypeSyntax valueType = schemaGenerator.TypeInfo.Name;
-            if (additionalProperties.Element.Nullable)
-            {
-                valueType = NullableType(valueType);
-            }
-
-            yield return PropertyDeclaration(
-                    WellKnownTypes.System.Collections.Generic.IDictionaryT.Name(
-                        PredefinedType(Token(SyntaxKind.StringKeyword)), valueType),
-                    Identifier(Context.NameFormatterSelector.GetFormatter(NameKind.Property)
-                        .Format("AdditionalProperties")))
-                .AddSpecialMemberAnnotation(SpecialMembers.AdditionalProperties)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
-                .WithInitializer(EqualsValueClause(ObjectCreationExpression(
-                    WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
-                        PredefinedType(Token(SyntaxKind.StringKeyword)), valueType))));
 
             if (schemaGenerator.TypeInfo.IsGenerated && additionalProperties.Element.Reference == null)
             {

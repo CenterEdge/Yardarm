@@ -41,7 +41,7 @@ namespace Yardarm.NewtonsoftJson
 
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
 
-        public int Priority => 0;
+        public int Priority => 10;
 
         public JsonAdditionalPropertiesEnricher(IJsonSerializationNamespace jsonSerializationNamespace)
         {

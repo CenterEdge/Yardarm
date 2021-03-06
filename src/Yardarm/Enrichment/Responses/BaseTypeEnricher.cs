@@ -9,8 +9,6 @@ namespace Yardarm.Enrichment.Responses
     {
         private readonly IResponseBaseTypeRegistry _responseBaseTypeRegistry;
 
-        public int Priority => 0;
-
         public BaseTypeEnricher(IResponseBaseTypeRegistry responseBaseTypeRegistry)
         {
             _responseBaseTypeRegistry = responseBaseTypeRegistry ?? throw new ArgumentNullException(nameof(responseBaseTypeRegistry));

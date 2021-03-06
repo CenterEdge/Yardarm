@@ -10,8 +10,6 @@ namespace Yardarm.Enrichment.Authentication
     /// </summary>
     public class SecuritySchemeDocumentationEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSecurityScheme>
     {
-        public int Priority => 0;
-
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSecurityScheme> context) =>
             !string.IsNullOrWhiteSpace(context.Element.Description)

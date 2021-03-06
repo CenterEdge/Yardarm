@@ -8,8 +8,6 @@ namespace Yardarm.Enrichment.Schema
 {
     public class RequiredPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
     {
-        public int Priority => 0;
-
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
         {
             bool isRequired =

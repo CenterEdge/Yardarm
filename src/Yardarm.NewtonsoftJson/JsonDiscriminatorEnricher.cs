@@ -15,8 +15,6 @@ namespace Yardarm.NewtonsoftJson
         protected GenerationContext Context { get; }
         protected IJsonSerializationNamespace JsonSerializationNamespace { get; }
 
-        public int Priority => 0;
-
         public JsonDiscriminatorEnricher(GenerationContext context,
             IJsonSerializationNamespace jsonSerializationNamespace)
         {

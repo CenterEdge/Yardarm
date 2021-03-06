@@ -15,8 +15,6 @@ namespace Yardarm.Enrichment.Packaging
             _dependencyGenerators = dependencyGenerators.ToArray();
         }
 
-        public int Priority => 0;
-
         public PackageSpec Enrich(PackageSpec packageSpec)
         {
             packageSpec.Dependencies.AddRange(_dependencyGenerators

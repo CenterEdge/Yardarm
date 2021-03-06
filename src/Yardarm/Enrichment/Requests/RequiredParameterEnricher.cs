@@ -8,8 +8,6 @@ namespace Yardarm.Enrichment.Requests
 {
     public class RequiredParameterEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiParameter>
     {
-        public int Priority => 0;
-
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiParameter> context)
         {
             return context.Element.Required

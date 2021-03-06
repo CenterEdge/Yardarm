@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Yardarm.Enrichment;
+using Yardarm.Enrichment.Compilation;
 
 namespace Yardarm.Generation.Internal
 {

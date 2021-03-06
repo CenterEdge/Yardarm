@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
+using Yardarm.Enrichment.Compilation;
 using Yardarm.Packaging;
 
 namespace Yardarm

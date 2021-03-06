@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Yardarm.Enrichment.Requests.Internal;
 
 namespace Yardarm.Enrichment.Requests
 {

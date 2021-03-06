@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Yardarm.Enrichment;
-using Yardarm.Generation;
+using Yardarm.Enrichment.Packaging;
 
 namespace Yardarm.Packaging
 {

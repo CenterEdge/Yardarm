@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Yardarm.Enrichment.Tags.Internal;
 
 namespace Yardarm.Enrichment.Tags
 {

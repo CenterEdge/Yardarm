@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Yardarm.Enrichment.Authentication.Internal;
+using Yardarm.Enrichment.Compilation;
 
 namespace Yardarm.Enrichment.Authentication
 {

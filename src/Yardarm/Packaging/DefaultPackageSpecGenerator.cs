@@ -5,6 +5,7 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using Yardarm.Enrichment;
+using Yardarm.Enrichment.Packaging;
 
 namespace Yardarm.Packaging
 {

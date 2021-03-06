@@ -21,7 +21,10 @@ namespace Yardarm.Enrichment.Compilation
         private readonly IOpenApiElementRegistry _elementRegistry;
         private readonly IList<IOpenApiSyntaxNodeEnricher> _enrichers;
 
-        public int Priority => CompilationEnrichmentPriority.OpenApiSyntaxTreeEnrichment;
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(DefaultTypeSerializersEnricher)
+        };
 
         public OpenApiCompilationEnricher(IOpenApiElementRegistry elementRegistry,
             IEnumerable<IOpenApiSyntaxNodeEnricher> enrichers)
@@ -33,7 +36,7 @@ namespace Yardarm.Enrichment.Compilation
         public ValueTask<CSharpCompilation> EnrichAsync(CSharpCompilation target,
             CancellationToken cancellationToken = default) =>
             new ValueTask<CSharpCompilation>(
-                _enrichers.OrderBy(p => p.Priority).Aggregate(target, Enrich));
+                _enrichers.Sort().Aggregate(target, Enrich));
 
         private CSharpCompilation Enrich(CSharpCompilation compilation, IOpenApiSyntaxNodeEnricher enricher)
         {

@@ -8,14 +8,11 @@ namespace Yardarm.Enrichment.Requests
 {
     public class RequestClassMethodDocumentationEnricher : IOpenApiSyntaxNodeEnricher<MethodDeclarationSyntax, OpenApiOperation>
     {
-        public int Priority => 100; // Run after most other enrichers
-
         public MethodDeclarationSyntax Enrich(MethodDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiOperation> context) =>
             target.Parent.IsKind(SyntaxKind.ClassDeclaration) && !string.IsNullOrWhiteSpace(context.Element.Summary)
                 ? AddDocumentation(target)
                 : target;
-
 
         private MethodDeclarationSyntax AddDocumentation(MethodDeclarationSyntax target) =>
             target.WithLeadingTrivia(

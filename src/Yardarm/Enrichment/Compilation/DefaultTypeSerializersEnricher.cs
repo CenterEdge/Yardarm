@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,10 @@ namespace Yardarm.Enrichment.Compilation
     {
         private readonly IList<ICreateDefaultRegistryEnricher> _createDefaultRegistryEnrichers;
 
-        public int Priority => CompilationEnrichmentPriority.WellKnownTypeEnrichment;
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(SyntaxTreeCompilationEnricher)
+        };
 
         public DefaultTypeSerializersEnricher(
             IEnumerable<ICreateDefaultRegistryEnricher> createDefaultRegistryEnrichers)

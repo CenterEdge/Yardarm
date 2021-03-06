@@ -12,8 +12,6 @@ namespace Yardarm.Enrichment.Compilation
     {
         private readonly IList<IReferenceGenerator> _referenceGenerators;
 
-        public int Priority => CompilationEnrichmentPriority.References;
-
         public ReferenceCompilationEnricher(IEnumerable<IReferenceGenerator> referenceGenerators)
         {
             _referenceGenerators = referenceGenerators.ToArray();

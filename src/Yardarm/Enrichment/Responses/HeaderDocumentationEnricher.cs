@@ -7,8 +7,6 @@ namespace Yardarm.Enrichment.Responses
 {
     public class HeaderDocumentationEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiHeader>
     {
-        public int Priority => 100;
-
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiHeader> context) =>
             string.IsNullOrWhiteSpace(context.Element.Description)

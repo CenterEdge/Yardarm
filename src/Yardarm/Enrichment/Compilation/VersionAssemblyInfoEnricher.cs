@@ -9,8 +9,6 @@ namespace Yardarm.Enrichment.Compilation
     {
         private readonly YardarmGenerationSettings _settings;
 
-        public int Priority => 0;
-
         public VersionAssemblyInfoEnricher(YardarmGenerationSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));

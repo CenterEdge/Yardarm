@@ -8,8 +8,6 @@ namespace Yardarm.NewtonsoftJson
 {
     public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, OpenApiSchema>
     {
-        public int Priority => 0;
-
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
             context.Element.Type == "string"

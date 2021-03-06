@@ -15,8 +15,6 @@ namespace Yardarm.Enrichment.Authentication
         private readonly GenerationContext _context;
         private readonly IAuthenticationNamespace _authenticationNamespace;
 
-        public int Priority => 0;
-
         public SecuritySchemeRequestEnricher(GenerationContext context, IAuthenticationNamespace authenticationNamespace)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

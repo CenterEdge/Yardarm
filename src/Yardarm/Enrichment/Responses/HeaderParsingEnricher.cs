@@ -15,8 +15,6 @@ namespace Yardarm.Enrichment.Responses
         private readonly GenerationContext _context;
         private readonly ISerializationNamespace _serializationNamespace;
 
-        public int Priority => 0;
-
         public HeaderParsingEnricher(GenerationContext context, ISerializationNamespace serializationNamespace)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

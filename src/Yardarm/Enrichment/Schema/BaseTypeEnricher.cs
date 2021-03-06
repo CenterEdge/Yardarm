@@ -10,8 +10,6 @@ namespace Yardarm.Enrichment.Schema
     {
         private readonly GenerationContext _context;
 
-        public int Priority => 0;
-
         public BaseTypeEnricher(GenerationContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

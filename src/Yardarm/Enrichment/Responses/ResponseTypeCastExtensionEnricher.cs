@@ -21,8 +21,6 @@ namespace Yardarm.Enrichment.Responses
         private readonly IResponsesNamespace _responsesNamespace;
         private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
 
-        public int Priority => 0;
-
         public ResponseTypeCastExtensionEnricher(GenerationContext context, IResponsesNamespace responsesNamespace,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
         {

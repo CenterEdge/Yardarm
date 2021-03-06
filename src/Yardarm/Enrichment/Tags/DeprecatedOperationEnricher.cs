@@ -10,8 +10,6 @@ namespace Yardarm.Enrichment.Tags
     /// </summary>
     public class DeprecatedOperationEnricher : IOpenApiSyntaxNodeEnricher<MethodDeclarationSyntax, OpenApiOperation>
     {
-        public int Priority => 0;
-
         public MethodDeclarationSyntax Enrich(MethodDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiOperation> context) =>
             context.Element.Deprecated

@@ -9,8 +9,6 @@ namespace Yardarm.NewtonsoftJson
 {
     public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
     {
-        public int Priority => 0;
-
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
             target

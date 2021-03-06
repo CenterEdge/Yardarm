@@ -10,8 +10,6 @@ namespace Yardarm.NewtonsoftJson
     {
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
 
-        public int Priority => 0;
-
         public JsonCreateDefaultRegistryEnricher(IJsonSerializationNamespace jsonSerializationNamespace)
         {
             _jsonSerializationNamespace = jsonSerializationNamespace ??

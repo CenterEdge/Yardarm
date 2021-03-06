@@ -18,8 +18,6 @@ namespace Yardarm.Enrichment.Authentication
     {
         private readonly GenerationContext _context;
 
-        public int Priority => 0;
-
         public AuthenticatorsSchemeEnricher(GenerationContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));

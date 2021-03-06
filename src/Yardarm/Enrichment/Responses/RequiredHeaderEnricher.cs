@@ -8,8 +8,6 @@ namespace Yardarm.Enrichment.Responses
 {
     public class RequiredHeaderEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiHeader>
     {
-        public int Priority => 0;
-
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiHeader> context)
         {
             return context.Element.Required

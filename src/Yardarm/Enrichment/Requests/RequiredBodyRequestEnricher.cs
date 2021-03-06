@@ -11,8 +11,6 @@ namespace Yardarm.Enrichment.Requests
     /// </summary>
     public class RequiredBodyRequestEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiOperation>
     {
-        public int Priority => 0;
-
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiOperation> context) =>
             context.Element.RequestBody?.Required ?? false

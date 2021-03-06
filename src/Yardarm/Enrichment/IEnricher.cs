@@ -2,6 +2,6 @@
 {
     public interface IEnricher
     {
-        int Priority { get; }
+        public int Priority => 0;
     }
 }

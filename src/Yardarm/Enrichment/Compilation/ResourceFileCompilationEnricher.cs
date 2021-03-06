@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,10 @@ namespace Yardarm.Enrichment.Compilation
     {
         private readonly IResourceFileEnricher[] _enrichers;
 
-        public int Priority => CompilationEnrichmentPriority.WellKnownTypeEnrichment;
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(SyntaxTreeCompilationEnricher)
+        };
 
         public ResourceFileCompilationEnricher(IEnumerable<IResourceFileEnricher> enrichers)
         {
@@ -27,7 +31,7 @@ namespace Yardarm.Enrichment.Compilation
         public ValueTask<CSharpCompilation> EnrichAsync(CSharpCompilation target,
             CancellationToken cancellationToken = default) =>
             new ValueTask<CSharpCompilation>(
-                _enrichers.OrderBy(p => p.Priority).Aggregate(target, Enrich));
+                _enrichers.Sort().Aggregate(target, Enrich));
 
         private CSharpCompilation Enrich(CSharpCompilation compilation, IResourceFileEnricher enricher)
         {

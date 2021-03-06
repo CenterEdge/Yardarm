@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
@@ -7,7 +8,11 @@ namespace Yardarm.Enrichment.Schema
 {
     public class DocumentationPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
     {
-        public int Priority => 100; // Run after most other enrichers
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(AdditionalPropertiesEnricher),
+            typeof(RequiredPropertyEnricher)
+        };
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>

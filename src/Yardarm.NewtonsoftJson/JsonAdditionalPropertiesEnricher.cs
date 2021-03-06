@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Yardarm.Enrichment;
+using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Helpers;
 using Yardarm.NewtonsoftJson.Helpers;
@@ -41,7 +42,10 @@ namespace Yardarm.NewtonsoftJson
 
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
 
-        public int Priority => 10;
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(AdditionalPropertiesEnricher)
+        };
 
         public JsonAdditionalPropertiesEnricher(IJsonSerializationNamespace jsonSerializationNamespace)
         {

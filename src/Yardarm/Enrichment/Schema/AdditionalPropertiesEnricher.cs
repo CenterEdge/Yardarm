@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 using Yardarm.Helpers;
@@ -22,7 +20,10 @@ namespace Yardarm.Enrichment.Schema
     {
         private readonly GenerationContext _context;
 
-        public int Priority => 1;
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(BaseTypeEnricher)
+        };
 
         public AdditionalPropertiesEnricher(GenerationContext context)
         {

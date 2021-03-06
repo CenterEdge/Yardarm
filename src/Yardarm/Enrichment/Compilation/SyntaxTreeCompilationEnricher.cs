@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +12,10 @@ namespace Yardarm.Enrichment.Compilation
     {
         private readonly IList<ISyntaxTreeGenerator> _generators;
 
-        public int Priority => CompilationEnrichmentPriority.SyntaxTreeGeneration;
+        public Type[] ExecuteAfter { get; } =
+        {
+            typeof(ReferenceCompilationEnricher)
+        };
 
         public SyntaxTreeCompilationEnricher(IEnumerable<ISyntaxTreeGenerator> generators)
         {

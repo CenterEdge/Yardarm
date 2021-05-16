@@ -83,7 +83,7 @@ namespace Yardarm.Generation.Request
             }
 
             return GenerateHeader(operation)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
                 .WithExpressionBody(ArrowExpressionClause(
                     pathExpression));
         }

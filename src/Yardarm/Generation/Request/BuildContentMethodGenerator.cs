@@ -45,7 +45,7 @@ namespace Yardarm.Generation.Request
             {
                 // In the base request class which has no body
                 methodDeclaration = methodDeclaration
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword))
+                    .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
                     .WithExpressionBody(ArrowExpressionClause(
                         LiteralExpression(SyntaxKind.NullLiteralExpression)));
             }
@@ -53,7 +53,7 @@ namespace Yardarm.Generation.Request
             {
                 // In an inherited request class which adds a body
                 methodDeclaration = methodDeclaration
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword))
+                    .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
                     .WithBody(Block(GenerateStatements(operation, mediaType)));
             }
 

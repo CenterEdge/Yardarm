@@ -65,6 +65,7 @@ namespace Yardarm.Generation.Request
 
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
+                .AddGeneratorAnnotation(this)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddBaseListTypes(SimpleBaseType(RequestsNamespace.OperationRequest));
 

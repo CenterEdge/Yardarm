@@ -40,7 +40,7 @@ namespace Yardarm.Generation.Request
         public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
             GenerateHeader(operation)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
                 .WithBody(Block(GenerateStatements(operation)));
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(

@@ -54,7 +54,7 @@ namespace Yardarm.Generation.Request.Internal
             {
                 CreateBodyPropertyDeclaration(),
                 _buildContentMethodGenerator.GenerateHeader(RequestTypeGenerator.Element)
-                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword)))
+                    .WithModifiers(TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)))
                     .WithExpressionBody(ArrowExpressionClause(
                         IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)))
             });

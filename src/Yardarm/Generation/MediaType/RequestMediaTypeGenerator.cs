@@ -87,6 +87,7 @@ namespace Yardarm.Generation.MediaType
 
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
+                .AddGeneratorAnnotation(this)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddBaseListTypes(SimpleBaseType(RequestTypeGenerator.TypeInfo.Name))
                 .AddMembers(ConstructorDeclaration(className)

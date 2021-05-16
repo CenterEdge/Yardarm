@@ -4,6 +4,8 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation;
+using Yardarm.Generation.Request;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -23,7 +25,7 @@ namespace Yardarm.Enrichment.Authentication
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiOperation> context) =>
-            context.Element.Security.Count > 0
+            context.Element.Security.Count > 0 && target.GetGeneratorAnnotation() == typeof(RequestTypeGenerator)
                 ? AddSecuritySchemes(target, context.LocatedElement)
                 : target;
 

@@ -10,6 +10,7 @@ namespace Yardarm.Names
         NameSyntax ITypeSerializer { get; }
         NameSyntax ITypeSerializerRegistry { get; }
         NameSyntax MultipartFormDataSerializer { get; }
+        NameSyntax MultipartPropertyAttribute { get; }
         NameSyntax PathSegmentStyle { get; }
         NameSyntax PathSegmentSerializer { get; }
         ExpressionSyntax PathSegmentSerializerInstance { get; }

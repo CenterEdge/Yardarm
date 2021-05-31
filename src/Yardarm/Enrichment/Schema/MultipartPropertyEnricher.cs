@@ -33,7 +33,7 @@ namespace Yardarm.Enrichment.Schema
             }
 
             return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                SyntaxFactory.Attribute(_serializationNamespace.MultipartFormDataSerializer)
+                SyntaxFactory.Attribute(_serializationNamespace.MultipartPropertyAttribute)
                     .AddArgumentListArguments(
                         SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
         }

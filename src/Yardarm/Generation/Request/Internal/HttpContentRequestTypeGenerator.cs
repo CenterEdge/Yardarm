@@ -16,15 +16,15 @@ namespace Yardarm.Generation.Request.Internal
     /// </summary>
     internal class HttpContentRequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
-        private readonly IBuildContentMethodGenerator _buildContentMethodGenerator;
+        private readonly MethodDeclarationSyntax _buildContentMethod;
 
         private RequestTypeGenerator RequestTypeGenerator => (RequestTypeGenerator)Parent!;
 
         public HttpContentRequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> element, GenerationContext context,
-            RequestTypeGenerator parent, IBuildContentMethodGenerator buildContentMethodGenerator)
+            RequestTypeGenerator parent, MethodDeclarationSyntax buildContentMethod)
             : base(element, context, parent)
         {
-            _buildContentMethodGenerator = buildContentMethodGenerator ?? throw new ArgumentNullException(nameof(buildContentMethodGenerator));
+            _buildContentMethod = buildContentMethod ?? throw new ArgumentNullException(nameof(buildContentMethod));
         }
 
         protected override YardarmTypeInfo GetTypeInfo()
@@ -51,13 +51,15 @@ namespace Yardarm.Generation.Request.Internal
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
+            var buildContentMethod = _buildContentMethod
+                .WithModifiers(TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)))
+                .WithExpressionBody(ArrowExpressionClause(
+                    IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)));
+
             declaration = declaration.AddMembers(new MemberDeclarationSyntax[]
             {
                 CreateBodyPropertyDeclaration(),
-                _buildContentMethodGenerator.GenerateHeader(RequestTypeGenerator.Element)
-                    .WithModifiers(TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)))
-                    .WithExpressionBody(ArrowExpressionClause(
-                        IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)))
+                buildContentMethod
             });
 
             yield return declaration;

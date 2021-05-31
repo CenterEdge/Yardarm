@@ -15,11 +15,11 @@ namespace Yardarm.Generation.Request
 {
     public class RequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
+        public static IdentifierNameSyntax SerializationInfoPropertyName { get; } =
+            IdentifierName("SerializationInfo");
+
         protected IMediaTypeSelector MediaTypeSelector { get; }
-        protected IBuildRequestMethodGenerator BuildRequestMethodGenerator { get; }
-        protected IBuildUriMethodGenerator BuildUriMethodGenerator { get; }
-        protected IAddHeadersMethodGenerator AddHeadersMethodGenerator { get; }
-        protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
+        protected IList<IRequestMemberGenerator> MemberGenerators { get; }
         protected ISerializerSelector SerializerSelector { get; }
 
         protected IRequestsNamespace RequestsNamespace { get; }
@@ -28,19 +28,12 @@ namespace Yardarm.Generation.Request
 
         public RequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> operationElement,
             GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IBuildRequestMethodGenerator buildRequestMethodGenerator, IBuildUriMethodGenerator buildUriMethodGenerator,
-            IAddHeadersMethodGenerator addHeadersMethodGenerator, IBuildContentMethodGenerator buildContentMethodGenerator,
+            IList<IRequestMemberGenerator> memberGenerators,
             IRequestsNamespace requestsNamespace, ISerializerSelector serializerSelector)
             : base(operationElement, context, null)
         {
             MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            BuildRequestMethodGenerator = buildRequestMethodGenerator ?? throw new ArgumentNullException(nameof(buildRequestMethodGenerator));
-            BuildUriMethodGenerator = buildUriMethodGenerator ??
-                                      throw new ArgumentNullException(nameof(buildUriMethodGenerator));
-            AddHeadersMethodGenerator = addHeadersMethodGenerator ??
-                                        throw new ArgumentNullException(nameof(addHeadersMethodGenerator));
-            BuildContentMethodGenerator = buildContentMethodGenerator ??
-                                          throw new ArgumentNullException(nameof(buildContentMethodGenerator));
+            MemberGenerators = memberGenerators ?? throw new ArgumentNullException(nameof(memberGenerators));
             RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
             SerializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
         }
@@ -70,18 +63,21 @@ namespace Yardarm.Generation.Request
                 .AddBaseListTypes(SimpleBaseType(RequestsNamespace.OperationRequest));
 
             declaration = declaration.AddMembers(
-                GenerateParameterProperties(className).ToArray());
+                GenerateParameterProperties(className)
+                    .Concat(MemberGenerators
+                        .Select(p => p.Generate(Element, null)))
+                    .ToArray());
 
-            yield return declaration.AddMembers(
-                BuildRequestMethodGenerator.Generate(Element, null),
-                BuildUriMethodGenerator.Generate(Element, null),
-                AddHeadersMethodGenerator.Generate(Element, null),
-                BuildContentMethodGenerator.Generate(Element, null));
+            yield return declaration;
 
             if (Element.GetRequestBody()?.GetMediaTypes().Any(p => SerializerSelector.Select(p) == null) ?? false)
             {
+                var buildContentMethod = declaration.Members
+                    .OfType<MethodDeclarationSyntax>()
+                    .First(p => p.Identifier.Text == BuildContentMethodGenerator.BuildContentMethodName);
+
                 var httpContentGenerator =
-                    new HttpContentRequestTypeGenerator(Element, Context, this, BuildContentMethodGenerator);
+                    new HttpContentRequestTypeGenerator(Element, Context, this, buildContentMethod);
 
                 foreach (var otherMember in httpContentGenerator.Generate())
                 {

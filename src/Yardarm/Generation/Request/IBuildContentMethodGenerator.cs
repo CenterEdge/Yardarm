@@ -1,6 +1,6 @@
 ﻿namespace Yardarm.Generation.Request
 {
-    public interface IBuildContentMethodGenerator : IRequestMethodGenerator
+    public interface IBuildContentMethodGenerator : IRequestMemberGenerator
     {
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using NuGet.Common;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -12,7 +13,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
 {
-    public class AddHeadersMethodGenerator : IAddHeadersMethodGenerator
+    public class AddHeadersMethodGenerator : IRequestMemberGenerator
     {
         public const string AddHeadersMethodName = "AddHeaders";
         public const string RequestMessageParameterName = "requestMessage";
@@ -37,7 +38,7 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(RequestMessageParameterName))
                         .WithType(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name));
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
             GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))

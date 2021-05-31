@@ -10,7 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
 {
-    public class BuildRequestMethodGenerator : IBuildRequestMethodGenerator
+    public class BuildRequestMethodGenerator : IRequestMemberGenerator
     {
         public const string BuildRequestMethodName = "BuildRequest";
         protected const string RequestMessageVariableName = "requestMessage";
@@ -32,7 +32,7 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
                         .WithType(SerializationNamespace.ITypeSerializerRegistry));
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
             GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))

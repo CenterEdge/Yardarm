@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
                         .WithType(SerializationNamespace.ITypeSerializerRegistry));
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
         {
             MethodDeclarationSyntax methodDeclaration = GenerateHeader(operation);

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
@@ -61,13 +63,18 @@ namespace Yardarm
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
             services.TryAddSingleton<ITypeGeneratorFactory<OpenApiUnknownResponse>, UnknownResponseTypeGeneratorFactory>();
 
-            services.TryAddSingleton<IAddHeadersMethodGenerator, AddHeadersMethodGenerator>();
-            services.TryAddSingleton<IBuildContentMethodGenerator, BuildContentMethodGenerator>();
-            services.TryAddSingleton<IBuildRequestMethodGenerator, BuildRequestMethodGenerator>();
-            services.TryAddSingleton<IBuildUriMethodGenerator, BuildUriMethodGenerator>();
+            services.AddSingleton<IRequestMemberGenerator, AddHeadersMethodGenerator>();
+            services.AddSingleton<IRequestMemberGenerator, BuildContentMethodGenerator>();
+            services.AddSingleton<IRequestMemberGenerator, BuildRequestMethodGenerator>();
+            services.AddSingleton<IRequestMemberGenerator, BuildUriMethodGenerator>();
             services.TryAddSingleton<IGetBodyMethodGenerator, GetBodyMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IMediaTypeSelector, PriorityMediaTypeSelector>();
+
+            // Need to be able to specifically inject this one as well
+            services.TryAddSingleton(serviceProvider =>
+                serviceProvider.GetRequiredService<IEnumerable<IRequestMemberGenerator>>()
+                    .OfType<IBuildContentMethodGenerator>().First());
 
             services.TryAddSingleton<IPackageSpecGenerator, DefaultPackageSpecGenerator>();
             services.TryAddSingleton(serviceProvider => serviceProvider.GetRequiredService<IPackageSpecGenerator>().Generate());

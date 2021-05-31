@@ -11,7 +11,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
 {
-    public class BuildUriMethodGenerator : IBuildUriMethodGenerator
+    public class BuildUriMethodGenerator : IRequestMemberGenerator
     {
         public const string BuildUriMethodName = "BuildUri";
 
@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Request
                 PredefinedType(Token(SyntaxKind.StringKeyword)),
                 BuildUriMethodName);
 
-        public MethodDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
         {
             var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);

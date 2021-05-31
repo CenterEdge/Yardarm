@@ -8,6 +8,7 @@ namespace Yardarm.Enrichment.Requests
             services
                 .AddOpenApiSyntaxNodeEnricher<RequestClassMethodDocumentationEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<RequestInterfaceMethodDocumentationEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<RequestMultipartEncodingEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<RequestParameterDocumentationEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<RequiredBodyRequestEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<RequiredParameterEnricher>();

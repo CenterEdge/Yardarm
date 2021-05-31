@@ -13,6 +13,7 @@ namespace Yardarm.Names.Internal
         public NameSyntax Name { get; }
         public NameSyntax ITypeSerializer { get; }
         public NameSyntax ITypeSerializerRegistry { get; }
+        public NameSyntax MultipartEncodingAttribute { get; }
         public NameSyntax MultipartFormDataSerializer { get; }
         public NameSyntax MultipartPropertyAttribute { get; }
         public NameSyntax PathSegmentStyle { get; }
@@ -46,11 +47,15 @@ namespace Yardarm.Names.Internal
                 Name,
                 IdentifierName("ITypeSerializerRegistry"));
 
+            MultipartEncodingAttribute = QualifiedName(
+                Name,
+                IdentifierName("MultipartEncodingAttribute"));
+
             MultipartFormDataSerializer = QualifiedName(
                 Name,
                 IdentifierName("MultipartFormDataSerializer"));
 
-            MultipartFormDataSerializer = QualifiedName(
+            MultipartPropertyAttribute = QualifiedName(
                 Name,
                 IdentifierName("MultipartPropertyAttribute"));
 

@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using NuGet.Configuration;
+using NuGet.Packaging.Core;
 using Serilog;
 using Serilog.Events;
 using Yardarm.Helpers;
@@ -43,6 +45,8 @@ namespace Yardarm.CommandLine
             ApplyExtensions(settings);
 
             ApplyStrongNaming(settings);
+
+            ApplyNuGetSettings(settings);
 
             List<Stream> streams = ApplyFileStreams(settings);
             try
@@ -289,6 +293,16 @@ namespace Yardarm.CommandLine
             settings.CompilationOptions = settings.CompilationOptions
                 .WithStrongNameProvider(new DesktopStrongNameProvider(ImmutableArray.Create(Directory.GetCurrentDirectory())))
                 .WithCryptoKeyFile(_options.KeyFile);
+        }
+
+        private void ApplyNuGetSettings(YardarmGenerationSettings settings)
+        {
+            if (!string.IsNullOrEmpty(_options.RepositoryType) && !string.IsNullOrEmpty(_options.RepositoryUrl))
+            {
+                settings.Repository =
+                    new RepositoryMetadata(_options.RepositoryType, _options.RepositoryUrl, _options.RepositoryBranch,
+                        _options.RepositoryCommit);
+            }
         }
     }
 }

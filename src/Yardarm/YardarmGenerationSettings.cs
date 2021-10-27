@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using NuGet.Packaging.Core;
 using Yardarm.Generation;
 
 namespace Yardarm
@@ -26,6 +27,7 @@ namespace Yardarm
         public Version Version { get; set; } = new Version(1, 0, 0);
         public string? VersionSuffix { get; set; }
         public string Author { get; set; } = "anonymous";
+        public RepositoryMetadata? Repository { get; set; }
 
         public Stream DllOutput
         {

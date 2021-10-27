@@ -50,6 +50,18 @@ namespace Yardarm.CommandLine
         [Option("no-snupkg", HelpText = "Suppress output of .snupkg symbols package file", SetName = "nuget")]
         public bool NoSymbolsPackageFile { get; set; }
 
+        [Option("repository-type", Default="git", HelpText = "Type of repository for NuGet packaging")]
+        public string RepositoryType { get; set; }
+
+        [Option("repository-url", HelpText = "Url of repository for NuGet packaging (ex. \"https://github.com/CenterEdge/Yardarm.git\")")]
+        public string RepositoryUrl { get; set; }
+
+        [Option("repository-branch", HelpText = "Branch of repository for NuGet packaging (ex. \"main\")")]
+        public string RepositoryBranch { get; set; }
+
+        [Option("repository-commit", HelpText = "Commit identifier for NuGet packaging")]
+        public string RepositoryCommit { get; set; }
+
         #endregion
 
         [Option('x', "extension", HelpText = "Extension assemblies to enable")]

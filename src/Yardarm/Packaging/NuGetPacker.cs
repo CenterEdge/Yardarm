@@ -40,6 +40,7 @@ namespace Yardarm.Packaging
                 Description = _settings.AssemblyName,
                 Summary = _document.Info.Description,
                 Authors = { _settings.Author },
+                Repository = _settings.Repository,
                 Files =
                 {
                     new StreamPackageFile(dllStream, $"lib/netstandard2.0/{_settings.AssemblyName}.dll", "netstandard2.0"),

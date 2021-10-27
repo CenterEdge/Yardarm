@@ -44,7 +44,7 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 ### .NET Core Global Tool
 
 ```sh
-dotnet tool install --global Yardarm.CommandLine --version 0.1.0-alpha008
+dotnet tool install --global Yardarm.CommandLine --version 0.1.0-alpha009
 
 yardarm help generate
 ```
@@ -52,7 +52,7 @@ yardarm help generate
 ### Docker
 
 ```sh
-docker run -it ghcr.io/centeredge/yardarm:release-0.1.0-alpha008
+docker run -it ghcr.io/centeredge/yardarm:0.1.0-alpha009
 
 yardarm help generate
 ```

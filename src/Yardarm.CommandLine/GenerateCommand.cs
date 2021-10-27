@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using Serilog;
 using Serilog.Events;

@@ -5,7 +5,7 @@
     <RootNamespace>RootNamespace</RootNamespace>
 
     <Nullable>enable</Nullable>
-    <LangVersion>9</LangVersion>
+    <LangVersion>10</LangVersion>
     <IsPackable>false</IsPackable>
     <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
   </PropertyGroup>

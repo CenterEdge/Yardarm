@@ -273,7 +273,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Assert
 
-            result.Should().BeEquivalentTo(1, 3, 5);
+            result.Should().BeEquivalentTo(new[] { 1, 3, 5 });
         }
 
         #endregion

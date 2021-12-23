@@ -192,7 +192,7 @@ namespace Yardarm.Client.UnitTests.Authentication.Internal
             // Assert
 
             result.Should().BeOfType<MultiAuthenticator>().Which
-                .Authenticators.Should().BeEquivalentTo(authenticators.Auth1, authenticators.Auth2);
+                .Authenticators.Should().BeEquivalentTo(new IAuthenticator[] { authenticators.Auth1, authenticators.Auth2 });
         }
 
         #endregion

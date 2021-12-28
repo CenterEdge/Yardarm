@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yardarm.Client\Yardarm.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+    We need access to these attributes to compile for testing, but we don't want them included
+    in the SDK because they would be included multiple times. Yardarm.Client should have the only
+    copy that's embedded.
+    -->
+    <Compile Include="../Yardarm.Client/Internal/NullableAttributes.cs" />
+  </ItemGroup>
+
+</Project>

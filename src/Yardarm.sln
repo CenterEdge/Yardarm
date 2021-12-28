@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30204.135
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.CommandLine", "Yardarm.CommandLine\Yardarm.CommandLine.csproj", "{527F5AF0-1F33-4F07-A6D6-E411CCA5B0AB}"
 EndProject
@@ -15,7 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.Client", "Yardarm.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.NewtonsoftJson.Client", "Yardarm.NewtonsoftJson.Client\Yardarm.NewtonsoftJson.Client.csproj", "{F9BF417C-669B-43B4-BAB7-836E4E01EE74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.Client.UnitTests", "Yardarm.Client.UnitTests\Yardarm.Client.UnitTests.csproj", "{764A21AF-D4BB-40FD-859C-59679AB7E4FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.Client.UnitTests", "Yardarm.Client.UnitTests\Yardarm.Client.UnitTests.csproj", "{764A21AF-D4BB-40FD-859C-59679AB7E4FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.SystemTextJson", "Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj", "{B8E31BC7-0232-43F7-9327-EF2BBDC14D8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.SystemTextJson.Client", "Yardarm.SystemTextJson.Client\Yardarm.SystemTextJson.Client.csproj", "{7F80C514-3A76-4EBD-8D19-98B4C7D6E2D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{764A21AF-D4BB-40FD-859C-59679AB7E4FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8E31BC7-0232-43F7-9327-EF2BBDC14D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8E31BC7-0232-43F7-9327-EF2BBDC14D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8E31BC7-0232-43F7-9327-EF2BBDC14D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8E31BC7-0232-43F7-9327-EF2BBDC14D8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F80C514-3A76-4EBD-8D19-98B4C7D6E2D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F80C514-3A76-4EBD-8D19-98B4C7D6E2D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F80C514-3A76-4EBD-8D19-98B4C7D6E2D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F80C514-3A76-4EBD-8D19-98B4C7D6E2D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

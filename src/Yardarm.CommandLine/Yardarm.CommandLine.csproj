@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Yardarm.NewtonsoftJson\Yardarm.NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj" />
     <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
   </ItemGroup>
 

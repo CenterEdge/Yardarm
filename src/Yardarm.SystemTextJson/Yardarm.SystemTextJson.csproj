@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Description>Extension for Yardarm to generate SDKs that use System.Text.Json for JSON serialization.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Collect cs files from Yardarm.SystemTextJson.Client as resources so we can compile them into generated SDKs -->
+    <EmbeddedResource Include="../Yardarm.SystemTextJson.Client/**/*.cs" Exclude="../Yardarm.SystemTextJson.Client/bin/**;../Yardarm.SystemTextJson.Client/obj/**">
+      <Visible>False</Visible>
+      <LogicalName>$([System.String]::Copy('%(RelativeDir)').Substring(3).Replace('/', '.').Replace('\', '.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

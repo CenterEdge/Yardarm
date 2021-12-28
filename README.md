@@ -32,7 +32,8 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 - Highly extensible SDK generation
   - Built around plugable extensions that add additional features or modify the C# code used for compilation
   - Will include some out-of-the-box plugins for common scenarios
-    - `Newtonsoft.Json` serialization/deserialization
+    - `Newtonsoft.Json` serialization/deserialization (done)
+    - `System.Text.Json` serialization/deserialization (in progress)
     - `NodaTime` date/time properties
 - Highly extensible SDK
   - Will allow the SDK consumer to extend the behaviors on the client side
@@ -65,6 +66,12 @@ yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -o output/directory/ -x Yard
 
 # Generate a NuGet package and symbols package, with Newtonsoft.Json support
 yardarm generate -i my-spec.json -n MySpec -v 1.0.0 --nupkg output/directory/ -x Yardarm.NewtonsoftJson
+
+# Generate a DLL and related files, with System.Text.Json support
+yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -o output/directory/ -x Yardarm.SystemTextJson
+
+# Generate a NuGet package and symbols package, with System.Text.Json support
+yardarm generate -i my-spec.json -n MySpec -v 1.0.0 --nupkg output/directory/ -x Yardarm.SystemTextJson
 
 # Note the trailing slash on the output directory. If there is no trailing slash, it is assumed to be a DLL or nupkg file name.
 # Related files will be output beside that file.

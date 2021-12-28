@@ -12,6 +12,8 @@ COPY src/Yardarm.Client.UnitTests/*.csproj ./Yardarm.Client.UnitTests/
 COPY src/Yardarm.CommandLine/*.csproj ./Yardarm.CommandLine/
 COPY src/Yardarm.NewtonsoftJson/*.csproj ./Yardarm.NewtonsoftJson/
 COPY src/Yardarm.NewtonsoftJson.Client/*.csproj ./Yardarm.NewtonsoftJson.Client/
+COPY src/Yardarm.SystemTextJson/*.csproj ./Yardarm.SystemTextJson/
+COPY src/Yardarm.SystemTextJson.Client/*.csproj ./Yardarm.SystemTextJson.Client/
 RUN dotnet restore Yardarm.sln
 
 COPY ./src ./

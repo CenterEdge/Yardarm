@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -59,7 +60,11 @@ namespace Yardarm.Packaging.Internal
                     new LocalPackageFileCache(),
                     logger);
 
-                var restoreRequest = new RestoreRequest(_packageSpec, dependencyProviders, cacheContext, null, logger)
+                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, logger);
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+
+                var restoreRequest = new RestoreRequest(_packageSpec, dependencyProviders, cacheContext,
+                    clientPolicyContext, packageSourceMapping, logger, new LockFileBuilderCache())
                 {
                     ProjectStyle = ProjectStyle.PackageReference,
                     RestoreOutputPath = tempPath

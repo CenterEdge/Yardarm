@@ -79,12 +79,12 @@ namespace Yardarm.Enrichment.Compilation
 
             var newRootNode = rootNode.ReplaceNodes(
                 rootNode.GetAnnotatedNodes(typeof(TElement).Name).OfType<TSyntaxNode>(),
-                (_, node) =>
+                (originalNode, node) =>
                 {
                     var schema = node.GetElementAnnotation<TElement>(_elementRegistry);
 
                     return schema != null
-                        ? enricher.Enrich(node, new OpenApiEnrichmentContext<TElement>(compilation, syntaxTree, schema))
+                        ? enricher.Enrich(node, new OpenApiEnrichmentContext<TElement>(compilation, syntaxTree, schema, originalNode))
                         : node;
                 });
 

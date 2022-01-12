@@ -20,21 +20,21 @@ namespace Yardarm.Generation.Internal
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public ITypeGenerator Get(ILocatedOpenApiElement element)
+        public ITypeGenerator Get(ILocatedOpenApiElement element, Type generatorCategory)
         {
             if (element == null)
             {
                 throw new ArgumentNullException(nameof(element));
             }
 
-            return (ITypeGenerator)_getTypedMethod.MakeGenericMethod(element.ElementType)
+            return (ITypeGenerator)_getTypedMethod.MakeGenericMethod(element.ElementType, generatorCategory)
                 .Invoke(this, new object[] {element})!;
         }
 
-        public ITypeGenerator Get<T>(ILocatedOpenApiElement<T> element)
+        public ITypeGenerator Get<T, TGeneratorCategory>(ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement
         {
-            return _serviceProvider.GetRequiredService<ITypeGeneratorRegistry<T>>().Get(element);
+            return _serviceProvider.GetRequiredService<ITypeGeneratorRegistry<T, TGeneratorCategory>>().Get(element);
         }
     }
 }

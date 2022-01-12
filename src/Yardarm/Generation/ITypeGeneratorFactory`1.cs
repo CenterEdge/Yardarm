@@ -2,7 +2,7 @@
 
 namespace Yardarm.Generation
 {
-    public interface ITypeGeneratorRegistry<in TElement> : ITypeGeneratorRegistry<TElement, PrimaryGeneratorCategory>
+    public interface ITypeGeneratorFactory<in TElement> : ITypeGeneratorFactory<TElement, PrimaryGeneratorCategory>
         where TElement : IOpenApiElement
     {
     }

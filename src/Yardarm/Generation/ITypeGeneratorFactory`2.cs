@@ -3,7 +3,8 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation
 {
-    public interface ITypeGeneratorFactory<in TElement>
+    // ReSharper disable once UnusedTypeParameter
+    public interface ITypeGeneratorFactory<in TElement, TGeneratorCategory>
         where TElement : IOpenApiElement
     {
         ITypeGenerator Create(ILocatedOpenApiElement<TElement> element, ITypeGenerator? parent);

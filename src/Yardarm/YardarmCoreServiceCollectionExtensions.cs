@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
@@ -48,20 +49,22 @@ namespace Yardarm
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
             services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
-            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>), typeof(TypeGeneratorRegistry<>), ServiceLifetime.Singleton));
+            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<,>), typeof(TypeGeneratorRegistry<,>), ServiceLifetime.Singleton));
+            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>),
+                typeof(PrimaryGeneratorCategory.TypeGeneratorRegistryWrapper<>), ServiceLifetime.Singleton));
 
-            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorFactory<>),
-                typeof(NoopTypeGeneratorFactory<>), ServiceLifetime.Singleton));
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiHeader>, HeaderTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiMediaType>, MediaTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSchema>, DefaultSchemaGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiSecurityScheme>, SecuritySchemeTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponse>, ResponseTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiResponses>, ResponseSetTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiOperation>, RequestTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiParameter>, ParameterTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiTag>, TagTypeGeneratorFactory>();
-            services.TryAddSingleton<ITypeGeneratorFactory<OpenApiUnknownResponse>, UnknownResponseTypeGeneratorFactory>();
+            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorFactory<,>),
+                typeof(NoopTypeGeneratorFactory<,>), ServiceLifetime.Singleton));
+            services.TryAddTypeGeneratorFactory<OpenApiHeader, HeaderTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiMediaType, MediaTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiSchema, DefaultSchemaGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiSecurityScheme, SecuritySchemeTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiResponse, ResponseTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiResponses, ResponseSetTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiOperation, RequestTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiParameter, ParameterTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiTag, TagTypeGeneratorFactory>();
+            services.TryAddTypeGeneratorFactory<OpenApiUnknownResponse, UnknownResponseTypeGeneratorFactory>();
 
             services.AddSingleton<IRequestMemberGenerator, AddHeadersMethodGenerator>();
             services.AddSingleton<IRequestMemberGenerator, BuildContentMethodGenerator>();
@@ -119,5 +122,15 @@ namespace Yardarm
         public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
             Func<IServiceProvider, SerializerDescriptor> descriptorFactory) =>
             services.AddSingleton(descriptorFactory ?? throw new ArgumentNullException(nameof(descriptorFactory)));
+
+        public static void TryAddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services)
+            where TElement : IOpenApiElement
+            where TGenerator : class, ITypeGeneratorFactory<TElement, PrimaryGeneratorCategory> =>
+            services.TryAddTypeGeneratorFactory<TElement, PrimaryGeneratorCategory, TGenerator>();
+
+        public static void TryAddTypeGeneratorFactory<TElement, TGeneratorCategory, TGenerator>(this IServiceCollection services)
+            where TElement : IOpenApiElement
+            where TGenerator : class, ITypeGeneratorFactory<TElement, TGeneratorCategory> =>
+            services.TryAddSingleton<ITypeGeneratorFactory<TElement, TGeneratorCategory>, TGenerator>();
     }
 }

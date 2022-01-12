@@ -44,12 +44,14 @@ namespace Yardarm.Enrichment.Schema
                 .Format("AdditionalProperties");
             bool isShadowing = false;
 
+            var originalNode = context.OriginalNode as ClassDeclarationSyntax;
+
             // Check to see if we're inheriting from a type that already implements AdditionalProperties
-            if (target.BaseList != null)
+            if (originalNode?.BaseList is {Types.Count: > 0})
             {
                 var semanticModel = context.Compilation.GetSemanticModel(context.SyntaxTree);
 
-                foreach (BaseTypeSyntax baseType in target.BaseList.Types)
+                foreach (BaseTypeSyntax baseType in originalNode.BaseList.Types)
                 {
                     var typeInfo = ModelExtensions.GetTypeInfo(semanticModel, baseType.Type);
                     if (typeInfo.Type?.TypeKind == TypeKind.Class)

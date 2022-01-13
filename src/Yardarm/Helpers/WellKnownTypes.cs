@@ -153,6 +153,13 @@ namespace Yardarm.Helpers
                     IdentifierName("ObsoleteAttribute"));
             }
 
+            public static NameSyntax ReadOnlySpan(TypeSyntax elementType) =>
+                QualifiedName(
+                    Name,
+                    GenericName(
+                        Identifier("ReadOnlySpan"),
+                        TypeArgumentList(SingletonSeparatedList(elementType))));
+
             public static class Text
             {
                 public static NameSyntax Name { get; } = QualifiedName(
@@ -236,6 +243,10 @@ namespace Yardarm.Helpers
                     }
                 }
             }
+
+            public static NameSyntax Type { get; } = QualifiedName(
+                System.Name,
+                IdentifierName("Type"));
         }
     }
 }

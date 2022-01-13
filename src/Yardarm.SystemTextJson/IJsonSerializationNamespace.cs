@@ -8,5 +8,7 @@ namespace Yardarm.SystemTextJson
         NameSyntax JsonTypeSerializer { get; }
 
         TypeSyntax JsonStringEnumConverter(TypeSyntax valueType);
+
+        InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName);
     }
 }

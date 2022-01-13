@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
     <IsPackable>false</IsPackable>
+
+    <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

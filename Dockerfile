@@ -6,15 +6,13 @@ WORKDIR /app
 
 COPY src/*.sln ./
 COPY src/Yardarm/*.csproj ./Yardarm/
-COPY src/Yardarm.UnitTests/*.csproj ./Yardarm.UnitTests/
 COPY src/Yardarm.Client/*.csproj ./Yardarm.Client/
-COPY src/Yardarm.Client.UnitTests/*.csproj ./Yardarm.Client.UnitTests/
 COPY src/Yardarm.CommandLine/*.csproj ./Yardarm.CommandLine/
 COPY src/Yardarm.NewtonsoftJson/*.csproj ./Yardarm.NewtonsoftJson/
 COPY src/Yardarm.NewtonsoftJson.Client/*.csproj ./Yardarm.NewtonsoftJson.Client/
 COPY src/Yardarm.SystemTextJson/*.csproj ./Yardarm.SystemTextJson/
 COPY src/Yardarm.SystemTextJson.Client/*.csproj ./Yardarm.SystemTextJson.Client/
-RUN dotnet restore Yardarm.sln
+RUN dotnet restore ./Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
 RUN dotnet pack -c Release -p:VERSION=${VERSION} ./Yardarm.CommandLine/Yardarm.CommandLine.csproj

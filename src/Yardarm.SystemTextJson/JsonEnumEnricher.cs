@@ -21,7 +21,7 @@ namespace Yardarm.SystemTextJson
             context.Element.Type == "string"
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                        SyntaxFactory.Attribute(SystemTextJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(
+                        SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName).AddArgumentListArguments(
                             SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(
                                 _jsonSerializationNamespace.JsonStringEnumConverter(SyntaxFactory.IdentifierName(target.Identifier)))))))
                 : target;

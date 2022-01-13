@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.Packaging;
@@ -17,8 +18,11 @@ namespace Yardarm.SystemTextJson
                 .AddCreateDefaultRegistryEnricher<JsonCreateDefaultRegistryEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()
                 .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()
-                .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>();
+                .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
+                .AddSingleton<ISyntaxTreeGenerator, DiscriminatorConverterGenerator>()
+                .TryAddTypeGeneratorFactory<OpenApiSchema, SystemTextJsonGeneratorCategory, DiscriminatorConverterTypeGeneratorFactory>();
 
             services
                 .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();

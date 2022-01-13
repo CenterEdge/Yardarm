@@ -22,7 +22,7 @@ namespace Yardarm.SystemTextJson
             }
 
             return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                SyntaxFactory.Attribute(SystemTextJsonTypes.JsonPropertyNameAttributeName).AddArgumentListArguments(
+                SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonPropertyNameAttributeName).AddArgumentListArguments(
                     SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
         }
     }

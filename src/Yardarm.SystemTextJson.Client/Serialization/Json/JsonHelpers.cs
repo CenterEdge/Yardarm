@@ -15,7 +15,7 @@ namespace RootNamespace.Serialization.Json
 
             if (readerClone.TokenType != JsonTokenType.StartObject)
             {
-                throw new JsonException();
+                ThrowJsonException();
             }
 
             // Read the property name

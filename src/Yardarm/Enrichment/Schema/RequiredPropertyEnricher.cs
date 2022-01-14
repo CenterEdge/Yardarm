@@ -20,10 +20,17 @@ namespace Yardarm.Enrichment.Schema
         }
 
         private PropertyDeclarationSyntax AddRequiredAttribute(PropertyDeclarationSyntax syntax,
-            OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            syntax
-                .MakeNullableOrInitializeIfReferenceType(context.Compilation)
-                .AddAttributeLists(AttributeList().AddAttributes(
-                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)));
+            OpenApiEnrichmentContext<OpenApiSchema> context)
+        {
+            var newSyntax = context.Element.Nullable
+                // If the schema is nullable the property should be nullable
+                ? syntax.MakeNullable()
+                // If the schema is not nullable we should try to initialize it, fallback to making it nullable if we can't
+                : syntax.MakeNullableOrInitializeIfReferenceType(context.Compilation);
+
+            return newSyntax
+                .AddAttributeLists(AttributeList(SingletonSeparatedList(
+                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name))));
+        }
     }
 }

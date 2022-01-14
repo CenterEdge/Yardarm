@@ -139,25 +139,7 @@ namespace Yardarm.SystemTextJson.Internal
 
         private MethodDeclarationSyntax GenerateRead(TypeSyntax schemaType)
         {
-            OpenApiSchema schema = Element.Element;
-
-            var mappings = schema.Discriminator.Mapping
-                .Select(mapping =>
-                {
-                    var referencedSchema = schema.OneOf
-                        .FirstOrDefault(p => p.Reference?.ReferenceV3 == mapping.Value);
-
-                    var locatedReferencedSchema = referencedSchema?.CreateRoot(referencedSchema.Reference.Id);
-
-                    TypeSyntax? typeName = null;
-                    if (locatedReferencedSchema != null)
-                    {
-                        typeName = Context.TypeGeneratorRegistry.Get(locatedReferencedSchema).TypeInfo.Name;
-                    }
-
-                    return (key: mapping.Key, typeName);
-                })
-                .Where(p => p.typeName != null)
+            var mappings = GetStronglyTypedMappings()
                 .Select(mapping =>
                     SwitchExpressionArm(
                         ConstantPattern(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(mapping.key))),
@@ -165,7 +147,7 @@ namespace Yardarm.SystemTextJson.Internal
                             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                 SystemTextJsonTypes.JsonSerializer,
                                 GenericName(Identifier("Deserialize"),
-                                    TypeArgumentList(SingletonSeparatedList(mapping.typeName!)))),
+                                    TypeArgumentList(SingletonSeparatedList(mapping.typeName)))),
                             ArgumentList(SeparatedList(new[]
                             {
                                 Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
@@ -224,19 +206,44 @@ namespace Yardarm.SystemTextJson.Internal
 
         private MethodDeclarationSyntax GenerateWrite(TypeSyntax schemaType)
         {
-            var expressionBody = InvocationExpression(
-                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    SystemTextJsonTypes.JsonSerializer,
-                    IdentifierName("Serialize")),
-                ArgumentList(SeparatedList(new[]
+            var argumentList = ArgumentList(SeparatedList(new[]
+            {
+                Argument(IdentifierName("writer")),
+                Argument(IdentifierName("x")),
+                Argument(IdentifierName("options"))
+            }));
+
+            var mappings = GetStronglyTypedMappings()
+                .Select(p => p.typeName)
+                .Distinct()
+                .Select(typeName =>
+                    SwitchSection(
+                        new SyntaxList<SwitchLabelSyntax>(CasePatternSwitchLabel(
+                            DeclarationPattern(typeName, SingleVariableDesignation(Identifier("x"))),
+                            Token(SyntaxKind.ColonToken))),
+                        new SyntaxList<StatementSyntax>(new StatementSyntax[] {
+                            ExpressionStatement(InvocationExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    SystemTextJsonTypes.JsonSerializer,
+                                    GenericName(Identifier("Serialize"),
+                                        TypeArgumentList(SingletonSeparatedList(typeName)))),
+                                argumentList)),
+                            BreakStatement()
+                        } )))
+                .Concat(new[]
                 {
-                    Argument(IdentifierName("writer")),
-                    Argument(IdentifierName("value")),
-                    Argument(InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName("value"),
-                        IdentifierName("GetType")))),
-                    Argument(IdentifierName("options"))
-                })));
+                    SwitchSection(
+                        new SyntaxList<SwitchLabelSyntax>(DefaultSwitchLabel()),
+                        new SyntaxList<StatementSyntax>(new StatementSyntax[] {
+                            ThrowStatement(ObjectCreationExpression(SystemTextJsonTypes.JsonException)),
+                            BreakStatement()
+                        } ))
+                });
+
+            var body = Block(new SyntaxList<StatementSyntax>(
+                SwitchStatement(
+                    IdentifierName("value"),
+                    new SyntaxList<SwitchSectionSyntax>(mappings))));
 
             return MethodDeclaration(
                 default,
@@ -266,8 +273,27 @@ namespace Yardarm.SystemTextJson.Internal
                         null)
                 })),
                 default,
-                null,
-                ArrowExpressionClause(expressionBody));
+                body,
+                null);
         }
+
+        private IEnumerable<(string key, TypeSyntax typeName)> GetStronglyTypedMappings() =>
+            Element.Element.Discriminator.Mapping
+                .Select(mapping =>
+                {
+                    var referencedSchema = Element.Element.OneOf
+                        .FirstOrDefault(p => p.Reference?.ReferenceV3 == mapping.Value);
+
+                    var locatedReferencedSchema = referencedSchema?.CreateRoot(referencedSchema.Reference.Id);
+
+                    TypeSyntax? typeName = null;
+                    if (locatedReferencedSchema != null)
+                    {
+                        typeName = Context.TypeGeneratorRegistry.Get(locatedReferencedSchema).TypeInfo.Name;
+                    }
+
+                    return (key: mapping.Key, typeName: typeName!);
+                })
+                .Where(p => p.typeName != null);
     }
 }

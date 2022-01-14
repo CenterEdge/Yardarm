@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson.Helpers
@@ -16,6 +17,23 @@ namespace Yardarm.NewtonsoftJson.Helpers
         public static NameSyntax NewtonsoftJsonLinq { get; } = QualifiedName(
             NewtonsoftJson,
             IdentifierName("Linq"));
+
+        public static class NullValueHandling
+        {
+            public static NameSyntax Name { get; } = QualifiedName(
+                NewtonsoftJson,
+                IdentifierName("NullValueHandling"));
+
+            public static MemberAccessExpressionSyntax Include { get; } = MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                Name,
+                IdentifierName("Include"));
+
+            public static MemberAccessExpressionSyntax Ignore { get; } = MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                Name,
+                IdentifierName("Ignore"));
+        }
 
         public static NameSyntax JsonExtensionDataAttributeName { get; } = QualifiedName(
             NewtonsoftJson,

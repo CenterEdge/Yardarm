@@ -1,11 +1,12 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.NewtonsoftJson.Helpers;
+using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson
 {
@@ -21,9 +22,29 @@ namespace Yardarm.NewtonsoftJson
                 return target;
             }
 
-            return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonPropertyAttributeName).AddArgumentListArguments(
-                    SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
+            var attribute = Attribute(NewtonsoftJsonTypes.JsonPropertyAttributeName,
+                AttributeArgumentList(SingletonSeparatedList(
+                    AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
+
+            bool isRequired =
+                context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
+                parentSchema.Element.Required.Contains(context.LocatedElement.Key);
+
+            bool isNullable = context.LocatedElement.Element.Nullable;
+
+            if (!isRequired && !isNullable)
+            {
+                // We prefer not to send null values if the property is not required.
+                // However, for nullable properties, prefer to send the null explicitly.
+                // This is a compromise due to .NET not supporting a concept of null vs missing.
+
+                attribute = attribute.AddArgumentListArguments(AttributeArgument(
+                    NameEquals(IdentifierName("NullValueHandling")),
+                    null,
+                    NewtonsoftJsonTypes.NullValueHandling.Ignore));
+            }
+
+            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute)));
         }
     }
 }

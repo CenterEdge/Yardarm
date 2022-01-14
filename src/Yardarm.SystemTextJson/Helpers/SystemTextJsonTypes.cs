@@ -60,6 +60,38 @@ namespace Yardarm.SystemTextJson.Helpers
                 Name,
                 IdentifierName("JsonExtensionDataAttribute"));
 
+            public static NameSyntax JsonIgnoreAttributeName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonIgnoreAttribute"));
+
+            public static class JsonIgnoreCondition
+            {
+                // ReSharper disable once MemberHidesStaticFromOuterClass
+                public static NameSyntax Name { get; } = QualifiedName(
+                    Serialization.Name,
+                    IdentifierName("JsonIgnoreCondition"));
+
+                public static MemberAccessExpressionSyntax Always { get; } = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    Name,
+                    IdentifierName("Always"));
+
+                public static MemberAccessExpressionSyntax Never { get; } = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    Name,
+                    IdentifierName("Never"));
+
+                public static MemberAccessExpressionSyntax WhenWritingDefault { get; } = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    Name,
+                    IdentifierName("WhenWritingDefault"));
+
+                public static MemberAccessExpressionSyntax WhenWritingNull { get; } = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    Name,
+                    IdentifierName("WhenWritingNull"));
+            }
+
             public static NameSyntax JsonPropertyNameAttributeName { get; } = QualifiedName(
                 Name,
                 IdentifierName("JsonPropertyName"));

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
+using Yardarm.Internal;
 using Yardarm.Packaging;
 
 namespace Yardarm
@@ -27,29 +28,37 @@ namespace Yardarm
             }
 
             var serviceProvider = settings.BuildServiceProvider(document);
-
-            var compilation = CSharpCompilation.Create(settings.AssemblyName)
-                .WithOptions(settings.CompilationOptions);
-
-            var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
-            compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
-
-            var compilationResult = compilation.Emit(settings.DllOutput,
-                pdbStream: settings.PdbOutput,
-                xmlDocumentationStream: settings.XmlDocumentationOutput,
-                options: new EmitOptions()
-                    .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
-                    .WithHighEntropyVirtualAddressSpace(true));
-
-            if (compilationResult.Success)
+            try
             {
-                if (settings.NuGetOutput != null)
-                {
-                    PackNuGet(serviceProvider, settings);
-                }
-            }
+                var compilation = CSharpCompilation.Create(settings.AssemblyName)
+                    .WithOptions(settings.CompilationOptions);
 
-            return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(), compilationResult);
+                var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
+                compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
+
+
+                var compilationResult = compilation.Emit(settings.DllOutput,
+                    pdbStream: settings.PdbOutput,
+                    xmlDocumentationStream: settings.XmlDocumentationOutput,
+                    options: new EmitOptions()
+                        .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
+                        .WithHighEntropyVirtualAddressSpace(true));
+
+                if (compilationResult.Success)
+                {
+                    if (settings.NuGetOutput != null)
+                    {
+                        PackNuGet(serviceProvider, settings);
+                    }
+                }
+
+                return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(),
+                    compilationResult);
+            }
+            finally
+            {
+                serviceProvider.GetRequiredService<YardarmAssemblyLoadContext>().Unload();
+            }
         }
 
         private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)

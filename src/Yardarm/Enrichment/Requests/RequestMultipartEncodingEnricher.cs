@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
@@ -38,7 +39,8 @@ namespace Yardarm.Enrichment.Requests
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiMediaType> context) =>
-            target.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator)
+            IsMultipartEncoding(context.LocatedElement.Key)
+            && target.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator)
                 ? AddEncodingAttributes(target, context.Element)
                 : target;
 
@@ -75,7 +77,7 @@ namespace Yardarm.Enrichment.Requests
             schema switch
             {
                 {Type: "string", Format: "binary" or "base64"} => OctetStreamEncoding,
-                {Type: "object"} or {Type: "array", Items: {Type: "object"}} => JsonEncoding,
+                {Type: "object"} or {Type: "array", Items.Type: "object"} => JsonEncoding,
                 _ => PlainTextEncoding
             };
 
@@ -84,5 +86,8 @@ namespace Yardarm.Enrichment.Requests
 
         private static IEnumerable<string> GetMediaTypes(string contentType) =>
             contentType.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim());
+
+        private static bool IsMultipartEncoding(string contentType) =>
+            contentType == "application/x-www-form-urlencoded" || contentType.StartsWith("multipart/");
     }
 }

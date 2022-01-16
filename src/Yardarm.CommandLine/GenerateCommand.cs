@@ -60,7 +60,7 @@ namespace Yardarm.CommandLine
 
                 YardarmGenerationResult generationResult = await generator.EmitAsync(document, settings);
 
-                foreach (Diagnostic diagnostic in generationResult.CompilationResult.Diagnostics
+                foreach (Diagnostic diagnostic in generationResult.GetAllDiagnostics()
                     .Where(p => p.Severity >= DiagnosticSeverity.Info))
                 {
                     Log.Logger.Write(

@@ -1,101 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using NuGet.Commands;
-using NuGet.Configuration;
-using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using Yardarm.Generation;
-using Yardarm.Generation.Internal;
 
 namespace Yardarm.Packaging.Internal
 {
     internal class NuGetReferenceGenerator : IReferenceGenerator
     {
-        private const string NetStandardFramework = ".NETStandard";
-        private static readonly Version NetStandard20 = new Version(2, 0, 0, 0);
         private const string NetStandardLibrary = "NETStandard.Library";
 
-        private readonly PackageSpec _packageSpec;
-        private readonly ILogger<NuGetReferenceGenerator> _logger;
+        private readonly GenerationContext _context;
 
-        public NuGetReferenceGenerator(PackageSpec packageSpec, ILogger<NuGetReferenceGenerator> logger)
+        public NuGetReferenceGenerator(GenerationContext context)
         {
-            _packageSpec = packageSpec ?? throw new ArgumentNullException(nameof(packageSpec));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async IAsyncEnumerable<MetadataReference> Generate([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<MetadataReference> Generate(CancellationToken cancellationToken = default)
         {
-            var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempPath);
-            try
-            {
-                using var cacheContext = new SourceCacheContext();
+            var result = _context.NuGetRestoreInfo?.Result;
+            Debug.Assert(result is not null);
 
-                _packageSpec.RestoreMetadata = new ProjectRestoreMetadata
-                {
-                    OutputPath = tempPath,
-                    ProjectName = _packageSpec.Name,
-                    ProjectStyle = ProjectStyle.PackageReference
-                };
+            var dependencies = ExtractDependencies(result.LockFile);
 
-                var settings = Settings.LoadDefaultSettings(tempPath);
-
-                var logger = new NuGetLogger(_logger);
-
-                var dependencyProviders = RestoreCommandProviders.Create(
-                    SettingsUtility.GetGlobalPackagesFolder(settings),
-                    Enumerable.Empty<string>(),
-                    SettingsUtility.GetEnabledSources(settings).Select(source =>
-                        Repository.Factory.GetCoreV3(source.Source)),
-                    cacheContext,
-                    new LocalPackageFileCache(),
-                    logger);
-
-                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, logger);
-                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-
-                var restoreRequest = new RestoreRequest(_packageSpec, dependencyProviders, cacheContext,
-                    clientPolicyContext, packageSourceMapping, logger, new LockFileBuilderCache())
-                {
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    RestoreOutputPath = tempPath
-                };
-
-                var restoreCommand = new RestoreCommand(restoreRequest);
-
-                var result = await restoreCommand.ExecuteAsync(cancellationToken).ConfigureAwait(false);
-                if (!result.Success)
-                {
-                    throw new NuGetRestoreException(result);
-                }
-
-                var dependencies = ExtractDependencies(result.LockFile);
-                foreach (string dependency in dependencies)
-                {
-                    yield return MetadataReference.CreateFromFile(dependency);
-                }
-            }
-            finally
-            {
-                Directory.Delete(tempPath, true);
-            }
+            return dependencies.Select(dependency => MetadataReference.CreateFromFile(dependency)).ToAsyncEnumerable();
         }
 
         private IEnumerable<string> ExtractDependencies(LockFile lockFile)
         {
             // Get the libraries to import for targeting netstandard2.0
             LockFileTarget netstandardTarget = lockFile.Targets
-                .First(p => p.TargetFramework.Framework == NetStandardFramework &&
-                            p.TargetFramework.Version == NetStandard20);
+                .First(p => p.TargetFramework.Framework == NuGetRestoreProcessor.NetStandardFramework &&
+                            p.TargetFramework.Version == NuGetRestoreProcessor.NetStandard20);
 
             // Collect all DLL files from CompileTimeAssemblies from that target
             // Note that we apply File.Exists since there may be muliple paths we're searching for each file listed

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 using Yardarm.Names;
+using Yardarm.Packaging;
 using Yardarm.Spec;
 
 namespace Yardarm
@@ -20,6 +21,12 @@ namespace Yardarm
         public IServiceProvider GenerationServices { get; }
         public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
+
+        /// <summary>
+        /// Details about the NuGet restore operation, once it is completed.
+        /// </summary>
+        public NuGetRestoreInfo? NuGetRestoreInfo { get; set; }
+
         public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
 
         public GenerationContext(IServiceProvider serviceProvider)

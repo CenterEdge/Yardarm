@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +13,7 @@ using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Internal;
 using Yardarm.Packaging;
+using Yardarm.Packaging.Internal;
 
 namespace Yardarm
 {
@@ -30,12 +33,24 @@ namespace Yardarm
             var serviceProvider = settings.BuildServiceProvider(document);
             try
             {
+                // Perform the NuGet restore
+                var context = serviceProvider.GetRequiredService<GenerationContext>();
+                var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
+                context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+
+                // Create the empty compilation
                 var compilation = CSharpCompilation.Create(settings.AssemblyName)
                     .WithOptions(settings.CompilationOptions);
 
+                // Run all enrichers against the compilation
                 var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
                 compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
 
+                // Execute the source generators
+                compilation = ExecuteSourceGenerators(compilation,
+                    context.NuGetRestoreInfo.SourceGenerators,
+                    out var additionalDiagnostics,
+                    cancellationToken);
 
                 var compilationResult = compilation.Emit(settings.DllOutput,
                     pdbStream: settings.PdbOutput,
@@ -53,7 +68,7 @@ namespace Yardarm
                 }
 
                 return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(),
-                    compilationResult);
+                    compilationResult, additionalDiagnostics);
             }
             finally
             {
@@ -93,6 +108,21 @@ namespace Yardarm
 
                 packer.PackSymbols(settings.PdbOutput, settings.NuGetSymbolsOutput);
             }
+        }
+
+        private CSharpCompilation ExecuteSourceGenerators(CSharpCompilation compilation, IReadOnlyList<ISourceGenerator>? generators,
+            out ImmutableArray<Diagnostic> diagnostics, CancellationToken cancellationToken = default)
+        {
+            if (generators is null || generators.Count == 0)
+            {
+                return compilation;
+            }
+
+            var driver = CSharpGeneratorDriver.Create(generators);
+
+            driver.RunGeneratorsAndUpdateCompilation(compilation, out var newCompilation, out diagnostics, cancellationToken);
+
+            return (CSharpCompilation) newCompilation;
         }
     }
 }

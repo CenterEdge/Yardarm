@@ -18,10 +18,6 @@ namespace Yardarm.Enrichment.Compilation
             where T : class, IAssemblyInfoEnricher =>
             services.AddTransient<IAssemblyInfoEnricher, T>();
 
-        public static IServiceCollection AddCreateDefaultRegistryEnricher<T>(this IServiceCollection services)
-            where T : class, ICreateDefaultRegistryEnricher =>
-            services.AddTransient<ICreateDefaultRegistryEnricher, T>();
-
         public static IServiceCollection AddCompilationEnricher<T>(this IServiceCollection services)
             where T : class, ICompilationEnricher =>
             services.AddTransient<ICompilationEnricher, T>();

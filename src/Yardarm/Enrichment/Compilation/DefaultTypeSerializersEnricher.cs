@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Yardarm.Enrichment.Compilation
 {
-    internal class DefaultTypeSerializersEnricher : ICompilationEnricher
+    public class DefaultTypeSerializersEnricher : ICompilationEnricher
     {
         private readonly IList<ICreateDefaultRegistryEnricher> _createDefaultRegistryEnrichers;
 

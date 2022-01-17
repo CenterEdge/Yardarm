@@ -8,7 +8,7 @@ using Yardarm.Generation;
 
 namespace Yardarm.Enrichment.Compilation
 {
-    internal class SyntaxTreeCompilationEnricher : ICompilationEnricher
+    public class SyntaxTreeCompilationEnricher : ICompilationEnricher
     {
         private readonly IList<ISyntaxTreeGenerator> _generators;
 

@@ -14,7 +14,7 @@ namespace Yardarm.Enrichment.Compilation
     /// Applies <see cref="IResourceFileEnricher"/> enrichment to any syntax trees which were derived from
     /// resource files.
     /// </summary>
-    internal class ResourceFileCompilationEnricher : ICompilationEnricher
+    public class ResourceFileCompilationEnricher : ICompilationEnricher
     {
         private readonly IResourceFileEnricher[] _enrichers;
 

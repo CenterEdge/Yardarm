@@ -12,10 +12,6 @@ namespace Yardarm.SystemTextJson.Helpers
                 IdentifierName("Text")),
             IdentifierName("Json"));
 
-        public static NameSyntax JsonElement { get; } = QualifiedName(
-            SystemTextJson,
-            IdentifierName("JsonElement"));
-
         public static NameSyntax JsonSerializer { get; } = QualifiedName(
             SystemTextJson,
             IdentifierName("JsonSerializer"));
@@ -48,6 +44,18 @@ namespace Yardarm.SystemTextJson.Helpers
                 SyntaxKind.SimpleMemberAccessExpression,
                 Name,
                 IdentifierName("StartObject"));
+        }
+
+        public static class Nodes
+        {
+            // ReSharper disable once MemberHidesStaticFromOuterClass
+            public static NameSyntax Name { get; } = QualifiedName(
+                SystemTextJson,
+                IdentifierName("Nodes"));
+
+            public static NameSyntax JsonNodeName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonNode"));
         }
 
         public static class Serialization

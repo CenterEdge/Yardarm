@@ -4,7 +4,7 @@ using Yardarm.Helpers;
 
 namespace Yardarm.Enrichment.Compilation
 {
-    internal class TargetRuntimeAssemblyInfoEnricher : IAssemblyInfoEnricher
+    public class TargetRuntimeAssemblyInfoEnricher : IAssemblyInfoEnricher
     {
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax syntax) => syntax
             .AddAttributeLists(

@@ -8,7 +8,7 @@ using Yardarm.Generation;
 
 namespace Yardarm.Enrichment.Compilation
 {
-    internal class ReferenceCompilationEnricher : ICompilationEnricher
+    public class ReferenceCompilationEnricher : ICompilationEnricher
     {
         private readonly IList<IReferenceGenerator> _referenceGenerators;
 

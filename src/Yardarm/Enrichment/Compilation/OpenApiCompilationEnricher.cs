@@ -11,7 +11,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Compilation
 {
-    internal class OpenApiCompilationEnricher : ICompilationEnricher
+    public class OpenApiCompilationEnricher : ICompilationEnricher
     {
         private static readonly MethodInfo _genericEnrichCompilationMethod = typeof(OpenApiCompilationEnricher)
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)

@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
+using Yardarm.Helpers;
 using Yardarm.SystemTextJson.Helpers;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -56,7 +57,23 @@ namespace Yardarm.SystemTextJson
                 return property;
             }
 
+            var nullableObject = NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword)));
+
+            // System.Text.Json requires dictionary values be JsonElement or object, so replace the types with object.
+            // We don't want to use JsonElement because it's very difficult to build those dynamically.
+            // We could use JsonObject instead of a dictionary, but there is currently an issue in System.Text.Json which prevents this
+            // https://github.com/dotnet/runtime/issues/60560
+            var newDictionaryType = WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
+                genericName.TypeArgumentList.Arguments[0],
+                nullableObject);
+
+            var interfaceType = WellKnownTypes.System.Collections.Generic.IDictionaryT.Name(
+                genericName.TypeArgumentList.Arguments[0],
+                nullableObject);
+
             return property
+                .WithType(interfaceType)
+                .WithInitializer(EqualsValueClause(ObjectCreationExpression(newDictionaryType)))
                 // We must have a setter for JsonExtensionData to work with System.Text.Json
                 .WithAccessorList(AccessorList(property.AccessorList!.Accessors.Add(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration))))
                 // Add the JsonExtensionData attribute

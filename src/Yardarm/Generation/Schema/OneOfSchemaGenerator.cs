@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Names;
@@ -14,7 +13,7 @@ namespace Yardarm.Generation.Schema
     /// <summary>
     /// Generates the generic OneOf&gt;...&lt; types for various discriminated unions.
     /// </summary>
-    internal class OneOfSchemaGenerator : SchemaGeneratorBase
+    public class OneOfSchemaGenerator : SchemaGeneratorBase
     {
         protected override NameKind NameKind => NameKind.Interface;
 
@@ -24,24 +23,12 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        protected override YardarmTypeInfo GetTypeInfo() =>
-            !HasDiscriminator
-                ? new YardarmTypeInfo(SyntaxFactory.IdentifierName("dynamic"), isGenerated: false)
-                : base.GetTypeInfo();
-
         public override QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
             NameKind nameKind) =>
             null;
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            if (!HasDiscriminator)
-            {
-                // We have no discriminator, so we're just going to implement using dynamic expando objects
-                // So we shouldn't implement a specific class
-                yield break;
-            }
-
             var interfaceNameAndNamespace = (QualifiedNameSyntax)TypeInfo.Name;
 
             // Register the referenced schema to implement this interface
@@ -57,9 +44,8 @@ namespace Yardarm.Generation.Schema
 
             yield return SyntaxFactory.InterfaceDeclaration(interfaceName.ToString())
                 .AddElementAnnotation(Element, Context.ElementRegistry)
+                .AddGeneratorAnnotation(this)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
         }
-
-        private bool HasDiscriminator => Schema.Discriminator?.PropertyName != null;
     }
 }

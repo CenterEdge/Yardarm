@@ -20,43 +20,37 @@ namespace Yardarm.SystemTextJson.Internal
         public static ReadOnlySpan<byte> X => new byte[] {1, 2};
 
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
+        private readonly NameSyntax _typeName;
 
         public DiscriminatorConverterTypeGenerator(ILocatedOpenApiElement<OpenApiSchema> element,
-            GenerationContext context, ITypeGenerator? parent, IJsonSerializationNamespace jsonSerializationNamespace)
+            GenerationContext context, ITypeGenerator? parent, IJsonSerializationNamespace jsonSerializationNamespace,
+            IRootNamespace rootNamespace)
             : base(element, context, parent)
         {
-            _jsonSerializationNamespace = jsonSerializationNamespace ?? throw new ArgumentNullException(nameof(jsonSerializationNamespace));
+            _jsonSerializationNamespace = jsonSerializationNamespace ??
+                                          throw new ArgumentNullException(nameof(jsonSerializationNamespace));
+
+            _typeName = BuildTypeName(rootNamespace);
         }
 
-        protected override YardarmTypeInfo GetTypeInfo()
+        protected NameSyntax BuildTypeName(IRootNamespace rootNamespace)
         {
-            var schema = Element.Element;
+            string rootNamespacePrefix = rootNamespace.Name + ".";
+            string typeNameString = Context.TypeGeneratorRegistry.Get(Element).TypeInfo.Name.ToString();
 
-            if (schema.Reference != null)
-            {
-                NameSyntax ns = _jsonSerializationNamespace.Name;
+            // Trim the root namespace to keep the length down, if present
+            var className = typeNameString.StartsWith(rootNamespacePrefix)
+                ? typeNameString.Substring(rootNamespacePrefix.Length).Replace(".", "-")
+                : typeNameString.Replace(".", "-");
 
-                var formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            NameSyntax ns = _jsonSerializationNamespace.Name;
 
-                return new YardarmTypeInfo(
-                    QualifiedName(ns, IdentifierName(formatter.Format(schema.Reference.Id + "-JsonConverter"))),
-                    NameKind.Class);
-            }
+            var formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
-            if (Parent == null)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to generate schema for '{Element.Key}', it has no parent is not a component.");
-            }
-
-            QualifiedNameSyntax? name = Parent.GetChildName(Element, NameKind.Class);
-            if (name == null)
-            {
-                throw new InvalidOperationException($"Unable to generate schema for '{Element.Key}', parent did not provide a name.");
-            }
-
-            return new YardarmTypeInfo(name, NameKind.Class);
+            return QualifiedName(ns, IdentifierName(formatter.Format(className + "-JsonConverter")));
         }
+
+        protected override YardarmTypeInfo GetTypeInfo() => new(_typeName);
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
@@ -81,7 +75,11 @@ namespace Yardarm.SystemTextJson.Internal
 
         private IEnumerable<MemberDeclarationSyntax> GenerateMethods(TypeSyntax schemaType)
         {
-            yield return GeneratePropertyNameProperty();
+            if (!string.IsNullOrEmpty(Element.Element.Discriminator?.PropertyName))
+            {
+                yield return GeneratePropertyNameProperty();
+            }
+
             yield return GenerateCanConvert(schemaType);
             yield return GenerateRead(schemaType);
             yield return GenerateWrite(schemaType);
@@ -139,38 +137,53 @@ namespace Yardarm.SystemTextJson.Internal
 
         private MethodDeclarationSyntax GenerateRead(TypeSyntax schemaType)
         {
-            var mappings = GetStronglyTypedMappings()
-                .Select(mapping =>
-                    SwitchExpressionArm(
-                        ConstantPattern(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(mapping.key))),
-                        PostfixUnaryExpression(SyntaxKind.SuppressNullableWarningExpression, InvocationExpression(
-                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                SystemTextJsonTypes.JsonSerializer,
-                                GenericName(Identifier("Deserialize"),
-                                    TypeArgumentList(SingletonSeparatedList(mapping.typeName)))),
-                            ArgumentList(SeparatedList(new[]
-                            {
-                                Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
-                                Argument(IdentifierName("options"))
-                            }))))))
-                .Concat(new[]
+            BlockSyntax body;
+
+            if (!string.IsNullOrEmpty(Element.Element.Discriminator?.PropertyName))
+            {
+                var mappings = GetStronglyTypedMappings()
+                    .Select(mapping =>
+                        SwitchExpressionArm(
+                            ConstantPattern(LiteralExpression(SyntaxKind.StringLiteralExpression,
+                                Literal(mapping.key))),
+                            PostfixUnaryExpression(SyntaxKind.SuppressNullableWarningExpression, InvocationExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    SystemTextJsonTypes.JsonSerializer,
+                                    GenericName(Identifier("Deserialize"),
+                                        TypeArgumentList(SingletonSeparatedList(mapping.typeName)))),
+                                ArgumentList(SeparatedList(new[]
+                                {
+                                    Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
+                                    Argument(IdentifierName("options"))
+                                }))))))
+                    .Concat(new[]
+                    {
+                        SwitchExpressionArm(DiscardPattern(),
+                            ThrowExpression(ObjectCreationExpression(SystemTextJsonTypes.JsonException)))
+                    });
+
+                body = Block(default, new SyntaxList<StatementSyntax>(new StatementSyntax[]
                 {
-                    SwitchExpressionArm(DiscardPattern(),
-                        ThrowExpression(ObjectCreationExpression(SystemTextJsonTypes.JsonException)))
-                });
-
-            var body = Block(default, new SyntaxList<StatementSyntax>(new StatementSyntax[] {
-                LocalDeclarationStatement(VariableDeclaration(
-                    NullableType(PredefinedType(Token(SyntaxKind.StringKeyword))),
-                    SingletonSeparatedList(VariableDeclarator(
-                        Identifier("discriminator"),
-                        null,
-                        EqualsValueClause(_jsonSerializationNamespace.GetDiscriminator(
-                            IdentifierName("reader"),
-                            IdentifierName("PropertyName"))))))),
-
-                ReturnStatement(SwitchExpression(IdentifierName("discriminator"), SeparatedList(mappings)))
-            }));
+                    LocalDeclarationStatement(VariableDeclaration(
+                        NullableType(PredefinedType(Token(SyntaxKind.StringKeyword))),
+                        SingletonSeparatedList(VariableDeclarator(
+                            Identifier("discriminator"),
+                            null,
+                            EqualsValueClause(_jsonSerializationNamespace.GetDiscriminator(
+                                IdentifierName("reader"),
+                                IdentifierName("PropertyName"))))))),
+                    ReturnStatement(SwitchExpression(IdentifierName("discriminator"), SeparatedList(mappings)))
+                }));
+            }
+            else
+            {
+                body = Block(default, new SyntaxList<StatementSyntax>(
+                    ThrowStatement(ObjectCreationExpression(
+                        SystemTextJsonTypes.JsonException,
+                        ArgumentList(SingletonSeparatedList(Argument(
+                            SyntaxHelpers.StringLiteral("Cannot deserialize oneOf schemas with no discriminator")))),
+                        null))));
+            }
 
             return MethodDeclaration(
                 default,
@@ -213,8 +226,7 @@ namespace Yardarm.SystemTextJson.Internal
                 Argument(IdentifierName("options"))
             }));
 
-            var mappings = GetStronglyTypedMappings()
-                .Select(p => p.typeName)
+            var mappings = GetOneOfTypes()
                 .Distinct()
                 .Select(typeName =>
                     SwitchSection(
@@ -234,10 +246,9 @@ namespace Yardarm.SystemTextJson.Internal
                 {
                     SwitchSection(
                         new SyntaxList<SwitchLabelSyntax>(DefaultSwitchLabel()),
-                        new SyntaxList<StatementSyntax>(new StatementSyntax[] {
-                            ThrowStatement(ObjectCreationExpression(SystemTextJsonTypes.JsonException)),
-                            BreakStatement()
-                        } ))
+                        new SyntaxList<StatementSyntax>(
+                            ThrowStatement(ObjectCreationExpression(SystemTextJsonTypes.JsonException))
+                        ))
                 });
 
             var body = Block(new SyntaxList<StatementSyntax>(
@@ -278,7 +289,7 @@ namespace Yardarm.SystemTextJson.Internal
         }
 
         private IEnumerable<(string key, TypeSyntax typeName)> GetStronglyTypedMappings() =>
-            Element.Element.Discriminator.Mapping
+            Element.Element.Discriminator?.Mapping?
                 .Select(mapping =>
                 {
                     var referencedSchema = Element.Element.OneOf
@@ -294,6 +305,12 @@ namespace Yardarm.SystemTextJson.Internal
 
                     return (key: mapping.Key, typeName: typeName!);
                 })
-                .Where(p => p.typeName != null);
+                .Where(p => p.typeName != null)
+            ?? Enumerable.Empty<(string, TypeSyntax)>();
+
+        private IEnumerable<TypeSyntax> GetOneOfTypes() =>
+            Element.Element.OneOf
+                .Where(p => p.Reference is not null)
+                .Select(p => Context.TypeGeneratorRegistry.Get(p.CreateRoot(p.Reference.Id)).TypeInfo.Name);
     }
 }

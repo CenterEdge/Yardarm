@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
+using Yardarm.Generation.Schema;
 using Yardarm.Spec;
 
 namespace Yardarm.SystemTextJson.Internal
@@ -11,27 +12,36 @@ namespace Yardarm.SystemTextJson.Internal
     internal class DiscriminatorConverterGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> _typeGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<OpenApiSchema> _schemaTypeGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> _converterTypeGeneratorRegistry;
 
-        public DiscriminatorConverterGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> typeGeneratorRegistry)
+        public DiscriminatorConverterGenerator(OpenApiDocument document,
+            ITypeGeneratorRegistry<OpenApiSchema> schemaTypeGeneratorRegistry,
+            ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> converterTypeGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
-            _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
+            _schemaTypeGeneratorRegistry = schemaTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaTypeGeneratorRegistry));
+            _converterTypeGeneratorRegistry = converterTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(converterTypeGeneratorRegistry));
         }
 
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var schema in _document.Components.Schemas
-                         .Where(schema => schema.Value.Discriminator?.PropertyName != null))
+            var schemas = _document
+                .GetAllSchemas()
+                .Where(schema => schema.Element.OneOf.Count > 0);
+
+            foreach (var schema in schemas)
             {
-                var element = schema.Value.CreateRoot(schema.Key);
-
-                var generator = _typeGeneratorRegistry.Get(element);
-
-                var syntaxTree = generator.GenerateSyntaxTree();
-                if (syntaxTree != null)
+                var schemaGenerator = _schemaTypeGeneratorRegistry.Get(schema);
+                if (schemaGenerator is OneOfSchemaGenerator)
                 {
-                    yield return syntaxTree;
+                    var converterGenerator = _converterTypeGeneratorRegistry.Get(schema);
+
+                    var syntaxTree = converterGenerator.GenerateSyntaxTree();
+                    if (syntaxTree != null)
+                    {
+                        yield return syntaxTree;
+                    }
                 }
             }
         }

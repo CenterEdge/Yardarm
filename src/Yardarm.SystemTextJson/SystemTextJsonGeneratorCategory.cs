@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Yardarm.SystemTextJson.Internal
+namespace Yardarm.SystemTextJson
 {
     public class SystemTextJsonGeneratorCategory
     {

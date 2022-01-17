@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Spec;
@@ -30,6 +31,8 @@ namespace Yardarm.Generation.Internal
         public ITypeGenerator Get(ILocatedOpenApiElement<TElement> element) =>
             _registry
                 .GetOrAdd(element, _createTypeGenerator);
+
+        public IEnumerable<ITypeGenerator> GetAll() => _registry.Values;
 
         private ITypeGenerator CreateTypeGenerator(ILocatedOpenApiElement<TElement> element)
         {

@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Interfaces;
+﻿using System.Collections.Generic;
+using Microsoft.OpenApi.Interfaces;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation
@@ -8,5 +9,7 @@ namespace Yardarm.Generation
         where TElement : IOpenApiElement
     {
         public ITypeGenerator Get(ILocatedOpenApiElement<TElement> element);
+
+        IEnumerable<ITypeGenerator> GetAll();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.OpenApi.Interfaces;
 using Yardarm.Spec;
 
@@ -30,6 +31,8 @@ namespace Yardarm.Generation
             }
 
             public ITypeGenerator Get(ILocatedOpenApiElement<TElement> element) => _innerRegistry.Get(element);
+
+            public IEnumerable<ITypeGenerator> GetAll() => _innerRegistry.GetAll();
         }
     }
 }

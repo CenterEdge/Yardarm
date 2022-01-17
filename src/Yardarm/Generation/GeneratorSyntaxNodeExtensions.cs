@@ -14,6 +14,11 @@ namespace Yardarm.Generation
             node.AddGeneratorAnnotation(generator.GetType());
 
         public static TSyntaxNode AddGeneratorAnnotation<TSyntaxNode>(this TSyntaxNode node,
+            ISyntaxTreeGenerator generator)
+            where TSyntaxNode : SyntaxNode =>
+            node.AddGeneratorAnnotation(generator.GetType());
+
+        public static TSyntaxNode AddGeneratorAnnotation<TSyntaxNode>(this TSyntaxNode node,
             Type generatorType)
             where TSyntaxNode : SyntaxNode =>
             node.WithAdditionalAnnotations(

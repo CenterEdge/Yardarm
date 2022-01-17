@@ -19,6 +19,7 @@ namespace Yardarm.SystemTextJson
                 .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<JsonElementEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonAdditionalPropertiesEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonOptionalPropertyEnricher>()
                 .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()

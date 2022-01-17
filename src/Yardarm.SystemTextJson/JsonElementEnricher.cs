@@ -24,11 +24,10 @@ namespace Yardarm.SystemTextJson
         {
             var dynamicTypes = target
                 .DescendantNodes(p =>
-                    p is not QualifiedNameSyntax // Don't look inside qualified names, they can't be dynamic
-                    && p is not BlockSyntax // Don't look inside methods
+                    p is not BlockSyntax // Don't look inside methods
                     && p is not ArrowExpressionClauseSyntax)
                 .OfType<IdentifierNameSyntax>()
-                .Where(p => p.Identifier.ValueText == "dynamic")
+                .Where(p => p.Parent is not QualifiedNameSyntax && p.Identifier.ValueText == "dynamic")
                 .Select(p => p.Parent is NullableTypeSyntax nullableTypeSyntax ? nullableTypeSyntax : (TypeSyntax) p)
                 .ToArray();
 

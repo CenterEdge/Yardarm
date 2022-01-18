@@ -16,7 +16,6 @@ using Yardarm.Generation.Request;
 using Yardarm.Generation.Response;
 using Yardarm.Generation.Schema;
 using Yardarm.Generation.Tag;
-using Yardarm.Internal;
 using Yardarm.Names;
 using Yardarm.Names.Internal;
 using Yardarm.Packaging;

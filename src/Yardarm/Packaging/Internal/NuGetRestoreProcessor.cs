@@ -16,7 +16,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Yardarm.Generation.Internal;
-using Yardarm.Internal;
 
 namespace Yardarm.Packaging.Internal
 {

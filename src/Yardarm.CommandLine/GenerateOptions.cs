@@ -17,7 +17,7 @@ namespace Yardarm.CommandLine
         [Option('v', "version", Default = "1.0.0", HelpText = "Generated assembly version")]
         public string Version { get; set; }
 
-        [Option('t', "target-frameworks", HelpText = "List of target framework monikers. Must be a single item unless outputting a NuGet package.")]
+        [Option('f', "frameworks", HelpText = "List of target framework monikers. Must be a single item unless outputting a NuGet package.")]
         public IEnumerable<string> TargetFrameworks { get; set; }
 
         [Option("keyfile", HelpText = "Key file to create a strongly-named assembly")]

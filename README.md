@@ -14,7 +14,6 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
   - Docker Image
   - In-code via library
   - .NET Core Global Tool
-  - Support C# 9 Source Generators???
 - Generates a SDK using modern C# patterns and practices as follows:
   - Asynchronous methods with cancellation tokens
   - Nullable reference types
@@ -28,6 +27,7 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
   - Uses Roslyn to compile directly in memory
 - Built-in NuGet support
   - Generate valid `.nupkg` files directly, with correct dependencies
+  - Target multiple framework versions in one package automatically
   - Automatically restore packages required for compilation
 - Highly extensible SDK generation
   - Built around plugable extensions that add additional features or modify the C# code used for compilation
@@ -45,7 +45,7 @@ Yardarm is an OpenAPI 3 SDK Generator for C#. It provides various tools that wil
 ### .NET Core Global Tool
 
 ```sh
-dotnet tool install --global Yardarm.CommandLine --version 0.1.0-alpha009
+dotnet tool install --global Yardarm.CommandLine --version 0.2.0-alpha001
 
 yardarm help generate
 ```
@@ -53,12 +53,12 @@ yardarm help generate
 ### Docker
 
 ```sh
-docker run -it ghcr.io/centeredge/yardarm:0.1.0-alpha009
+docker run -it ghcr.io/centeredge/yardarm:0.2.0-alpha001
 
 yardarm help generate
 ```
 
-### Example Command
+### Example Commands
 
 ```sh
 # Generate a DLL and related files, with Newtonsoft.Json support
@@ -67,15 +67,25 @@ yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -o output/directory/ -x Yard
 # Generate a NuGet package and symbols package, with Newtonsoft.Json support
 yardarm generate -i my-spec.json -n MySpec -v 1.0.0 --nupkg output/directory/ -x Yardarm.NewtonsoftJson
 
-# Generate a DLL and related files, with System.Text.Json support
-yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -o output/directory/ -x Yardarm.SystemTextJson
+# Generate a DLL and related files, with System.Text.Json support targeting net6.0
+yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -f net6.0 -o output/directory/ -x Yardarm.SystemTextJson
 
-# Generate a NuGet package and symbols package, with System.Text.Json support
-yardarm generate -i my-spec.json -n MySpec -v 1.0.0 --nupkg output/directory/ -x Yardarm.SystemTextJson
+# Generate a NuGet package and symbols package, with System.Text.Json support targeting net6.0 and netstandard2.0
+yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -f net6.0 netstandard2.0 --nupkg output/directory/ -x Yardarm.SystemTextJson
 
 # Note the trailing slash on the output directory. If there is no trailing slash, it is assumed to be a DLL or nupkg file name.
 # Related files will be output beside that file.
 ```
+
+## A note on System.Text.Json support
+
+When using System.Text.Json, it is recommended that you target net6.0 at a minimum. Multi-targeting and including
+netstandard2.0 in your NuGet package is fine, but standalone targeting of netstandard2.0 or netcoreapp3.1 have problems.
+
+This is because there are some binary breaking changes between the netstandard2.0 and net6.0 of System.Text.Json.dll
+published by Microsoft. The net6.0 version includes public init-only properties, while in netstandard2.0 they have
+traditional setters. This means that a Yardarm SDK built against netstandard2.0 may fail if it is ever consumed by a
+net6.0 application. Ensuring that you include a net6.0 target avoids this problem.
 
 ## Contributing
 

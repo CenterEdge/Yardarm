@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
-using Yardarm.Helpers;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Responses.Internal
 {
     internal class ResponseBaseTypeRegistry : IResponseBaseTypeRegistry
     {
-        private readonly ConcurrentDictionary<ILocatedOpenApiElement<OpenApiResponse>, ConcurrentBag<BaseTypeSyntax>> _inheritance =
-            new ConcurrentDictionary<ILocatedOpenApiElement<OpenApiResponse>, ConcurrentBag<BaseTypeSyntax>>(new LocatedElementEqualityComparer<OpenApiResponse>());
+        private readonly ConcurrentDictionary<ILocatedOpenApiElement<OpenApiResponse>, ConcurrentDictionary<string, BaseTypeSyntax>> _inheritance =
+            new(new LocatedElementEqualityComparer<OpenApiResponse>());
 
         public void AddBaseType(ILocatedOpenApiElement<OpenApiResponse> schema, BaseTypeSyntax type)
         {
-            var bag = _inheritance.GetOrAdd(schema, _ => new ConcurrentBag<BaseTypeSyntax>());
+            var bag = _inheritance.GetOrAdd(schema,
+                _ => new ConcurrentDictionary<string, BaseTypeSyntax>());
 
-            bag.Add(type);
+            bag.TryAdd(type.ToString(), type);
         }
 
         public IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<OpenApiResponse> schema)
@@ -27,7 +27,7 @@ namespace Yardarm.Enrichment.Responses.Internal
                 return Enumerable.Empty<BaseTypeSyntax>();
             }
 
-            return list;
+            return list.Values;
         }
     }
 }

@@ -63,7 +63,12 @@ namespace Yardarm
                 .WithOverflowChecks(false)
                 .WithPlatform(Platform.AnyCpu)
                 .WithConcurrentBuild(true)
-                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
+                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
+                .WithSpecificDiagnosticOptions(new KeyValuePair<string, ReportDiagnostic>[]
+                {
+                    // Don't warn for binding redirects
+                    new("CS1701", ReportDiagnostic.Suppress)
+                });
 
         public YardarmGenerationSettings()
         {

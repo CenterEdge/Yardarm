@@ -24,17 +24,17 @@ namespace Yardarm.SystemTextJson
                         VersionRange = VersionRange.Parse("6.0.0")
                     }
                 };
-            }
 
-            yield return new LibraryDependency
-            {
-                LibraryRange = new LibraryRange
+                yield return new LibraryDependency
                 {
-                    Name = "System.Net.Http.Json",
-                    TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("6.0.0")
-                }
-            };
+                    LibraryRange = new LibraryRange
+                    {
+                        Name = "System.Net.Http.Json",
+                        TypeConstraint = LibraryDependencyTarget.Package,
+                        VersionRange = VersionRange.Parse("6.0.0")
+                    }
+                };
+            }
         }
     }
 }

@@ -9,20 +9,50 @@ namespace Yardarm.Packaging.Internal
     {
         public IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework)
         {
-            if (targetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework
-                && targetFramework.Version == NuGetFrameworkConstants.NetStandard20)
+            if (targetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework)
             {
-                // Only include NETStandard.Library for restore, not as a listed dependency on the generated package
-                yield return new LibraryDependency
+                if (targetFramework.Version == NuGetFrameworkConstants.NetStandard20)
                 {
-                    LibraryRange = new LibraryRange
+                    // Only include NETStandard.Library for restore, not as a listed dependency on the generated package
+                    yield return new LibraryDependency
                     {
-                        Name = "NETStandard.Library",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("2.0.3")
-                    },
-                    SuppressParent = LibraryIncludeFlags.All
-                };
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = "NETStandard.Library",
+                            TypeConstraint = LibraryDependencyTarget.Package,
+                            VersionRange = VersionRange.Parse("2.0.3")
+                        },
+                        SuppressParent = LibraryIncludeFlags.All,
+                        AutoReferenced = true,
+                    };
+
+                    // Only include System.Threading.Tasks.Extensions for netstandard2.0
+                    yield return new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = "System.Threading.Tasks.Extensions",
+                            TypeConstraint = LibraryDependencyTarget.Package,
+                            VersionRange = VersionRange.Parse("4.5.4")
+                        }
+                    };
+                }
+                else if (targetFramework.Version == NuGetFrameworkConstants.NetStandard21)
+                {
+                    // Only include NETStandard.Library.Ref for restore, not as a listed dependency on the generated package
+                    yield return new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = "NETStandard.Library.Ref",
+                            TypeConstraint = LibraryDependencyTarget.Package,
+                            VersionRange = VersionRange.Parse("2.1.0")
+                        },
+                        IncludeType = LibraryIncludeFlags.None,
+                        SuppressParent = LibraryIncludeFlags.All,
+                        AutoReferenced = true,
+                    };
+                }
 
                 yield return new LibraryDependency
                 {
@@ -38,24 +68,13 @@ namespace Yardarm.Packaging.Internal
                 {
                     LibraryRange = new LibraryRange
                     {
-                        Name = "System.Threading.Tasks.Extensions",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("4.5.4")
-                    }
-                };
-
-                yield return new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
                         Name = "Microsoft.CSharp",
                         TypeConstraint = LibraryDependencyTarget.Package,
                         VersionRange = VersionRange.Parse("4.7.0")
                     }
                 };
             }
-
-            if (targetFramework.Framework == NuGetFrameworkConstants.NetCoreApp)
+            else if (targetFramework.Framework == NuGetFrameworkConstants.NetCoreApp)
             {
                 yield return new LibraryDependency
                 {

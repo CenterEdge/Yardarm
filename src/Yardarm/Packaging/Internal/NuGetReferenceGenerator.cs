@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using NuGet.ProjectModel;
@@ -33,7 +35,7 @@ namespace Yardarm.Packaging.Internal
 
         private IEnumerable<string> ExtractDependencies(LockFile lockFile)
         {
-            // Get the libraries to import for targeting netstandard2.0
+            // Get the libraries to import for our current target
             LockFileTarget lockFileTarget = lockFile.Targets
                 .First(p => p.TargetFramework == _context.CurrentTargetFramework);
 
@@ -80,7 +82,35 @@ namespace Yardarm.Packaging.Internal
                 dependencies.AddRange(Directory.EnumerateFiles(refDirectory, "*.dll"));
             }
 
-            return dependencies;
+            return Deduplicate(dependencies);
+        }
+
+        // If more than one version of the same assembly is referenced, take the highest version number.
+        // This can happen in cases like .NET Standard 2.1 including System.Threading.Tasks.Extensions
+        // but some other transitively depending on the System.Threading.Tasks.Extensions NuGet package.
+        private IEnumerable<string> Deduplicate(IEnumerable<string> dependencyPaths) =>
+            dependencyPaths
+                .Select(path => (path, name: AssemblyName.GetAssemblyName(path)))
+                .GroupBy(p => (p.name.Name, p.name.CultureName, GetPublicKeyTokenString(p.name)))
+                .Select(p => p
+                    .OrderByDescending(q => q.name.Version)
+                    .Select(q => q.path)
+                    .First());
+        private static string? GetPublicKeyTokenString(AssemblyName name)
+        {
+            byte[]? token = name.GetPublicKeyToken();
+            if (token == null)
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder(16);
+            for (int i = 0; i < token.Length; i++)
+            {
+                sb.AppendFormat("{0:x2}", token[i]);
+            }
+
+            return sb.ToString();
         }
     }
 }

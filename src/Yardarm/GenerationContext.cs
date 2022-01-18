@@ -28,7 +28,7 @@ namespace Yardarm
         /// </summary>
         public NuGetRestoreInfo? NuGetRestoreInfo { get; set; }
 
-        public NuGetFramework? CurrentTargetFramework { get; set; }
+        public NuGetFramework CurrentTargetFramework { get; set; } = NuGetFramework.UnsupportedFramework;
 
         public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
 

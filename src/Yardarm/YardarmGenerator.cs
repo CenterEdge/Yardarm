@@ -32,51 +32,57 @@ namespace Yardarm
             }
 
             var serviceProvider = settings.BuildServiceProvider(document);
+
+            var context = serviceProvider.GetRequiredService<GenerationContext>();
+            context.CurrentTargetFramework = NuGetFramework.Parse("netstandard2.0");
+
+            // Perform the NuGet restore
+            var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
+            context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+
+            // Create the empty compilation
+            var compilation = CSharpCompilation.Create(settings.AssemblyName)
+                .WithOptions(settings.CompilationOptions);
+
+            // Run all enrichers against the compilation
+            var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
+            compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
+
+            ImmutableArray<Diagnostic> additionalDiagnostics;
+            var loadContext = new YardarmAssemblyLoadContext();
             try
             {
-                var context = serviceProvider.GetRequiredService<GenerationContext>();
-                context.CurrentTargetFramework = NuGetFramework.Parse("netstandard2.0");
-
-                // Perform the NuGet restore
-                var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
-                context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
-
-                // Create the empty compilation
-                var compilation = CSharpCompilation.Create(settings.AssemblyName)
-                    .WithOptions(settings.CompilationOptions);
-
-                // Run all enrichers against the compilation
-                var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
-                compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
-
                 // Execute the source generators
+                var sourceGenerators = restoreProcessor
+                    .GetSourceGenerators(context.NuGetRestoreInfo.Providers, context.NuGetRestoreInfo.Result,
+                        context.CurrentTargetFramework, loadContext);
                 compilation = ExecuteSourceGenerators(compilation,
-                    context.NuGetRestoreInfo.SourceGenerators,
-                    out var additionalDiagnostics,
+                    sourceGenerators,
+                    out additionalDiagnostics,
                     cancellationToken);
-
-                var compilationResult = compilation.Emit(settings.DllOutput,
-                    pdbStream: settings.PdbOutput,
-                    xmlDocumentationStream: settings.XmlDocumentationOutput,
-                    options: new EmitOptions()
-                        .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
-                        .WithHighEntropyVirtualAddressSpace(true));
-
-                if (compilationResult.Success)
-                {
-                    if (settings.NuGetOutput != null)
-                    {
-                        PackNuGet(serviceProvider, settings);
-                    }
-                }
-
-                return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(),
-                    compilationResult, additionalDiagnostics);
             }
             finally
             {
-                serviceProvider.GetRequiredService<YardarmAssemblyLoadContext>().Unload();
+                loadContext.Unload();
             }
+
+            var compilationResult = compilation.Emit(settings.DllOutput,
+                pdbStream: settings.PdbOutput,
+                xmlDocumentationStream: settings.XmlDocumentationOutput,
+                options: new EmitOptions()
+                    .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
+                    .WithHighEntropyVirtualAddressSpace(true));
+
+            if (compilationResult.Success)
+            {
+                if (settings.NuGetOutput != null)
+                {
+                    PackNuGet(serviceProvider, settings);
+                }
+            }
+
+            return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(),
+                compilationResult, additionalDiagnostics);
         }
 
         private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)

@@ -8,7 +8,9 @@ namespace Yardarm.SystemTextJson.Helpers
     {
         public static NameSyntax SystemTextJson { get; } = QualifiedName(
             QualifiedName(
-                IdentifierName("System"),
+                AliasQualifiedName(
+                    IdentifierName(Token(SyntaxKind.GlobalKeyword)),
+                    IdentifierName("System")),
                 IdentifierName("Text")),
             IdentifierName("Json"));
 

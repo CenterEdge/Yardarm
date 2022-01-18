@@ -26,10 +26,17 @@ namespace Yardarm.Generation
             RootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
         }
 
-        public virtual IEnumerable<SyntaxTree> Generate() =>
-            GetType().Assembly.GetManifestResourceNames()
-                .Where(p => p.StartsWith(ResourcePrefix) && p.EndsWith(".cs"))
+        public virtual IEnumerable<SyntaxTree> Generate()
+        {
+            string excludeSuffix = GenerationContext.CurrentTargetFramework.Framework ==
+                                   NuGetFrameworkConstants.NetStandardFramework
+                ? ".netcoreapp.cs"
+                : ".netstandard.cs";
+
+            return GetType().Assembly.GetManifestResourceNames()
+                .Where(p => p.StartsWith(ResourcePrefix) && p.EndsWith(".cs") && !p.EndsWith(excludeSuffix))
                 .Select(ParseResource);
+        }
 
         private SyntaxTree ParseResource(string resourceName)
         {
@@ -40,14 +47,14 @@ namespace Yardarm.Generation
             string rawText = reader.ReadToEnd();
             rawText = rawText.Replace("RootNamespace", RootNamespace.Name.ToString());
 
-            string[] preprocessorSymbols = GenerationContext.CurrentTargetFramework! switch
+            string[] preprocessorSymbols = GenerationContext.CurrentTargetFramework switch
             {
                 {Framework: NuGetFrameworkConstants.NetStandardFramework} =>
-                    GetNetStandardPreprocessorSymbols(GenerationContext.CurrentTargetFramework!.Version),
+                    GetNetStandardPreprocessorSymbols(GenerationContext.CurrentTargetFramework.Version),
                 {Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: < 5 } =>
-                    GetNetCoreAppPreprocessorSymbols(GenerationContext.CurrentTargetFramework!.Version),
+                    GetNetCoreAppPreprocessorSymbols(GenerationContext.CurrentTargetFramework.Version),
                 {Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: >= 5 } =>
-                    GetNetPreprocessorSymbols(GenerationContext.CurrentTargetFramework!.Version),
+                    GetNetPreprocessorSymbols(GenerationContext.CurrentTargetFramework.Version),
                 _ => Array.Empty<string>()
             };
 

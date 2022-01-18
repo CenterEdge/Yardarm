@@ -22,11 +22,11 @@ namespace RootNamespace.Serialization.Json
 
             foreach (string name in Enum.GetNames(type))
             {
-                var enumMember = type.GetField(name);
-                T enumValue = (T) enumMember.GetValue(null);
+                var enumMember = type.GetField(name)!;
+                T enumValue = (T) enumMember.GetValue(null)!;
 
                 var attribute = (EnumMemberAttribute?) enumMember.GetCustomAttributes(typeof(EnumMemberAttribute), false).FirstOrDefault();
-                var stringValue = attribute is not null ? attribute.Value : name;
+                var stringValue = attribute?.Value ?? name;
 
                 _stringToEnum.Add(stringValue, enumValue);
                 _enumToString.Add(enumValue, JsonEncodedText.Encode(stringValue));

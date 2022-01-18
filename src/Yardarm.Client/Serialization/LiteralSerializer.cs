@@ -38,14 +38,14 @@ namespace RootNamespace.Serialization
         {
             MethodInfo joinList = _joinListMethod.MakeGenericMethod(itemType);
 
-            return (string)joinList.Invoke(this, new object[] {separator, list});
+            return (string)joinList.Invoke(this, new object[] {separator, list})!;
         }
 
         public object DeserializeList(IEnumerable<string> values, Type itemType)
         {
             MethodInfo deserializeList = _deserializeListMethod.MakeGenericMethod(itemType);
 
-            return deserializeList.Invoke(this, new object[] {values});
+            return deserializeList.Invoke(this, new object[] {values})!;
         }
 
         // ReSharper disable once UnusedMember.Local

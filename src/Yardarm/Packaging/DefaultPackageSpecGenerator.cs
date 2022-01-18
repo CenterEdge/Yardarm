@@ -22,10 +22,9 @@ namespace Yardarm.Packaging
         }
 
         public virtual PackageSpec Generate() =>
-            new PackageSpec(new[]
-            {
-                new TargetFrameworkInformation {FrameworkName = NuGetFramework.Parse("netstandard2.0")}
-            })
+            new PackageSpec(_settings.TargetFrameworkMonikers
+                .Select(tfm => new TargetFrameworkInformation {FrameworkName = NuGetFramework.Parse(tfm)})
+                .ToList())
             {
                 Name = _settings.AssemblyName,
                 Dependencies = new List<LibraryDependency>()

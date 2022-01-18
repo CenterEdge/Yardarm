@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -31,31 +32,110 @@ namespace Yardarm
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var serviceProvider = settings.BuildServiceProvider(document);
+            var toDispose = new List<IDisposable>();
+            try
+            {
+                var serviceProvider = settings.BuildServiceProvider(document);
+                var context = serviceProvider.GetRequiredService<GenerationContext>();
 
-            var context = serviceProvider.GetRequiredService<GenerationContext>();
-            context.CurrentTargetFramework = NuGetFramework.Parse("netstandard2.0");
+                // Perform the NuGet restore
+                var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
+                context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
-            // Perform the NuGet restore
-            var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
-            context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+                if (settings.TargetFrameworkMonikers.Length == 0)
+                {
+                    throw new InvalidOperationException("No target framework monikers provided.");
+                }
+
+                var compilationResults = new List<YardarmCompilationResult>();
+
+                if (settings.TargetFrameworkMonikers.Length == 1)
+                {
+                    var targetFramework = NuGetFramework.Parse(settings.TargetFrameworkMonikers[0]);
+
+                    // Perform the compilation
+                    var (emitResult, additionalDiagnostics) = await BuildForTargetFrameworkAsync(
+                        context, settings, targetFramework,
+                        settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput,
+                        cancellationToken).ConfigureAwait(false);
+
+                    compilationResults.Add(new(targetFramework, emitResult,
+                        settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput,
+                        additionalDiagnostics));
+                }
+                else
+                {
+                    if (settings.NuGetOutput is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Targeting multiple frameworks is only supported with NuGet output.");
+                    }
+
+                    foreach (var targetFramework in settings.TargetFrameworkMonikers.Select(NuGetFramework.Parse))
+                    {
+                        var dllOutput = new MemoryStream();
+                        toDispose.Add(dllOutput);
+                        var pdbOutput = new MemoryStream();
+                        toDispose.Add(pdbOutput);
+                        var xmlDocumentationOutput = new MemoryStream();
+                        toDispose.Add(xmlDocumentationOutput);
+
+                        // Perform the compilation
+                        var (emitResult, additionalDiagnostics) = await BuildForTargetFrameworkAsync(
+                            context, settings, targetFramework,
+                            dllOutput, pdbOutput, xmlDocumentationOutput,
+                            cancellationToken).ConfigureAwait(false);
+
+                        compilationResults.Add(new(targetFramework, emitResult,
+                            dllOutput, pdbOutput, xmlDocumentationOutput,
+                            additionalDiagnostics));
+                    }
+                }
+
+                if (compilationResults.All(p => p.EmitResult.Success))
+                {
+                    if (settings.NuGetOutput != null)
+                    {
+                        PackNuGet(serviceProvider, settings, compilationResults);
+                    }
+                }
+
+                return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(),
+                    compilationResults);
+            }
+            finally
+            {
+                foreach (var disposable in toDispose)
+                {
+                    disposable.Dispose();
+                }
+            }
+        }
+
+        private async Task<(EmitResult, ImmutableArray<Diagnostic>)> BuildForTargetFrameworkAsync(
+            GenerationContext context, YardarmGenerationSettings settings, NuGetFramework targetFramework,
+            Stream dllOutput, Stream pdbOutput, Stream xmlDocumentationOutput,
+            CancellationToken cancellationToken = default)
+        {
+            context.CurrentTargetFramework = targetFramework;
 
             // Create the empty compilation
             var compilation = CSharpCompilation.Create(settings.AssemblyName)
                 .WithOptions(settings.CompilationOptions);
 
             // Run all enrichers against the compilation
-            var enrichers = serviceProvider.GetRequiredService<IEnumerable<ICompilationEnricher>>();
+            var enrichers = context.GenerationServices.GetRequiredService<IEnumerable<ICompilationEnricher>>();
             compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
 
             ImmutableArray<Diagnostic> additionalDiagnostics;
-            var loadContext = new YardarmAssemblyLoadContext();
+            var assemblyLoadContext = new YardarmAssemblyLoadContext();
             try
             {
+                var sourceGenerators = context.GenerationServices.GetRequiredService<NuGetRestoreProcessor>()
+                    .GetSourceGenerators(context.NuGetRestoreInfo!.Providers, context.NuGetRestoreInfo!.Result,
+                        targetFramework, assemblyLoadContext);
+
                 // Execute the source generators
-                var sourceGenerators = restoreProcessor
-                    .GetSourceGenerators(context.NuGetRestoreInfo.Providers, context.NuGetRestoreInfo.Result,
-                        context.CurrentTargetFramework, loadContext);
                 compilation = ExecuteSourceGenerators(compilation,
                     sourceGenerators,
                     out additionalDiagnostics,
@@ -63,47 +143,53 @@ namespace Yardarm
             }
             finally
             {
-                loadContext.Unload();
+                assemblyLoadContext.Unload();
             }
 
-            var compilationResult = compilation.Emit(settings.DllOutput,
-                pdbStream: settings.PdbOutput,
-                xmlDocumentationStream: settings.XmlDocumentationOutput,
-                options: new EmitOptions()
-                    .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
-                    .WithHighEntropyVirtualAddressSpace(true));
+            return (compilation.Emit(dllOutput,
+                    pdbStream: pdbOutput,
+                    xmlDocumentationStream: xmlDocumentationOutput,
+                    options: new EmitOptions()
+                        .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
+                        .WithHighEntropyVirtualAddressSpace(true)),
+                additionalDiagnostics);
+        }
 
-            if (compilationResult.Success)
+        private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings, List<YardarmCompilationResult> results)
+        {
+            foreach (var result in results)
             {
-                if (settings.NuGetOutput != null)
+                if (!result.DllOutput.CanRead || !result.DllOutput.CanSeek)
                 {
-                    PackNuGet(serviceProvider, settings);
+                    throw new InvalidOperationException(
+                        $"{nameof(YardarmGenerationSettings.DllOutput)} must be seekable and readable to pack a NuGet package.");
+                }
+
+                if (!result.XmlDocumentationOutput.CanRead || !result.XmlDocumentationOutput.CanSeek)
+                {
+                    throw new InvalidOperationException(
+                        $"{nameof(YardarmGenerationSettings.XmlDocumentationOutput)} must be seekable and readable to pack a NuGet package.");
+                }
+
+                result.DllOutput.Seek(0, SeekOrigin.Begin);
+                result.XmlDocumentationOutput.Seek(0, SeekOrigin.Begin);
+
+                if (settings.NuGetSymbolsOutput != null)
+                {
+                    if (!result.PdbOutput.CanRead || !result.PdbOutput.CanSeek)
+                    {
+                        throw new InvalidOperationException(
+                            $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet symbols package.");
+                    }
+
+                    result.PdbOutput.Seek(0, SeekOrigin.Begin);
                 }
             }
 
-            return new YardarmGenerationResult(serviceProvider.GetRequiredService<GenerationContext>(),
-                compilationResult, additionalDiagnostics);
-        }
-
-        private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings)
-        {
-            if (!settings.DllOutput.CanRead || !settings.DllOutput.CanSeek)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(YardarmGenerationSettings.DllOutput)} must be seekable and readable to pack a NuGet package.");
-            }
-            if (!settings.XmlDocumentationOutput.CanRead || !settings.XmlDocumentationOutput.CanSeek)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(YardarmGenerationSettings.XmlDocumentationOutput)} must be seekable and readable to pack a NuGet package.");
-            }
-
-            settings.DllOutput.Seek(0, SeekOrigin.Begin);
-            settings.XmlDocumentationOutput.Seek(0, SeekOrigin.Begin);
 
             var packer = serviceProvider.GetRequiredService<NuGetPacker>();
 
-            packer.Pack(settings.DllOutput, settings.XmlDocumentationOutput, settings.NuGetOutput!);
+            packer.Pack(results, settings.NuGetOutput!);
 
             if (settings.NuGetSymbolsOutput != null)
             {
@@ -113,9 +199,9 @@ namespace Yardarm
                         $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet symbols package.");
                 }
 
-                settings.PdbOutput.Seek(0, SeekOrigin.Begin);
 
-                packer.PackSymbols(settings.PdbOutput, settings.NuGetSymbolsOutput);
+
+                packer.PackSymbols(results, settings.NuGetSymbolsOutput);
             }
         }
 

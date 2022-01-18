@@ -296,6 +296,12 @@ namespace Yardarm.CommandLine
 
         private void ApplyNuGetSettings(YardarmGenerationSettings settings)
         {
+            string[] targetFrameworks = _options.TargetFrameworks.ToArray();
+            if (targetFrameworks.Length > 0)
+            {
+                settings.TargetFrameworkMonikers = targetFrameworks.ToImmutableArray();
+            }
+
             if (!string.IsNullOrEmpty(_options.RepositoryType) && !string.IsNullOrEmpty(_options.RepositoryUrl))
             {
                 settings.Repository =

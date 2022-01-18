@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Microsoft.OpenApi.Models;
@@ -31,38 +32,37 @@ namespace Yardarm.Packaging
             _packageEnrichers = packageEnrichers.ToArray();
         }
 
-        public void Pack(Stream dllStream, Stream xmlDocumentationStream, Stream nugetStream)
+        public void Pack(IList<YardarmCompilationResult> compilationResults, Stream nugetStream)
         {
             var builder = new PackageBuilder
             {
                 Id = _settings.AssemblyName,
                 Version = new NuGetVersion(_settings.Version,
-                    _settings.VersionSuffix?.Split(new [] {'-'}, StringSplitOptions.RemoveEmptyEntries),
+                    _settings.VersionSuffix?.Split(new[] {'-'}, StringSplitOptions.RemoveEmptyEntries),
                     null, null),
                 Description = _settings.AssemblyName,
                 Summary = _document.Info.Description,
-                Authors = { _settings.Author },
-                Repository = _settings.Repository,
-                Files =
-                {
-                    new StreamPackageFile(dllStream, $"lib/netstandard2.0/{_settings.AssemblyName}.dll", "netstandard2.0"),
-                    new StreamPackageFile(xmlDocumentationStream, $"lib/netstandard2.0/{_settings.AssemblyName}.xml", "netstandard2.0")
-                }
+                Authors = {_settings.Author},
+                Repository = _settings.Repository
             };
 
-            builder.DependencyGroups.AddRange(_packageSpec.TargetFrameworks.Select(
-                targetFramework => new PackageDependencyGroup(
-                    targetFramework.FrameworkName,
-                    targetFramework.Dependencies
-                        .Where(dependency => dependency.SuppressParent != LibraryIncludeFlags.All)
-                        .Select(dependency => new PackageDependency(dependency.LibraryRange.Name, dependency.LibraryRange.VersionRange)))));
+            builder.Files.AddRange(compilationResults
+                .SelectMany(result => new[]
+                {
+                    new StreamPackageFile(result.DllOutput, $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.dll",
+                        result.TargetFramework),
+                    new StreamPackageFile(result.XmlDocumentationOutput,
+                        $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.xml", result.TargetFramework)
+                }));
+
+            builder.DependencyGroups.AddRange(GetDependencyGroups());
 
             builder = builder.Enrich(_packageEnrichers);
 
             builder.Save(nugetStream);
         }
 
-        public void PackSymbols(Stream pdbStream, Stream nugetSymbolsStream)
+        public void PackSymbols(IList<YardarmCompilationResult> compilationResults, Stream nugetSymbolsStream)
         {
             var builder = new PackageBuilder
             {
@@ -76,23 +76,30 @@ namespace Yardarm.Packaging
                 },
                 Description = _settings.AssemblyName,
                 Summary = _document.Info.Description,
-                Authors = { _settings.Author },
-                Files =
-                {
-                    new StreamPackageFile(pdbStream, $"lib/netstandard2.0/{_settings.AssemblyName}.pdb", "netstandard2.0"),
-                }
+                Authors = { _settings.Author }
             };
 
-            builder.DependencyGroups.AddRange(_packageSpec.TargetFrameworks.Select(
-                targetFramework => new PackageDependencyGroup(
-                    targetFramework.FrameworkName,
-                    targetFramework.Dependencies
-                        .Where(dependency => dependency.SuppressParent != LibraryIncludeFlags.All)
-                        .Select(dependency => new PackageDependency(dependency.LibraryRange.Name, dependency.LibraryRange.VersionRange)))));
+            builder.Files.AddRange(compilationResults
+                .SelectMany(result => new[]
+                {
+                    new StreamPackageFile(result.PdbOutput, $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.pdb",
+                        result.TargetFramework),
+                }));
+
+            builder.DependencyGroups.AddRange(GetDependencyGroups());
 
             builder = builder.Enrich(_packageEnrichers);
 
             builder.Save(nugetSymbolsStream);
         }
+
+        private IEnumerable<PackageDependencyGroup> GetDependencyGroups() =>
+            _packageSpec.TargetFrameworks.Select(
+                targetFramework => new PackageDependencyGroup(
+                    targetFramework.FrameworkName,
+                    targetFramework.Dependencies
+                        .Where(dependency => dependency.SuppressParent != LibraryIncludeFlags.All)
+                        .Select(dependency =>
+                            new PackageDependency(dependency.LibraryRange.Name, dependency.LibraryRange.VersionRange))));
     }
 }

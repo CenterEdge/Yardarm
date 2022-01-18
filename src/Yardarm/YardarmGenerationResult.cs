@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Emit;
 
 namespace Yardarm
 {
@@ -11,29 +9,27 @@ namespace Yardarm
     {
         public GenerationContext Context { get; }
 
-        public EmitResult CompilationResult { get; }
+        public IList<YardarmCompilationResult> CompilationResults { get; }
 
-        public ImmutableArray<Diagnostic> AdditionalDiagnostics { get; }
+        public bool Success => CompilationResults.All(p => p.EmitResult.Success);
 
-        public bool Success => CompilationResult.Success;
-
-        public YardarmGenerationResult(GenerationContext context, EmitResult compilationResult, ImmutableArray<Diagnostic> additionalDiagnostics)
+        public YardarmGenerationResult(GenerationContext context, IList<YardarmCompilationResult> compilationResults)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
-            CompilationResult = compilationResult ?? throw new ArgumentNullException(nameof(compilationResult));
-            AdditionalDiagnostics = additionalDiagnostics;
+            CompilationResults = compilationResults ?? throw new ArgumentNullException(nameof(compilationResults));
         }
 
-        public IEnumerable<Diagnostic> GetAllDiagnostics()
-        {
-            if (!AdditionalDiagnostics.IsDefaultOrEmpty)
+        public IEnumerable<Diagnostic> GetAllDiagnostics() =>
+            CompilationResults.SelectMany(p =>
             {
-                return AdditionalDiagnostics.Concat(CompilationResult.Diagnostics);
-            }
-            else
-            {
-                return CompilationResult.Diagnostics;
-            }
-        }
+                if (!p.AdditionalDiagnostics.IsDefaultOrEmpty)
+                {
+                    return p.AdditionalDiagnostics.Concat(p.EmitResult.Diagnostics);
+                }
+                else
+                {
+                    return p.EmitResult.Diagnostics;
+                }
+            });
     }
 }

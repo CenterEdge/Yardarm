@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -10,7 +11,9 @@ namespace Yardarm.Helpers
     {
         public static partial class System
         {
-            public static NameSyntax Name { get; } = IdentifierName("System");
+            public static NameSyntax Name { get; } = AliasQualifiedName(
+                IdentifierName(Token(SyntaxKind.GlobalKeyword)),
+                IdentifierName("System"));
 
             public static class ArgumentNullException
             {
@@ -69,6 +72,24 @@ namespace Yardarm.Helpers
                                 GenericName(
                                     Identifier("List"),
                                     TypeArgumentList(SingletonSeparatedList(itemType))));
+
+                        public static bool IsOfType(TypeSyntax nameSyntax, [NotNullWhen(true)] out TypeSyntax? genericArgument)
+                        {
+                            if (nameSyntax is not QualifiedNameSyntax qualifiedName
+                                || !qualifiedName.Left.IsEquivalentTo(Generic.Name)
+                                || qualifiedName.Right is not GenericNameSyntax
+                                {
+                                    Identifier.ValueText: "List",
+                                    TypeArgumentList.Arguments.Count: 1
+                                } genericName)
+                            {
+                                genericArgument = null;
+                                return false;
+                            }
+
+                            genericArgument = genericName.TypeArgumentList.Arguments[0];
+                            return true;
+                        }
                     }
 
                     public static class KeyValuePair

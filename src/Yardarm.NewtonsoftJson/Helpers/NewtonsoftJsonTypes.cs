@@ -7,7 +7,9 @@ namespace Yardarm.NewtonsoftJson.Helpers
     internal static class NewtonsoftJsonTypes
     {
         public static NameSyntax NewtonsoftJson { get; } = QualifiedName(
-            IdentifierName("Newtonsoft"),
+            AliasQualifiedName(
+                IdentifierName(Token(SyntaxKind.GlobalKeyword)),
+                IdentifierName("Newtonsoft")),
             IdentifierName("Json"));
 
         public static NameSyntax NewtonsoftJsonConverters { get; } = QualifiedName(

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 using Yardarm.Packaging;
@@ -7,17 +9,22 @@ namespace Yardarm.SystemTextJson
 {
     public class JsonDependencyGenerator : IDependencyGenerator
     {
-        public IEnumerable<LibraryDependency> GetDependencies()
+        public IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework)
         {
-            yield return new LibraryDependency
+            if (targetFramework.Framework != NuGetFrameworkConstants.NetCoreApp || targetFramework.Version < new Version(6, 0))
             {
-                LibraryRange = new LibraryRange
+                // Only add System.Text.Json if we're not already targeting .NET 6
+
+                yield return new LibraryDependency
                 {
-                    Name = "System.Text.Json",
-                    TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("6.0.0")
-                }
-            };
+                    LibraryRange = new LibraryRange
+                    {
+                        Name = "System.Text.Json",
+                        TypeConstraint = LibraryDependencyTarget.Package,
+                        VersionRange = VersionRange.Parse("6.0.0")
+                    }
+                };
+            }
 
             yield return new LibraryDependency
             {

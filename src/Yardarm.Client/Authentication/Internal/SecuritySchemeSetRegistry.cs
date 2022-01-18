@@ -44,7 +44,7 @@ namespace RootNamespace.Authentication.Internal
 
                     for (int i = 0; i < set.SecuritySchemes.Length; i++)
                     {
-                        if (!_schemes.TryGetValue(set.SecuritySchemes[i], out PropertyInfo property))
+                        if (!_schemes.TryGetValue(set.SecuritySchemes[i], out PropertyInfo? property))
                         {
                             return null;
                         }

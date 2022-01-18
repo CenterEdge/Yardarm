@@ -35,8 +35,8 @@ namespace Yardarm.Client
                         builder.Append('&');
                     }
 
-                    builder.AppendFormat("{0}={1}", Uri.EscapeUriString(parameter.Key),
-                        Uri.EscapeUriString(parameter.Value.ToString()));
+                    builder.AppendFormat("{0}={1}", Uri.EscapeDataString(parameter.Key),
+                        Uri.EscapeDataString(parameter.Value.ToString() ?? ""));
                 }
             }
 

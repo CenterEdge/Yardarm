@@ -35,9 +35,9 @@ namespace RootNamespace.Serialization
         public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
             HttpContent content)
         {
-            string mediaType = content.Headers.ContentType.MediaType;
+            string? mediaType = content.Headers.ContentType?.MediaType;
 
-            if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
+            if (mediaType is null || !typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
             {
                 throw new UnknownMediaTypeException(mediaType, content);
             }

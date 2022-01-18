@@ -24,6 +24,11 @@ namespace Yardarm.Spec
             where T : IOpenApiElement =>
             LocatedOpenApiElement.CreateRoot(rootItem, key);
 
+        public static IEnumerable<ILocatedOpenApiElement<T>> CreateRoot<T>(
+            this IEnumerable<KeyValuePair<string, T>> rootItems)
+            where T : IOpenApiElement =>
+            rootItems.Select(p => p.Value.CreateRoot(p.Key));
+
         public static ILocatedOpenApiElement<T> CreateChild<T>(this ILocatedOpenApiElement element,
             T child, string key)
             where T : IOpenApiElement =>
@@ -43,6 +48,87 @@ namespace Yardarm.Spec
             OpenApiReference reference)
             where T : IOpenApiElement =>
             ((T)document.ResolveReference(reference)).CreateRoot(reference.Id);
+
+        #region GetAllSchemas
+
+        // These methods collect all schemas directly owned by a given object (not a reference), including recursive
+        // lookups within schemas.
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(this OpenApiDocument document) =>
+            document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
+                .Concat(document.Paths.CreateRoot().GetOperations().GetAllSchemas())
+                .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
+                .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
+            operations.SelectMany(p => p.GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this ILocatedOpenApiElement<OpenApiOperation> operation)
+        {
+            var requestBody = operation.GetRequestBody();
+            if (requestBody is not null && !requestBody.IsReference())
+            {
+                var requestSchemas = requestBody
+                    .GetMediaTypes()
+                    .Select(p => p.GetSchema())
+                    .Where(p => p is not null && !p.IsReference())
+                    .SelectMany(p => p!.GetAllSchemas());
+
+                foreach (var schema in requestSchemas)
+                {
+                    yield return schema;
+                }
+            }
+
+            foreach (var responseSchema in operation
+                         .GetResponseSet()
+                         .GetResponses()
+                         .Where(p => !p.IsReference())
+                         .GetAllSchemas())
+            {
+                yield return responseSchema;
+            }
+        }
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> requestBody) =>
+            requestBody.GetMediaTypes()
+                .Select(p => p.GetSchema())
+                .Where(p => p is not null && !p.IsReference())!
+                .SelectMany(p => p!.GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> requestBody) =>
+            requestBody.GetMediaTypes()
+                .Select(p => p.GetSchema())
+                .Where(p => p is not null && !p.IsReference())!
+                .SelectMany(p => p!.GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this ILocatedOpenApiElement<OpenApiSchema> schema)
+        {
+            yield return schema;
+
+            var itemSchema = schema.GetItemSchema();
+            if (itemSchema is not null && !itemSchema.IsReference())
+            {
+                foreach (var childSchema in itemSchema.GetAllSchemas())
+                {
+                    yield return childSchema;
+                }
+            }
+
+            foreach (var childSchema in schema.GetProperties()
+                         .Where(p => !p.IsReference())
+                         .SelectMany(p => p.GetAllSchemas()))
+            {
+                yield return childSchema;
+            }
+        }
+
+        #endregion
 
         #region PathItem
 

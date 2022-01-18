@@ -35,7 +35,7 @@ namespace Yardarm
             try
             {
                 var context = serviceProvider.GetRequiredService<GenerationContext>();
-                context.CurrentTargetFramework = NuGetFramework.Parse("netstandard2.0"));
+                context.CurrentTargetFramework = NuGetFramework.Parse("netstandard2.0");
 
                 // Perform the NuGet restore
                 var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();

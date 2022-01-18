@@ -13,11 +13,11 @@ namespace Yardarm
 
         public EmitResult CompilationResult { get; }
 
-        public ImmutableArray<Diagnostic>? AdditionalDiagnostics { get; }
+        public ImmutableArray<Diagnostic> AdditionalDiagnostics { get; }
 
         public bool Success => CompilationResult.Success;
 
-        public YardarmGenerationResult(GenerationContext context, EmitResult compilationResult, ImmutableArray<Diagnostic>? additionalDiagnostics = null)
+        public YardarmGenerationResult(GenerationContext context, EmitResult compilationResult, ImmutableArray<Diagnostic> additionalDiagnostics)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             CompilationResult = compilationResult ?? throw new ArgumentNullException(nameof(compilationResult));
@@ -26,7 +26,7 @@ namespace Yardarm
 
         public IEnumerable<Diagnostic> GetAllDiagnostics()
         {
-            if (AdditionalDiagnostics is not null)
+            if (!AdditionalDiagnostics.IsDefaultOrEmpty)
             {
                 return AdditionalDiagnostics.Concat(CompilationResult.Diagnostics);
             }

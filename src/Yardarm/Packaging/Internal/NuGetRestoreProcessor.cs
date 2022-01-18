@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -21,14 +23,11 @@ namespace Yardarm.Packaging.Internal
     internal class NuGetRestoreProcessor
     {
         private readonly PackageSpec _packageSpec;
-        private readonly YardarmAssemblyLoadContext _assemblyLoadContext;
         private readonly ILogger<NuGetReferenceGenerator> _logger;
 
-        public NuGetRestoreProcessor(PackageSpec packageSpec, YardarmAssemblyLoadContext assemblyLoadContext,
-            ILogger<NuGetReferenceGenerator> logger)
+        public NuGetRestoreProcessor(PackageSpec packageSpec, ILogger<NuGetReferenceGenerator> logger)
         {
             _packageSpec = packageSpec ?? throw new ArgumentNullException(nameof(packageSpec));
-            _assemblyLoadContext = assemblyLoadContext ?? throw new ArgumentNullException(nameof(assemblyLoadContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -44,7 +43,8 @@ namespace Yardarm.Packaging.Internal
                 {
                     OutputPath = tempPath,
                     ProjectName = _packageSpec.Name,
-                    ProjectStyle = ProjectStyle.PackageReference
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    CrossTargeting = true
                 };
 
                 var settings = Settings.LoadDefaultSettings(tempPath);
@@ -77,12 +77,7 @@ namespace Yardarm.Packaging.Internal
                     throw new NuGetRestoreException(result);
                 }
 
-                return new NuGetRestoreInfo
-                {
-                    Result = result,
-                    Providers = dependencyProviders,
-                    SourceGenerators = CollectAnalyzers(dependencyProviders, result)
-                };
+                return new NuGetRestoreInfo(dependencyProviders, result);
             }
             finally
             {
@@ -90,32 +85,34 @@ namespace Yardarm.Packaging.Internal
             }
         }
 
-        // Collect C# analyzers from the direct NuGet dependencies (ignores transitive dependencies)
-        private List<ISourceGenerator> CollectAnalyzers(RestoreCommandProviders dependencyProviders, RestoreResult result)
+        // Collect C# source generators from the direct NuGet dependencies (ignores transitive dependencies)
+        public List<ISourceGenerator> GetSourceGenerators(RestoreCommandProviders dependencyProviders, RestoreResult result,
+            NuGetFramework targetFramework, AssemblyLoadContext assemblyLoadContext)
         {
             var generators = new List<ISourceGenerator>();
 
-            LockFileTarget netstandardTarget = result.LockFile.Targets
-                .First(p => p.TargetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework &&
-                            p.TargetFramework.Version == NuGetFrameworkConstants.NetStandard20);
+            LockFileTarget lockFileTarget = result.LockFile.Targets
+                .First(p => p.TargetFramework == targetFramework);
 
             foreach (var directDependency in _packageSpec.Dependencies)
             {
                 // Get the exact version we restored
-                var version = netstandardTarget.Libraries.FirstOrDefault(p => p.Name == directDependency.Name)?.Version;
+                var version = lockFileTarget.Libraries.FirstOrDefault(p => p.Name == directDependency.Name)?.Version;
                 if (version is not null)
                 {
-                    var localPackageInfo =
+                    NuGet.Repositories.LocalPackageInfo localPackageInfo =
                         dependencyProviders.GlobalPackages.FindPackage(directDependency.Name, version);
 
                     // For now, we explicitly only handle Roslyn 4.0 analyzers
-                    foreach (var file in localPackageInfo.Files.Where(p => p.StartsWith("analyzers/dotnet/roslyn4.0/cs/")))
+                    foreach (string file in localPackageInfo.Files.Where(p => p.StartsWith("analyzers/dotnet/roslyn4.0/cs/")))
                     {
                         // Ignore resource assemblies, just look in the root
-                        var suffix = file.Substring("analyzers/dotnet/roslyn4.0/cs/".Length);
+                        string suffix = file.Substring("analyzers/dotnet/roslyn4.0/cs/".Length);
                         if (!suffix.Contains('/'))
                         {
-                            generators.AddRange(GetGenerators(Path.Join(localPackageInfo.ExpandedPath, file)));
+                            generators.AddRange(GetSourceGenerators(
+                                Path.Join(localPackageInfo.ExpandedPath, file),
+                                assemblyLoadContext));
                         }
                     }
                 }
@@ -125,9 +122,9 @@ namespace Yardarm.Packaging.Internal
         }
 
         // Instantiate source generators from an analyzer assembly
-        private IEnumerable<ISourceGenerator> GetGenerators(string file)
+        private static IEnumerable<ISourceGenerator> GetSourceGenerators(string file, AssemblyLoadContext assemblyLoadContext)
         {
-            var assembly = _assemblyLoadContext.LoadFromAssemblyPath(file);
+            var assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
 
             var generatorTypes = assembly.ExportedTypes.Where(p =>
                 p.IsClass && !p.IsGenericTypeDefinition && !p.IsAbstract

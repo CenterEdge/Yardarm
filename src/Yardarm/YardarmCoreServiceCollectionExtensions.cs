@@ -107,7 +107,6 @@ namespace Yardarm
             services
                 .AddLogging()
                 .AddSingleton<GenerationContext>()
-                .AddSingleton<YardarmAssemblyLoadContext>()
                 .AddTransient<NuGetRestoreProcessor>()
                 .AddSingleton(settings)
                 .AddSingleton(document)

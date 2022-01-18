@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -46,6 +47,9 @@ namespace Yardarm
             get => _xmlDocumentationOutput ??= new MemoryStream();
             set => _xmlDocumentationOutput = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        public ImmutableArray<string> TargetFrameworkMonikers { get; set; } =
+            new[] {"netstandard2.0"}.ToImmutableArray();
 
         public Stream? NuGetOutput { get; set; }
 

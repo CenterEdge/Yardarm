@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using NuGet.Frameworks;
 using Yardarm.Generation;
 using Yardarm.Names;
 using Yardarm.Packaging;
@@ -26,6 +27,8 @@ namespace Yardarm
         /// Details about the NuGet restore operation, once it is completed.
         /// </summary>
         public NuGetRestoreInfo? NuGetRestoreInfo { get; set; }
+
+        public NuGetFramework? CurrentTargetFramework { get; set; }
 
         public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
 

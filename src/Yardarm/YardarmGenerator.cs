@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using NuGet.Frameworks;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Internal;
@@ -33,8 +34,10 @@ namespace Yardarm
             var serviceProvider = settings.BuildServiceProvider(document);
             try
             {
-                // Perform the NuGet restore
                 var context = serviceProvider.GetRequiredService<GenerationContext>();
+                context.CurrentTargetFramework = NuGetFramework.Parse("netstandard2.0"));
+
+                // Perform the NuGet restore
                 var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
                 context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 

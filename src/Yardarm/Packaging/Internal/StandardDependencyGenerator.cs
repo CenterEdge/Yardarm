@@ -61,7 +61,7 @@ namespace Yardarm.Packaging.Internal
                 {
                     LibraryRange = new LibraryRange
                     {
-                        Name = "Microsoft.NetCore.App.Ref",
+                        Name = "Microsoft.NETCore.App.Ref",
                         TypeConstraint = LibraryDependencyTarget.Package,
                         VersionRange = new VersionRange(minVersion: new NuGetVersion(
                             targetFramework.Version.Major, targetFramework.Version.Minor, targetFramework.Version.Revision)),

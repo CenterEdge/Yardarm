@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -93,26 +94,29 @@ namespace Yardarm.Packaging.Internal
             LockFileTarget lockFileTarget = result.LockFile.Targets
                 .First(p => p.TargetFramework == targetFramework);
 
-            foreach (var directDependency in _packageSpec.Dependencies)
+            foreach (var directDependency in _packageSpec.Dependencies
+                         .Concat(_packageSpec.TargetFrameworks
+                             .Where(p => p.FrameworkName == targetFramework)
+                             .SelectMany(framework => framework.Dependencies)))
             {
                 // Get the exact version we restored
-                var version = lockFileTarget.Libraries.FirstOrDefault(p => p.Name == directDependency.Name)?.Version;
+                var version = lockFileTarget.Libraries
+                    .FirstOrDefault(p => string.Equals(p.Name, directDependency.Name, StringComparison.OrdinalIgnoreCase))?
+                    .Version;
                 if (version is not null)
                 {
                     NuGet.Repositories.LocalPackageInfo localPackageInfo =
                         dependencyProviders.GlobalPackages.FindPackage(directDependency.Name, version);
 
-                    // For now, we explicitly only handle Roslyn 4.0 analyzers
-                    foreach (string file in localPackageInfo.Files.Where(p => p.StartsWith("analyzers/dotnet/roslyn4.0/cs/")))
+                    // For now, we explicitly only handle Roslyn 4.0 analyzers or unversioned analyzers
+                    // The regex also excludes resource assemblies in nested directories
+                    foreach (Match file in localPackageInfo.Files
+                                 .Select(p => Regex.Match(p, @"^(analyzers/dotnet/(?:roslyn4\.0/)?cs/[^/]+\.dll$)"))
+                                 .Where(p => p.Success))
                     {
-                        // Ignore resource assemblies, just look in the root
-                        string suffix = file.Substring("analyzers/dotnet/roslyn4.0/cs/".Length);
-                        if (!suffix.Contains('/'))
-                        {
-                            generators.AddRange(GetSourceGenerators(
-                                Path.Join(localPackageInfo.ExpandedPath, file),
-                                assemblyLoadContext));
-                        }
+                        generators.AddRange(GetSourceGenerators(
+                            Path.Join(localPackageInfo.ExpandedPath, file.Groups[1].Value),
+                            assemblyLoadContext));
                     }
                 }
             }

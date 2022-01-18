@@ -34,13 +34,12 @@ namespace Yardarm.Packaging.Internal
         private IEnumerable<string> ExtractDependencies(LockFile lockFile)
         {
             // Get the libraries to import for targeting netstandard2.0
-            LockFileTarget netstandardTarget = lockFile.Targets
-                .First(p => p.TargetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework &&
-                            p.TargetFramework.Version == NuGetFrameworkConstants.NetStandard20);
+            LockFileTarget lockFileTarget = lockFile.Targets
+                .First(p => p.TargetFramework == _context.CurrentTargetFramework);
 
             // Collect all DLL files from CompileTimeAssemblies from that target
-            // Note that we apply File.Exists since there may be muliple paths we're searching for each file listed
-            List<string> dependencies = netstandardTarget.Libraries
+            // Note that we apply File.Exists since there may be multiple paths we're searching for each file listed
+            List<string> dependencies = lockFileTarget.Libraries
                 .SelectMany(p => p.CompileTimeAssemblies.Select(q => new
                 {
                     Library = p,
@@ -55,17 +54,31 @@ namespace Yardarm.Packaging.Internal
                 .Where(File.Exists)
                 .ToList();
 
-            // NETStandard.Library is a bit different, it has reference assemblies in the build/netstandard2.0/ref directory
-            // which are imported via a MSBuild target file in the package. So we need to emulate that behavior here.
+            // Collect platform reference assemblies, i.e. .NET 6 assemblies
+            dependencies.AddRange(lockFileTarget.Libraries
+                .Where(package => package.PackageType.Any(type => type.Name == "DotnetPlatform"))
+                .Select(package =>
+                    _context.NuGetRestoreInfo!.Providers.GlobalPackages.FindPackage(package.Name, package.Version))
+                .SelectMany(localPackageInfo =>
+                    localPackageInfo.Files
+                        .Where(p => p.StartsWith($"ref/{lockFileTarget.TargetFramework.GetShortFolderName()}") &&
+                                    p.EndsWith(".dll"))
+                        .Select(p => Path.Combine(localPackageInfo.ExpandedPath, p.Replace('/', Path.DirectorySeparatorChar)))));
 
-            LockFileTargetLibrary netstandardLibrary = netstandardTarget.Libraries.First(p => p.Name == NetStandardLibrary);
+            LockFileTargetLibrary? netstandardLibrary = lockFileTarget.Libraries.FirstOrDefault(p => p.Name == NetStandardLibrary);
+            if (netstandardLibrary is not null)
+            {
+                // NETStandard.Library is a bit different, it has reference assemblies in the build/netstandard2.0/ref directory
+                // which are imported via a MSBuild target file in the package. So we need to emulate that behavior here.
 
-            string refDirectory = lockFile.PackageFolders.Select(p => p.Path)
-                .Select(p => Path.Combine(p, netstandardLibrary.Name.ToLowerInvariant(), netstandardLibrary.Version.ToString()))
-                .First(Directory.Exists);
-            refDirectory = Path.Combine(refDirectory, "build", "netstandard2.0", "ref");
+                string refDirectory = lockFile.PackageFolders.Select(p => p.Path)
+                    .Select(p => Path.Combine(p, netstandardLibrary.Name.ToLowerInvariant(),
+                        netstandardLibrary.Version.ToString()))
+                    .First(Directory.Exists);
+                refDirectory = Path.Combine(refDirectory, "build", "netstandard2.0", "ref");
 
-            dependencies.AddRange(Directory.EnumerateFiles(refDirectory, "*.dll"));
+                dependencies.AddRange(Directory.EnumerateFiles(refDirectory, "*.dll"));
+            }
 
             return dependencies;
         }

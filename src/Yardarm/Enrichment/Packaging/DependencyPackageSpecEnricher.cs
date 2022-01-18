@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
@@ -17,8 +18,11 @@ namespace Yardarm.Enrichment.Packaging
 
         public PackageSpec Enrich(PackageSpec packageSpec)
         {
-            packageSpec.Dependencies.AddRange(_dependencyGenerators
-                .SelectMany(p => p.GetDependencies()));
+            foreach (TargetFrameworkInformation targetFramework in packageSpec.TargetFrameworks)
+            {
+                targetFramework.Dependencies.AddRange(_dependencyGenerators
+                    .SelectMany(p => p.GetDependencies(targetFramework.FrameworkName)));
+            }
 
             return packageSpec;
         }

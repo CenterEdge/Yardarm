@@ -35,8 +35,8 @@ namespace Yardarm.Packaging.Internal
         {
             // Get the libraries to import for targeting netstandard2.0
             LockFileTarget netstandardTarget = lockFile.Targets
-                .First(p => p.TargetFramework.Framework == NuGetRestoreProcessor.NetStandardFramework &&
-                            p.TargetFramework.Version == NuGetRestoreProcessor.NetStandard20);
+                .First(p => p.TargetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework &&
+                            p.TargetFramework.Version == NuGetFrameworkConstants.NetStandard20);
 
             // Collect all DLL files from CompileTimeAssemblies from that target
             // Note that we apply File.Exists since there may be muliple paths we're searching for each file listed

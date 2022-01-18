@@ -20,9 +20,6 @@ namespace Yardarm.Packaging.Internal
 {
     internal class NuGetRestoreProcessor
     {
-        public const string NetStandardFramework = ".NETStandard";
-        public static readonly Version NetStandard20 = new(2, 0, 0, 0);
-
         private readonly PackageSpec _packageSpec;
         private readonly YardarmAssemblyLoadContext _assemblyLoadContext;
         private readonly ILogger<NuGetReferenceGenerator> _logger;
@@ -99,8 +96,8 @@ namespace Yardarm.Packaging.Internal
             var generators = new List<ISourceGenerator>();
 
             LockFileTarget netstandardTarget = result.LockFile.Targets
-                .First(p => p.TargetFramework.Framework == NetStandardFramework &&
-                            p.TargetFramework.Version == NetStandard20);
+                .First(p => p.TargetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework &&
+                            p.TargetFramework.Version == NuGetFrameworkConstants.NetStandard20);
 
             foreach (var directDependency in _packageSpec.Dependencies)
             {

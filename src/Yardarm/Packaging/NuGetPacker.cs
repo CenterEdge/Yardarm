@@ -38,7 +38,7 @@ namespace Yardarm.Packaging
             {
                 Id = _settings.AssemblyName,
                 Version = new NuGetVersion(_settings.Version,
-                    _settings.VersionSuffix?.Split(new[] {'-'}, StringSplitOptions.RemoveEmptyEntries),
+                    _settings.VersionSuffix?.TrimStart('-').Split(new[] {'.'}, StringSplitOptions.RemoveEmptyEntries),
                     null, null),
                 Description = _settings.AssemblyName,
                 Summary = _document.Info.Description,
@@ -68,7 +68,7 @@ namespace Yardarm.Packaging
             {
                 Id = _settings.AssemblyName,
                 Version = new NuGetVersion(_settings.Version,
-                    _settings.VersionSuffix?.Split(new [] {'-'}, StringSplitOptions.RemoveEmptyEntries),
+                    _settings.VersionSuffix?.TrimStart('-').Split(new [] {'.'}, StringSplitOptions.RemoveEmptyEntries),
                     null, null),
                 PackageTypes =
                 {

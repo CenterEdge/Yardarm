@@ -38,7 +38,7 @@ namespace Yardarm.Enrichment.Schema
                 return target;
             }
 
-            (TypeSyntax dictionaryType, TypeSyntax interfaceType) = GetDictionaryType(context);
+            (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) = GetDictionaryType(context);
 
             string propertyName = _context.NameFormatterSelector.GetFormatter(NameKind.Property)
                 .Format("AdditionalProperties");
@@ -56,12 +56,18 @@ namespace Yardarm.Enrichment.Schema
                     var typeInfo = ModelExtensions.GetTypeInfo(semanticModel, baseType.Type);
                     if (typeInfo.Type?.TypeKind == TypeKind.Class)
                     {
-                        if (typeInfo.Type.GetMembers(propertyName)
-                            .OfType<IPropertySymbol>().FirstOrDefault()?
+                        var parentSchema = typeInfo.Type
                             .DeclaringSyntaxReferences.FirstOrDefault()?
-                            .GetSyntax() is PropertyDeclarationSyntax baseMember)
+                            .GetSyntax().GetElementAnnotation<OpenApiSchema>(_context.ElementRegistry);
+
+                        if (parentSchema is not null && parentSchema.Element.AdditionalPropertiesAllowed)
                         {
-                            if (baseMember.Type.IsEquivalentTo(interfaceType))
+                            // We will already have an AdditionalProperties property on the base type
+
+                            var parentAdditionalPropertiesTypeGenerator =
+                                _context.TypeGeneratorRegistry.Get(parentSchema.GetAdditionalPropertiesOrDefault());
+
+                            if (parentAdditionalPropertiesTypeGenerator.TypeInfo.Name.IsEquivalentTo(valueType))
                             {
                                 // The types match, we can just accept the inherited version
                                 return target;
@@ -81,7 +87,7 @@ namespace Yardarm.Enrichment.Schema
                 propertyName, isShadowing));
         }
 
-        private (TypeSyntax dictionartyType, TypeSyntax interfaceType) GetDictionaryType(OpenApiEnrichmentContext<OpenApiSchema> context)
+        private (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) GetDictionaryType(OpenApiEnrichmentContext<OpenApiSchema> context)
         {
             ILocatedOpenApiElement<OpenApiSchema> additionalProperties =
                 context.LocatedElement.GetAdditionalPropertiesOrDefault();
@@ -99,7 +105,7 @@ namespace Yardarm.Enrichment.Schema
             var interfaceType = WellKnownTypes.System.Collections.Generic.IDictionaryT.Name(
                 PredefinedType(Token(SyntaxKind.StringKeyword)), valueType);
 
-            return (dictionaryType, interfaceType);
+            return (dictionaryType, interfaceType, valueType);
         }
 
         private MemberDeclarationSyntax GenerateAdditionalPropertiesMembers(TypeSyntax dictionaryType, TypeSyntax interfaceType,

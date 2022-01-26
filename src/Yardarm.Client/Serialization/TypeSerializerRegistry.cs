@@ -8,6 +8,20 @@ namespace RootNamespace.Serialization
 {
     public class TypeSerializerRegistry : ITypeSerializerRegistry
     {
+        private static ITypeSerializerRegistry? s_instance;
+        public static ITypeSerializerRegistry Instance
+        {
+            get => s_instance ??= CreateDefaultRegistry();
+            set {
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                s_instance = value;
+            }
+        }
+
         private readonly IDictionary<string, ITypeSerializer> _registry = new Dictionary<string, ITypeSerializer>();
 
         public ITypeSerializer Get(string mediaType) => _registry[mediaType];

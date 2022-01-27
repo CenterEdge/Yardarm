@@ -70,7 +70,9 @@ namespace Yardarm
             services.AddSingleton<IRequestMemberGenerator, BuildContentMethodGenerator>();
             services.AddSingleton<IRequestMemberGenerator, BuildRequestMethodGenerator>();
             services.AddSingleton<IRequestMemberGenerator, BuildUriMethodGenerator>();
-            services.TryAddSingleton<IGetBodyMethodGenerator, GetBodyMethodGenerator>();
+            services.AddSingleton<IResponseMethodGenerator, GetBodyMethodGenerator>();
+            services.AddSingleton<IResponseMethodGenerator, BodyConstructorMethodGenerator>();
+            services.AddSingleton<IResponseMethodGenerator, NoBodyConstructorMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IMediaTypeSelector, PriorityMediaTypeSelector>();
 

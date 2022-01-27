@@ -11,7 +11,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    public class GetBodyMethodGenerator : IGetBodyMethodGenerator
+    public class GetBodyMethodGenerator : IResponseMethodGenerator
     {
         public const string GetBodyMethodName = "GetBodyAsync";
 
@@ -27,25 +27,32 @@ namespace Yardarm.Generation.Response
             SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
         }
 
-        public MethodDeclarationSyntax? Generate(ILocatedOpenApiElement<OpenApiResponse> response)
+        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className)
         {
+            if (!response.IsRoot() && response.Element.Reference != null)
+            {
+                // Do not generator for responses within operations that are references to components, these will inherit
+                // their get body method from the component base class
+                yield break;
+            }
+
             if (response.Element.Content == null)
             {
-                return null;
+                yield break;
             }
 
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
             ILocatedOpenApiElement<OpenApiSchema>? schema = mediaType?.GetSchema();
             if (schema == null)
             {
-                return null;
+                yield break;
             }
 
             ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schema);
 
             TypeSyntax returnType = schemaGenerator.TypeInfo.Name;
 
-            return MethodDeclaration(
+            yield return MethodDeclaration(
                     WellKnownTypes.System.Threading.Tasks.ValueTaskT.Name(returnType),
                     GetBodyMethodName)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.AsyncKeyword))
@@ -55,16 +62,20 @@ namespace Yardarm.Generation.Response
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
             ILocatedOpenApiElement<OpenApiResponse> response, TypeSyntax returnType)
         {
-            yield return ReturnStatement(SyntaxHelpers.AwaitConfiguredFalse(
-                InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        SerializationNamespace.TypeSerializerRegistryExtensions,
-                        GenericName("DeserializeAsync")
-                            .AddTypeArgumentListArguments(returnType)))
-                    .AddArgumentListArguments(
-                        Argument(IdentifierName("TypeSerializerRegistry")),
-                        Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName("Message"),
-                            IdentifierName("Content"))))));
+            // Return from _body field if not null, otherwise deserialize and set the _body field
+
+            yield return ReturnStatement(AssignmentExpression(SyntaxKind.CoalesceAssignmentExpression,
+                IdentifierName(ResponseTypeGenerator.BodyFieldName),
+                SyntaxHelpers.AwaitConfiguredFalse(
+                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            SerializationNamespace.TypeSerializerRegistryExtensions,
+                            GenericName("DeserializeAsync")
+                                .AddTypeArgumentListArguments(returnType)))
+                        .AddArgumentListArguments(
+                            Argument(IdentifierName("TypeSerializerRegistry")),
+                            Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName("Message"),
+                                IdentifierName("Content")))))));
         }
 
         public static InvocationExpressionSyntax InvokeGetBody(ExpressionSyntax requestInstance) =>

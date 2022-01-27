@@ -5,7 +5,6 @@
 Given a service such as:
 
 ```cs
-```cs
 public class MyService
 {
     private readonly IMyApi api;

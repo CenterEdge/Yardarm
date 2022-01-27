@@ -49,6 +49,13 @@ namespace Yardarm.Helpers
                                         Argument(null, Token(SyntaxKind.OutKeyword), outValues));
                         }
 
+                        public static class HttpResponseHeaders
+                        {
+                            public static NameSyntax Name { get; } = QualifiedName(
+                                Headers.Name,
+                                IdentifierName("HttpResponseHeaders"));
+                        }
+
                         public static class MediaTypeWithQualityHeaderValue
                         {
                             public static NameSyntax Name { get; } = QualifiedName(

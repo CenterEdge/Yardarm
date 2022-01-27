@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -40,10 +41,22 @@ namespace Yardarm.Enrichment.Responses
 
         public MethodDeclarationSyntax GenerateMethod(ILocatedOpenApiElement<OpenApiResponse> response) =>
             MethodDeclaration(
-                    PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                    "ParseHeaders")
-                .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
-                .WithBody(Block(GenerateStatements(response)));
+                default,
+                new SyntaxTokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)),
+                PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                null,
+                Identifier("ParseHeaders"),
+                null,
+                ParameterList(SingletonSeparatedList(
+                    Parameter(
+                        default,
+                        default,
+                        WellKnownTypes.System.Net.Http.Headers.HttpResponseHeaders.Name,
+                        Identifier("headers"),
+                        null))),
+                default,
+                Block(GenerateStatements(response)),
+                null);
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
             ILocatedOpenApiElement<OpenApiResponse> response)
@@ -77,8 +90,7 @@ namespace Yardarm.Enrichment.Responses
 
                 yield return IfStatement(
                     WellKnownTypes.System.Net.Http.Headers.HttpHeaders.TryGetValues(
-                        SyntaxHelpers.MemberAccess(IdentifierName("Message"),
-                            "Headers"),
+                        IdentifierName("headers"),
                         SyntaxHelpers.StringLiteral(header.Key),
                         valuesName),
                     Block(

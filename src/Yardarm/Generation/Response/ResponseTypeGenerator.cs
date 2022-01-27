@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -69,7 +70,7 @@ namespace Yardarm.Generation.Response
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddBaseListTypes(SimpleBaseType(baseType))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddMembers(GenerateConstructor(className));
+                .AddMembers(GenerateConstructors(className).ToArray<MemberDeclarationSyntax>());
 
             if (isPrimaryImplementation)
             {
@@ -92,19 +93,49 @@ namespace Yardarm.Generation.Response
             yield return declaration;
         }
 
-        private ConstructorDeclarationSyntax GenerateConstructor(string className) =>
-            ConstructorDeclaration(className)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddParameterListParameters(
-                    Parameter(Identifier("message"))
-                        .WithType(WellKnownTypes.System.Net.Http.HttpResponseMessage.Name),
-                    Parameter(Identifier("typeSerializerRegistry"))
-                        .WithType(SerializationNamespace.ITypeSerializerRegistry))
-                .WithInitializer(ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
-                    .AddArgumentListArguments(
+        private IEnumerable<ConstructorDeclarationSyntax> GenerateConstructors(string className)
+        {
+            yield return ConstructorDeclaration(
+                default,
+                new SyntaxTokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier(className),
+                ParameterList(SingletonSeparatedList(
+                    Parameter(
+                        default,
+                        default,
+                        WellKnownTypes.System.Net.Http.HttpResponseMessage.Name,
+                        Identifier("message"),
+                        null))),
+                ConstructorInitializer(SyntaxKind.BaseConstructorInitializer,
+                    ArgumentList(SingletonSeparatedList(
+                        Argument(IdentifierName("message"))))),
+                Block());
+
+            yield return ConstructorDeclaration(
+                default,
+                new SyntaxTokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier(className),
+                ParameterList(SeparatedList(new[] {
+                    Parameter(
+                        default,
+                        default,
+                        WellKnownTypes.System.Net.Http.HttpResponseMessage.Name,
+                        Identifier("message"),
+                        null),
+                    Parameter(
+                        default,
+                        default,
+                        SerializationNamespace.ITypeSerializerRegistry,
+                        Identifier("typeSerializerRegistry"),
+                        null)
+                })),
+                ConstructorInitializer(SyntaxKind.BaseConstructorInitializer,
+                    ArgumentList(SeparatedList(new[] {
                         Argument(IdentifierName("message")),
-                        Argument(IdentifierName("typeSerializerRegistry"))))
-                .WithBody(Block());
+                        Argument(IdentifierName("typeSerializerRegistry"))
+                    }))),
+                Block());
+        }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateHeaderProperties()
         {

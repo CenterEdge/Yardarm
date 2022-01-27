@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using RootNamespace.Serialization;
 
 // ReSharper disable once CheckNamespace
@@ -16,19 +17,24 @@ namespace RootNamespace.Responses
 
         protected ITypeSerializerRegistry TypeSerializerRegistry { get; }
 
+        protected OperationResponse(HttpResponseMessage message)
+            : this (message, Serialization.TypeSerializerRegistry.Instance)
+        {
+        }
+
         protected OperationResponse(HttpResponseMessage message, ITypeSerializerRegistry typeSerializerRegistry)
         {
             Message = message ?? throw new ArgumentNullException(nameof(message));
             TypeSerializerRegistry = typeSerializerRegistry ?? throw new ArgumentNullException(nameof(typeSerializerRegistry));
 
             // ReSharper disable once VirtualMemberCallInConstructor
-            ParseHeaders();
+            ParseHeaders(message.Headers);
         }
 
         /// <summary>
         /// Called during construction to parse headers from the message into properties.
         /// </summary>
-        protected virtual void ParseHeaders()
+        protected virtual void ParseHeaders(HttpResponseHeaders headers)
         {
         }
 

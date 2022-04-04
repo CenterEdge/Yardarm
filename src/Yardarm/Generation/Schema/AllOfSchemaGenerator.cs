@@ -29,10 +29,10 @@ namespace Yardarm.Generation.Schema
                         {
                             // We can inherit from the reference, but we need to load it from the reference to get the right type name
 
-                            ILocatedOpenApiElement<OpenApiSchema> referencedSchema =
+                            ILocatedOpenApiElement<OpenApiSchema> inheritedSchema =
                                 ((OpenApiSchema)Context.Document.ResolveReference(section.Reference)).CreateRoot(section.Reference.Id);
 
-                            TypeSyntax typeName = Context.TypeGeneratorRegistry.Get(referencedSchema).TypeInfo.Name;
+                            TypeSyntax typeName = Context.TypeGeneratorRegistry.Get(inheritedSchema).TypeInfo.Name;
 
                             BaseListSyntax baseList = classDeclaration.BaseList != null
                                 ? classDeclaration.BaseList.WithTypes(SyntaxFactory.SeparatedList(
@@ -42,6 +42,8 @@ namespace Yardarm.Generation.Schema
 
                             classDeclaration = classDeclaration
                                 .WithBaseList(baseList);
+
+                            classDeclaration = AddProperties(classDeclaration, inheritedSchema.GetProperties());
 
                             addedInheritance = true;
                         }

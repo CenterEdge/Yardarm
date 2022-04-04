@@ -1,0 +1,547 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Memberships",
+    "version": "v1"
+  },
+  "paths": {
+      "/businessentities/{businessEntityId}/membershipprograms/{membershipProgramId}/membershipplans/{membershipPlanId}/billingterms":
+      {
+          "post": {
+              "tags": [
+                  "BillingTerms"
+              ],
+              "operationId": "createBillingTerms",
+              "parameters": [
+                  {
+                      "name": "businessEntityId",
+                      "in": "path",
+                      "required": true,
+                      "schema": {
+                          "type": "integer",
+                          "format": "int64"
+                      }
+                  },
+                  {
+                      "name": "membershipProgramId",
+                      "in": "path",
+                      "required": true,
+                      "schema": {
+                          "type": "integer",
+                          "format": "int64"
+                      }
+                  },
+                  {
+                      "name": "membershipPlanId",
+                      "in": "path",
+                      "required": true,
+                      "schema": {
+                          "type": "integer",
+                          "format": "int64"
+                      }
+                  }
+              ],
+              "requestBody": {
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/CreateBillingTermsRequest"
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "400": {
+                      "description": "Bad Request",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "examples": {
+                                  "Default": {
+                                      "value": {
+                                          "errorCode": "400.0.33.0",
+                                          "messages": [
+                                              "Bad Request"
+                                          ]
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  },
+                  "500": {
+                      "description": "Server Error",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "errorCode": "500.0.33.0",
+                                  "messages": [
+                                      "Something went wrong"
+                                  ]
+                              }
+                          }
+                      }
+                  },
+                  "404": {
+                      "description": "Not Found",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "errorCode": "404.0.33.0",
+                                  "messages": [
+                                      "Not Found"
+                                  ]
+                              }
+                          }
+                      }
+                  },
+                  "201": {
+                      "description": "Success",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/BillingTerms"
+                              }
+                          }
+                      }
+                  },
+                  "409": {
+                      "description": "Conflict",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "examples": {
+                                  "Default": {
+                                      "value": {
+                                          "errorCode": "409.0.33.0",
+                                          "messages": [
+                                              "Conflict"
+                                          ]
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  },
+                  "503": {
+                      "description": "Server Error",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "examples": {
+                                  "Default": {
+                                      "value": {
+                                          "errorCode": "503.0.33.0",
+                                          "messages": [
+                                              "Something went wrong"
+                                          ]
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  },
+  "components": {
+    "schemas": {
+        "Error": {
+            "required": [
+                "errorCode",
+                "messages"
+            ],
+            "type": "object",
+            "properties": {
+                "errorCode": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "FakeEnumType": {
+            "enum": [
+                "FakeA",
+                "FakeB"
+            ],
+            "type": "string"
+        },
+        "AFakeAbstract": {
+            "type": "object",
+            "required": [
+                "fakeType"
+            ],
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/BillingSchedule"
+                }
+            ],
+            "properties": {
+                "fakeType": {
+                    "$ref": "#/components/schemas/FakeEnumType"
+                },
+                "fakePropertyA": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            },
+            "oneOf": [
+                {
+                    "$ref": "#/components/schemas/FakeAImplementation"
+                },
+                {
+                    "$ref": "#/components/schemas/FakeBImplementation"
+                }
+            ],
+            "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                    "FakeA": "#/components/schemas/FakeAImplementation",
+                    "FakeB": "#/components/schemas/FakeBImplementation"
+                }
+            }
+        },
+        "FakeAImplementation": {
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/AFakeAbstract"
+                },
+                {
+                    "required": [
+                        "happyDays",
+                        "type"
+                    ],
+                    "type": "object",
+                    "properties": {
+                        "happyDays": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            ]
+        },
+        "FakeBImplementation": {
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/AFakeAbstract"
+                },
+                {
+                    "required": [
+                        "sadDays",
+                        "type"
+                    ],
+                    "type": "object",
+                    "properties": {
+                        "sadDays": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
+        },
+        "MembershipDurationType": {
+            "enum": [
+                "SimpleMembershipDuration",
+                "AutoRenewingMembershipDuration"
+            ],
+            "type": "string"
+        },
+        "MembershipDuration": {
+            "required": [
+                "type"
+            ],
+            "type": "object",
+            "properties": {
+                "type": {
+                    "$ref": "#/components/schemas/MembershipDurationType"
+                },
+                "fakeChild": {
+                    "$ref": "#/components/schemas/AFakeAbstract"
+                }
+            },
+            "oneOf": [
+                {
+                    "$ref": "#/components/schemas/AutoRenewingMembershipDuration"
+                },
+                {
+                    "$ref": "#/components/schemas/SimpleMembershipDuration"
+                }
+            ],
+            "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                    "SimpleMembershipDuration": "#/components/schemas/SimpleMembershipDuration",
+                    "AutoRenewingMembershipDuration": "#/components/schemas/AutoRenewingMembershipDuration"
+                }
+            }
+        },
+        "AutoRenewingMembershipDuration": {
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/MembershipDuration"
+                },
+                {
+                    "required": [
+                        "numberOfMonths",
+                        "type"
+                    ],
+                    "type": "object",
+                    "properties": {
+                        "numberOfMonths": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            ]
+        },
+        "SimpleMembershipDuration": {
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/MembershipDuration"
+                },
+                {
+                    "required": [
+                        "numberOfMonths",
+                        "type"
+                    ],
+                    "type": "object",
+                    "properties": {
+                        "numberOfMonths": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            ]
+        },
+        "BillingScheduleType": {
+            "enum": [
+                "UpFrontBillingSchedule",
+                "MonthlyBillingSchedule"
+            ],
+            "type": "string"
+        },
+        "BillingSchedule": {
+            "required": [
+                "type"
+            ],
+            "type": "object",
+            "properties": {
+                "type": {
+                    "$ref": "#/components/schemas/BillingScheduleType"
+                }
+            },
+            "oneOf": [
+                {
+                    "$ref": "#/components/schemas/UpFrontBillingSchedule"
+                },
+                {
+                    "$ref": "#/components/schemas/MonthlyBillingSchedule"
+                }
+            ],
+            "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                    "UpFrontBillingSchedule": "#/components/schemas/UpFrontBillingSchedule",
+                    "MonthlyBillingSchedule": "#/components/schemas/MonthlyBillingSchedule"
+                }
+            }
+        },
+        "MonthlyBillingSchedule": {
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/BillingSchedule"
+                },
+                {
+                    "required": [
+                        "frequency",
+                        "type",
+                        "upFrontMonths"
+                    ],
+                    "type": "object",
+                    "properties": {
+                        "frequency": {
+                            "type": "integer",
+                            "format": "int32"
+                        },
+                        "upFrontMonths": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                }
+            ]
+        },
+        "UpFrontBillingSchedule": {
+            "allOf": [
+                {
+                    "$ref": "#/components/schemas/BillingSchedule"
+                },
+                {
+                    "required": [
+                        "type"
+                    ],
+                    "type": "object"
+                }
+            ]
+        },
+        "MembershipFee": {
+            "required": [
+                "baseInventoryItemId"
+            ],
+            "type": "object",
+            "properties": {
+                "baseInventoryItemId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "incrementalInventoryItemId": {
+                    "type": "integer",
+                    "format": "int64",
+                    "nullable": true
+                }
+            }
+        },
+        "ExternalId": {
+            "required": [
+                "id",
+                "source"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                },
+                "source": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                }
+            }
+        },
+        "BillingTerms": {
+            "required": [
+                "billingSchedule",
+                "businessEntityId",
+                "id",
+                "initialFee",
+                "isEnabled",
+                "membershipDuration",
+                "membershipPlanId",
+                "membershipProgramId",
+                "name",
+                "renewalGracePeriodInDays"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "businessEntityId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "membershipProgramId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "membershipPlanId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "renewalGracePeriodInDays": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "membershipDuration": {
+                    "$ref": "#/components/schemas/MembershipDuration"
+                },
+                "billingSchedule": {
+                    "$ref": "#/components/schemas/BillingSchedule"
+                },
+                "initialFee": {
+                    "$ref": "#/components/schemas/MembershipFee"
+                },
+                "renewalFee": {
+                    "$ref": "#/components/schemas/MembershipFee"
+                },
+                "earlyTerminationFee": {
+                    "$ref": "#/components/schemas/MembershipFee"
+                },
+                "externalId": {
+                    "$ref": "#/components/schemas/ExternalId"
+                }
+            }
+        },
+        "CreateBillingTermsRequest": {
+            "required": [
+                "billingSchedule",
+                "initialFee",
+                "membershipDuration",
+                "name",
+                "renewalGracePeriodInDays"
+            ],
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "renewalGracePeriodInDays": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "membershipDuration": {
+                    "$ref": "#/components/schemas/MembershipDuration"
+                },
+                "billingSchedule": {
+                    "$ref": "#/components/schemas/BillingSchedule"
+                },
+                "initialFee": {
+                    "$ref": "#/components/schemas/MembershipFee"
+                },
+                "renewalFee": {
+                    "$ref": "#/components/schemas/MembershipFee"
+                },
+                "earlyTerminationFee": {
+                    "$ref": "#/components/schemas/MembershipFee"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "externalId": {
+                    "$ref": "#/components/schemas/ExternalId"
+                }
+            }
+        }
+    }
+  }
+}

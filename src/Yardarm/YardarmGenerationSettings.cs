@@ -25,10 +25,17 @@ namespace Yardarm
 
         public string AssemblyName { get; set; } = "Yardarm.Sdk";
         public string RootNamespace { get; set; } = "Yardarm.Sdk";
+
         public Version Version { get; set; } = new Version(1, 0, 0);
         public string? VersionSuffix { get; set; }
         public string Author { get; set; } = "anonymous";
         public RepositoryMetadata? Repository { get; set; }
+
+        /// <summary>
+        /// Base path for generated source files. Files are not persisted to this path,
+        /// but it is used within Roslyn to uniquely identify source files.
+        /// </summary>
+        public string BasePath { get; set; } = AppContext.BaseDirectory;
 
         public Stream DllOutput
         {

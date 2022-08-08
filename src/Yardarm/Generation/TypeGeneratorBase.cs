@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -41,8 +42,17 @@ namespace Yardarm.Generation
 
             var compilationUnit = GenerateCompilationUnit(members);
 
-            return CSharpSyntaxTree.Create(compilationUnit);
+            return CSharpSyntaxTree.Create(compilationUnit,
+                path: GetSourceFilePath(),
+                encoding: Encoding.UTF8);
         }
+
+        /// <summary>
+        /// For types that are not nested, returns the unique file path which should
+        /// be associated with the <see cref="SyntaxTree"/>.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract string? GetSourceFilePath();
 
         /// <summary>
         /// Gets the namespace to use when generated a full syntax tree.

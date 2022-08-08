@@ -37,7 +37,16 @@ namespace Yardarm.CommandLine
 
             var generator = new YardarmGenerator();
 
-            var settings = new YardarmGenerationSettings(_options.AssemblyName);
+            string basePath = _options.InputFile;
+            if (!Path.IsPathFullyQualified(basePath))
+            {
+                basePath = Path.Combine(AppContext.BaseDirectory, basePath);
+            }
+
+            var settings = new YardarmGenerationSettings(_options.AssemblyName)
+            {
+                BasePath = basePath
+            };
 
             ApplyVersion(settings);
 

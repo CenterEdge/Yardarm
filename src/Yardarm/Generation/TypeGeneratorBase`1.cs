@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Interfaces;
+using Yardarm.Helpers;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation
@@ -20,5 +22,26 @@ namespace Yardarm.Generation
             base.GenerateCompilationUnit(members)
                 // Annotate the overall compilation unit with the element so it may be enriched with additional classes, etc
                 .AddElementAnnotation(Element, Context.ElementRegistry);
+
+        /// <inheritdoc />
+        protected override string? GetSourceFilePath()
+        {
+            string? elementPath = Element.ToString();
+            if (string.IsNullOrEmpty(elementPath))
+            {
+                return null;
+            }
+
+            if (elementPath[0] == '/')
+            {
+                elementPath = $"{elementPath[1..]}.cs";
+            }
+            else
+            {
+                elementPath = $"{elementPath}.cs";
+            }
+
+            return Path.Combine(Context.Settings.BasePath, PathHelpers.NormalizePath(elementPath));
+        }
     }
 }

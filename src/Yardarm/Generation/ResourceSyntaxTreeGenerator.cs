@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Yardarm.Generation.Internal;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Packaging;
 
@@ -58,10 +59,14 @@ namespace Yardarm.Generation
                 _ => Array.Empty<string>()
             };
 
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(rawText),
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(rawText, Encoding.UTF8),
                 CSharpParseOptions.Default
                     .WithLanguageVersion(LanguageVersion.CSharp10)
-                    .WithPreprocessorSymbols(preprocessorSymbols));
+                    .WithPreprocessorSymbols(preprocessorSymbols),
+                path: Path.Combine(
+                    GenerationContext.Settings.BasePath,
+                    "Resources",
+                    PathHelpers.NormalizePath(resourceName)));
 
             // Annotate the compilation root so we know which resource file it came from
             syntaxTree = syntaxTree.WithRootAndOptions(

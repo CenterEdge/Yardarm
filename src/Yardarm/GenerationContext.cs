@@ -17,6 +17,7 @@ namespace Yardarm
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
 
+        public YardarmGenerationSettings Settings { get; }
         public OpenApiDocument Document => _openApiDocument.Value;
         public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
         public IServiceProvider GenerationServices { get; }
@@ -35,6 +36,7 @@ namespace Yardarm
         public GenerationContext(IServiceProvider serviceProvider)
         {
             GenerationServices = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            Settings = serviceProvider.GetRequiredService<YardarmGenerationSettings>();
 
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
             _elementRegistry = new Lazy<IOpenApiElementRegistry>(serviceProvider.GetRequiredService<IOpenApiElementRegistry>);

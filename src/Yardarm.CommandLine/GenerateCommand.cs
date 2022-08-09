@@ -45,7 +45,8 @@ namespace Yardarm.CommandLine
 
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
-                BasePath = basePath
+                BasePath = basePath,
+                EmbedAllSources = _options.EmbedAllSources,
             };
 
             ApplyVersion(settings);

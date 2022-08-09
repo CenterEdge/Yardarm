@@ -23,6 +23,9 @@ namespace Yardarm.CommandLine
         [Option("keyfile", HelpText = "Key file to create a strongly-named assembly")]
         public string KeyFile { get; set; }
 
+        [Option("embed", HelpText = "Embed source files with debug symbols")]
+        public bool EmbedAllSources { get; set; }
+
         #region DLL
 
         [Option('o', "output", HelpText = "Output directory or .dll file. Indicate a directory with a trailing slash.", SetName = "dll")]

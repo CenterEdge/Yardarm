@@ -12,7 +12,8 @@ namespace Yardarm.Enrichment.Compilation
                 .AddCompilationEnricher<ResourceFileCompilationEnricher>()
                 .AddCompilationEnricher<SyntaxTreeCompilationEnricher>()
                 .AddCompilationEnricher<OpenApiCompilationEnricher>()
-                .AddCompilationEnricher<DefaultTypeSerializersEnricher>();
+                .AddCompilationEnricher<DefaultTypeSerializersEnricher>()
+                .AddCompilationEnricher<FormatCompilationEnricher>();
 
         public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
             where T : class, IAssemblyInfoEnricher =>

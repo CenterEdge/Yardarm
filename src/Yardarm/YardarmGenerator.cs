@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
@@ -149,10 +152,35 @@ namespace Yardarm
             return (compilation.Emit(dllOutput,
                     pdbStream: pdbOutput,
                     xmlDocumentationStream: xmlDocumentationOutput,
+                    embeddedTexts: await GetEmbeddedTextsAsync(settings, compilation, cancellationToken)
+                        .ToListAsync(cancellationToken),
                     options: new EmitOptions()
                         .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
                         .WithHighEntropyVirtualAddressSpace(true)),
                 additionalDiagnostics);
+        }
+
+        private async IAsyncEnumerable<EmbeddedText> GetEmbeddedTextsAsync(
+            YardarmGenerationSettings settings, CSharpCompilation compilation,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            if (!settings.EmbedAllSources)
+            {
+                yield break;
+            }
+
+            foreach (var syntaxTree in compilation.SyntaxTrees
+                         .Where(static p => p.FilePath != "")
+                         .Cast<CSharpSyntaxTree>())
+            {
+                var content = (await syntaxTree.GetRootAsync(cancellationToken))
+                    .GetText(Encoding.UTF8, SourceHashAlgorithm.Sha1);
+
+                if (content.CanBeEmbedded)
+                {
+                    yield return EmbeddedText.FromSource(syntaxTree.FilePath, content);
+                }
+            }
         }
 
         private void PackNuGet(IServiceProvider serviceProvider, YardarmGenerationSettings settings, List<YardarmCompilationResult> results)

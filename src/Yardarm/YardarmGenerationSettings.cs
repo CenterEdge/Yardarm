@@ -37,6 +37,12 @@ namespace Yardarm
         /// </summary>
         public string BasePath { get; set; } = AppContext.BaseDirectory;
 
+        /// <summary>
+        /// If true, embed generated source code in the symbols PDB file and package. This
+        /// enables stepping into the generated SDK when debugging.
+        /// </summary>
+        public bool EmbedAllSources { get; set; }
+
         public Stream DllOutput
         {
             get => _dllOutput ??= new MemoryStream();

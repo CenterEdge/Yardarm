@@ -25,11 +25,7 @@ namespace Yardarm.Helpers
         /// <returns>Normalized path.</returns>
         public static string NormalizePath(string path)
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (path == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             var builder = new StringBuilder(path);
             NormalizePath(builder);
@@ -38,11 +34,7 @@ namespace Yardarm.Helpers
 
         public static void NormalizePath(StringBuilder builder)
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (builder == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(nameof(builder));
-            }
+            ArgumentNullException.ThrowIfNull(builder);
 
             for (int i = 0; i < builder.Length; i++)
             {

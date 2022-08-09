@@ -210,6 +210,7 @@ namespace Yardarm
         {
             if (generators is null || generators.Count == 0)
             {
+                diagnostics = ImmutableArray<Diagnostic>.Empty;
                 return compilation;
             }
 

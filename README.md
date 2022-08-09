@@ -81,6 +81,22 @@ yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -f net6.0 netstandard2.0 --n
 # Related files will be output beside that file.
 ```
 
+## Source Code
+
+Source code for the generated SDKs is created dynamically, in-memory and is never persisted
+to disk. This is an intentional decision for performance. However, the source code itself
+may be useful. Perhaps a decompiler would like to offer a better-formatted look at your
+generated SDK. Or perhaps the SDK consumer would like to step through the SDK code in their
+debugger.
+
+This is supported using the `--embed` command line switch. When this switch is set, the generated
+code will be formatted with standard whitespace and embedded in the PDB file with any symbols
+output. If generating a NuGet package, they will be included in the `snupkg` file. This makes
+the source code available to modern debuggers and decompilers.
+
+Note: To debug into a generated SDK in Visual Studio, be sure to uncheck Just My Code in the
+debugging options of Visual Studio.
+
 ## A note on System.Text.Json support
 
 When using System.Text.Json, it is recommended that you target net6.0 at a minimum. Multi-targeting and including

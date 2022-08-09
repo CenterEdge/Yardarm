@@ -38,11 +38,19 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(RequestMessageParameterName))
                         .WithType(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name));
 
-        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
-            GenerateHeader(operation)
+        public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        {
+            if (mediaType is not null)
+            {
+                // Only generate for the main request, not media types
+                yield break;
+            }
+
+            yield return GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
                 .WithBody(Block(GenerateStatements(operation)));
+        }
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
             ILocatedOpenApiElement<OpenApiOperation> operation)

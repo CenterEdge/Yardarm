@@ -3,9 +3,9 @@
 namespace RootNamespace.Serialization
 {
     /// <summary>
-    /// Provides <see cref="ISerializationData"/> for the <see cref="MultipartFormDataSerializer"/>.
+    /// Provides serialization data for the <see cref="MultipartFormDataSerializer"/>.
     /// </summary>
-    public class MultipartFormDataSerializationData : ISerializationData
+    internal class MultipartFormDataSerializationData
     {
         /// <summary>
         /// <see cref="MultipartEncoding"/> settings for each property of the schema, keyed by property name.

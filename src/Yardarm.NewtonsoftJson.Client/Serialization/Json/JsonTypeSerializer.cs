@@ -24,7 +24,7 @@ namespace RootNamespace.Serialization.Json
             _serializer = JsonSerializer.Create(settings);
         }
 
-        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
+        public HttpContent Serialize<T>(T value, string mediaType)
         {
             var stream = new MemoryStream();
             try
@@ -51,7 +51,7 @@ namespace RootNamespace.Serialization.Json
             }
         }
 
-        public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
+        public async ValueTask<T> DeserializeAsync<T>(HttpContent content)
         {
             string str = await content.ReadAsStringAsync().ConfigureAwait(false);
 

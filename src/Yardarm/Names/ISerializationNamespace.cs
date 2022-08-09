@@ -7,7 +7,6 @@ namespace Yardarm.Names
     {
         NameSyntax HeaderSerializer { get; }
         ExpressionSyntax HeaderSerializerInstance { get; }
-        NameSyntax ISerializationData { get; }
         NameSyntax ITypeSerializer { get; }
         NameSyntax ITypeSerializerRegistry { get; }
         NameSyntax MultipartEncodingAttribute { get; }

@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
                         .WithType(SerializationNamespace.ITypeSerializerRegistry));
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
         {
             MethodDeclarationSyntax methodDeclaration = GenerateHeader(operation);
@@ -57,15 +57,12 @@ namespace Yardarm.Generation.Request
                     .WithBody(Block(GenerateStatements(operation, mediaType)));
             }
 
-            yield return methodDeclaration;
+            return methodDeclaration;
         }
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
             ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<OpenApiMediaType> mediaType)
         {
-            ExpressionSyntax serializationDataExpression =
-                SerializationDataPropertyGenerator.GetSerializationData();
-
             var createContentExpression =
                 InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         SerializationNamespace.TypeSerializerRegistryExtensions,
@@ -73,8 +70,7 @@ namespace Yardarm.Generation.Request
                     .AddArgumentListArguments(
                         Argument(IdentifierName(TypeSerializerRegistryParameterName)),
                         Argument(IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)),
-                        Argument(SyntaxHelpers.StringLiteral(mediaType.Key)),
-                        Argument(serializationDataExpression));
+                        Argument(SyntaxHelpers.StringLiteral(mediaType.Key)));
 
             yield return ReturnStatement(ConditionalExpression(
                 IsPatternExpression(

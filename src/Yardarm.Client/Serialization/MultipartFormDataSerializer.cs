@@ -16,7 +16,7 @@ namespace RootNamespace.Serialization
             _typeSerializerRegistry = typeSerializerRegistry ?? throw new ArgumentNullException(nameof(typeSerializerRegistry));
         }
 
-        public HttpContent Serialize<T>(T value, string mediaType, MultipartFormDataSerializationData serializationData)
+        private HttpContent Serialize<T>(T value, string mediaType, MultipartFormDataSerializationData serializationData)
         {
             var content = new MultipartFormDataContent();
 
@@ -28,15 +28,9 @@ namespace RootNamespace.Serialization
             return content;
         }
 
-        HttpContent ITypeSerializer.Serialize<T>(T value, string mediaType, ISerializationData? serializationData)
+        HttpContent ITypeSerializer.Serialize<T>(T value, string mediaType)
         {
-            if (!(serializationData is MultipartFormDataSerializationData multipartData))
-            {
-                throw new ArgumentException(
-                    $"{nameof(serializationData)} must be of type {typeof(MultipartFormDataSerializationData).FullName}.");
-            }
-
-            return Serialize(value, mediaType, multipartData);
+            return Serialize(value, mediaType, new MultipartFormDataSerializationData());
         }
 
         private void SerializeProperty(MultipartFormDataContent content,
@@ -52,7 +46,7 @@ namespace RootNamespace.Serialization
             throw new NotImplementedException();
         }
 
-        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null) =>
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content) =>
             throw new NotImplementedException();
     }
 }

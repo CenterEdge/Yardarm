@@ -11,7 +11,6 @@ namespace Yardarm.Names.Internal
         public NameSyntax HeaderSerializer { get; }
         public ExpressionSyntax HeaderSerializerInstance { get; }
         public NameSyntax Name { get; }
-        public NameSyntax ISerializationData { get; }
         public NameSyntax ITypeSerializer { get; }
         public NameSyntax ITypeSerializerRegistry { get; }
         public NameSyntax MultipartEncodingAttribute { get; }
@@ -39,10 +38,6 @@ namespace Yardarm.Names.Internal
             HeaderSerializerInstance = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                 HeaderSerializer,
                 IdentifierName("Instance"));
-
-            ISerializationData = QualifiedName(
-                Name,
-                IdentifierName("ISerializationData"));
 
             ITypeSerializer = QualifiedName(
                 Name,

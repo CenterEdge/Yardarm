@@ -32,19 +32,11 @@ namespace Yardarm.Generation.Request
                     Parameter(Identifier(TypeSerializerRegistryParameterName))
                         .WithType(SerializationNamespace.ITypeSerializerRegistry));
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
-        {
-            if (mediaType is not null)
-            {
-                // Only generate for the main request, not media types
-                yield break;
-            }
-
-            yield return GenerateHeader(operation)
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
+            GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .WithBody(Block(GenerateStatements(operation)));
-        }
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
             ILocatedOpenApiElement<OpenApiOperation> operation)

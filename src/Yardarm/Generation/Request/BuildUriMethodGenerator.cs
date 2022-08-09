@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -30,15 +29,9 @@ namespace Yardarm.Generation.Request
                 PredefinedType(Token(SyntaxKind.StringKeyword)),
                 BuildUriMethodName);
 
-        public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        public MemberDeclarationSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
             ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
         {
-            if (mediaType is not null)
-            {
-                // Only generate for the main request, not media types
-                yield break;
-            }
-
             var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
             var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parent!;
@@ -89,7 +82,7 @@ namespace Yardarm.Generation.Request
                     pathExpression, buildArrayExpression);
             }
 
-            yield return GenerateHeader(operation)
+            return GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
                 .WithExpressionBody(ArrowExpressionClause(
                     pathExpression));

@@ -24,10 +24,10 @@ namespace RootNamespace.Serialization.Json
             _options = options;
         }
 
-        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
+        public HttpContent Serialize<T>(T value, string mediaType) =>
             JsonContent.Create(value, new MediaTypeHeaderValue("application/json"), _options);
 
-        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content)
         {
             return new ValueTask<T>(content.ReadFromJsonAsync<T>(_options)!);
         }

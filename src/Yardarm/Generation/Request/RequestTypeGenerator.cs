@@ -65,7 +65,7 @@ namespace Yardarm.Generation.Request
             declaration = declaration.AddMembers(
                 GenerateParameterProperties(className)
                     .Concat(MemberGenerators
-                        .SelectMany(p => p.Generate(Element, null)))
+                        .Select(p => p.Generate(Element, null)))
                     .ToArray());
 
             yield return declaration;

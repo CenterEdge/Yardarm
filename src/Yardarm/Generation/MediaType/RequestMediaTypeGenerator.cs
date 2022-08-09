@@ -22,11 +22,11 @@ namespace Yardarm.Generation.MediaType
 
         protected IRequestsNamespace RequestsNamespace { get; }
         protected ISerializerSelector SerializerSelector { get; }
-        protected IBuildContentMethodGenerator BuildContentMethodGenerator { get; }
+        protected IList<IRequestMemberGenerator> MemberGenerators { get; }
 
         public RequestMediaTypeGenerator(ILocatedOpenApiElement<OpenApiMediaType> mediaTypeElement,
             GenerationContext context, ITypeGenerator parent, IRequestsNamespace requestsNamespace,
-            ISerializerSelector serializerSelector, IBuildContentMethodGenerator buildContentMethodGenerator)
+            ISerializerSelector serializerSelector, IList<IRequestMemberGenerator> memberGenerators)
             : base(mediaTypeElement, context, parent)
         {
             if (parent == null)
@@ -36,8 +36,8 @@ namespace Yardarm.Generation.MediaType
 
             RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
             SerializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
-            BuildContentMethodGenerator = buildContentMethodGenerator ??
-                                          throw new ArgumentNullException(nameof(buildContentMethodGenerator));
+            MemberGenerators = memberGenerators ??
+                               throw new ArgumentNullException(nameof(memberGenerators));
 
             RequestTypeGenerator = FindParentRequestTypeGenerator(parent)
                                    ?? throw new InvalidOperationException(
@@ -109,7 +109,8 @@ namespace Yardarm.Generation.MediaType
             }
 
             yield return declaration.AddMembers(
-                BuildContentMethodGenerator.Generate(RequestTypeGenerator.Element, Element));
+                MemberGenerators.SelectMany(p => p.Generate(RequestTypeGenerator.Element, Element))
+                    .ToArray());
         }
 
         protected virtual PropertyDeclarationSyntax CreateBodyPropertyDeclaration(ILocatedOpenApiElement<OpenApiSchema> schema)

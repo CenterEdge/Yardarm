@@ -33,7 +33,7 @@ namespace RootNamespace.Serialization
         }
 
         public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            HttpContent content)
+            HttpContent content, ISerializationData? serializationData = null)
         {
             string? mediaType = content.Headers.ContentType?.MediaType;
 
@@ -42,18 +42,18 @@ namespace RootNamespace.Serialization
                 throw new UnknownMediaTypeException(mediaType, content);
             }
 
-            return typeSerializer.DeserializeAsync<T>(content);
+            return typeSerializer.DeserializeAsync<T>(content, serializationData);
         }
 
         public static HttpContent Serialize<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            T value, string mediaType)
+            T value, string mediaType, ISerializationData? serializationData = null)
         {
             if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
             {
                 throw new UnknownMediaTypeException(mediaType);
             }
 
-            return typeSerializer.Serialize(value, mediaType);
+            return typeSerializer.Serialize(value, mediaType, serializationData);
         }
     }
 }

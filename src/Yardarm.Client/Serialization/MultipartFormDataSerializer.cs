@@ -42,7 +42,7 @@ namespace RootNamespace.Serialization
         private void SerializeProperty(MultipartFormDataContent content,
             MultipartFormDataSerializationData serializationData, object? value, PropertyInfo property)
         {
-            if (!serializationData.Encoding.TryGetValue(property.Name, out MultipartEncoding? encoding))
+            if (!serializationData.TryGetEncoding(property.Name, out MultipartEncoding? encoding))
             {
                 // All properties should have a provided encoding
                 return;

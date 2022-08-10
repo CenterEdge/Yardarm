@@ -32,8 +32,6 @@ namespace Yardarm.Generation.Request
                 yield break;
             }
 
-            // TODO: Add handling for specific media types
-
             // Default behavior is to return null
             yield return PropertyDeclaration(
                 default,

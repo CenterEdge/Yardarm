@@ -11,6 +11,12 @@ namespace RootNamespace.Serialization
     {
         public static string[] SupportedMediaTypes => new[] {MediaTypeNames.Application.Octet};
 
+        public static Type[] SupportedSchemaTypes => new[]
+        {
+            typeof(Stream),
+            typeof(byte[])
+        };
+
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData)
         {
             HttpContent content = value switch

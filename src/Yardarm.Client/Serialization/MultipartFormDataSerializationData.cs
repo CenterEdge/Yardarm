@@ -8,34 +8,31 @@ namespace RootNamespace.Serialization
     /// <summary>
     /// Provides <see cref="ISerializationData"/> for the <see cref="MultipartFormDataSerializer"/>.
     /// </summary>
-    public class MultipartFormDataSerializationData : ISerializationData
+    /// <typeparam name="T">Type of schema to be serialized.</typeparam>
+    public class MultipartFormDataSerializationData<T> : ISerializationData
     {
         /// <summary>
-        /// <see cref="MultipartEncoding"/> settings for each property of the schema, keyed by property name.
+        /// <see cref="MultipartPropertyInfo{T}"/> settings for each property of the schema, keyed by property name.
         /// </summary>
-        private readonly Dictionary<string, MultipartEncoding> _encodings;
+        private readonly Dictionary<string, MultipartPropertyInfo<T>> _properties;
 
-        public MultipartFormDataSerializationData(params (string key, MultipartEncoding encoding)[] encodings)
-        : this(encodings?.ToDictionary(static p => p.key, static p => p.encoding)
-            ?? throw new ArgumentNullException(nameof(encodings)))
-        {
-        }
+        public IEnumerable<MultipartPropertyInfo<T>> Properties => _properties.Values;
 
-        public MultipartFormDataSerializationData(Dictionary<string, MultipartEncoding> encodings)
+        public MultipartFormDataSerializationData(params MultipartPropertyInfo<T>[] properties)
         {
 #if NET6_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(encodings);
+            ArgumentNullException.ThrowIfNull(properties);
 #else
-            if (encodings is null)
+            if (properties is null)
             {
-                throw new ArgumentNullException(nameof(encodings));
+                throw new ArgumentNullException(nameof(properties));
             }
 #endif
 
-            _encodings = encodings;
+            _properties = properties.ToDictionary(static p => p.PropertyName);
         }
 
-        public bool TryGetEncoding(string propertyKey, [NotNullWhen(true)] out MultipartEncoding? encoding) =>
-            _encodings.TryGetValue(propertyKey, out encoding);
+        public bool TryGetProperty(string propertyKey, [NotNullWhen(true)] out MultipartPropertyInfo<T>? encoding) =>
+            _properties.TryGetValue(propertyKey, out encoding);
     }
 }

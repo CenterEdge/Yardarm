@@ -10,14 +10,14 @@ namespace Yardarm.Names
         NameSyntax ISerializationData { get; }
         NameSyntax ITypeSerializer { get; }
         NameSyntax ITypeSerializerRegistry { get; }
-        NameSyntax MultipartEncoding { get; }
-        NameSyntax MultipartFormDataSerializationData { get; }
         NameSyntax MultipartFormDataSerializer { get; }
-        NameSyntax MultipartPropertyAttribute { get; }
         NameSyntax PathSegmentStyle { get; }
         NameSyntax PathSegmentSerializer { get; }
         ExpressionSyntax PathSegmentSerializerInstance { get; }
         NameSyntax TypeSerializerRegistryExtensions { get; }
         NameSyntax UnknownMediaTypeException { get; }
+
+        NameSyntax MultipartFormDataSerializationData(TypeSyntax type);
+        NameSyntax MultipartPropertyInfo(TypeSyntax type);
     }
 }

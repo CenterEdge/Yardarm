@@ -66,7 +66,7 @@ namespace Yardarm.Enrichment.Responses
             // Declare values variable to hold TryGetValue out results
             yield return LocalDeclarationStatement(VariableDeclaration(
                     WellKnownTypes.System.Collections.Generic.IEnumerableT.Name(
-                        PredefinedType(Token(SyntaxKind.StringKeyword))))
+                        PredefinedType(Token(SyntaxKind.StringKeyword))).MakeNullable())
                 .AddVariables(VariableDeclarator("values")));
 
             NameSyntax valuesName = IdentifierName("values");

@@ -29,7 +29,8 @@ namespace Yardarm.Enrichment.Compilation
         {
             typeof(VersionAssemblyInfoEnricher),
             typeof(SyntaxTreeCompilationEnricher),
-            typeof(DefaultTypeSerializersEnricher)
+            typeof(DefaultTypeSerializersEnricher),
+            typeof(OpenApiCompilationEnricher)
         };
 
         public FormatCompilationEnricher(YardarmGenerationSettings settings,
@@ -54,13 +55,17 @@ namespace Yardarm.Enrichment.Compilation
             var stopwatch = Stopwatch.StartNew();
 
             using var workspace = new AdhocWorkspace();
-            Project project = workspace
+            var solution = workspace
                 .AddSolution(
                     SolutionInfo.Create(
                         SolutionId.CreateNewId(_settings.AssemblyName),
-                        VersionStamp.Default))
-                .AddProject(_settings.AssemblyName, _settings.AssemblyName + ".dll",
+                        VersionStamp.Default));
+
+            Project project =
+                solution.AddProject(_settings.AssemblyName, _settings.AssemblyName + ".dll",
                     LanguageNames.CSharp);
+
+            workspace.TryApplyChanges(solution);
 
             // Exclude resource files (already formatted) or files with no path (won't be embedded)
             IEnumerable<SyntaxTree> treesToBeFormatted = target.SyntaxTrees
@@ -73,9 +78,11 @@ namespace Yardarm.Enrichment.Compilation
                 async (syntaxTree, localCt) =>
                 {
                     SyntaxNode root = await syntaxTree.GetRootAsync(localCt);
+
                     Document document = project.AddDocument(Guid.NewGuid().ToString(), root);
 
-                    document = await Formatter.FormatAsync(document, cancellationToken: localCt);
+                    document = await Formatter.FormatAsync(document, solution.Options, cancellationToken);
+
                     SyntaxNode? newRoot = await document.GetSyntaxRootAsync(localCt);
 
                     if (newRoot is not null && newRoot != root)

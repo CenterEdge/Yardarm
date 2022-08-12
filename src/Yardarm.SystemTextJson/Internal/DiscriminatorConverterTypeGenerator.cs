@@ -103,7 +103,8 @@ namespace Yardarm.SystemTextJson.Internal
                     InitializerExpression(SyntaxKind.ArrayInitializerExpression,
                         SeparatedList(propertyName.Select(p =>
                             (ExpressionSyntax)LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(p))))))),
-                null);
+                null,
+                Token(SyntaxKind.SemicolonToken));
         }
 
         private MethodDeclarationSyntax GenerateCanConvert(TypeSyntax schemaType)
@@ -132,7 +133,8 @@ namespace Yardarm.SystemTextJson.Internal
                         null))),
                 default,
                 null,
-                expressionBody);
+                expressionBody,
+                Token(SyntaxKind.SemicolonToken));
         }
 
         private MethodDeclarationSyntax GenerateRead(TypeSyntax schemaType)

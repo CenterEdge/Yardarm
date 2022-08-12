@@ -47,7 +47,8 @@ namespace Yardarm.Generation.Request
                 methodDeclaration = methodDeclaration
                     .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
                     .WithExpressionBody(ArrowExpressionClause(
-                        LiteralExpression(SyntaxKind.NullLiteralExpression)));
+                        LiteralExpression(SyntaxKind.NullLiteralExpression)))
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
             }
             else
             {

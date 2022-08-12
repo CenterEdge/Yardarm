@@ -54,7 +54,8 @@ namespace Yardarm.Generation.Request.Internal
             var buildContentMethod = _buildContentMethod
                 .WithModifiers(TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)))
                 .WithExpressionBody(ArrowExpressionClause(
-                    IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)));
+                    IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)))
+                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
 
             declaration = declaration.AddMembers(new MemberDeclarationSyntax[]
             {

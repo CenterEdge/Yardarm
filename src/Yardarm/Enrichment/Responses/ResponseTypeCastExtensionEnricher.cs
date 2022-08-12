@@ -81,7 +81,8 @@ namespace Yardarm.Enrichment.Responses
                             ThrowExpression(ObjectCreationExpression(_responsesNamespace.StatusCodeMismatchException)
                                 .AddArgumentListArguments(
                                     Argument(IdentifierName("response")),
-                                    Argument(TypeOfExpression(typeName)))))));
+                                    Argument(TypeOfExpression(typeName)))))))
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
             }
         }
     }

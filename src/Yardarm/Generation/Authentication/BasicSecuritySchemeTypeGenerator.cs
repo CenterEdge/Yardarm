@@ -47,7 +47,8 @@ namespace Yardarm.Generation.Authentication
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(UsernameFieldName))),
+                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(UsernameFieldName)))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                     AccessorDeclaration(SyntaxKind.SetAccessorDeclaration, Block(
                         ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                             IdentifierName(UsernameFieldName),
@@ -60,7 +61,8 @@ namespace Yardarm.Generation.Authentication
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(PasswordFieldName))),
+                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(PasswordFieldName)))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                     AccessorDeclaration(SyntaxKind.SetAccessorDeclaration, Block(
                         ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                             IdentifierName(PasswordFieldName),

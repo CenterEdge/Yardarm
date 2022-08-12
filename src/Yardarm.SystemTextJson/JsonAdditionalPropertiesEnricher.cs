@@ -78,7 +78,8 @@ namespace Yardarm.SystemTextJson
                 .WithAccessorList(AccessorList(property.AccessorList!.Accessors.Add(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration))))
                 // Add the JsonExtensionData attribute
                 .AddAttributeLists(AttributeList(SingletonSeparatedList(
-                Attribute(SystemTextJsonTypes.Serialization.JsonExtensionDataAttributeName))));
+                Attribute(SystemTextJsonTypes.Serialization.JsonExtensionDataAttributeName)))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
         }
     }
 }

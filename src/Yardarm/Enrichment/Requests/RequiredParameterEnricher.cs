@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
@@ -28,7 +29,8 @@ namespace Yardarm.Enrichment.Requests
 
             syntax = syntax
                 .AddAttributeLists(AttributeList().AddAttributes(
-                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)));
+                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
 
             return syntax;
         }

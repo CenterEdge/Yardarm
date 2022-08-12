@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Helpers;
 
@@ -14,6 +15,7 @@ namespace Yardarm.Enrichment.Compilation
                             SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(".NETStandard,Version=v2.0")),
                             SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(""))
                                 .WithNameEquals(SyntaxFactory.NameEquals("FrameworkDisplayName"))))
-                    .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword))));
+                    .WithTarget(SyntaxFactory.AttributeTargetSpecifier(SyntaxFactory.Token(SyntaxKind.AssemblyKeyword)))
+                    .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
     }
 }

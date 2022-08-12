@@ -38,7 +38,8 @@ namespace Yardarm.NewtonsoftJson
                         EqualsValueClause(ObjectCreationExpression(_backingFieldType))))))
             .AddModifiers(Token(SyntaxKind.PrivateKeyword), Token(SyntaxKind.ReadOnlyKeyword))
             .WithAttributeLists(SingletonList(AttributeList(SingletonSeparatedList(
-                Attribute(NewtonsoftJsonTypes.JsonExtensionDataAttributeName)))));
+                Attribute(NewtonsoftJsonTypes.JsonExtensionDataAttributeName)))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed)));
 
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
 
@@ -92,14 +93,16 @@ namespace Yardarm.NewtonsoftJson
                 // Remove the old initializer
                 .WithInitializer(null)
                 // Prevent serialization
-                .AddAttributeLists(AttributeList(SingletonSeparatedList(Attribute(NewtonsoftJsonTypes.JsonIgnoreAttributeName))))
+                .AddAttributeLists(AttributeList(SingletonSeparatedList(Attribute(NewtonsoftJsonTypes.JsonIgnoreAttributeName)))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed))
                 // Provide an AdditionalPropertiesDictionary referencing the backing field
                 .WithExpressionBody(ArrowExpressionClause(
                     AssignmentExpression(SyntaxKind.CoalesceAssignmentExpression,
                         IdentifierName(WrapperFieldName),
                         ObjectCreationExpression(wrapperType)
                             .AddArgumentListArguments(
-                                Argument(IdentifierName(BackingFieldName))))));
+                                Argument(IdentifierName(BackingFieldName))))))
+                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
         }
     }
 }

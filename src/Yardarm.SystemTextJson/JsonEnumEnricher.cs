@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -23,7 +24,8 @@ namespace Yardarm.SystemTextJson
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                         SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName).AddArgumentListArguments(
                             SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(
-                                _jsonSerializationNamespace.JsonStringEnumConverter(SyntaxFactory.IdentifierName(target.Identifier)))))))
+                                _jsonSerializationNamespace.JsonStringEnumConverter(SyntaxFactory.IdentifierName(target.Identifier))))))
+                        .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed))
                 : target;
     }
 }

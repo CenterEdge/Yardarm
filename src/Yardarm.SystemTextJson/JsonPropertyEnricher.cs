@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -23,7 +24,8 @@ namespace Yardarm.SystemTextJson
 
             return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                 SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonPropertyNameAttributeName).AddArgumentListArguments(
-                    SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
+                    SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key))))
+                .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
         }
     }
 }

@@ -15,9 +15,6 @@ namespace Yardarm.Generation.Request
 {
     public class RequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
     {
-        public static IdentifierNameSyntax SerializationInfoPropertyName { get; } =
-            IdentifierName("SerializationInfo");
-
         protected IMediaTypeSelector MediaTypeSelector { get; }
         protected IList<IRequestMemberGenerator> MemberGenerators { get; }
         protected ISerializerSelector SerializerSelector { get; }

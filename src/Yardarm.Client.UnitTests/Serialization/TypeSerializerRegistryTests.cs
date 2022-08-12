@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -42,6 +44,61 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             registry.Get("text/plain").Should().BeOfType<RegistryConstructorSerializer>()
                 .Subject.Registry.Should().BeSameAs(registry);
+        }
+
+        #endregion
+
+        #region Get By Schema Type
+
+        [Fact]
+        public void GetBySchemaType_ExactMatch_Success()
+        {
+            // Arrange
+
+            var registry = new TypeSerializerRegistry();
+
+            // Act
+
+            registry.Add<RegistryConstructorSerializer>(null, new[] { typeof(Stream) });
+
+            // Assert
+
+            registry.Get(typeof(Stream)).Should().BeOfType<RegistryConstructorSerializer>()
+                .Subject.Registry.Should().BeSameAs(registry);
+        }
+
+        [Fact]
+        public void GetBySchemaType_InheritedClassMatch_Success()
+        {
+            // Arrange
+
+            var registry = new TypeSerializerRegistry();
+
+            // Act
+
+            registry.Add<RegistryConstructorSerializer>(null, new[] { typeof(Stream) });
+
+            // Assert
+
+            registry.Get(typeof(MemoryStream)).Should().BeOfType<RegistryConstructorSerializer>()
+                .Subject.Registry.Should().BeSameAs(registry);
+        }
+
+        [Fact]
+        public void GetBySchemaType_NoMatch_KeyNotFound()
+        {
+            // Arrange
+
+            var registry = new TypeSerializerRegistry();
+
+            // Act
+
+            registry.Add<RegistryConstructorSerializer>(null, new[] { typeof(Stream) });
+
+            // Assert
+
+            Action action = () => registry.Get(typeof(object));
+            action.Should().Throw<KeyNotFoundException>();
         }
 
         #endregion

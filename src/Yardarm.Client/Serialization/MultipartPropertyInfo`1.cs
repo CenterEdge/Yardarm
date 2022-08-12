@@ -39,15 +39,12 @@ namespace RootNamespace.Serialization
         public HttpContent Serialize(ITypeSerializerRegistry typeSerializerRegistry, T value)
         {
             string mediaType = MediaTypes.First();
-            if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? serializer))
-            {
-                throw new UnknownMediaTypeException(mediaType);
-            }
 
-            return Serialize(serializer, mediaType, value);
+            return Serialize(typeSerializerRegistry, mediaType, value);
         }
 
-        protected abstract HttpContent Serialize(ITypeSerializer serializer, string mediaType, T value);
+        protected abstract HttpContent Serialize(ITypeSerializerRegistry typeSerializerRegistry,
+            string mediaType, T value);
 
         public static MultipartPropertyInfo<T> Create<TProperty>(
             Func<T, TProperty> propertyGetter, string propertyName, params string[] mediaTypes) =>

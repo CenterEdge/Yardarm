@@ -29,7 +29,8 @@ namespace RootNamespace.Serialization
             _propertyGetter = propertyGetter;
         }
 
-        protected override HttpContent Serialize(ITypeSerializer serializer, string mediaType, T value) =>
-            serializer.Serialize(_propertyGetter(value), mediaType);
+        protected override HttpContent Serialize(ITypeSerializerRegistry typeSerializerRegistry,
+            string mediaType, T value) =>
+            typeSerializerRegistry.Serialize(_propertyGetter(value), mediaType);
     }
 }

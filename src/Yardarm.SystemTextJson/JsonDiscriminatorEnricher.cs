@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -37,7 +38,8 @@ namespace Yardarm.SystemTextJson
             var attribute = Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
                 AttributeArgumentList(SingletonSeparatedList(AttributeArgument(TypeOfExpression(converter.TypeInfo.Name)))));
 
-            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute)));
+            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
         }
     }
 }

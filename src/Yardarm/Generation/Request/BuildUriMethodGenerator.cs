@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -91,8 +92,8 @@ namespace Yardarm.Generation.Request
 
             yield return GenerateHeader(operation)
                 .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
-                .WithExpressionBody(ArrowExpressionClause(
-                    pathExpression));
+                .WithExpressionBody(ArrowExpressionClause(pathExpression))
+                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
         }
 
         public static InvocationExpressionSyntax InvokeBuildUri(ExpressionSyntax requestInstance) =>

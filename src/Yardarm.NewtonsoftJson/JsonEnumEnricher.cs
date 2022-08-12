@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -14,7 +15,8 @@ namespace Yardarm.NewtonsoftJson
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                         SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(
-                            SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(NewtonsoftJsonTypes.StringEnumConverterName)))))
+                            SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(NewtonsoftJsonTypes.StringEnumConverterName))))
+                        .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed))
                 : target;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Any;
@@ -64,7 +65,8 @@ namespace Yardarm.Generation.Schema
 
             return SyntaxFactory.EnumMemberDeclaration(memberName)
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                    CreateEnumMemberAttribute(stringPrimitive.Value)));
+                    CreateEnumMemberAttribute(stringPrimitive.Value))
+                    .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
         }
 
         protected static AttributeSyntax CreateEnumMemberAttribute(string value) =>

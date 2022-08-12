@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -74,7 +75,8 @@ namespace Yardarm.NewtonsoftJson
                 attribute = attribute.AddArgumentListArguments(SyntaxFactory.AttributeArgument(paramArray));
             }
 
-            return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(attribute));
+            return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(attribute)
+                .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
         }
     }
 }

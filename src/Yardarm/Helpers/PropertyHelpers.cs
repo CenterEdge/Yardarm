@@ -71,7 +71,8 @@ namespace Yardarm.Helpers
                     // Initialize to an empty string
 
                     property = property
-                        .WithInitializer(EqualsValueClause(SyntaxHelpers.StringLiteral("")));
+                        .WithInitializer(EqualsValueClause(SyntaxHelpers.StringLiteral("")))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
                 }
                 else if (!typeInfo.Type.IsAbstract && typeInfo.Type.GetMembers()
                     .Where(p => p.Kind == SymbolKind.Method && p.Name == ".ctor")
@@ -81,7 +82,8 @@ namespace Yardarm.Helpers
                     // Build a default object using the default constructor
 
                     property = property
-                        .WithInitializer(EqualsValueClause(ObjectCreationExpression(property.Type)));
+                        .WithInitializer(EqualsValueClause(ObjectCreationExpression(property.Type)))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
                 }
                 else
                 {

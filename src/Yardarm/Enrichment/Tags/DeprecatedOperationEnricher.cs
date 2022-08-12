@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Helpers;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -20,7 +21,8 @@ namespace Yardarm.Enrichment.Tags
             target.AddAttributeLists(AttributeList(SingletonSeparatedList(
                 Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
                     AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
-                        SyntaxHelpers.StringLiteral($"Operation {operationId} has been marked deprecated."))))))));
+                        SyntaxHelpers.StringLiteral($"Operation {operationId} has been marked deprecated.")))))))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
 
     }
 }

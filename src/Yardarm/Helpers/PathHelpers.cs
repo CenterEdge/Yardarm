@@ -16,6 +16,7 @@ namespace Yardarm.Helpers
 
             s_invalidPathChars.Add('{');
             s_invalidPathChars.Add('}');
+            s_invalidPathChars.Add(':');
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -46,6 +47,7 @@ namespace Yardarm.SystemTextJson
                         AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
                             NameEquals(IdentifierName("Condition")),
                             null,
-                            SystemTextJsonTypes.Serialization.JsonIgnoreCondition.WhenWritingNull)))))));
+                            SystemTextJsonTypes.Serialization.JsonIgnoreCondition.WhenWritingNull))))))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
     }
 }

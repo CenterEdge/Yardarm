@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
@@ -44,7 +45,8 @@ namespace Yardarm.NewtonsoftJson
                     NewtonsoftJsonTypes.NullValueHandling.Ignore));
             }
 
-            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute)));
+            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
         }
     }
 }

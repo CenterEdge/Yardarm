@@ -13,9 +13,10 @@ namespace RootNamespace.Serialization
         private readonly Func<T, TProperty> _propertyGetter;
 
         public MultipartPropertyInfo(Func<T, TProperty> propertyGetter,
+            Func<T, string?> contentTypeGetter,
             string propertyName,
             params string[] mediaTypes)
-            : base(propertyName, mediaTypes)
+            : base(contentTypeGetter, propertyName, mediaTypes)
         {
 #if NET6_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(propertyGetter);

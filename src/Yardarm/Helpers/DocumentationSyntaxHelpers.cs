@@ -69,6 +69,6 @@ namespace Yardarm.Helpers
         /// Builds a new line with leading comment characters for the next line
         /// </summary>
         /// <returns></returns>
-        private static XmlNodeSyntax InteriorNewLine() => XmlText(XmlTextNewLine(Environment.NewLine, true));
+        public static XmlNodeSyntax InteriorNewLine() => XmlText(XmlTextNewLine(Environment.NewLine, true));
     }
 }

@@ -5,18 +5,24 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Request;
 using Yardarm.Helpers;
 using Yardarm.Names;
-using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Requests
 {
     public class RequestMultipartEncodingEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiMediaType>
     {
+        public Type[] ExecuteBefore { get; } =
+        {
+            // Make sure this executes before the Body property is marked as nullable
+            typeof(RequiredPropertyEnricher)
+        };
+
         // Default encodings when the spec doesn't specify the encoding
         private static readonly ArgumentSyntax[] PlainTextEncoding =
         {
@@ -54,12 +60,67 @@ namespace Yardarm.Enrichment.Requests
             OpenApiEnrichmentContext<OpenApiMediaType> context) =>
             IsMultipartEncoding(context.LocatedElement.Key)
             && target.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator)
-                ? AddSerializationData(target, context)
+                ? AddSerializationData(AddBodyClass(target, context, out TypeSyntax? bodyType), context, bodyType)
                 : target;
 
-        private ClassDeclarationSyntax AddSerializationData(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiMediaType> element)
+        private ClassDeclarationSyntax AddBodyClass(ClassDeclarationSyntax target,
+            OpenApiEnrichmentContext<OpenApiMediaType> context,
+            out TypeSyntax? bodyType)
         {
+            var bodyProperty = target.Members
+                .OfType<PropertyDeclarationSyntax>()
+                .FirstOrDefault(p => p.Identifier.ValueText == RequestMediaTypeGenerator.BodyPropertyName);
+            if (bodyProperty is null)
+            {
+                bodyType = null;
+                return target;
+            }
+
+            var bodyClass = ClassDeclaration(
+                default,
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier("MultipartBody"),
+                null,
+                BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(bodyProperty.Type))),
+                default,
+                List(GetProperties(context.Element).Select(property =>
+                {
+                    return (MemberDeclarationSyntax)PropertyDeclaration(
+                            default,
+                            TokenList(Token(SyntaxKind.PublicKeyword)),
+                            PredefinedType(Token(SyntaxKind.StringKeyword)).MakeNullable(),
+                            null,
+                            Identifier(_propertyNameFormatter.Format(property.Key + "-ContentType")),
+                            AccessorList(List(new[]
+                            {
+                                AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                                AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
+                            })))
+                        .WithLeadingTrivia(
+                            DocumentationSyntaxHelpers.BuildXmlCommentTrivia(XmlSummaryElement(
+                                DocumentationSyntaxHelpers.InteriorNewLine(),
+                                XmlText(XmlTextLiteral("Optionally supplies the Content-Type for ")),
+                                XmlSeeElement(NameMemberCref(IdentifierName(_propertyNameFormatter.Format(property.Key)))),
+                                XmlText(XmlTextLiteral(".")),
+                                DocumentationSyntaxHelpers.InteriorNewLine())));
+                })));
+
+            bodyType = IdentifierName(bodyClass.Identifier);
+            return target
+                .ReplaceNode(bodyProperty, bodyProperty.WithType(bodyType))
+                .AddMembers(bodyClass);
+        }
+
+        private ClassDeclarationSyntax AddSerializationData(ClassDeclarationSyntax target,
+            OpenApiEnrichmentContext<OpenApiMediaType> element, TypeSyntax? bodyType)
+        {
+            if (bodyType is null)
+            {
+                return target;
+            }
+
             var serializationDataProperty = target.Members
                 .OfType<PropertyDeclarationSyntax>()
                 .FirstOrDefault(p =>
@@ -70,18 +131,15 @@ namespace Yardarm.Enrichment.Requests
                 return target;
             }
 
-            var schemaType = _schemaRegistry.Get(element.LocatedElement.GetSchemaOrDefault())
-                .TypeInfo.Name;
-
             // Build an initializer
             var initializer = ObjectCreationExpression(
-                _serializationNamespace.MultipartFormDataSerializationData(schemaType),
+                _serializationNamespace.MultipartFormDataSerializationData(bodyType),
                 ArgumentList(SeparatedList(
                     GetProperties(element.Element).Select(p =>
                     {
                         element.Element.Encoding.TryGetValue(p.Key, out OpenApiEncoding? encoding);
 
-                        return CreateArgument(schemaType, p.Key, p.Value, encoding)
+                        return CreateArgument(bodyType, p.Key, p.Value, encoding)
                             .WithLeadingTrivia(ElasticCarriageReturnLineFeed);
                     }))),
                 null);
@@ -125,6 +183,12 @@ namespace Yardarm.Enrichment.Requests
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         IdentifierName("p"),
                         IdentifierName(_propertyNameFormatter.Format(propertyName))))),
+                Argument(SimpleLambdaExpression(
+                    Parameter(Identifier("p")),
+                    null,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName("p"),
+                        IdentifierName(_propertyNameFormatter.Format(propertyName + "-ContentType"))))),
                 Argument(SyntaxHelpers.StringLiteral(propertyName))
             }.Concat(mediaTypes);
 

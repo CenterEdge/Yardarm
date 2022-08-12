@@ -19,11 +19,6 @@ namespace Yardarm.Enrichment.Schema
             OpenApiEnrichmentContext<OpenApiSchema> context)
         {
             var feature = _context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
-            if (feature == null)
-            {
-                return target;
-            }
-
             var additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement);
 
             if (target.BaseList != null)
@@ -32,7 +27,10 @@ namespace Yardarm.Enrichment.Schema
                     target.BaseList.Types.Any(currentType => !currentType.IsEquivalentTo(additionalBaseType)));
             }
 
-            return target.AddBaseListTypes(additionalBaseTypes.ToArray());
+            var arr = additionalBaseTypes.ToArray();
+            return arr.Length > 0
+                ? target.AddBaseListTypes(arr)
+                : target;
         }
     }
 }

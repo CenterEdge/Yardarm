@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq.Expressions;
 using System.Net.Http;
 
 namespace RootNamespace.Serialization
@@ -13,22 +10,26 @@ namespace RootNamespace.Serialization
     /// <typeparam name="TProperty">Type of the property to be serialized.</typeparam>
     internal class MultipartPropertyInfo<T, TProperty> : MultipartPropertyInfo<T>
     {
+        private readonly Func<T, TProperty> _propertyGetter;
+
         public MultipartPropertyInfo(Func<T, TProperty> propertyGetter,
             string propertyName,
             params string[] mediaTypes)
-            : base(CreateContentSerializer(propertyGetter), propertyName, mediaTypes)
+            : base(propertyName, mediaTypes)
         {
-        }
-
-        private static Func<ITypeSerializer, string, T, HttpContent> CreateContentSerializer(
-            Func<T, TProperty> propertyGetter)
-        {
-            HttpContent ContentSerializer(ITypeSerializer typeSerializer, string mediaType, T value)
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(propertyGetter);
+#else
+            if (propertyGetter is null)
             {
-                return typeSerializer.Serialize(propertyGetter(value), mediaType);
+                throw new ArgumentNullException(nameof(propertyGetter));
             }
+#endif
 
-            return ContentSerializer;
+            _propertyGetter = propertyGetter;
         }
+
+        protected override HttpContent Serialize(ITypeSerializer serializer, string mediaType, T value) =>
+            serializer.Serialize(_propertyGetter(value), mediaType);
     }
 }

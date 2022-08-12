@@ -12,28 +12,19 @@ namespace RootNamespace.Serialization
     /// <typeparam name="T">Type of schema to be serialized.</typeparam>
     public abstract class MultipartPropertyInfo<T>
     {
-        private readonly Func<ITypeSerializer, string, T, HttpContent> _contentSerializer;
-
         public string PropertyName { get; }
 
         public IReadOnlyCollection<string> MediaTypes { get; }
 
-        protected MultipartPropertyInfo(Func<ITypeSerializer, string, T, HttpContent> contentSerializer,
-            string propertyName,
-            params string[] mediaTypes)
+        protected MultipartPropertyInfo(string propertyName, params string[] mediaTypes)
         {
 #if NET6_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(propertyName);
-            ArgumentNullException.ThrowIfNull(contentSerializer);
             ArgumentNullException.ThrowIfNull(mediaTypes);
 #else
             if (propertyName is null)
             {
                 throw new ArgumentNullException(nameof(propertyName));
-            }
-            if (contentSerializer is null)
-            {
-                throw new ArgumentNullException(nameof(contentSerializer));
             }
             if (mediaTypes is null)
             {
@@ -42,7 +33,6 @@ namespace RootNamespace.Serialization
 #endif
 
             PropertyName = propertyName;
-            _contentSerializer = contentSerializer;
             MediaTypes = new ReadOnlyCollection<string>(mediaTypes);
         }
 
@@ -54,8 +44,10 @@ namespace RootNamespace.Serialization
                 throw new UnknownMediaTypeException(mediaType);
             }
 
-            return _contentSerializer(serializer, mediaType, value);
+            return Serialize(serializer, mediaType, value);
         }
+
+        protected abstract HttpContent Serialize(ITypeSerializer serializer, string mediaType, T value);
 
         public static MultipartPropertyInfo<T> Create<TProperty>(
             Func<T, TProperty> propertyGetter, string propertyName, params string[] mediaTypes) =>

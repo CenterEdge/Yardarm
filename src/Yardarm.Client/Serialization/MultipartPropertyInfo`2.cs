@@ -8,15 +8,15 @@ namespace RootNamespace.Serialization
     /// </summary>
     /// <typeparam name="T">Type of schema to be serialized.</typeparam>
     /// <typeparam name="TProperty">Type of the property to be serialized.</typeparam>
-    internal class MultipartPropertyInfo<T, TProperty> : MultipartPropertyInfo<T>
+    internal sealed class MultipartPropertyInfo<T, TProperty> : MultipartPropertyInfo<T>
     {
         private readonly Func<T, TProperty> _propertyGetter;
 
         public MultipartPropertyInfo(Func<T, TProperty> propertyGetter,
-            Func<T, string?> contentTypeGetter,
+            Func<T, MultipartFieldDetails?> detailsGetter,
             string propertyName,
             params string[] mediaTypes)
-            : base(contentTypeGetter, propertyName, mediaTypes)
+            : base(detailsGetter, propertyName, mediaTypes)
         {
 #if NET6_0_OR_GREATER
             ArgumentNullException.ThrowIfNull(propertyGetter);

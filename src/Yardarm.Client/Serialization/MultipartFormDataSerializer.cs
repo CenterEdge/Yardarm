@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -24,9 +23,17 @@ namespace RootNamespace.Serialization
             {
                 foreach (MultipartPropertyInfo<T> property in serializationData.Properties)
                 {
-                    var propertyContent = property.Serialize(_typeSerializerRegistry, value);
+                    HttpContent propertyContent = property.Serialize(_typeSerializerRegistry, value);
 
-                    content.Add(propertyContent, property.PropertyName);
+                    string? filename = property.GetDetails(value)?.Filename;
+                    if (filename is null)
+                    {
+                        content.Add(propertyContent, property.PropertyName);
+                    }
+                    else
+                    {
+                        content.Add(propertyContent, property.PropertyName, filename);
+                    }
                 }
             }
 

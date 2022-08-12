@@ -88,20 +88,23 @@ namespace Yardarm.Enrichment.Requests
                     return (MemberDeclarationSyntax)PropertyDeclaration(
                             default,
                             TokenList(Token(SyntaxKind.PublicKeyword)),
-                            PredefinedType(Token(SyntaxKind.StringKeyword)).MakeNullable(),
+                            _serializationNamespace.MultipartFieldDetails.MakeNullable(),
                             null,
-                            Identifier(_propertyNameFormatter.Format(property.Key + "-ContentType")),
+                            Identifier(_propertyNameFormatter.Format(property.Key + "-Details")),
                             AccessorList(List(new[]
                             {
                                 AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                                     .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                                 AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                                     .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
-                            })))
+                            })),
+                            null,
+                            EqualsValueClause(ImplicitObjectCreationExpression()),
+                            Token(SyntaxKind.SemicolonToken))
                         .WithLeadingTrivia(
                             DocumentationSyntaxHelpers.BuildXmlCommentTrivia(XmlSummaryElement(
                                 DocumentationSyntaxHelpers.InteriorNewLine(),
-                                XmlText(XmlTextLiteral("Optionally supplies the Content-Type for ")),
+                                XmlText(XmlTextLiteral("Optionally supplies additional details for ")),
                                 XmlSeeElement(NameMemberCref(IdentifierName(_propertyNameFormatter.Format(property.Key)))),
                                 XmlText(XmlTextLiteral(".")),
                                 DocumentationSyntaxHelpers.InteriorNewLine())));
@@ -188,7 +191,7 @@ namespace Yardarm.Enrichment.Requests
                     null,
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         IdentifierName("p"),
-                        IdentifierName(_propertyNameFormatter.Format(propertyName + "-ContentType"))))),
+                        IdentifierName(_propertyNameFormatter.Format(propertyName + "-Details"))))),
                 Argument(SyntaxHelpers.StringLiteral(propertyName))
             }.Concat(mediaTypes);
 

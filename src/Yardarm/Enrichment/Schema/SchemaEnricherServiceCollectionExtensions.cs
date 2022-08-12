@@ -12,7 +12,6 @@ namespace Yardarm.Enrichment.Schema
                 .AddOpenApiSyntaxNodeEnricher<DocumentationPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<BaseTypeEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<AdditionalPropertiesEnricher>()
-                .AddOpenApiSyntaxNodeEnricher<MultipartPropertyEnricher>()
                 .AddSchemaEnrichersCore();
 
         public static IServiceCollection AddSchemaEnrichersCore(this IServiceCollection services)

@@ -14,10 +14,7 @@ namespace Yardarm.Names.Internal
         public NameSyntax ISerializationData { get; }
         public NameSyntax ITypeSerializer { get; }
         public NameSyntax ITypeSerializerRegistry { get; }
-        public NameSyntax MultipartEncoding { get; }
-        public NameSyntax MultipartFormDataSerializationData { get; }
         public NameSyntax MultipartFormDataSerializer { get; }
-        public NameSyntax MultipartPropertyAttribute { get; }
         public NameSyntax PathSegmentStyle { get; }
         public NameSyntax PathSegmentSerializer { get; }
         public ExpressionSyntax PathSegmentSerializerInstance { get; }
@@ -53,21 +50,9 @@ namespace Yardarm.Names.Internal
                 Name,
                 IdentifierName("ITypeSerializerRegistry"));
 
-            MultipartEncoding = QualifiedName(
-                Name,
-                IdentifierName("MultipartEncoding"));
-
-            MultipartFormDataSerializationData = QualifiedName(
-                Name,
-                IdentifierName("MultipartFormDataSerializationData"));
-
             MultipartFormDataSerializer = QualifiedName(
                 Name,
                 IdentifierName("MultipartFormDataSerializer"));
-
-            MultipartPropertyAttribute = QualifiedName(
-                Name,
-                IdentifierName("MultipartPropertyAttribute"));
 
             PathSegmentStyle = QualifiedName(
                 Name,
@@ -89,5 +74,17 @@ namespace Yardarm.Names.Internal
                 Name,
                 IdentifierName("UnknownMediaTypeException"));
         }
+
+        public NameSyntax MultipartFormDataSerializationData(TypeSyntax type) =>
+            QualifiedName(
+                Name,
+                GenericName(Identifier("MultipartFormDataSerializationData"),
+                    TypeArgumentList(SingletonSeparatedList(type))));
+
+        public NameSyntax MultipartPropertyInfo(TypeSyntax type) =>
+            QualifiedName(
+                Name,
+                GenericName(Identifier("MultipartPropertyInfo"),
+                    TypeArgumentList(SingletonSeparatedList(type))));
     }
 }

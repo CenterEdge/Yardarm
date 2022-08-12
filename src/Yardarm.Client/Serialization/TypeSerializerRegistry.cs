@@ -48,6 +48,7 @@ namespace RootNamespace.Serialization
         public static ITypeSerializerRegistry CreateDefaultRegistry() =>
             new TypeSerializerRegistry()
                 .Add<PlainTextSerializer>(PlainTextSerializer.SupportedMediaTypes)
-                .Add<MultipartFormDataSerializer>(MultipartFormDataSerializer.SupportedMediaTypes);
+                .Add<MultipartFormDataSerializer>(MultipartFormDataSerializer.SupportedMediaTypes)
+                .Add<BinaryStreamSerializer>(BinaryStreamSerializer.SupportedMediaTypes);
     }
 }

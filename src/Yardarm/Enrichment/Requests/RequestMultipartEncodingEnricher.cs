@@ -10,6 +10,7 @@ using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Request;
 using Yardarm.Helpers;
 using Yardarm.Names;
+using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Requests
@@ -33,23 +34,31 @@ namespace Yardarm.Enrichment.Requests
         };
 
         private readonly ISerializationNamespace _serializationNamespace;
+        private readonly ITypeGeneratorRegistry<OpenApiSchema> _schemaRegistry;
+        private readonly INameFormatter _propertyNameFormatter;
 
-        public RequestMultipartEncodingEnricher(ISerializationNamespace serializationNamespace)
+        public RequestMultipartEncodingEnricher(ISerializationNamespace serializationNamespace,
+            ITypeGeneratorRegistry<OpenApiSchema> schemaRegistry,
+            INameFormatterSelector nameFormatterSelector)
         {
             ArgumentNullException.ThrowIfNull(serializationNamespace);
+            ArgumentNullException.ThrowIfNull(schemaRegistry);
+            ArgumentNullException.ThrowIfNull(nameFormatterSelector);
 
             _serializationNamespace = serializationNamespace;
+            _schemaRegistry = schemaRegistry;
+            _propertyNameFormatter = nameFormatterSelector.GetFormatter(NameKind.Property);
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiMediaType> context) =>
             IsMultipartEncoding(context.LocatedElement.Key)
             && target.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator)
-                ? AddSerializationData(target, context.Element)
+                ? AddSerializationData(target, context)
                 : target;
 
         private ClassDeclarationSyntax AddSerializationData(ClassDeclarationSyntax target,
-            OpenApiMediaType element)
+            OpenApiEnrichmentContext<OpenApiMediaType> element)
         {
             var serializationDataProperty = target.Members
                 .OfType<PropertyDeclarationSyntax>()
@@ -61,15 +70,19 @@ namespace Yardarm.Enrichment.Requests
                 return target;
             }
 
+            var schemaType = _schemaRegistry.Get(element.LocatedElement.GetSchemaOrDefault())
+                .TypeInfo.Name;
+
             // Build an initializer
             var initializer = ObjectCreationExpression(
-                _serializationNamespace.MultipartFormDataSerializationData,
+                _serializationNamespace.MultipartFormDataSerializationData(schemaType),
                 ArgumentList(SeparatedList(
-                    GetProperties(element).Select(p =>
+                    GetProperties(element.Element).Select(p =>
                     {
-                        element.Encoding.TryGetValue(p.Key, out OpenApiEncoding? encoding);
+                        element.Element.Encoding.TryGetValue(p.Key, out OpenApiEncoding? encoding);
 
-                        return CreateArgument(p.Key, p.Value, encoding);
+                        return CreateArgument(schemaType, p.Key, p.Value, encoding)
+                            .WithLeadingTrivia(ElasticCarriageReturnLineFeed);
                     }))),
                 null);
 
@@ -90,7 +103,8 @@ namespace Yardarm.Enrichment.Requests
             return target.ReplaceNode(serializationDataProperty, newProperty);
         }
 
-        private ArgumentSyntax CreateArgument(string propertyName, OpenApiSchema propertySchema, OpenApiEncoding? encoding)
+        private ArgumentSyntax CreateArgument(TypeSyntax classIdentifier, string propertyName,
+            OpenApiSchema propertySchema, OpenApiEncoding? encoding)
         {
             var mediaTypes = encoding?.ContentType != null
                 ? GetMediaTypes(encoding.ContentType)
@@ -103,15 +117,22 @@ namespace Yardarm.Enrichment.Requests
                 mediaTypes = SelectDefaultMediaTypes(propertySchema);
             }
 
-            return Argument(TupleExpression(SeparatedList(
-                new[]
-                {
-                    Argument(SyntaxHelpers.StringLiteral(propertyName)),
-                    Argument(ObjectCreationExpression(
-                        _serializationNamespace.MultipartEncoding,
-                        ArgumentList(SeparatedList(mediaTypes)),
-                        null))
-                })));
+            var arguments = new[]
+            {
+                Argument(SimpleLambdaExpression(
+                    Parameter(Identifier("p")),
+                    null,
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName("p"),
+                        IdentifierName(_propertyNameFormatter.Format(propertyName))))),
+                Argument(SyntaxHelpers.StringLiteral(propertyName))
+            }.Concat(mediaTypes);
+
+            return Argument(InvocationExpression(
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    _serializationNamespace.MultipartPropertyInfo(classIdentifier),
+                    IdentifierName("Create")),
+                ArgumentList(SeparatedList(arguments))));
         }
 
         private static ArgumentSyntax[] SelectDefaultMediaTypes(OpenApiSchema schema) =>

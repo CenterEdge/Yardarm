@@ -10,7 +10,11 @@ namespace RootNamespace.Serialization.Json
 {
     public class JsonTypeSerializer : ITypeSerializer
     {
-        public static string[] SupportedMediaTypes => new [] { "application/json" };
+        public static string[] SupportedMediaTypes => new []
+        {
+            "application/json",
+            "application/json-patch+json"
+        };
 
         private readonly JsonSerializer _serializer;
 

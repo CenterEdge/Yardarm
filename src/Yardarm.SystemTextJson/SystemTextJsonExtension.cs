@@ -36,6 +36,12 @@ namespace Yardarm.SystemTextJson
                 serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
             ));
 
+            services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
+                ImmutableHashSet.Create(new SerializerMediaType("application/json-patch+json", 1.0)),
+                "JsonPatch",
+                serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
+            ));
+
             return services;
         }
     }

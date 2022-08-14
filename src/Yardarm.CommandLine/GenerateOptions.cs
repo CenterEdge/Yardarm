@@ -43,6 +43,12 @@ namespace Yardarm.CommandLine
         [Option("no-pdb", HelpText = "Suppress output of .pdb debug symbols", SetName = "dll")]
         public bool NoDebugSymbols { get; set; }
 
+        [Option("ref", HelpText = "Output reference assembly file", SetName = "dll")]
+        public string OutputReferenceAssembly { get; set; }
+
+        [Option("no-ref", HelpText = "Suppress output of the reference assembly file", SetName = "dll")]
+        public bool NoReferenceAssembly { get; set; }
+
         #endregion
 
         #region NuGet

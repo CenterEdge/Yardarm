@@ -202,11 +202,23 @@ namespace Yardarm.CommandLine
                         {
                             _options.OutputDebugSymbols = Path.Combine(directory, $"{_options.AssemblyName}.pdb");
                         }
+
+                        if (!_options.NoReferenceAssembly && string.IsNullOrEmpty(_options.OutputReferenceAssembly))
+                        {
+                            string refDirectory = Path.Combine(directory, "ref");
+                            if (!Directory.Exists(refDirectory))
+                            {
+                                Directory.CreateDirectory(refDirectory);
+                            }
+
+                            _options.OutputReferenceAssembly = Path.Combine(refDirectory,
+                                $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.dll");
+                        }
                     }
                     else
                     {
-                        var directory = Path.GetDirectoryName(_options.OutputPackageFile) ??
-                                        Directory.GetCurrentDirectory();
+                        string directory = Path.GetDirectoryName(_options.OutputPackageFile) ??
+                                           Directory.GetCurrentDirectory();
 
                         if (string.IsNullOrEmpty(_options.OutputXmlFile))
                         {
@@ -219,9 +231,21 @@ namespace Yardarm.CommandLine
                             _options.OutputDebugSymbols = Path.Combine(directory,
                                 $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.pdb");
                         }
+
+                        if (!_options.NoReferenceAssembly && string.IsNullOrEmpty(_options.OutputReferenceAssembly))
+                        {
+                            string refDirectory = Path.Combine(directory, "ref");
+                            if (!Directory.Exists(refDirectory))
+                            {
+                                Directory.CreateDirectory(refDirectory);
+                            }
+
+                            _options.OutputReferenceAssembly = Path.Combine(refDirectory,
+                                $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.dll");
+                        }
                     }
 
-                    var dllStream = File.Create(_options.OutputFile);
+                    var dllStream = File.Create(_options.OutputFile!);
                     streams.Add(dllStream);
                     settings.DllOutput = dllStream;
 
@@ -237,6 +261,13 @@ namespace Yardarm.CommandLine
                         var pdbStream = File.Create(_options.OutputDebugSymbols);
                         streams.Add(pdbStream);
                         settings.PdbOutput = pdbStream;
+                    }
+
+                    if (!_options.NoReferenceAssembly && !string.IsNullOrEmpty(_options.OutputReferenceAssembly))
+                    {
+                        var referenceAssemblyStream = File.Create(_options.OutputReferenceAssembly);
+                        streams.Add(referenceAssemblyStream);
+                        settings.ReferenceAssemblyOutput = referenceAssemblyStream;
                     }
                 }
                 else if (!string.IsNullOrEmpty(_options.OutputPackageFile))

@@ -97,6 +97,17 @@ the source code available to modern debuggers and decompilers.
 Note: To debug into a generated SDK in Visual Studio, be sure to uncheck Just My Code in the
 debugging options of Visual Studio.
 
+## Reference assemblies
+
+To improve build speed of SDK consumers, a reference assembly is created when:
+
+1. `--ref file.dll` is passed to specify a specific location for a reference assembly.
+2. `-o path/` is used to output to a directory. A `ref` subdirectory will be created for the reference assembly.
+3. `--nupkg` is  used to create a NuGet package. A reference assembly will be embedded in the package for each target framework.
+
+See [Reference Assemblies](https://docs.microsoft.com/en-us/dotnet/standard/assembly/reference-assemblies) for more
+information.
+
 ## A note on System.Text.Json support
 
 When using System.Text.Json, it is recommended that you target net6.0 at a minimum. Multi-targeting and including

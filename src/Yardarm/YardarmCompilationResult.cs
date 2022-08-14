@@ -14,16 +14,18 @@ namespace Yardarm
         internal Stream DllOutput { get; }
         internal Stream PdbOutput { get; }
         internal Stream XmlDocumentationOutput { get; }
+        internal Stream? ReferenceAssemblyOutput { get; }
         public ImmutableArray<Diagnostic> AdditionalDiagnostics { get; }
 
         internal YardarmCompilationResult(NuGetFramework targetFramework, EmitResult emitResult, Stream dllOutput, Stream pdbOutput,
-            Stream xmlDocumentationOutput, ImmutableArray<Diagnostic> additionalDiagnostics)
+            Stream xmlDocumentationOutput, Stream? referenceAssemblyOutput, ImmutableArray<Diagnostic> additionalDiagnostics)
         {
             TargetFramework = targetFramework;
             EmitResult = emitResult;
             DllOutput = dllOutput;
             PdbOutput = pdbOutput;
             XmlDocumentationOutput = xmlDocumentationOutput;
+            ReferenceAssemblyOutput = referenceAssemblyOutput;
             AdditionalDiagnostics = additionalDiagnostics;
         }
     }

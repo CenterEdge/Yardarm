@@ -31,7 +31,13 @@ namespace Yardarm.SystemTextJson
                 .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();
 
             services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
-                ImmutableHashSet.Create(new SerializerMediaType("application/json", 1.0)),
+                ImmutableHashSet.Create(
+                    new SerializerMediaType("application/json", 1.0),
+                    new SerializerMediaType("text/json", 0.9),
+                    // This is very low priority because we can't really use it for requests, since we don't know what the "*" should be.
+                    // However, we don't want to generate HttpContent-based types unnecessarily. Swashbuckle-generated OpenAPI specs like
+                    // to include this in the list of supported request bodies along with the other content types.
+                    new SerializerMediaType("application/*+json", 0)),
                 "Json",
                 serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
             ));

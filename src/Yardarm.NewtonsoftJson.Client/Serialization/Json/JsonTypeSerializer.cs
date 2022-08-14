@@ -13,6 +13,7 @@ namespace RootNamespace.Serialization.Json
         public static string[] SupportedMediaTypes => new []
         {
             "application/json",
+            "text/json",
             "application/json-patch+json"
         };
 

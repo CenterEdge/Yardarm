@@ -7,16 +7,14 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi.Models;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment.Compilation
 {
     public class OpenApiCompilationEnricher : ICompilationEnricher
     {
-        private static readonly MethodInfo _genericEnrichCompilationMethod = typeof(OpenApiCompilationEnricher)
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-            .Single(p => p.Name == nameof(Enrich) && p.IsGenericMethodDefinition &&
-                         p.GetParameters()[0].ParameterType == typeof(CSharpCompilation));
+        private static MethodInfo? s_genericEnrichCompilationMethod;
 
         private readonly IOpenApiElementRegistry _elementRegistry;
         private readonly IList<IOpenApiSyntaxNodeEnricher> _enrichers;
@@ -40,11 +38,15 @@ namespace Yardarm.Enrichment.Compilation
 
         private CSharpCompilation Enrich(CSharpCompilation compilation, IOpenApiSyntaxNodeEnricher enricher)
         {
+            var genericEnrichCompilationMethod = s_genericEnrichCompilationMethod ??=
+                ((Func<CSharpCompilation, IOpenApiSyntaxNodeEnricher<SyntaxNode, OpenApiSchema>, CSharpCompilation>)Enrich)
+                    .GetMethodInfo().GetGenericMethodDefinition();
+
             foreach (Type interfaceType in enricher.GetType().GetInterfaces()
                 .Where(p => p.IsGenericType && p.GetGenericTypeDefinition() == typeof(IOpenApiSyntaxNodeEnricher<,>)))
             {
                 var enrichMethod =
-                    _genericEnrichCompilationMethod.MakeGenericMethod(interfaceType.GetGenericArguments());
+                    genericEnrichCompilationMethod.MakeGenericMethod(interfaceType.GetGenericArguments());
 
                 compilation = (CSharpCompilation)enrichMethod.Invoke(this, new object[] {compilation, enricher})!;
             }

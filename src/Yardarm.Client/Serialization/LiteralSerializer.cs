@@ -10,15 +10,13 @@ namespace RootNamespace.Serialization
 {
     public class LiteralSerializer
     {
-        private static readonly MethodInfo _joinListMethod = typeof(LiteralSerializer)
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-            .Single(p => p.IsGenericMethodDefinition && p.Name == nameof(JoinList));
-
-        private static readonly MethodInfo _deserializeListMethod = typeof(LiteralSerializer)
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-            .Single(p => p.IsGenericMethodDefinition && p.Name == nameof(DeserializeList));
-
         public static LiteralSerializer Instance { get; } = new LiteralSerializer();
+
+        private static readonly MethodInfo s_joinListMethod =
+            ((Func<string, IEnumerable<string>, string>)Instance.JoinList<string>).GetMethodInfo().GetGenericMethodDefinition();
+
+        private static readonly MethodInfo s_deserializeListMethod =
+            ((Func<IEnumerable<string>, List<string>>)Instance.DeserializeList<string>).GetMethodInfo().GetGenericMethodDefinition();
 
         public string Serialize<T>(T value) =>
             value != null
@@ -36,14 +34,14 @@ namespace RootNamespace.Serialization
 
         public string JoinList(string separator, object list, Type itemType)
         {
-            MethodInfo joinList = _joinListMethod.MakeGenericMethod(itemType);
+            MethodInfo joinList = s_joinListMethod.MakeGenericMethod(itemType);
 
             return (string)joinList.Invoke(this, new object[] {separator, list})!;
         }
 
         public object DeserializeList(IEnumerable<string> values, Type itemType)
         {
-            MethodInfo deserializeList = _deserializeListMethod.MakeGenericMethod(itemType);
+            MethodInfo deserializeList = s_deserializeListMethod.MakeGenericMethod(itemType);
 
             return deserializeList.Invoke(this, new object[] {values})!;
         }

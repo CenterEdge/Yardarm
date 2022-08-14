@@ -8,7 +8,11 @@ namespace RootNamespace.Serialization
 {
     internal static class SerializationHelpers
     {
-        public static bool IsEnumerable(Type type,
+        public static bool IsEnumerable(
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            Type type,
             [NotNullWhen(true)] out Type? itemType)
         {
             itemType = null;

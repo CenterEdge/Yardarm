@@ -3,15 +3,15 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Schema;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Internal
 {
     internal class TypeGeneratorRegistry : ITypeGeneratorRegistry
     {
-        private static readonly MethodInfo _getTypedMethod = typeof(TypeGeneratorRegistry)
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Single(p => p.IsGenericMethod && p.Name == nameof(Get));
+        private static MethodInfo? s_getTypedMethod;
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -27,7 +27,11 @@ namespace Yardarm.Generation.Internal
                 throw new ArgumentNullException(nameof(element));
             }
 
-            return (ITypeGenerator)_getTypedMethod.MakeGenericMethod(element.ElementType, generatorCategory)
+            var getTypedMethod = s_getTypedMethod ??=
+                ((Func<ILocatedOpenApiElement<OpenApiSchema>, ITypeGenerator>)Get<OpenApiSchema, SchemaGenerator>).GetMethodInfo()
+                .GetGenericMethodDefinition();
+
+            return (ITypeGenerator)getTypedMethod.MakeGenericMethod(element.ElementType, generatorCategory)
                 .Invoke(this, new object[] {element})!;
         }
 

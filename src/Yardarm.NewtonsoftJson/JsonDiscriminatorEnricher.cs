@@ -59,7 +59,7 @@ namespace Yardarm.NewtonsoftJson
                                     // Add two parameters to the object array for each mapping
                                     // First is the string key of the mapping, second is the Type to deserialize
 
-                                    OpenApiSchema referencedSchema = schema.OneOf
+                                    OpenApiSchema? referencedSchema = schema.OneOf
                                         .FirstOrDefault(p => p.Reference?.ReferenceV3 == mapping.Value);
 
                                     return referencedSchema != null

@@ -68,8 +68,12 @@ namespace RootNamespace.Serialization.Json
                 }
             }
 
-            var result = Activator.CreateInstance(type);
-            serializer.Populate(json.CreateReader(), result);
+            object? result = Activator.CreateInstance(type);
+            if (result is not null)
+            {
+                serializer.Populate(json.CreateReader(), result);
+            }
+
             return result;
         }
 

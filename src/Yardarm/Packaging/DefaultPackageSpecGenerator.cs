@@ -27,6 +27,7 @@ namespace Yardarm.Packaging
                 .ToList())
             {
                 Name = _settings.AssemblyName,
+                FilePath = _settings.AssemblyName,
                 Dependencies = new List<LibraryDependency>()
             }.Enrich(Enrichers);
     }

@@ -122,7 +122,7 @@ namespace RootNamespace.Serialization.Json
         public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value)
 #pragma warning restore 8767
         {
-            if (_dictionary.TryGetValue(key, out JToken token))
+            if (_dictionary.TryGetValue(key, out JToken? token))
             {
                 value = ToValue(token);
                 return true;

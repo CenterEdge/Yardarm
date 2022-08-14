@@ -62,7 +62,7 @@ namespace Yardarm.NewtonsoftJson
             target = target.TrackNodes((IEnumerable<PropertyDeclarationSyntax>) members);
 
             return members.Aggregate(target,
-                (current, member) => current.ReplaceNode(current.GetCurrentNode(member), GenerateNewNodes(member)));
+                (current, member) => current.ReplaceNode(current.GetCurrentNode(member)!, GenerateNewNodes(member)));
         }
 
         private IEnumerable<MemberDeclarationSyntax> GenerateNewNodes(PropertyDeclarationSyntax property)

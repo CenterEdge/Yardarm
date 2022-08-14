@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 namespace RootNamespace.Authentication.Internal
 {
-    internal class SecuritySchemeSetRegistry<T>
+    internal class SecuritySchemeSetRegistry<
+#if NET6_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+#endif
+        T>
     {
         private static readonly Dictionary<Type, PropertyInfo> _schemes =
             typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)

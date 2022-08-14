@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
@@ -9,7 +10,11 @@ namespace RootNamespace.Serialization
 
         public static PathSegmentSerializer Instance { get; } = new PathSegmentSerializer();
 
-        public string Serialize<T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false) =>
+        public string Serialize<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false) =>
             style switch
             {
                 PathSegmentStyle.Simple => SerializeSimple(value, explode),
@@ -18,7 +23,11 @@ namespace RootNamespace.Serialization
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
 
-        private static string SerializeSimple<T>(T value, bool explode)
+        private static string SerializeSimple<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            T>(T value, bool explode)
         {
             if (value == null)
             {
@@ -39,7 +48,11 @@ namespace RootNamespace.Serialization
             return LiteralSerializer.Instance.Serialize(value);
         }
 
-        private static string SerializeLabel<T>(T value, bool explode)
+        private static string SerializeLabel<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            T>(T value, bool explode)
         {
             if (value == null)
             {
@@ -60,7 +73,11 @@ namespace RootNamespace.Serialization
             return "." + LiteralSerializer.Instance.Serialize(value);
         }
 
-        private static string SerializeMatrix<T>(string name, T value, bool explode)
+        private static string SerializeMatrix<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            T>(string name, T value, bool explode)
         {
             if (value == null)
             {

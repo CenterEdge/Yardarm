@@ -9,7 +9,11 @@ namespace RootNamespace.Serialization
     {
         public static HeaderSerializer Instance { get; } = new HeaderSerializer();
 
-        public string Serialize<T>(T value, bool explode)
+        public string Serialize<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            T>(T value, bool explode)
         {
             if (value == null)
             {
@@ -30,7 +34,6 @@ namespace RootNamespace.Serialization
             return LiteralSerializer.Instance.Serialize(value);
         }
 
-        [return: MaybeNull]
         public T Deserialize<T>(IEnumerable<string> values, bool explode)
         {
             if (typeof(T) == typeof(string))

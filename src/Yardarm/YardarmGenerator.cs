@@ -59,11 +59,11 @@ namespace Yardarm
                     // Perform the compilation
                     var (emitResult, additionalDiagnostics) = await BuildForTargetFrameworkAsync(
                         context, settings, targetFramework,
-                        settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput,
+                        settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput, settings.ReferenceAssemblyOutput,
                         cancellationToken).ConfigureAwait(false);
 
                     compilationResults.Add(new(targetFramework, emitResult,
-                        settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput,
+                        settings.DllOutput, settings.PdbOutput, settings.XmlDocumentationOutput, settings.ReferenceAssemblyOutput,
                         additionalDiagnostics));
                 }
                 else
@@ -82,15 +82,17 @@ namespace Yardarm
                         toDispose.Add(pdbOutput);
                         var xmlDocumentationOutput = new MemoryStream();
                         toDispose.Add(xmlDocumentationOutput);
+                        var referenceAssemblyOutput = new MemoryStream();
+                        toDispose.Add(referenceAssemblyOutput);
 
                         // Perform the compilation
                         var (emitResult, additionalDiagnostics) = await BuildForTargetFrameworkAsync(
                             context, settings, targetFramework,
-                            dllOutput, pdbOutput, xmlDocumentationOutput,
+                            dllOutput, pdbOutput, xmlDocumentationOutput, referenceAssemblyOutput,
                             cancellationToken).ConfigureAwait(false);
 
                         compilationResults.Add(new(targetFramework, emitResult,
-                            dllOutput, pdbOutput, xmlDocumentationOutput,
+                            dllOutput, pdbOutput, xmlDocumentationOutput, referenceAssemblyOutput,
                             additionalDiagnostics));
                     }
                 }
@@ -117,7 +119,7 @@ namespace Yardarm
 
         private async Task<(EmitResult, ImmutableArray<Diagnostic>)> BuildForTargetFrameworkAsync(
             GenerationContext context, YardarmGenerationSettings settings, NuGetFramework targetFramework,
-            Stream dllOutput, Stream pdbOutput, Stream xmlDocumentationOutput,
+            Stream dllOutput, Stream pdbOutput, Stream xmlDocumentationOutput, Stream? referenceAssemblyOutput,
             CancellationToken cancellationToken = default)
         {
             context.CurrentTargetFramework = targetFramework;
@@ -152,11 +154,13 @@ namespace Yardarm
             return (compilation.Emit(dllOutput,
                     pdbStream: pdbOutput,
                     xmlDocumentationStream: xmlDocumentationOutput,
+                    metadataPEStream: referenceAssemblyOutput,
                     embeddedTexts: await GetEmbeddedTextsAsync(settings, compilation, cancellationToken)
                         .ToListAsync(cancellationToken),
                     options: new EmitOptions()
                         .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
-                        .WithHighEntropyVirtualAddressSpace(true)),
+                        .WithHighEntropyVirtualAddressSpace(true)
+                        .WithIncludePrivateMembers(false)),
                 additionalDiagnostics);
         }
 
@@ -201,6 +205,7 @@ namespace Yardarm
 
                 result.DllOutput.Seek(0, SeekOrigin.Begin);
                 result.XmlDocumentationOutput.Seek(0, SeekOrigin.Begin);
+                result.ReferenceAssemblyOutput?.Seek(0, SeekOrigin.Begin);
 
                 if (settings.NuGetSymbolsOutput != null)
                 {

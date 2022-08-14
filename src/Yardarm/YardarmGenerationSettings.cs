@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NuGet.Packaging.Core;
-using Yardarm.Generation;
 
 namespace Yardarm
 {
@@ -60,6 +59,8 @@ namespace Yardarm
             get => _xmlDocumentationOutput ??= new MemoryStream();
             set => _xmlDocumentationOutput = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        public Stream? ReferenceAssemblyOutput { get; set; }
 
         public ImmutableArray<string> TargetFrameworkMonikers { get; set; } =
             new[] {"netstandard2.0"}.ToImmutableArray();

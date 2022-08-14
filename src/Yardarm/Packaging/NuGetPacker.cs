@@ -47,12 +47,26 @@ namespace Yardarm.Packaging
             };
 
             builder.Files.AddRange(compilationResults
-                .SelectMany(result => new[]
+                .SelectMany(result =>
                 {
-                    new StreamPackageFile(result.DllOutput, $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.dll",
-                        result.TargetFramework),
-                    new StreamPackageFile(result.XmlDocumentationOutput,
-                        $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.xml", result.TargetFramework)
+                    var files = new List<StreamPackageFile>(3)
+                    {
+                        new StreamPackageFile(result.DllOutput,
+                            $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.dll",
+                            result.TargetFramework),
+                        new StreamPackageFile(result.XmlDocumentationOutput,
+                            $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.xml",
+                            result.TargetFramework)
+                    };
+
+                    if (result.ReferenceAssemblyOutput is not null)
+                    {
+                        files.Add(new StreamPackageFile(result.ReferenceAssemblyOutput,
+                            $"ref/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.dll",
+                            result.TargetFramework));
+                    }
+
+                    return files;
                 }));
 
             builder.DependencyGroups.AddRange(GetDependencyGroups());

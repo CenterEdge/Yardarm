@@ -18,7 +18,7 @@ namespace Yardarm.CommandLine
         [Option('x', "extension", HelpText = "Extension assemblies to enable")]
         public IEnumerable<string> ExtensionFiles { get; set; }
 
-        [Option("intermediate", HelpText = "Intermediate output directory")]
+        [Option("intermediate-dir", HelpText = "Intermediate output directory")]
         public string IntermediateOutputPath { get; set; }
     }
 }

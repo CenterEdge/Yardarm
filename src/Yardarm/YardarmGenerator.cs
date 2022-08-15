@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Internal;
@@ -24,6 +25,38 @@ namespace Yardarm
 {
     public class YardarmGenerator
     {
+        public async Task<NuGetRestoreInfo> RestoreAsync(OpenApiDocument document,
+            YardarmGenerationSettings settings, CancellationToken cancellationToken = default)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var serviceProvider = settings.BuildServiceProvider(document);
+            var context = serviceProvider.GetRequiredService<GenerationContext>();
+
+            await PerformRestoreAsync(context, false, cancellationToken);
+
+            return context.NuGetRestoreInfo!;
+        }
+
+        private async Task PerformRestoreAsync(GenerationContext context, bool readLockFileOnly, CancellationToken cancellationToken = default)
+        {
+            // Perform the NuGet restore
+            var restoreProcessor = context.GenerationServices.GetRequiredService<NuGetRestoreProcessor>();
+            context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(readLockFileOnly, cancellationToken).ConfigureAwait(false);
+
+            if (context.Settings.TargetFrameworkMonikers.Length == 0)
+            {
+                throw new InvalidOperationException("No target framework monikers provided.");
+            }
+        }
+
         public async Task<YardarmGenerationResult> EmitAsync(OpenApiDocument document, YardarmGenerationSettings settings, CancellationToken cancellationToken = default)
         {
             if (document == null)
@@ -41,14 +74,7 @@ namespace Yardarm
                 var serviceProvider = settings.BuildServiceProvider(document);
                 var context = serviceProvider.GetRequiredService<GenerationContext>();
 
-                // Perform the NuGet restore
-                var restoreProcessor = serviceProvider.GetRequiredService<NuGetRestoreProcessor>();
-                context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(cancellationToken).ConfigureAwait(false);
-
-                if (settings.TargetFrameworkMonikers.Length == 0)
-                {
-                    throw new InvalidOperationException("No target framework monikers provided.");
-                }
+                await PerformRestoreAsync(context, settings.NoRestore, cancellationToken);
 
                 var compilationResults = new List<YardarmCompilationResult>();
 
@@ -137,7 +163,7 @@ namespace Yardarm
             try
             {
                 var sourceGenerators = context.GenerationServices.GetRequiredService<NuGetRestoreProcessor>()
-                    .GetSourceGenerators(context.NuGetRestoreInfo!.Providers, context.NuGetRestoreInfo!.Result,
+                    .GetSourceGenerators(context.NuGetRestoreInfo!.Providers, context.NuGetRestoreInfo!.LockFile,
                         targetFramework, assemblyLoadContext);
 
                 // Execute the source generators

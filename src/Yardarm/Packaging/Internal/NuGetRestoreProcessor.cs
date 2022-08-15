@@ -23,31 +23,50 @@ namespace Yardarm.Packaging.Internal
     internal class NuGetRestoreProcessor
     {
         private readonly PackageSpec _packageSpec;
+        private readonly YardarmGenerationSettings _settings;
         private readonly ILogger<NuGetReferenceGenerator> _logger;
 
-        public NuGetRestoreProcessor(PackageSpec packageSpec, ILogger<NuGetReferenceGenerator> logger)
+        public NuGetRestoreProcessor(PackageSpec packageSpec, YardarmGenerationSettings settings,
+            ILogger<NuGetReferenceGenerator> logger)
         {
-            _packageSpec = packageSpec ?? throw new ArgumentNullException(nameof(packageSpec));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(packageSpec);
+            ArgumentNullException.ThrowIfNull(settings);
+            ArgumentNullException.ThrowIfNull(logger);
+
+            _packageSpec = packageSpec;
+            _settings = settings;
+            _logger = logger;
         }
 
-        public async Task<NuGetRestoreInfo> ExecuteAsync(CancellationToken cancellationToken = default)
+        public async Task<NuGetRestoreInfo> ExecuteAsync(bool readLockFileOnly, CancellationToken cancellationToken = default)
         {
-            var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempPath);
+            string? intermediatePath = _settings.IntermediateOutputPath;
+            bool isTempPath = false;
+
+            if (string.IsNullOrEmpty(intermediatePath))
+            {
+                intermediatePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                Directory.CreateDirectory(intermediatePath);
+                isTempPath = true;
+            }
+            else if (!Path.IsPathFullyQualified(intermediatePath))
+            {
+                intermediatePath = Path.Combine(Directory.GetCurrentDirectory(), intermediatePath);
+            }
+
             try
             {
                 using var cacheContext = new SourceCacheContext();
 
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata
                 {
-                    OutputPath = tempPath,
+                    OutputPath = intermediatePath,
                     ProjectName = _packageSpec.Name,
                     ProjectStyle = ProjectStyle.PackageReference,
-                    CrossTargeting = true
+                    CrossTargeting = true,
                 };
 
-                var settings = Settings.LoadDefaultSettings(tempPath);
+                var settings = Settings.LoadDefaultSettings(intermediatePath);
 
                 var logger = new NuGetLogger(_logger);
 
@@ -60,38 +79,57 @@ namespace Yardarm.Packaging.Internal
                     new LocalPackageFileCache(),
                     logger);
 
-                var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, logger);
-                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
-
-                var restoreRequest = new RestoreRequest(_packageSpec, dependencyProviders, cacheContext,
-                    clientPolicyContext, packageSourceMapping, logger, new LockFileBuilderCache())
+                if (!readLockFileOnly)
                 {
-                    ProjectStyle = ProjectStyle.PackageReference, RestoreOutputPath = tempPath
-                };
+                    var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, logger);
+                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
 
-                var restoreCommand = new RestoreCommand(restoreRequest);
+                    var restoreRequest = new RestoreRequest(_packageSpec, dependencyProviders, cacheContext,
+                        clientPolicyContext, packageSourceMapping, logger, new LockFileBuilderCache())
+                    {
+                        ProjectStyle = ProjectStyle.PackageReference, RestoreOutputPath = intermediatePath,
+                    };
 
-                var result = await restoreCommand.ExecuteAsync(cancellationToken).ConfigureAwait(false);
-                if (!result.Success)
-                {
-                    throw new NuGetRestoreException(result);
+                    var restoreCommand = new RestoreCommand(restoreRequest);
+
+                    var result = await restoreCommand.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+                    if (!result.Success)
+                    {
+                        throw new NuGetRestoreException(result);
+                    }
+
+                    if (!isTempPath) // No need to commit if we're deleting anyway
+                    {
+                        await result.CommitAsync(logger, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    return new NuGetRestoreInfo(dependencyProviders, result.LockFile);
                 }
+                else
+                {
+                    var lockFileName = Path.Combine(intermediatePath, LockFileFormat.AssetsFileName);
 
-                return new NuGetRestoreInfo(dependencyProviders, result);
+                    var lockFile = LockFileUtilities.GetLockFile(lockFileName, logger);
+
+                    return new NuGetRestoreInfo(dependencyProviders, lockFile);
+                }
             }
             finally
             {
-                Directory.Delete(tempPath, true);
+                if (isTempPath)
+                {
+                    Directory.Delete(intermediatePath, true);
+                }
             }
         }
 
         // Collect C# source generators from the direct NuGet dependencies (ignores transitive dependencies)
-        public List<ISourceGenerator> GetSourceGenerators(RestoreCommandProviders dependencyProviders, RestoreResult result,
+        public List<ISourceGenerator> GetSourceGenerators(RestoreCommandProviders dependencyProviders, LockFile lockFile,
             NuGetFramework targetFramework, AssemblyLoadContext assemblyLoadContext)
         {
             var generators = new List<ISourceGenerator>();
 
-            LockFileTarget lockFileTarget = result.LockFile.Targets
+            LockFileTarget lockFileTarget = lockFile.Targets
                 .First(p => p.TargetFramework == targetFramework);
 
             foreach (var directDependency in _packageSpec.Dependencies

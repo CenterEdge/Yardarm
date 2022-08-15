@@ -4,26 +4,22 @@ using CommandLine;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
+using Yardarm.CommandLine;
 
-namespace Yardarm.CommandLine
-{
-    class Program
-    {
-        static async Task<int> Main(string[] args)
-        {
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console(
-                    theme: AnsiConsoleTheme.Code,
-                    outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}{Exception}",
-                    standardErrorFromLevel: LogEventLevel.Error)
-                .CreateLogger();
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(
+        theme: AnsiConsoleTheme.Code,
+        outputTemplate: "[{Level:u3}] {Message:lj}{NewLine}{Exception}",
+        standardErrorFromLevel: LogEventLevel.Error)
+    .CreateLogger();
 
-            await Parser.Default.ParseArguments<GenerateOptions, object>(args)
-                .WithParsedAsync<GenerateOptions>(options => new GenerateCommand(options).ExecuteAsync());
+int exitCode = await Parser.Default
+    .ParseArguments<GenerateOptions, RestoreOptions>(args)
+    .MapResult(
+        (GenerateOptions options) => new GenerateCommand(options).ExecuteAsync(),
+        (RestoreOptions options) => new RestoreCommand(options).ExecuteAsync(),
+        errs => Task.FromResult(1));
 
-            Log.CloseAndFlush();
+Log.CloseAndFlush();
 
-            return Environment.ExitCode;
-        }
-    }
-}
+return exitCode;

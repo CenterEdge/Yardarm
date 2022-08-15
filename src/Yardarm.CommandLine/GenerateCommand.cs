@@ -4,13 +4,10 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
 using NuGet.Packaging.Core;
 using Serilog;
 using Serilog.Events;
@@ -19,13 +16,13 @@ using Yardarm.Spec;
 
 namespace Yardarm.CommandLine
 {
-    public class GenerateCommand
+    public class GenerateCommand : CommonCommand
     {
         private readonly GenerateOptions _options;
 
-        public GenerateCommand(GenerateOptions options)
+        public GenerateCommand(GenerateOptions options) : base(options)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _options = options;
         }
 
         public async Task<int> ExecuteAsync()
@@ -47,6 +44,8 @@ namespace Yardarm.CommandLine
             {
                 BasePath = basePath,
                 EmbedAllSources = _options.EmbedAllSources,
+                IntermediateOutputPath = _options.IntermediateOutputPath,
+                NoRestore = _options.NoRestore,
             };
 
             ApplyVersion(settings);
@@ -111,15 +110,6 @@ namespace Yardarm.CommandLine
             }
         }
 
-        private async Task<OpenApiDocument> ReadDocumentAsync()
-        {
-            var reader = new OpenApiStreamReader();
-
-            await using var stream = File.OpenRead(_options.InputFile);
-
-            return reader.Read(stream, out _);
-        }
-
         private void ApplyVersion(YardarmGenerationSettings settings)
         {
             int dashIndex = _options.Version.IndexOf('-');
@@ -139,40 +129,6 @@ namespace Yardarm.CommandLine
             }
 
             settings.Version = version;
-        }
-
-        private void ApplyExtensions(YardarmGenerationSettings settings)
-        {
-            foreach (string extensionFile in _options.ExtensionFiles)
-            {
-                try
-                {
-                    if (extensionFile.EndsWith(".dll"))
-                    {
-                        // Appears to be a file reference
-
-                        string fullPath = !Path.IsPathFullyQualified(extensionFile)
-                            ? Path.Combine(Directory.GetCurrentDirectory(), extensionFile)
-                            : extensionFile;
-
-                        Assembly assembly = Assembly.LoadFile(fullPath);
-
-                        settings.AddExtension(assembly);
-                    }
-                    else
-                    {
-                        // Appears to be an assembly name
-
-                        Assembly assembly = Assembly.Load(extensionFile);
-
-                        settings.AddExtension(assembly);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Error loading extension '{extensionFile}'.", ex);
-                }
-            }
         }
 
         private List<Stream> ApplyFileStreams(YardarmGenerationSettings settings)
@@ -335,13 +291,9 @@ namespace Yardarm.CommandLine
                 .WithCryptoKeyFile(_options.KeyFile);
         }
 
-        private void ApplyNuGetSettings(YardarmGenerationSettings settings)
+        protected override void ApplyNuGetSettings(YardarmGenerationSettings settings)
         {
-            string[] targetFrameworks = _options.TargetFrameworks.ToArray();
-            if (targetFrameworks.Length > 0)
-            {
-                settings.TargetFrameworkMonikers = targetFrameworks.ToImmutableArray();
-            }
+            base.ApplyNuGetSettings(settings);
 
             if (!string.IsNullOrEmpty(_options.RepositoryType) && !string.IsNullOrEmpty(_options.RepositoryUrl))
             {

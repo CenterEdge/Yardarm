@@ -25,10 +25,10 @@ namespace Yardarm.Packaging.Internal
 
         public IAsyncEnumerable<MetadataReference> Generate(CancellationToken cancellationToken = default)
         {
-            var result = _context.NuGetRestoreInfo?.Result;
-            Debug.Assert(result is not null);
+            var lockFile = _context.NuGetRestoreInfo?.LockFile;
+            Debug.Assert(lockFile is not null);
 
-            var dependencies = ExtractDependencies(result.LockFile);
+            var dependencies = ExtractDependencies(lockFile);
 
             return dependencies.Select(dependency => MetadataReference.CreateFromFile(dependency)).ToAsyncEnumerable();
         }
@@ -58,7 +58,7 @@ namespace Yardarm.Packaging.Internal
 
             // Collect platform reference assemblies, i.e. .NET 6 assemblies
             dependencies.AddRange(lockFileTarget.Libraries
-                .Where(package => package.PackageType.Any(type => type.Name == "DotnetPlatform"))
+                .Where(package => package.Name == "Microsoft.NETCore.App.Ref")
                 .Select(package =>
                     _context.NuGetRestoreInfo!.Providers.GlobalPackages.FindPackage(package.Name, package.Version))
                 .SelectMany(localPackageInfo =>

@@ -1,5 +1,6 @@
 ﻿using System;
 using NuGet.Commands;
+using NuGet.ProjectModel;
 
 namespace Yardarm.Packaging
 {
@@ -13,12 +14,12 @@ namespace Yardarm.Packaging
         /// <summary>
         /// Result of the restore command.
         /// </summary>
-        public RestoreResult Result { get; set; }
+        public LockFile LockFile { get; set; }
 
-        public NuGetRestoreInfo(RestoreCommandProviders providers, RestoreResult result)
+        public NuGetRestoreInfo(RestoreCommandProviders providers, LockFile lockFile)
         {
             Providers = providers;
-            Result = result;
+            LockFile = lockFile;
         }
     }
 }

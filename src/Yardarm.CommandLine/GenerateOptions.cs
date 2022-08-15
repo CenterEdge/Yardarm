@@ -6,25 +6,19 @@ using CommandLine;
 namespace Yardarm.CommandLine
 {
     [Verb("generate", HelpText = "Generate an assembly")]
-    public class GenerateOptions
+    public class GenerateOptions : CommonOptions
     {
-        [Option('i', "input", Required = true, HelpText = "OpenAPI 3 files to process")]
-        public string InputFile { get; set; }
-
-        [Option('n', "name", Required = true, HelpText = "Generated assembly name")]
-        public string AssemblyName { get; set; }
-
         [Option('v', "version", Default = "1.0.0", HelpText = "Generated assembly version")]
         public string Version { get; set; }
-
-        [Option('f', "frameworks", HelpText = "List of target framework monikers. Must be a single item unless outputting a NuGet package.")]
-        public IEnumerable<string> TargetFrameworks { get; set; }
 
         [Option("keyfile", HelpText = "Key file to create a strongly-named assembly")]
         public string KeyFile { get; set; }
 
         [Option("embed", HelpText = "Embed source files with debug symbols")]
         public bool EmbedAllSources { get; set; }
+
+        [Option("no-restore", HelpText = "Use existing restore lock file from the intermediate directory.")]
+        public bool NoRestore { get; set; }
 
         #region DLL
 
@@ -75,8 +69,5 @@ namespace Yardarm.CommandLine
         public string RepositoryCommit { get; set; }
 
         #endregion
-
-        [Option('x', "extension", HelpText = "Extension assemblies to enable")]
-        public IEnumerable<string> ExtensionFiles { get; set; }
     }
 }

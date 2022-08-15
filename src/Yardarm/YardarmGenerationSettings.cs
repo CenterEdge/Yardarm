@@ -62,6 +62,17 @@ namespace Yardarm
 
         public Stream? ReferenceAssemblyOutput { get; set; }
 
+        /// <summary>
+        /// Optional intermediate output path. Typically used to store files useful in incremental builds
+        /// and NuGet restores, such as project.assets.json.
+        /// </summary>
+        public string? IntermediateOutputPath { get; set; }
+
+        /// <summary>
+        /// Bypass the restore on generation, assume that a restore has already been done using <see cref="IntermediateOutputPath"/>.
+        /// </summary>
+        public bool NoRestore { get; set; }
+
         public ImmutableArray<string> TargetFrameworkMonikers { get; set; } =
             new[] {"netstandard2.0"}.ToImmutableArray();
 

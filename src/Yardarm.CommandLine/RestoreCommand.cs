@@ -26,8 +26,6 @@ namespace Yardarm.CommandLine
 
             var document = await ReadDocumentAsync();
 
-            var generator = new YardarmGenerator();
-
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
                 IntermediateOutputPath = _options.IntermediateOutputPath,
@@ -47,7 +45,8 @@ namespace Yardarm.CommandLine
                             .AddSerilog();
                     });
 
-                await generator.RestoreAsync(document, settings);
+                var generator = new YardarmGenerator(document, settings);
+                await generator.RestoreAsync();
 
                 stopwatch.Stop();
                 Log.Information("Restore complete in {0:f3}s", stopwatch.Elapsed.TotalSeconds);

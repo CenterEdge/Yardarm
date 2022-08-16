@@ -32,8 +32,6 @@ namespace Yardarm.CommandLine
 
             var document = await ReadDocumentAsync();
 
-            var generator = new YardarmGenerator();
-
             string basePath = _options.InputFile;
             if (!Path.IsPathFullyQualified(basePath))
             {
@@ -67,7 +65,9 @@ namespace Yardarm.CommandLine
                             .AddSerilog();
                     });
 
-                YardarmGenerationResult generationResult = await generator.EmitAsync(document, settings);
+                var generator = new YardarmGenerator(document, settings);
+
+                YardarmGenerationResult generationResult = await generator.EmitAsync();
 
                 foreach (Diagnostic diagnostic in generationResult.GetAllDiagnostics()
                     .Where(p => p.Severity >= DiagnosticSeverity.Info))

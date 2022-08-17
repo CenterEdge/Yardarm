@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +26,7 @@ namespace Yardarm.CommandLine
             _options = options;
         }
 
-        public async Task<int> ExecuteAsync()
+        public async Task<int> ExecuteAsync(CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -67,10 +68,10 @@ namespace Yardarm.CommandLine
 
                 var generator = new YardarmGenerator(document, settings);
 
-                YardarmGenerationResult generationResult = await generator.EmitAsync();
+                YardarmGenerationResult generationResult = await generator.EmitAsync(cancellationToken);
 
                 foreach (Diagnostic diagnostic in generationResult.GetAllDiagnostics()
-                    .Where(p => p.Severity >= DiagnosticSeverity.Info))
+                             .Where(p => p.Severity >= DiagnosticSeverity.Info))
                 {
                     Log.Logger.Write(
                         diagnostic.Severity switch
@@ -96,7 +97,7 @@ namespace Yardarm.CommandLine
 
                 return generationResult.Success ? 0 : 1;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Log.Logger.Error(ex, "Error generating SDK");
                 return 1;

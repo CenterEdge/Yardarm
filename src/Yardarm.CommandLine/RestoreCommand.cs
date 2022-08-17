@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ namespace Yardarm.CommandLine
             _options = options;
         }
 
-        public async Task<int> ExecuteAsync()
+        public async Task<int> ExecuteAsync(CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -46,14 +47,14 @@ namespace Yardarm.CommandLine
                     });
 
                 var generator = new YardarmGenerator(document, settings);
-                await generator.RestoreAsync();
+                await generator.RestoreAsync(cancellationToken);
 
                 stopwatch.Stop();
                 Log.Information("Restore complete in {0:f3}s", stopwatch.Elapsed.TotalSeconds);
 
                 return 0;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Log.Logger.Error(ex, "Error restoring SDK");
                 return 1;

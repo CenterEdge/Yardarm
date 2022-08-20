@@ -37,22 +37,6 @@ namespace Yardarm.Packaging.Internal
                         }
                     };
                 }
-                else if (targetFramework.Version == NuGetFrameworkConstants.NetStandard21)
-                {
-                    // Only include NETStandard.Library.Ref for restore, not as a listed dependency on the generated package
-                    yield return new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = "NETStandard.Library.Ref",
-                            TypeConstraint = LibraryDependencyTarget.Package,
-                            VersionRange = VersionRange.Parse("2.1.0")
-                        },
-                        IncludeType = LibraryIncludeFlags.None,
-                        SuppressParent = LibraryIncludeFlags.All,
-                        AutoReferenced = true,
-                    };
-                }
 
                 yield return new LibraryDependency
                 {
@@ -72,22 +56,6 @@ namespace Yardarm.Packaging.Internal
                         TypeConstraint = LibraryDependencyTarget.Package,
                         VersionRange = VersionRange.Parse("4.7.0")
                     }
-                };
-            }
-            else if (targetFramework.Framework == NuGetFrameworkConstants.NetCoreApp)
-            {
-                yield return new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "Microsoft.NETCore.App.Ref",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = new VersionRange(minVersion: new NuGetVersion(
-                            targetFramework.Version.Major, targetFramework.Version.Minor, targetFramework.Version.Revision)),
-                    },
-                    IncludeType = LibraryIncludeFlags.None,
-                    SuppressParent = LibraryIncludeFlags.All,
-                    AutoReferenced = true,
                 };
             }
         }

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using Yardarm.Generation;
 
@@ -56,13 +57,25 @@ namespace Yardarm.Packaging.Internal
                 .Where(File.Exists)
                 .ToList();
 
+            var frameworkInformation = lockFile.PackageSpec.TargetFrameworks
+                .First(p => p.FrameworkName == _context.CurrentTargetFramework);
+
             // Collect platform reference assemblies, i.e. .NET 6 assemblies
-            dependencies.AddRange(lockFileTarget.Libraries
-                .Where(package => package.Name == "Microsoft.NETCore.App.Ref")
-                .Select(package =>
-                    _context.NuGetRestoreInfo!.Providers.GlobalPackages.FindPackage(package.Name, package.Version))
+            dependencies.AddRange(frameworkInformation.FrameworkReferences
+                .Select(frameworkReference =>
+                {
+                    string refAssemblyName = $"{frameworkReference.Name}.Ref";
+
+                    DownloadDependency downloadDependency = frameworkInformation.DownloadDependencies
+                        .First(p => p.Name == refAssemblyName);
+
+                    return _context.NuGetRestoreInfo!.Providers.GlobalPackages.FindPackagesById(refAssemblyName)
+                        .Where(package => downloadDependency.VersionRange.Satisfies(package.Version))
+                        .MaxBy(package => package.Version);
+                })
+                .Where(package => package is not null)
                 .SelectMany(localPackageInfo =>
-                    localPackageInfo.Files
+                    localPackageInfo!.Files
                         .Where(p => p.StartsWith($"ref/{lockFileTarget.TargetFramework.GetShortFolderName()}") &&
                                     p.EndsWith(".dll"))
                         .Select(p => Path.Combine(localPackageInfo.ExpandedPath, p.Replace('/', Path.DirectorySeparatorChar)))));

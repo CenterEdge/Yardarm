@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using Microsoft.Build.Framework;
 
@@ -10,13 +11,34 @@ public class YardarmGenerate : YardarmCommonTask
 
     public string? Version { get; set; }
     public bool EmbedAllSources { get; set; } = true;
+
+    [Required]
     public string? OutputAssembly { get; set; }
+
     public string? OutputRefAssembly { get; set; }
     public string? OutputDebugSymbols { get; set; }
     public string? OutputXmlDocumentation { get; set; }
 
+    protected override bool ValidateParameters()
+    {
+        if (!base.ValidateParameters())
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(OutputAssembly))
+        {
+            Log.LogError("Must supply an OutputAssembly.");
+            return false;
+        }
+
+        return true;
+    }
+
     protected override void AppendAdditionalArguments(StringBuilder builder)
     {
+        builder.AppendFormat(" --no-restore"); // Restore is performed by MSBuild
+
         if (!string.IsNullOrEmpty(Version))
         {
             builder.AppendFormat(" -v {0}", Version);

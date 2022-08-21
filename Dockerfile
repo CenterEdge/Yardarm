@@ -4,18 +4,18 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG VERSION
 WORKDIR /app
 
-COPY src/*.sln ./
-COPY src/Yardarm/*.csproj ./Yardarm/
-COPY src/Yardarm.Client/*.csproj ./Yardarm.Client/
-COPY src/Yardarm.CommandLine/*.csproj ./Yardarm.CommandLine/
-COPY src/Yardarm.NewtonsoftJson/*.csproj ./Yardarm.NewtonsoftJson/
-COPY src/Yardarm.NewtonsoftJson.Client/*.csproj ./Yardarm.NewtonsoftJson.Client/
-COPY src/Yardarm.SystemTextJson/*.csproj ./Yardarm.SystemTextJson/
-COPY src/Yardarm.SystemTextJson.Client/*.csproj ./Yardarm.SystemTextJson.Client/
-RUN dotnet restore ./Yardarm.CommandLine/Yardarm.CommandLine.csproj
+COPY src/main/Yardarm/*.csproj ./main/Yardarm/
+COPY src/main/Yardarm.Client/*.csproj ./main/Yardarm.Client/
+COPY src/main/Yardarm.CommandLine/*.csproj ./main/Yardarm.CommandLine/
+COPY src/main/Yardarm.NewtonsoftJson/*.csproj ./main/Yardarm.NewtonsoftJson/
+COPY src/main/Yardarm.NewtonsoftJson.Client/*.csproj ./main/Yardarm.NewtonsoftJson.Client/
+COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/
+COPY src/main/Yardarm.SystemTextJson.Client/*.csproj ./main/Yardarm.SystemTextJson.Client/
+COPY ["src/*.props", "src/*.targets", "src/*.snk", "./"]
+RUN dotnet restore ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet pack -c Release -p:VERSION=${VERSION} ./Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet pack -c Release -p:VERSION=${VERSION} ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0
 ARG VERSION
@@ -27,5 +27,5 @@ RUN groupadd -g 1000 -r yardarm && useradd --no-log-init -u 1000 -r -g yardarm y
 ENV HOME=/home/yardarm PATH=/home/yardarm/.dotnet/tools:${PATH}
 USER yardarm
 
-COPY --from=build /app/Yardarm.CommandLine/bin/Release/Yardarm.CommandLine.*.nupkg ./
+COPY --from=build /app/main/Yardarm.CommandLine/bin/Release/Yardarm.CommandLine.*.nupkg ./
 RUN dotnet tool install --global --add-source /app --version ${VERSION} Yardarm.CommandLine

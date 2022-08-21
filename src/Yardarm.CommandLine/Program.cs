@@ -37,10 +37,11 @@ Console.CancelKeyPress += (_, e) =>
 try
 {
     exitCode = await Parser.Default
-        .ParseArguments<GenerateOptions, RestoreOptions>(args)
+        .ParseArguments<GenerateOptions, RestoreOptions, CollectPackageReferencesOptions>(args)
         .MapResult(
             (GenerateOptions options) => new GenerateCommand(options).ExecuteAsync(cts.Token),
             (RestoreOptions options) => new RestoreCommand(options).ExecuteAsync(cts.Token),
+            (CollectPackageReferencesOptions options) => new CollectPackageReferencesCommand(options).ExecuteAsync(cts.Token),
             errs => Task.FromResult(1));
 
     completedGracefully = true;

@@ -188,18 +188,6 @@ namespace Yardarm.CommandLine
                             _options.OutputDebugSymbols = Path.Combine(directory,
                                 $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.pdb");
                         }
-
-                        if (!_options.NoReferenceAssembly && string.IsNullOrEmpty(_options.OutputReferenceAssembly))
-                        {
-                            string refDirectory = Path.Combine(directory, "ref");
-                            if (!Directory.Exists(refDirectory))
-                            {
-                                Directory.CreateDirectory(refDirectory);
-                            }
-
-                            _options.OutputReferenceAssembly = Path.Combine(refDirectory,
-                                $"{Path.GetFileNameWithoutExtension(_options.OutputFile)}.dll");
-                        }
                     }
 
                     var dllStream = File.Create(_options.OutputFile!);

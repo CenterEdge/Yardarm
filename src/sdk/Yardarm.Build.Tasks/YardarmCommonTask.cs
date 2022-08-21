@@ -9,7 +9,10 @@ namespace Yardarm.Build.Tasks
         protected abstract string Verb { get; }
 
         public string? AssemblyName { get; set; }
+
+        [Required]
         public string? TargetFramework { get; set; }
+
         public string? BaseIntermediateOutputPath { get; set; }
 
         public ITaskItem[]? SpecFile { get; set; }
@@ -54,6 +57,8 @@ namespace Yardarm.Build.Tasks
                     builder.Append(extension.ItemSpec);
                 }
             }
+
+            AppendAdditionalArguments(builder);
 
             return builder.ToString();
         }

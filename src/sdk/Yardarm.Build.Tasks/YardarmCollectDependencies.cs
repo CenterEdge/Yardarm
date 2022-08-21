@@ -37,13 +37,24 @@ public class YardarmCollectDependencies : YardarmCommonTask
     private readonly List<ITaskItem> _frameworkReference = new();
 
     [Output]
-    public ITaskItem[] PackageReference => _packageReference.ToArray();
+    public ITaskItem[]? PackageReference { get; set; }
 
     [Output]
-    public ITaskItem[] PackageDownload => _packageDownload.ToArray();
+    public ITaskItem[]? PackageDownload { get; set; }
 
     [Output]
-    public ITaskItem[] FrameworkReference => _frameworkReference.ToArray();
+    public ITaskItem[]? FrameworkReference { get; set; }
+
+    public override bool Execute()
+    {
+        bool result = base.Execute();
+
+        PackageReference = _packageReference.ToArray();
+        PackageDownload = _packageDownload.ToArray();
+        FrameworkReference = _frameworkReference.ToArray();
+
+        return result;
+    }
 
     protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
     {
@@ -61,7 +72,7 @@ public class YardarmCollectDependencies : YardarmCommonTask
             var item = JsonSerializer.Deserialize<AddItemDto>(singleLine, s_serializerOptions)!;
 #else
             // Since we need to be compatible with net472 and don't want to take dependencies, we must engage in this ugliness
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(singleLine.Substring(AddItemPrefix.Length)));
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(singleLine));
             var item = (AddItemDto) s_serializer.ReadObject(stream);
 #endif
 

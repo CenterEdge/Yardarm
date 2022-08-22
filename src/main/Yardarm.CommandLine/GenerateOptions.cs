@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using CommandLine;
+using Yardarm.Packaging;
 
 namespace Yardarm.CommandLine
 {
@@ -19,6 +20,9 @@ namespace Yardarm.CommandLine
 
         [Option("no-restore", HelpText = "Use existing restore lock file from the intermediate directory.")]
         public bool NoRestore { get; set; }
+
+        [Option("framework-references", HelpText = "Resolved framework references, typically only supplied by MSBuild. Format \"name=path\".")]
+        public IEnumerable<ResolvedFrameworkReference> FrameworkReferences { get; set; }
 
         #region DLL
 

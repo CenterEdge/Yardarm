@@ -13,6 +13,7 @@ using NuGet.Packaging.Core;
 using Serilog;
 using Serilog.Events;
 using Yardarm.Helpers;
+using Yardarm.Packaging;
 using Yardarm.Spec;
 
 namespace Yardarm.CommandLine
@@ -45,6 +46,7 @@ namespace Yardarm.CommandLine
                 EmbedAllSources = _options.EmbedAllSources,
                 IntermediateOutputPath = _options.IntermediateOutputPath,
                 NoRestore = _options.NoRestore,
+                ResolvedFrameworkReferences = _options.FrameworkReferences?.ToList(),
             };
 
             ApplyVersion(settings);

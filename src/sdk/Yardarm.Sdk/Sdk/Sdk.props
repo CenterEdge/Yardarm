@@ -7,7 +7,7 @@
     <UsingYardarmSdk>true</UsingYardarmSdk>
 
     <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' And $([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\tools\linux-x64\yardarm\</YardarmToolPath>
-    <YardarmToolPath Condition=" '$(YardarmToolPath)' == ''">$(MSBuildThisFileDirectory)..\tools\win10-x64\yardarm\</YardarmToolPath>
+    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' ">$(MSBuildThisFileDirectory)..\tools\win10-x64\yardarm\</YardarmToolPath>
     <YardarmTaskBasePath Condition=" '$(YardarmTaskBasePath)' == '' ">$(MSBuildThisFileDirectory)..\tasks\</YardarmTaskBasePath>
   </PropertyGroup>
 

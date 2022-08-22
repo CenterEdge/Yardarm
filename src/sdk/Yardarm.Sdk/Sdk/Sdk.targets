@@ -167,6 +167,7 @@
       OutputRefAssembly="@(IntermediateRefAssembly)"
       OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
       OutputXmlDocumentation="$(DocumentationFile)"
+      ResolvedFrameworkReferences="@(ResolvedFrameworkReference)"
     >
     </YardarmGenerate>
 

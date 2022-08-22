@@ -46,7 +46,7 @@ namespace Yardarm.CommandLine
                 EmbedAllSources = _options.EmbedAllSources,
                 IntermediateOutputPath = _options.IntermediateOutputPath,
                 NoRestore = _options.NoRestore,
-                ResolvedFrameworkReferences = _options.FrameworkReferences?.ToList(),
+                ReferencedAssemblies = _options.References?.ToList(),
             };
 
             ApplyVersion(settings);

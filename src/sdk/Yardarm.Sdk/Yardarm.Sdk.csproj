@@ -59,8 +59,7 @@
     </ItemGroup>
 
     <MSBuild Projects="@(_YardarmCommandLine)"
-             Properties="Configuration=$(Configuration);SelfContained=False"
-             RemoveProperties="TargetFramework"
+             Properties="Configuration=$(Configuration);TargetFramework=net6.0;SelfContained=False"
              Targets="ComputeFilesToPublish;PublishItemsOutputGroup"
              BuildInParallel="$(BuildInParallel)"
              SkipNonexistentProjects="false"

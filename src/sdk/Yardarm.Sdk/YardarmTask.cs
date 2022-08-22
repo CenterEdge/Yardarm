@@ -11,7 +11,12 @@ namespace Yardarm.Build.Tasks
 
         protected override string GenerateFullPathToTool() => ToolName;
 
-        protected override string ToolName => "Yardarm.CommandLine.exe";
+        protected override string ToolName =>
+#if NETCOREAPP
+            (int) Environment.OSVersion.Platform > 3 ? "Yardarm.CommandLine" :
+#endif
+            "Yardarm.CommandLine.exe";
+
 
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
         {

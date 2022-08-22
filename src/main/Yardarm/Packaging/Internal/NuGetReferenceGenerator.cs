@@ -65,15 +65,6 @@ namespace Yardarm.Packaging.Internal
             dependencies.AddRange(frameworkInformation.FrameworkReferences
                 .Select(frameworkReference =>
                 {
-                    var resolvedFrameworkReference = _context.Settings.ResolvedFrameworkReferences?
-                        .FirstOrDefault(p => p.Name == frameworkReference.Name);
-                    if (resolvedFrameworkReference is not null)
-                    {
-                        return resolvedFrameworkReference.Path;
-                    }
-
-                    // Try to resolve ourselves
-
                     string refAssemblyName = $"{frameworkReference.Name}.Ref";
 
                     var version = frameworkInformation.FrameworkName.Version;

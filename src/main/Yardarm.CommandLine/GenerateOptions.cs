@@ -21,8 +21,8 @@ namespace Yardarm.CommandLine
         [Option("no-restore", HelpText = "Use existing restore lock file from the intermediate directory.")]
         public bool NoRestore { get; set; }
 
-        [Option("framework-references", HelpText = "Resolved framework references, typically only supplied by MSBuild. Format \"name=path\".")]
-        public IEnumerable<ResolvedFrameworkReference> FrameworkReferences { get; set; }
+        [Option("references", HelpText = "Referenced assemblies to use, rather than calculated references. Typically only supplied by MSBuild. Should be a full path.")]
+        public IEnumerable<string> References { get; set; }
 
         #region DLL
 

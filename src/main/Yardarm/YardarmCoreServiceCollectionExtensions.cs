@@ -32,9 +32,17 @@ namespace Yardarm
         {
             services.AddDefaultEnrichers();
 
+            if (settings.ReferencedAssemblies is null || settings.ReferencedAssemblies.Count == 0)
+            {
+                services.AddTransient<IReferenceGenerator, NuGetReferenceGenerator>();
+            }
+            else
+            {
+                services.AddTransient<IReferenceGenerator, SuppliedReferenceGenerator>();
+            }
+
             // Generators
             services
-                .AddTransient<IReferenceGenerator, NuGetReferenceGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, AssemblyInfoGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, ClientGenerator>()
                 .AddTransient<ISyntaxTreeGenerator, HeaderGenerator>()

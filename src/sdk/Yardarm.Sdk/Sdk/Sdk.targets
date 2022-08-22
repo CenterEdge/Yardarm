@@ -5,18 +5,6 @@
     <MSBuildAllProjects Condition=" '$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0' ">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <!--
-    Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj, etc)
-    https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
-
-    We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only default
-    it if we know the SDK won't.  Projects probably won't load in Visual Studio but will build from the
-    command-line just fine.
-  -->
-  <PropertyGroup>
-    <LanguageTargets Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
-  </PropertyGroup>
-
   <Import Project="$(CustomBeforeYardarm)" Condition="'$(CustomBeforeYardarm)' != '' and Exists('$(CustomBeforeYardarm)')" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
@@ -69,14 +57,6 @@
   </ItemGroup>
 
   <!--
-    If this is not a .csproj or similar, we need to manually create the items for the documentation files.
-  -->
-  <ItemGroup Condition=" '$(ManagedLanguageTargetsGotImported)' != 'true' ">
-    <DocFileItem Include="$(DocumentationFile)" Condition="'$(DocumentationFile)'!=''"/>
-    <FinalDocFile Include="@(DocFileItem->'$(OutDir)%(Filename)%(Extension)')"/>
-  </ItemGroup>
-
-  <!--
     The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies. Yardarm projects do no generate resource assemblies
     so the target is replaced with a no-op
   -->
@@ -93,12 +73,6 @@
   <Target Name="GetReferenceAssemblyPaths" DependsOnTargets="$(GetReferenceAssemblyPathsDependsOn)" />
 
   <Import Project="$(CustomAfterYardarm)" Condition="'$(CustomAfterYardarm)' != '' and Exists('$(CustomAfterYardarm)')" />
-
-  <!--
-    Microsoft.Managed.Targets is imported by the managed language target files in MSBuild 16.0 and above, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
-    So import it when the managed targets do not get imported.
-  -->
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
 
   <!--
     Verify that the SpecFile is found and that there is only one specified.
@@ -169,7 +143,7 @@
       OutputRefAssembly="@(IntermediateRefAssembly)"
       OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
       OutputXmlDocumentation="$(DocumentationFile)"
-      ResolvedFrameworkReferences="@(ResolvedFrameworkReference)"
+      References="@(ReferencePathWithRefAssemblies)"
     >
     </YardarmGenerate>
 

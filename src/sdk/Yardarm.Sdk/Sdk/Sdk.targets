@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MSBuildAllProjects Condition=" '$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0' ">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <!--
+    Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj, etc)
+    https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
+
+    We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only default
+    it if we know the SDK won't.  Projects probably won't load in Visual Studio but will build from the
+    command-line just fine.
+  -->
+  <PropertyGroup>
+    <LanguageTargets Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
+  </PropertyGroup>
+
+  <Import Project="$(CustomBeforeYardarm)" Condition="'$(CustomBeforeYardarm)' != '' and Exists('$(CustomBeforeYardarm)')" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
+
+  <!--
+    Add Yardarm tasks.
+  -->
+  <PropertyGroup>
+    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' And '$(MSBuildRuntimeType)' == 'Core' ">$(YardarmTaskBasePath)netcoreapp3.1\Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
+    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' And '$(MSBuildRuntimeType)' != 'Core' ">$(YardarmTaskBasePath)net472\Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
+  </PropertyGroup>
+  <UsingTask TaskName="Yardarm.Build.Tasks.YardarmGenerate"
+             AssemblyFile="$(YardarmTaskAssembly)" />
+  <UsingTask TaskName="Yardarm.Build.Tasks.YardarmCollectDependencies"
+             AssemblyFile="$(YardarmTaskAssembly)" />
+
+  <PropertyGroup>
+    <!-- This property must be overridden to remove a few targets that compile assemblies -->
+    <CoreBuildDependsOn>
+      BuildOnlySettings;
+      PrepareForBuild;
+      PreBuildEvent;
+      ResolveReferences;
+      Compile;
+      GetTargetPath;
+      PrepareForRun;
+      IncrementalClean;
+      PostBuildEvent
+    </CoreBuildDependsOn>
+    <CoreCompileDependsOn>
+      $(CoreCompileDependsOn);
+      _VerifyOpenApiSpecFile
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Clear output group items which are read by the IDE and NuGet.
+  -->
+  <ItemGroup>
+    <Analyzer Remove="@(Analyzer)" />
+    <Reference Remove="mscorlib" />
+  </ItemGroup>
+
+  <!--
+    Add the JSON tool of choice as an extension, if any.
+  -->
+  <ItemGroup>
+    <YardarmExtension Include="$(YardarmToolPath)Yardarm.NewtonsoftJson.dll" Condition=" '$(JsonMode)' == 'NewtonsoftJson' " />
+    <YardarmExtension Include="$(YardarmToolPath)Yardarm.SystemTextJson.dll" Condition=" '$(JsonMode)' == 'SystemTextJson' " />
+  </ItemGroup>
+
+  <!--
+    If this is not a .csproj or similar, we need to manually create the items for the documentation files.
+  -->
+  <ItemGroup Condition=" '$(ManagedLanguageTargetsGotImported)' != 'true' ">
+    <DocFileItem Include="$(DocumentationFile)" Condition="'$(DocumentationFile)'!=''"/>
+    <FinalDocFile Include="@(DocFileItem->'$(OutDir)%(Filename)%(Extension)')"/>
+  </ItemGroup>
+
+  <!--
+    The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies. Yardarm projects do no generate resource assemblies
+    so the target is replaced with a no-op
+  -->
+  <Target Name="ComputeIntermediateSatelliteAssemblies" />
+
+  <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets"
+          Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
+
+  <!--
+    The GetReferenceAssemblyPaths does not need to run since reference assemblies aren't needed.
+  -->
+  <Target Name="GetFrameworkPaths" DependsOnTargets="$(GetFrameworkPathsDependsOn)" />
+  <Target Name="GetReferenceAssemblyPaths" DependsOnTargets="$(GetReferenceAssemblyPathsDependsOn)" />
+
+  <Import Project="$(CustomAfterYardarm)" Condition="'$(CustomAfterYardarm)' != '' and Exists('$(CustomAfterYardarm)')" />
+
+  <!--
+    Microsoft.Managed.Targets is imported by the managed language target files in MSBuild 16.0 and above, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
+    So import it when the managed targets do not get imported.
+  -->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
+
+  <!--
+    Verify that the SpecFile is found and that there is only one specified.
+  -->
+  <Target Name="_VerifyOpenApiSpecFile">
+    <ItemGroup>
+      <_FilteredSpecFile Include="@(SpecFile->Exists())" />
+    </ItemGroup>
+
+    <Error Text="Open API spec file '@(SpecFile)' not found."
+           Condition=" @(_FilteredSpecFile->Count()) == 0 " />
+
+    <Error Text="Only one Open API spec file is allowed."
+           Condition=" @(_FilteredSpecFile->Count()) != 1 " />
+
+    <ItemGroup>
+      <SpecFile Remove="@(SpecFile)" />
+      <SpecFile Include="@(_FilteredSpecFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Collect PackageReference, PackageDownload, and FrameworkReference items from Yardarm prior to
+    executing restore operations.
+  -->
+  <Target Name="YardarmCollectDependencies"
+          Condition=" '$(TargetFramework)' != '' "
+          BeforeTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences"
+          DependsOnTargets="_VerifyOpenApiSpecFile"
+          Returns="@(PackageReference);@(PackageDownload);@(FrameworkReference)">
+    <YardarmCollectDependencies
+      ToolPath="$(YardarmToolPath)"
+      AssemblyName="$(AssemblyName)"
+      TargetFramework="$(TargetFramework)"
+      SpecFile="@(SpecFile)"
+      BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
+    >
+      <Output TaskParameter="PackageReference" ItemName="PackageReference" />
+      <Output TaskParameter="PackageDownload" ItemName="PackageDownload" />
+      <Output TaskParameter="FrameworkReference" ItemName="FrameworkReference" />
+    </YardarmCollectDependencies>
+  </Target>
+
+  <!--
+    Override stock CoreCompile target to execute Yardarm generation
+  -->
+  <Target Name="CoreCompile"
+          Inputs="$(MSBuildAllProjects);$(OpenApiSpecFile);@(CustomAdditionalCompileInputs)"
+          Outputs="@(DocFileItem);
+                   @(IntermediateAssembly);
+                   @(IntermediateRefAssembly);
+                   @(_DebugSymbolsIntermediatePath);
+                   $(NonExistentFile);
+                   @(CustomAdditionalCompileOutputs)"
+          DependsOnTargets="$(CoreCompileDependsOn)">
+
+    <YardarmGenerate
+      ToolPath="$(YardarmToolPath)"
+      AssemblyName="$(AssemblyName)"
+      TargetFramework="$(TargetFramework)"
+      Version="$(Version)"
+      SpecFile="@(SpecFile)"
+      BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
+      EmbedAllSources="$(EmbedAllSources)"
+      OutputAssembly="@(IntermediateAssembly)"
+      OutputRefAssembly="@(IntermediateRefAssembly)"
+      OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
+      OutputXmlDocumentation="$(DocumentationFile)"
+    >
+    </YardarmGenerate>
+
+    <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''" />
+  </Target>
+
+  <!--
+    Keeps a list of files and properties which affect the build as a hash in a file. This file is then included as inputs
+    to the CoreCompile step. The result is that if the selected spec file or key properties are changed it can be recognized
+    on an incremental build and still trigger the generate step, even if the timestamps on the file don't trigger generation.
+    This is an override of the behavior built into MSBuild, which uses other values like Compile items and DefineConstants.
+  -->
+  <Target Name="_GenerateCompileDependencyCache" Condition="'$(BuildingProject)' == 'true'">
+    <ItemGroup>
+      <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" />
+      <CoreCompileCache Include="@(SpecFile)" />
+      <CoreCompileCache Include="EmbedAllSources=$(EmbedAllSources)" />
+      <CoreCompileCache Include="GenerateDocumentationFile=$(GenerateDocumentationFile)" />
+      <CoreCompileCache Include="Version=$(Version)" />
+    </ItemGroup>
+
+    <Hash
+      ItemsToHash="@(CoreCompileCache)"
+      IgnoreCase="$([MSBuild]::ValueOrDefault(`$(CoreCompileCacheIgnoreCase)`, `true`))">
+      <Output TaskParameter="HashResult" PropertyName="CoreCompileDependencyHash" />
+    </Hash>
+
+    <WriteLinesToFile Lines="$(CoreCompileDependencyHash)" File="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Prevent these steps from running -->
+  <Target Name="_GenerateCompileInputs" />
+</Project>

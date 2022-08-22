@@ -1,0 +1,79 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+
+    <AssemblyName>Yardarm.Build.Tasks</AssemblyName>
+    <RootNamespace>Yardarm.Build.Tasks</RootNamespace>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <PackageId>Yardarm.Sdk</PackageId>
+    <PackageType>MSBuildSdk</PackageType>
+    <Description>MSBuild SDK for a project that generates a Yardarm SDK from an OpenAPI specification.</Description>
+    <PackageTags>MSBuild MSBuildSdk Yardarm OpenAPI</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!--<NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>-->
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <NoWarn>$(NoWarn);NU5100;NU5128</NoWarn> <!--;SA0001-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.3.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.3.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\main\Yardarm.CommandLine\Interop\*.cs">
+      <LinkBase>Interop</LinkBase>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Reference Include="System.Runtime.Serialization" Pack="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Sdk\**\*.props;Sdk\**\*.targets" Pack="true" PackagePath="Sdk" />
+    <None Remove="@(Content)" />
+    <!-- Make sure VS considers any change to any of the targets as requiring a new build/pack -->
+    <UpToDateCheckInput Include="@(Content)" />
+  </ItemGroup>
+
+  <!--
+    Publish and collect the Yardarm command-line application to include as a tool.
+    Only do this once as part of the outer multi-targeting run.
+  -->
+  <Target Name="PublishYardarmCommandLine"
+          Condition=" '$(TargetFramework)' == '' ">
+    <MSBuild Projects="..\..\main\Yardarm.CommandLine\Yardarm.CommandLine.csproj"
+             Properties="Configuration=$(Configuration)"
+             RemoveProperties="TargetFramework"
+             Targets="Publish" />
+  </Target>
+
+  <Target Name="CollectYardarmCommandLine" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="PublishYardarmCommandLine">
+    <PropertyGroup>
+      <_CommandLinePublishPath>..\..\main\Yardarm.CommandLine\bin\$(Configuration)\net6.0\publish\</_CommandLinePublishPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_CommandLineFile Include="$(_CommandLinePublishPath)**\*.exe" />
+      <_CommandLineFile Include="$(_CommandLinePublishPath)**\*.dll" />
+      <_CommandLineFile Include="$(_CommandLinePublishPath)*.deps.json" />
+      <_CommandLineFile Include="$(_CommandLinePublishPath)*.runtimeconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="@(_CommandLineFile)" Pack="true" PackagePath="tools\net6.0\yardarm" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Don't list net6.0 as a dependency of the SDK package -->
+  <!--<Target Name="_GetTargetFrameworksOutput" Returns="" />-->
+</Project>

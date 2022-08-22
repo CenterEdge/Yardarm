@@ -134,6 +134,7 @@
       AssemblyName="$(AssemblyName)"
       TargetFramework="$(TargetFramework)"
       SpecFile="@(SpecFile)"
+      Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
     >
       <Output TaskParameter="PackageReference" ItemName="PackageReference" />
@@ -161,6 +162,7 @@
       TargetFramework="$(TargetFramework)"
       Version="$(Version)"
       SpecFile="@(SpecFile)"
+      Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
       EmbedAllSources="$(EmbedAllSources)"
       OutputAssembly="@(IntermediateAssembly)"

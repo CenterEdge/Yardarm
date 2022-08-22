@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NuGet.Packaging.Core;
+using Yardarm.Packaging;
 
 namespace Yardarm
 {
@@ -79,6 +80,12 @@ namespace Yardarm
         public Stream? NuGetOutput { get; set; }
 
         public Stream? NuGetSymbolsOutput { get; set; }
+
+        /// <summary>
+        /// A list of resolved framework references, typically passed in from MSBuild. If there is a framework
+        /// reference which is not included in this list Yardarm will try to resolve itself.
+        /// </summary>
+        public List<ResolvedFrameworkReference>? ResolvedFrameworkReferences { get; set; }
 
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)

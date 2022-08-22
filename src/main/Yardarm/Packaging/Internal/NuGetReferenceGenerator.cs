@@ -9,6 +9,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 using Yardarm.Generation;
 
 namespace Yardarm.Packaging.Internal
@@ -64,21 +65,37 @@ namespace Yardarm.Packaging.Internal
             dependencies.AddRange(frameworkInformation.FrameworkReferences
                 .Select(frameworkReference =>
                 {
+                    var resolvedFrameworkReference = _context.Settings.ResolvedFrameworkReferences?
+                        .FirstOrDefault(p => p.Name == frameworkReference.Name);
+                    if (resolvedFrameworkReference is not null)
+                    {
+                        return resolvedFrameworkReference.Path;
+                    }
+
+                    // Try to resolve ourselves
+
                     string refAssemblyName = $"{frameworkReference.Name}.Ref";
 
-                    DownloadDependency downloadDependency = frameworkInformation.DownloadDependencies
-                        .First(p => p.Name == refAssemblyName);
+                    var version = frameworkInformation.FrameworkName.Version;
+                    var versionRange = new VersionRange(
+                        new NuGetVersion(version),
+                        maxVersion: new NuGetVersion(version.Major, version.Minor + 1, 0),
+                        includeMaxVersion: false);
 
                     return _context.NuGetRestoreInfo!.Providers.GlobalPackages.FindPackagesById(refAssemblyName)
-                        .Where(package => downloadDependency.VersionRange.Satisfies(package.Version))
-                        .MaxBy(package => package.Version);
+                        .Where(package => versionRange.Satisfies(package.Version))
+                        .MaxBy(package => package.Version)?.ExpandedPath;
                 })
-                .Where(package => package is not null)
-                .SelectMany(localPackageInfo =>
-                    localPackageInfo!.Files
-                        .Where(p => p.StartsWith($"ref/{lockFileTarget.TargetFramework.GetShortFolderName()}") &&
-                                    p.EndsWith(".dll"))
-                        .Select(p => Path.Combine(localPackageInfo.ExpandedPath, p.Replace('/', Path.DirectorySeparatorChar)))));
+                .Where(directory => directory is not null)
+                .SelectMany(directory =>
+                    Directory.GetFiles(directory!, "*.dll", new EnumerationOptions
+                    {
+                        MatchType = MatchType.Win32,
+                        RecurseSubdirectories = true
+                    })
+                    .Select(file => (file, relativePath: Path.GetRelativePath(directory!, file).Replace(Path.DirectorySeparatorChar, '/')))
+                    .Where(file => file.relativePath.StartsWith($"ref/{lockFileTarget.TargetFramework.GetShortFolderName()}/"))
+                    .Select(file => file.file)));
 
             LockFileTargetLibrary? netstandardLibrary = lockFileTarget.Libraries.FirstOrDefault(p => p.Name == NetStandardLibrary);
             if (netstandardLibrary is not null)

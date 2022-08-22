@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MSBuildAllProjects Condition=" '$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0' ">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <UsingYardarmSdk>true</UsingYardarmSdk>
+
+    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' And $([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\tools\linux-x64\yardarm\</YardarmToolPath>
+    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' ">$(MSBuildThisFileDirectory)..\tools\win10-x64\yardarm\</YardarmToolPath>
+    <YardarmTaskBasePath Condition=" '$(YardarmTaskBasePath)' == '' ">$(MSBuildThisFileDirectory)..\tasks\</YardarmTaskBasePath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Copy logic to know if managed targets got imported: https://github.com/dotnet/sdk/blob/49002c14cf91ecd08e79d6184dbd4716c005b509/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L25-L27 -->
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.csproj'">true</ManagedLanguageTargetsGotImported>
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.vbproj'">true</ManagedLanguageTargetsGotImported>
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.fsproj'">true</ManagedLanguageTargetsGotImported>
+  </PropertyGroup>
+
+  <Import Project="$(CustomBeforeYardarmProps)" Condition=" '$(CustomBeforeYardarmProps)' != '' And Exists('$(CustomBeforeYardarmProps)') " />
+
+  <PropertyGroup>
+    <!--
+      Set to SystemTextJson or NewtonsoftJson to automatically add the JSON extension.
+      Any other value, such as None, will not add JSON support to the generated SDK.
+    -->
+    <JsonMode Condition=" '$(JsonMode)' == '' ">SystemTextJson</JsonMode>
+
+    <!-- By default embed source files with debug symbols -->
+    <EmbedAllSources Condition=" '$(EmbedAllSources)' == '' ">true</EmbedAllSources>
+
+    <!-- By default output snupkg symbol packages -->
+    <IncludeSymbols Condition=" '$(IncludeSymbols)' == '' ">true</IncludeSymbols>
+    <SymbolPackageFormat Condition=" '$(SymbolPackageFormat)' == '' ">snupkg</SymbolPackageFormat>
+
+    <!-- Disable default Compile and EmbeddedResource items for Yardarm projects -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+
+    <!--
+      NuGet should always restore Yardarm projects with "PackageReference" style restore.  Setting this property will cause the right thing to happen even if there aren't any PackageReference items in the project.
+    -->
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+
+    <!-- Workload resolver is not required and doesn't work. -->
+    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
+
+    <!-- Targeting packs shouldn't be referenced as Yardarm adds these references automatically. -->
+    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
+
+    <!-- Don't generate assembly info -->
+    <GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">false</GenerateAssemblyInfo>
+
+    <!-- Generate a documentation file by default -->
+    <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' ">true</GenerateDocumentationFile>
+
+    <!-- Don't generate editor config file -->
+    <GenerateMSBuildEditorConfigFile Condition="'$(GenerateMSBuildEditorConfigFile)' == ''">false</GenerateMSBuildEditorConfigFile>
+
+    <!-- Don't automatically reference assembly packages since Yardarm doesn't need reference assemblies -->
+    <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
+    <NoCompilerStandardLib Condition="'$(NoCompilerStandardLib)' == ''">false</NoCompilerStandardLib>
+    <NoStdLib Condition="'$(NoStdLib)' == ''">true</NoStdLib>
+
+    <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
+    <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <Target Name="CreateManifestResourceNames" />
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
+
+  <Import Project="$(CustomAfterYardarmProps)" Condition=" '$(CustomAfterYardarmProps)' != '' And Exists('$(CustomAfterYardarmProps)') " />
+
+  <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
+  <Target Name="CompileDesignTime" />
+</Project>

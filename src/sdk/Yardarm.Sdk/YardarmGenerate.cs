@@ -19,6 +19,8 @@ public class YardarmGenerate : YardarmCommonTask
     public string? OutputDebugSymbols { get; set; }
     public string? OutputXmlDocumentation { get; set; }
 
+    public ITaskItem[]? ResolvedFrameworkReferences { get; set; }
+
     protected override bool ValidateParameters()
     {
         if (!base.ValidateParameters())
@@ -61,6 +63,17 @@ public class YardarmGenerate : YardarmCommonTask
         if (!string.IsNullOrEmpty(OutputXmlDocumentation))
         {
             builder.AppendFormat(" --xml {0}", OutputXmlDocumentation);
+        }
+
+        if (ResolvedFrameworkReferences is {Length: > 0})
+        {
+            builder.Append(" --framework-references");
+
+            foreach (var frameworkReference in ResolvedFrameworkReferences)
+            {
+                builder.AppendFormat(" \"{0}={1}\"", frameworkReference.ItemSpec,
+                    frameworkReference.GetMetadata("TargetingPackPath"));
+            }
         }
     }
 }

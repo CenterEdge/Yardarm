@@ -66,6 +66,9 @@
 
   <Import Project="$(CustomAfterYardarmProps)" Condition=" '$(CustomAfterYardarmProps)' != '' And Exists('$(CustomAfterYardarmProps)') " />
 
+  <!-- Extension point for dynamically generating/collecting OpenApiSpec items -->
+  <Target Name="CollectOpenApiSpecs" />
+
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
 </Project>

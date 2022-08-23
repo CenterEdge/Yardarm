@@ -34,10 +34,6 @@
       IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
-    <CoreCompileDependsOn>
-      $(CoreCompileDependsOn);
-      _VerifyOpenApiSpecFile
-    </CoreCompileDependsOn>
   </PropertyGroup>
 
   <!--
@@ -75,22 +71,23 @@
   <Import Project="$(CustomAfterYardarm)" Condition="'$(CustomAfterYardarm)' != '' and Exists('$(CustomAfterYardarm)')" />
 
   <!--
-    Verify that the SpecFile is found and that there is only one specified.
+    Verify that the OpenApiSpec is found and that there is only one specified.
   -->
-  <Target Name="_VerifyOpenApiSpecFile">
+  <Target Name="_VerifyOpenApiSpecs"
+          DependsOnTargets="CollectOpenApiSpecs">
     <ItemGroup>
-      <_FilteredSpecFile Include="@(SpecFile->Exists())" />
+      <_FilteredOpenApiSpec Include="@(OpenApiSpec->Exists())" />
     </ItemGroup>
 
-    <Error Text="Open API spec file '@(SpecFile)' not found."
-           Condition=" @(_FilteredSpecFile->Count()) == 0 " />
+    <Error Text="Open API spec file '@(OpenApiSpec)' not found."
+           Condition=" @(_FilteredOpenApiSpec->Count()) == 0 " />
 
     <Error Text="Only one Open API spec file is allowed."
-           Condition=" @(_FilteredSpecFile->Count()) != 1 " />
+           Condition=" @(_FilteredOpenApiSpec->Count()) != 1 " />
 
     <ItemGroup>
-      <SpecFile Remove="@(SpecFile)" />
-      <SpecFile Include="@(_FilteredSpecFile)" />
+      <OpenApiSpec Remove="@(OpenApiSpec)" />
+      <OpenApiSpec Include="@(_FilteredOpenApiSpec)" />
     </ItemGroup>
   </Target>
 
@@ -101,13 +98,13 @@
   <Target Name="YardarmCollectDependencies"
           Condition=" '$(TargetFramework)' != '' "
           BeforeTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences"
-          DependsOnTargets="_VerifyOpenApiSpecFile"
+          DependsOnTargets="_VerifyOpenApiSpecs"
           Returns="@(PackageReference);@(PackageDownload);@(FrameworkReference)">
     <YardarmCollectDependencies
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
       TargetFramework="$(TargetFramework)"
-      SpecFile="@(SpecFile)"
+      SpecFile="@(OpenApiSpec)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
     >
@@ -135,8 +132,14 @@
   <!--
     Override stock CoreCompile target to execute Yardarm generation
   -->
+  <PropertyGroup>
+    <CoreCompileDependsOn>
+      $(CoreCompileDependsOn);
+      _VerifyOpenApiSpecs
+    </CoreCompileDependsOn>
+  </PropertyGroup>
   <Target Name="CoreCompile"
-          Inputs="$(MSBuildAllProjects);$(OpenApiSpecFile);@(CustomAdditionalCompileInputs)"
+          Inputs="$(MSBuildAllProjects);@(OpenApiSpec);@(CustomAdditionalCompileInputs)"
           Outputs="@(DocFileItem);
                    @(IntermediateAssembly);
                    @(IntermediateRefAssembly);
@@ -150,7 +153,7 @@
       AssemblyName="$(AssemblyName)"
       TargetFramework="$(TargetFramework)"
       Version="$(Version)"
-      SpecFile="@(SpecFile)"
+      SpecFile="@(OpenApiSpec)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
       EmbedAllSources="$(EmbedAllSources)"
@@ -178,7 +181,7 @@
   <Target Name="_GenerateCompileDependencyCache" Condition="'$(BuildingProject)' == 'true'">
     <ItemGroup>
       <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" />
-      <CoreCompileCache Include="@(SpecFile)" />
+      <CoreCompileCache Include="@(OpenApiSpec)" />
       <CoreCompileCache Include="EmbedAllSources=$(EmbedAllSources)" />
       <CoreCompileCache Include="GenerateDocumentationFile=$(GenerateDocumentationFile)" />
       <CoreCompileCache Include="Version=$(Version)" />

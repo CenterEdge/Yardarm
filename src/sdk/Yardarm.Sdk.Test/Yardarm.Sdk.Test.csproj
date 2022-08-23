@@ -15,9 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SpecFile Include="../../main/Yardarm.CommandLine/centeredge-cardsystemapi.yaml">
+    <OpenApiSpec Include="../../main/Yardarm.CommandLine/centeredge-cardsystemapi.yaml">
       <Link>centeredge-cardsystemapi.yaml</Link>
-    </SpecFile>
+    </OpenApiSpec>
   </ItemGroup>
 
   <Import Project="../Yardarm.Sdk/Sdk/Sdk.targets" />

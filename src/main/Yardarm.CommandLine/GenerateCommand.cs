@@ -34,15 +34,12 @@ namespace Yardarm.CommandLine
 
             var document = await ReadDocumentAsync();
 
-            string basePath = _options.InputFile;
-            if (!Path.IsPathFullyQualified(basePath))
-            {
-                basePath = Path.Combine(AppContext.BaseDirectory, basePath);
-            }
-
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
-                BasePath = basePath,
+                // For deterministic builds, BasePath must start with "/_x", where x is a number. This is consistent
+                // with how deterministic source paths are generated on CI servers for regular C# projects when the
+                // DeterministicSourcePaths property is set to true.
+                BasePath = "/_0",
                 EmbedAllSources = _options.EmbedAllSources,
                 IntermediateOutputPath = _options.IntermediateOutputPath,
                 NoRestore = _options.NoRestore,

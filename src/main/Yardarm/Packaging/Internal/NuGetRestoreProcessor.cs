@@ -61,10 +61,13 @@ namespace Yardarm.Packaging.Internal
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputPath = intermediatePath,
+                    CacheFilePath = Path.Combine(intermediatePath, "project.nuget.cache"),
                     ProjectName = _packageSpec.Name,
+                    ProjectPath = $"{_packageSpec.Name}.csproj", // Ensures consistent naming of .nuget.g.props/targets in intermediate directory
                     ProjectStyle = ProjectStyle.PackageReference,
                     CrossTargeting = true,
                 };
+                _packageSpec.RestoreMetadata.ProjectUniqueName = _packageSpec.RestoreMetadata.ProjectPath;
 
                 var settings = Settings.LoadDefaultSettings(intermediatePath);
 
@@ -84,10 +87,16 @@ namespace Yardarm.Packaging.Internal
                     var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, logger);
                     var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
 
+                    var dependencyGraphSpec = new DependencyGraphSpec();
+                    dependencyGraphSpec.AddProject(_packageSpec);
+
                     var restoreRequest = new RestoreRequest(_packageSpec, dependencyProviders, cacheContext,
                         clientPolicyContext, packageSourceMapping, logger, new LockFileBuilderCache())
                     {
-                        ProjectStyle = ProjectStyle.PackageReference, RestoreOutputPath = intermediatePath,
+                        ProjectStyle = ProjectStyle.PackageReference,
+                        RestoreOutputPath = intermediatePath,
+                        AllowNoOp = !isTempPath,
+                        DependencyGraphSpec = dependencyGraphSpec
                     };
 
                     var restoreCommand = new RestoreCommand(restoreRequest);

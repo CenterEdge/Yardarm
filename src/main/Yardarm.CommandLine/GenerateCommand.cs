@@ -278,14 +278,35 @@ namespace Yardarm.CommandLine
 
         private void ApplyStrongNaming(YardarmGenerationSettings settings)
         {
-            if (string.IsNullOrEmpty(_options.KeyFile))
+            if (string.IsNullOrEmpty(_options.KeyFile) && string.IsNullOrEmpty(_options.KeyContainerName))
             {
                 return;
             }
 
-            settings.CompilationOptions = settings.CompilationOptions
-                .WithStrongNameProvider(new DesktopStrongNameProvider(ImmutableArray.Create(Directory.GetCurrentDirectory())))
-                .WithCryptoKeyFile(_options.KeyFile);
+            var options = settings.CompilationOptions
+                .WithStrongNameProvider(
+                    new DesktopStrongNameProvider(ImmutableArray.Create(Directory.GetCurrentDirectory())));
+
+            if (!string.IsNullOrEmpty(_options.KeyFile))
+            {
+                options = options.WithCryptoKeyFile(_options.KeyFile);
+            }
+            else
+            {
+                options = options.WithCryptoKeyContainer(_options.KeyContainerName);
+            }
+
+            if (_options.DelaySign)
+            {
+                options = options.WithDelaySign(true);
+            }
+
+            if (_options.PublicSign)
+            {
+                options = options.WithPublicSign(true);
+            }
+
+            settings.CompilationOptions = options;
         }
 
         protected override void ApplyNuGetSettings(YardarmGenerationSettings settings)

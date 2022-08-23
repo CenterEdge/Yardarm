@@ -159,6 +159,10 @@
       OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
       OutputXmlDocumentation="$(DocumentationFile)"
       References="@(ReferencePathWithRefAssemblies)"
+      KeyFile="$(KeyOriginatorFile)"
+      KeyContainerName="$(KeyContainerName)"
+      DelaySign="$(DelaySign)"
+      PublicSign="$(PublicSign)"
     >
     </YardarmGenerate>
 

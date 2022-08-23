@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using CommandLine;
-using Yardarm.Packaging;
 
 namespace Yardarm.CommandLine
 {
@@ -14,6 +12,12 @@ namespace Yardarm.CommandLine
 
         [Option("keyfile", HelpText = "Key file to create a strongly-named assembly")]
         public string KeyFile { get; set; }
+
+        [Option("keycontainername", HelpText = "Key container to create a strongly-named assembly")]
+        public string KeyContainerName { get; set; }
+
+        [Option("public-sign", HelpText = "Sign the strongly-named assembly with the public key only")]
+        public bool PublicSign { get; set; }
 
         [Option("embed", HelpText = "Embed source files with debug symbols")]
         public bool EmbedAllSources { get; set; }
@@ -46,6 +50,9 @@ namespace Yardarm.CommandLine
 
         [Option("no-ref", HelpText = "Suppress output of the reference assembly file", SetName = "dll")]
         public bool NoReferenceAssembly { get; set; }
+
+        [Option("delay-sign", HelpText = "Delay signing of a strongly-named assembly", SetName = "dll")]
+        public bool DelaySign { get; set; }
 
         #endregion
 

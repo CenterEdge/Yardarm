@@ -111,10 +111,25 @@
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
     >
-      <Output TaskParameter="PackageReference" ItemName="PackageReference" />
+      <Output TaskParameter="PackageReference" ItemName="_YardarmPackageReference" />
       <Output TaskParameter="PackageDownload" ItemName="PackageDownload" />
       <Output TaskParameter="FrameworkReference" ItemName="FrameworkReference" />
     </YardarmCollectDependencies>
+
+    <!--
+      If using the new NuGet central package versioning system, remove the version specified by Yardarm
+      and use the centrally set version instead.
+    -->
+    <ItemGroup Condition=" '$(ManagePackageVersionsCentrally)' == 'true' ">
+      <_YardarmPackageReference Update="@(_YardarmPackageReference)">
+        <Version />
+      </_YardarmPackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="@(_YardarmPackageReference)" />
+      <_YardarmPackageReference Remove="@(_YardarmPackageReference)" />
+    </ItemGroup>
   </Target>
 
   <!--

@@ -18,6 +18,10 @@ public class YardarmGenerate : YardarmCommonTask
     public string? OutputRefAssembly { get; set; }
     public string? OutputDebugSymbols { get; set; }
     public string? OutputXmlDocumentation { get; set; }
+    public string? KeyFile { get; set; }
+    public string? KeyContainerName { get; set; }
+    public string? DelaySign { get; set; }
+    public string? PublicSign { get; set; }
 
     public ITaskItem[]? References { get; set; }
 
@@ -63,6 +67,22 @@ public class YardarmGenerate : YardarmCommonTask
         if (!string.IsNullOrEmpty(OutputXmlDocumentation))
         {
             builder.AppendFormat(" --xml {0}", OutputXmlDocumentation);
+        }
+        if (!string.IsNullOrEmpty(KeyFile))
+        {
+            builder.AppendFormat(" --keyfile {0}", KeyFile);
+        }
+        if (!string.IsNullOrEmpty(KeyContainerName))
+        {
+            builder.AppendFormat(" --keycontainername {0}", KeyContainerName);
+        }
+        if (DelaySign == "true")
+        {
+            builder.Append(" --delay-sign");
+        }
+        if (PublicSign == "true")
+        {
+            builder.Append(" --public-sign");
         }
 
         if (References is {Length: > 0})

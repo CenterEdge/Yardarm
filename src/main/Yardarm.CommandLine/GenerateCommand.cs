@@ -54,7 +54,7 @@ namespace Yardarm.CommandLine
 
             ApplyNuGetSettings(settings);
 
-            List<Stream> streams = ApplyFileStreams(settings);
+            List<IntermediateStream> streams = await ApplyFileStreamsAsync(settings);
             try
             {
                 settings
@@ -84,6 +84,15 @@ namespace Yardarm.CommandLine
                     );
                 }
 
+                // On success move the temporary files to their permanent location
+                if (generationResult.Success)
+                {
+                    foreach (IntermediateStream stream in streams)
+                    {
+                        await stream.CommitAsync();
+                    }
+                }
+
                 stopwatch.Stop();
                 if (generationResult.Success)
                 {
@@ -103,7 +112,7 @@ namespace Yardarm.CommandLine
             }
             finally
             {
-                foreach (var stream in streams)
+                foreach (IntermediateStream stream in streams)
                 {
                     await stream.DisposeAsync();
                 }
@@ -131,9 +140,9 @@ namespace Yardarm.CommandLine
             settings.Version = version;
         }
 
-        private List<Stream> ApplyFileStreams(YardarmGenerationSettings settings)
+        private async Task<List<IntermediateStream>> ApplyFileStreamsAsync(YardarmGenerationSettings settings)
         {
-            var streams = new List<Stream>();
+            var streams = new List<IntermediateStream>();
             try
             {
                 if (!string.IsNullOrEmpty(_options.OutputFile))
@@ -189,29 +198,29 @@ namespace Yardarm.CommandLine
                         }
                     }
 
-                    var dllStream = File.Create(_options.OutputFile!);
+                    var dllStream = new IntermediateStream(_options.OutputFile!);
                     streams.Add(dllStream);
-                    settings.DllOutput = dllStream;
+                    settings.DllOutput = dllStream.Stream;
 
                     if (!_options.NoXmlFile && !string.IsNullOrEmpty(_options.OutputXmlFile))
                     {
-                        var xmlStream = File.Create(_options.OutputXmlFile);
+                        var xmlStream = new IntermediateStream(_options.OutputXmlFile);
                         streams.Add(xmlStream);
-                        settings.XmlDocumentationOutput = xmlStream;
+                        settings.XmlDocumentationOutput = xmlStream.Stream;
                     }
 
                     if (!_options.NoDebugSymbols && !string.IsNullOrEmpty(_options.OutputDebugSymbols))
                     {
-                        var pdbStream = File.Create(_options.OutputDebugSymbols);
+                        var pdbStream = new IntermediateStream(_options.OutputDebugSymbols);
                         streams.Add(pdbStream);
-                        settings.PdbOutput = pdbStream;
+                        settings.PdbOutput = pdbStream.Stream;
                     }
 
                     if (!_options.NoReferenceAssembly && !string.IsNullOrEmpty(_options.OutputReferenceAssembly))
                     {
-                        var referenceAssemblyStream = File.Create(_options.OutputReferenceAssembly);
+                        var referenceAssemblyStream = new IntermediateStream(_options.OutputReferenceAssembly);
                         streams.Add(referenceAssemblyStream);
-                        settings.ReferenceAssemblyOutput = referenceAssemblyStream;
+                        settings.ReferenceAssemblyOutput = referenceAssemblyStream.Stream;
                     }
                 }
                 else if (!string.IsNullOrEmpty(_options.OutputPackageFile))
@@ -241,15 +250,15 @@ namespace Yardarm.CommandLine
                             $"{Path.GetFileNameWithoutExtension(_options.OutputSymbolsPackageFile)}.snupkg");
                     }
 
-                    var nupkgStream = File.Create(_options.OutputPackageFile);
+                    var nupkgStream = new IntermediateStream(_options.OutputPackageFile);
                     streams.Add(nupkgStream);
-                    settings.NuGetOutput = nupkgStream;
+                    settings.NuGetOutput = nupkgStream.Stream;
 
                     if (!_options.NoSymbolsPackageFile && !string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
                     {
-                        var snupkgStream = File.Create(_options.OutputSymbolsPackageFile);
+                        var snupkgStream = new IntermediateStream(_options.OutputSymbolsPackageFile);
                         streams.Add(snupkgStream);
-                        settings.NuGetSymbolsOutput = snupkgStream;
+                        settings.NuGetSymbolsOutput = snupkgStream.Stream;
                     }
                 }
 
@@ -258,9 +267,9 @@ namespace Yardarm.CommandLine
             catch
             {
                 // Don't leave dangling streams on exception
-                foreach (var stream in streams)
+                foreach (IntermediateStream stream in streams)
                 {
-                    stream.Dispose();
+                    await stream.DisposeAsync();
                 }
 
                 throw;
@@ -288,6 +297,64 @@ namespace Yardarm.CommandLine
                 settings.Repository =
                     new RepositoryMetadata(_options.RepositoryType, _options.RepositoryUrl, _options.RepositoryBranch,
                         _options.RepositoryCommit);
+            }
+        }
+
+        // Holds a temporary file which will eventually be persisted to a final file.
+        // It is important we do this to support incremental builds, failed builds shouldn't update the target files.
+        private class IntermediateStream : IAsyncDisposable
+        {
+            private readonly string _tempFilePath;
+
+            public Stream Stream { get; private set; }
+            public string FilePath { get; }
+
+            public IntermediateStream(string filePath)
+            {
+                ArgumentNullException.ThrowIfNull(filePath);
+
+                _tempFilePath = Path.GetTempFileName();
+                Stream = File.OpenWrite(_tempFilePath);
+                FilePath = filePath;
+            }
+
+            public async Task CommitAsync()
+            {
+                if (Stream is null)
+                {
+                    throw new InvalidOperationException("Stream is already committed.");
+                }
+
+                await Stream.FlushAsync();
+                await Stream.DisposeAsync();
+                Stream = null;
+
+                await using (var destinationStream = File.OpenWrite(FilePath))
+                await using (var sourceStream = File.OpenRead(_tempFilePath))
+                {
+                    await sourceStream.CopyToAsync(destinationStream);
+                }
+
+                // Go ahead and cleanup now
+                await DisposeAsync();
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                if (Stream is not null)
+                {
+                    await Stream.DisposeAsync();
+                    Stream = null;
+                }
+
+                try
+                {
+                    File.Delete(_tempFilePath);
+                }
+                catch
+                {
+                    // Ignore cleanup failure
+                }
             }
         }
     }

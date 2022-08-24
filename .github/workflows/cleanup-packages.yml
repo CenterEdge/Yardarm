@@ -1,0 +1,40 @@
+name: Cleanup packages
+
+on:
+  schedule:
+  - cron: '21 0 * * 6'
+  workflow_dispatch:
+
+jobs:
+  clean-pr-packages:
+
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+    - uses: actions/delete-package-versions@v3
+      with:
+        package-name: Yardarm
+        min-versions-to-keep: 30
+        ignore-versions: ^(?!.*ci-pr).*$
+    - uses: actions/delete-package-versions@v3
+      with:
+        package-name: Yardarm.NewtonsoftJson
+        min-versions-to-keep: 30
+        ignore-versions: ^(?!.*ci-pr).*$
+    - uses: actions/delete-package-versions@v3
+      with:
+        package-name: Yardarm.SystemTextJson
+        min-versions-to-keep: 30
+        ignore-versions: ^(?!.*ci-pr).*$
+    - uses: actions/delete-package-versions@v3
+      with:
+        package-name: Yardarm.CommandLine
+        min-versions-to-keep: 30
+        ignore-versions: ^(?!.*ci-pr).*$
+    - uses: actions/delete-package-versions@v3
+      with:
+        package-name: Yardarm.Sdk
+        min-versions-to-keep: 30
+        ignore-versions: ^(?!.*ci-pr).*$

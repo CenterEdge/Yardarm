@@ -16,6 +16,18 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '6.0.x'
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.13
+      with:
+        versionSpec: "5.10.3"
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v0.9.13
+      with:
+        useConfigFile: true
+        configFilePath: "GitVersion.yml"
+
     - uses: actions/cache@v3
       with:
         path: ~/.nuget/packages
@@ -28,30 +40,33 @@ jobs:
     - name: Install SDK dependencies
       working-directory: ./src/sdk
       run: dotnet restore Yardarm.Sdk.sln
-    - run: echo "VERSION=${GITHUB_REF/refs\/tags\/release\//}" >> $GITHUB_ENV
-      if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
-    - run: echo "VERSION=0.1.0-local" >> $GITHUB_ENV
-      if: ${{ !startsWith(github.ref, 'refs/tags/release/') }}
+
     - name: Build
       working-directory: ./src/main
-      run: dotnet build --configuration Release -p:Version=${{ env.VERSION }} --no-restore
+      run: dotnet build --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-restore
     - name: Test
       working-directory: ./src/main
       run: dotnet test --configuration Release --no-build --verbosity normal
     - name: Build SDK
       working-directory: ./src/sdk
-      run: dotnet build --configuration Release -p:Version=${{ env.VERSION }} --no-restore Yardarm.Sdk.sln
+      run: dotnet build --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-restore Yardarm.Sdk.sln
     - name: Test Generate
       run: ./scripts/generate.sh
+
     - name: Pack
       if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
       working-directory: ./src/main
-      run: dotnet pack --configuration Release -p:Version=${{ env.VERSION }} --no-build
+      run: dotnet pack --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-build
     - name: Push to NuGet.org
       if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
       working-directory: ./src/main
       run: |
-        dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Push to GitHub Packages
+      if: ${{ startsWith(github.ref, 'refs/pull/') }}
+      working-directory: ./src/main
+      run: |
+        dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/CenterEdge/index.json --skip-duplicate
 
   docker:
 
@@ -61,36 +76,43 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - run: echo "VERSION=${GITHUB_REF/refs\/tags\/release\//}" >> $GITHUB_ENV
-      if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
-    - run: echo "VERSION=0.1.0-local" >> $GITHUB_ENV
-      if: ${{ !startsWith(github.ref, 'refs/tags/release/') }}
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.13
+      with:
+        versionSpec: "5.10.3"
+    - name: Determine Version
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v0.9.13
+      with:
+        useConfigFile: true
+        configFilePath: "GitVersion.yml"
 
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@v4
       with:
         images: ghcr.io/centeredge/yardarm
         tags: |
           type=ref,event=branch
           type=ref,event=pr
-          type=semver,pattern={{version}},value=${{ env.VERSION }}
+          type=semver,pattern={{version}},value=${{ steps.gitversion.outputs.nuGetVersionV2 }}
           type=sha
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2
 
     - name: Login to DockerHub
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - uses: docker/build-push-action@v2
+    - uses: docker/build-push-action@v3
       with:
         context: .
-        build-args: VERSION=${{ env.VERSION }}
+        build-args: VERSION=${{ steps.gitversion.outputs.nuGetVersionV2 }}
         push: ${{ startsWith(github.ref, 'refs/tags/release/') }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

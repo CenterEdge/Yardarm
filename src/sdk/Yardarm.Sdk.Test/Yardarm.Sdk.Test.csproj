@@ -14,11 +14,5 @@
     <JsonMode>NewtonsoftJson</JsonMode>
   </PropertyGroup>
 
-  <ItemGroup>
-    <OpenApiSpec Include="../../main/Yardarm.CommandLine/centeredge-cardsystemapi.yaml">
-      <Link>centeredge-cardsystemapi.yaml</Link>
-    </OpenApiSpec>
-  </ItemGroup>
-
   <Import Project="../Yardarm.Sdk/Sdk/Sdk.targets" />
 </Project>

@@ -27,9 +27,13 @@
     <IncludeSymbols Condition=" '$(IncludeSymbols)' == '' ">true</IncludeSymbols>
     <SymbolPackageFormat Condition=" '$(SymbolPackageFormat)' == '' ">snupkg</SymbolPackageFormat>
 
-    <!-- Disable default Compile and EmbeddedResource items for Yardarm projects -->
+    <!-- Disable default Compile, EmbeddedResource, and Content items for Yardarm projects -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+
+    <!-- Add OpenApiSpec items automatically -->
+    <EnableDefaultOpenApiItems Condition=" '$(EnableDefaultOpenApiItems)' == '' ">true</EnableDefaultOpenApiItems>
 
     <!--
       NuGet should always restore Yardarm projects with "PackageReference" style restore.  Setting this property will cause the right thing to happen even if there aren't any PackageReference items in the project.
@@ -63,6 +67,14 @@
   <Target Name="CreateManifestResourceNames" />
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
+
+  <!--
+    Add default items. Put this after Microsoft.NET.Sdk.props so we can remove the OpenApiSpec files from None.
+  -->
+  <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' ">
+    <OpenApiSpec Include="**/*.json;**/*.yaml;**/*.yml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultOpenApiItems)' == 'true' " />
+    <None Remove="@(OpenApiSpec)" Condition=" '$(EnableDefaultNoneItems)' == 'true' " />
+  </ItemGroup>
 
   <Import Project="$(CustomAfterYardarmProps)" Condition=" '$(CustomAfterYardarmProps)' != '' And Exists('$(CustomAfterYardarmProps)') " />
 

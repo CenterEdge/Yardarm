@@ -1,0 +1,10 @@
+mode: ContinuousDelivery
+branches:
+  pull-request:
+    mode: ContinuousDeployment
+    tag: ci-pr-
+    track-merge-target: true
+ignore:
+  sha: []
+merge-message-formats: {}
+tag-prefix: "release/"

@@ -34,7 +34,6 @@ public class YardarmCollectDependencies : YardarmCommonTask
 
     private readonly List<ITaskItem> _packageReference = new();
     private readonly List<ITaskItem> _packageDownload = new();
-    private readonly List<ITaskItem> _frameworkReference = new();
 
     [Output]
     public ITaskItem[]? PackageReference { get; set; }
@@ -42,16 +41,12 @@ public class YardarmCollectDependencies : YardarmCommonTask
     [Output]
     public ITaskItem[]? PackageDownload { get; set; }
 
-    [Output]
-    public ITaskItem[]? FrameworkReference { get; set; }
-
     public override bool Execute()
     {
         bool result = base.Execute();
 
         PackageReference = _packageReference.ToArray();
         PackageDownload = _packageDownload.ToArray();
-        FrameworkReference = _frameworkReference.ToArray();
 
         return result;
     }
@@ -96,10 +91,6 @@ public class YardarmCollectDependencies : YardarmCommonTask
 
                     case "PackageDownload":
                         _packageDownload.Add(taskItem);
-                        break;
-
-                    case "FrameworkReference":
-                        _frameworkReference.Add(taskItem);
                         break;
                 }
             }

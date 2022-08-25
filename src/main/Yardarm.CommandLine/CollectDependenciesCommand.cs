@@ -51,14 +51,14 @@ namespace Yardarm.CommandLine
                 var generator = new YardarmGenerator(document, settings);
                 var packageSpec = await generator.GetPackageSpecAsync(cancellationToken);
 
-                foreach (var dependency in packageSpec.Dependencies)
+                foreach (var dependency in packageSpec.Dependencies.Where(p => !p.AutoReferenced))
                 {
                     AddItem(GeneratePackageReference(dependency));
                 }
 
                 foreach (var framework in packageSpec.TargetFrameworks)
                 {
-                    foreach (var dependency in framework.Dependencies)
+                    foreach (var dependency in framework.Dependencies.Where(p => !p.AutoReferenced))
                     {
                         var item = GeneratePackageReference(dependency);
                         item.TargetFramework = framework.FrameworkName.GetShortFolderName();
@@ -68,9 +68,9 @@ namespace Yardarm.CommandLine
 
                     foreach (var download in framework.DownloadDependencies)
                     {
-                        if (download.Name == "Microsoft.NETCore.App.Ref")
+                        if (download.Name is "Microsoft.NETCore.App.Ref" or "NETStandard.Library.Ref")
                         {
-                            // Don't add PackageDownload for .NET Core, this is added automatically by the ProcessFrameworkReferences
+                            // Don't add PackageDownload for .NET Core or .NET Standard, this is added automatically by the ProcessFrameworkReferences
                             // target in MSBuild and we don't want a duplicate. This also has the advantage that MSBuild will automatically
                             // pull the latest known version.
                             continue;
@@ -84,22 +84,6 @@ namespace Yardarm.CommandLine
                             Metadata = new Dictionary<string, string>
                             {
                                 ["Version"] = download.VersionRange.ToNormalizedString()
-                            }
-                        };
-
-                        AddItem(item);
-                    }
-
-                    foreach (var reference in framework.FrameworkReferences)
-                    {
-                        var item = new AddItemDto
-                        {
-                            ItemType = "FrameworkReference",
-                            TargetFramework = framework.FrameworkName.GetShortFolderName(),
-                            Identity = reference.Name,
-                            Metadata = new Dictionary<string, string>
-                            {
-                                ["PrivateAssets"] = reference.PrivateAssets == FrameworkDependencyFlags.All ? "All" : "None"
                             }
                         };
 

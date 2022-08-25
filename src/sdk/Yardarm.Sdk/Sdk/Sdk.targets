@@ -97,9 +97,9 @@
   -->
   <Target Name="YardarmCollectDependencies"
           Condition=" '$(TargetFramework)' != '' "
-          BeforeTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences"
+          BeforeTargets="CollectPackageReferences;CollectPackageDownloads"
           DependsOnTargets="_VerifyOpenApiSpecs"
-          Returns="@(PackageReference);@(PackageDownload);@(FrameworkReference)">
+          Returns="@(PackageReference);@(PackageDownload)">
     <YardarmCollectDependencies
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
@@ -110,7 +110,6 @@
     >
       <Output TaskParameter="PackageReference" ItemName="_YardarmPackageReference" />
       <Output TaskParameter="PackageDownload" ItemName="PackageDownload" />
-      <Output TaskParameter="FrameworkReference" ItemName="FrameworkReference" />
     </YardarmCollectDependencies>
 
     <!--

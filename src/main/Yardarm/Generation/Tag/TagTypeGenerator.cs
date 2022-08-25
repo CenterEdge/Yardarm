@@ -20,19 +20,25 @@ namespace Yardarm.Generation.Tag
 
         private readonly ISerializationNamespace _serializationNamespace;
         private readonly IAuthenticationNamespace _authenticationNamespace;
+        private readonly IApiNamespace _apiNamespace;
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
         protected OpenApiTag Tag => Element.Element;
 
         public TagTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
             ISerializationNamespace serializationNamespace, IAuthenticationNamespace authenticationNamespace,
-            IOperationMethodGenerator operationMethodGenerator)
+            IApiNamespace apiNamespace, IOperationMethodGenerator operationMethodGenerator)
             : base(tagElement, context, null)
         {
-            _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
-            _authenticationNamespace = authenticationNamespace ??
-                                       throw new ArgumentNullException(nameof(authenticationNamespace));
-            _operationMethodGenerator = operationMethodGenerator ?? throw new ArgumentNullException(nameof(operationMethodGenerator));
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+            ArgumentNullException.ThrowIfNull(authenticationNamespace);
+            ArgumentNullException.ThrowIfNull(apiNamespace);
+            ArgumentNullException.ThrowIfNull(operationMethodGenerator);
+
+            _serializationNamespace = serializationNamespace;
+            _authenticationNamespace = authenticationNamespace;
+            _apiNamespace = apiNamespace;
+            _operationMethodGenerator = operationMethodGenerator;
         }
 
         protected override YardarmTypeInfo GetTypeInfo() =>
@@ -50,15 +56,19 @@ namespace Yardarm.Generation.Tag
 
         protected virtual MemberDeclarationSyntax GenerateInterface()
         {
-            var declaration = InterfaceDeclaration(GetInterfaceName())
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddMembers(
+            var declaration = InterfaceDeclaration(
+                default,
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier(GetInterfaceName()),
+                null,
+                BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(_apiNamespace.IApi))),
+                default,
+                List<MemberDeclarationSyntax>(
                     GetOperations()
                         .SelectMany(GenerateOperationMethodHeader,
                             (operation, method) => new {operation, method})
                         .Select(p => p.method
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
-                        .ToArray<MemberDeclarationSyntax>());
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))));
 
             return declaration;
         }

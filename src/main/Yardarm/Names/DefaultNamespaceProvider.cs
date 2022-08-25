@@ -11,26 +11,27 @@ namespace Yardarm.Names
         private readonly IResponsesNamespace _responsesNamespace;
         private readonly IRequestsNamespace _requestsNamespace;
         private readonly IAuthenticationNamespace _authenticationNamespace;
+        private readonly IApiNamespace _apiNamespace;
 
-        private readonly NameSyntax _apiNamespace;
         private readonly NameSyntax _headersNamespace;
         private readonly NameSyntax _modelsNamespace;
         private readonly NameSyntax _parametersNamespace;
 
         public DefaultNamespaceProvider(IRootNamespace rootNamespace, IResponsesNamespace responsesNamespace,
-            IAuthenticationNamespace authenticationNamespace, IRequestsNamespace requestsNamespace)
+            IAuthenticationNamespace authenticationNamespace, IRequestsNamespace requestsNamespace,
+            IApiNamespace apiNamespace)
         {
-            if (rootNamespace == null)
-            {
-                throw new ArgumentNullException(nameof(rootNamespace));
-            }
+            ArgumentNullException.ThrowIfNull(rootNamespace);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+            ArgumentNullException.ThrowIfNull(authenticationNamespace);
+            ArgumentNullException.ThrowIfNull(requestsNamespace);
+            ArgumentNullException.ThrowIfNull(apiNamespace);
 
-            _responsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
-            _authenticationNamespace = authenticationNamespace ??
-                                       throw new ArgumentNullException(nameof(authenticationNamespace));
-            _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
+            _responsesNamespace = responsesNamespace;
+            _authenticationNamespace = authenticationNamespace;
+            _requestsNamespace = requestsNamespace;
+            _apiNamespace = apiNamespace;
 
-            _apiNamespace = SyntaxFactory.QualifiedName(rootNamespace.Name, SyntaxFactory.IdentifierName("Api"));
             _headersNamespace = SyntaxFactory.QualifiedName(_responsesNamespace.Name, SyntaxFactory.IdentifierName("Headers"));
             _modelsNamespace = SyntaxFactory.QualifiedName(rootNamespace.Name, SyntaxFactory.IdentifierName("Models"));
             _parametersNamespace = SyntaxFactory.QualifiedName(_requestsNamespace.Name, SyntaxFactory.IdentifierName("Parameters"));
@@ -77,7 +78,7 @@ namespace Yardarm.Names
             _authenticationNamespace.Name;
 
         protected virtual NameSyntax GetTagNamespace(ILocatedOpenApiElement<OpenApiTag> tag) =>
-            _apiNamespace;
+            _apiNamespace.Name;
 
         protected virtual NameSyntax GetUnknownResponseNamespace(ILocatedOpenApiElement<OpenApiUnknownResponse> responses) =>
             _responsesNamespace.Name;

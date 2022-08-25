@@ -67,7 +67,7 @@
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
     <MSBuild Projects="@(_YardarmCommandLine)"
-             Properties="Configuration=$(Configuration);TargetFramework=net6.0"
+             Properties="Configuration=$(Configuration);TargetFramework=net6.0;SelfContained=False"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"
              SkipNonexistentProjects="false"

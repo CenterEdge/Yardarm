@@ -1,8 +1,16 @@
 {
-  "profiles": {
-    "Yardarm.CommandLine": {
-      "commandName": "Project",
-      "commandLineArgs": "generate -n Test -x Yardarm.NewtonsoftJson.dll -o output/ -i centeredge-cardsystemapi.yaml"
+    "profiles": {
+        "Generate": {
+            "commandName": "Project",
+            "commandLineArgs": "generate --no-restore -n Test.Yardarm -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --embed -o output/ --intermediate-dir output/obj -v 1.0.0 -i centeredge-cardsystemapi.yaml"
+        },
+        "Restore": {
+            "commandName": "Project",
+            "commandLineArgs": "restore -n Test.Yardarm -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --intermediate-dir output/obj -i centeredge-cardsystemapi.yaml"
+        },
+        "CollectDependencies": {
+            "commandName": "Project",
+            "commandLineArgs": "collect-dependencies -n Test -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --intermediate-dir output/obj -i centeredge-cardsystemapi.yaml"
+        }
     }
-  }
 }

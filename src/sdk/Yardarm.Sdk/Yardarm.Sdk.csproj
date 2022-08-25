@@ -67,7 +67,7 @@
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
     <MSBuild Projects="@(_YardarmCommandLine)"
-             Properties="Configuration=$(Configuration);TargetFramework=net6.0"
+             Properties="Configuration=$(Configuration);TargetFramework=net6.0;SelfContained=False"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"
              SkipNonexistentProjects="false"
@@ -125,12 +125,12 @@
                      Condition=" '%(_FilteredYardarmCommandLineFiles.AdditionalProperties)' == 'RuntimeIdentifier=win10-x64' "
                      BuildAction="None"
                      Pack="true"
-                     PackagePath="tools\win10-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
+                     PackagePath="tools\net6.0\win10-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
       <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)"
                      Condition=" '%(_FilteredYardarmCommandLineFiles.AdditionalProperties)' == 'RuntimeIdentifier=linux-x64' "
                      BuildAction="None"
                      Pack="true"
-                     PackagePath="tools\linux-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
+                     PackagePath="tools\net6.0\linux-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
     </ItemGroup>
   </Target>
 

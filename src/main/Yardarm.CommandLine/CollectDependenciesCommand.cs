@@ -51,14 +51,14 @@ namespace Yardarm.CommandLine
                 var generator = new YardarmGenerator(document, settings);
                 var packageSpec = await generator.GetPackageSpecAsync(cancellationToken);
 
-                foreach (var dependency in packageSpec.Dependencies)
+                foreach (var dependency in packageSpec.Dependencies.Where(p => !p.AutoReferenced))
                 {
                     AddItem(GeneratePackageReference(dependency));
                 }
 
                 foreach (var framework in packageSpec.TargetFrameworks)
                 {
-                    foreach (var dependency in framework.Dependencies)
+                    foreach (var dependency in framework.Dependencies.Where(p => !p.AutoReferenced))
                     {
                         var item = GeneratePackageReference(dependency);
                         item.TargetFramework = framework.FrameworkName.GetShortFolderName();

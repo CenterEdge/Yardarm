@@ -11,7 +11,7 @@
     <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\Yardarm.Sdk\bin\$(Configuration)\</YardarmTaskBasePath>
     <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\Yardarm.Sdk\bin\$(Configuration)\</YardarmTaskBasePath>
 
-    <JsonMode>NewtonsoftJson</JsonMode>
+    <JsonMode>Newtonsoft.Json</JsonMode>
   </PropertyGroup>
 
   <Import Project="../Yardarm.Sdk/Sdk/Sdk.targets" />

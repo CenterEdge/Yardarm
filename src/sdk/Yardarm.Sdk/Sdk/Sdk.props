@@ -15,10 +15,10 @@
 
   <PropertyGroup>
     <!--
-      Set to SystemTextJson or NewtonsoftJson to automatically add the JSON extension.
+      Set to "System.Text.Json" or "Newtonsoft.Json" to automatically add the JSON extension.
       Any other value, such as None, will not add JSON support to the generated SDK.
     -->
-    <JsonMode Condition=" '$(JsonMode)' == '' ">SystemTextJson</JsonMode>
+    <JsonMode Condition=" '$(JsonMode)' == '' ">System.Text.Json</JsonMode>
 
     <!-- By default embed source files with debug symbols -->
     <EmbedAllSources Condition=" '$(EmbedAllSources)' == '' ">true</EmbedAllSources>

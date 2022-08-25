@@ -10,7 +10,9 @@ namespace Yardarm.Helpers
     {
         public static class Yardarm
         {
-            public static NameSyntax Name { get; } = IdentifierName("Yardarm");
+            public static NameSyntax Name { get; } = AliasQualifiedName(
+                IdentifierName(Token(SyntaxKind.GlobalKeyword)),
+                IdentifierName("Yardarm"));
 
             public static class Client
             {

@@ -101,6 +101,7 @@ namespace Yardarm
             services.TryAddSingleton<INameConverterRegistry>(_ => NameConverterRegistry.CreateDefaultRegistry());
             services.TryAddSingleton<IHttpResponseCodeNameProvider, HttpResponseCodeNameProvider>();
             services.TryAddSingleton<IRootNamespace, RootNamespace>();
+            services.TryAddSingleton<IApiNamespace, ApiNamespace>();
             services.TryAddSingleton<IAuthenticationNamespace, AuthenticationNamespace>();
             services.TryAddSingleton<IRequestsNamespace, RequestsNamespace>();
             services.TryAddSingleton<IResponsesNamespace, ResponsesNamespace>();

@@ -43,9 +43,6 @@
     <!-- Workload resolver is not required and doesn't work. -->
     <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
 
-    <!-- Targeting packs shouldn't be referenced as Yardarm adds these references automatically. -->
-    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
-
     <!-- Don't generate assembly info -->
     <GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">false</GenerateAssemblyInfo>
 
@@ -54,11 +51,6 @@
 
     <!-- Don't generate editor config file -->
     <GenerateMSBuildEditorConfigFile Condition="'$(GenerateMSBuildEditorConfigFile)' == ''">false</GenerateMSBuildEditorConfigFile>
-
-    <!-- Don't automatically reference assembly packages since Yardarm doesn't need reference assemblies -->
-    <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
-    <NoCompilerStandardLib Condition="'$(NoCompilerStandardLib)' == ''">false</NoCompilerStandardLib>
-    <NoStdLib Condition="'$(NoStdLib)' == ''">true</NoStdLib>
 
     <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
     <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RootNamespace.Serialization
+﻿namespace RootNamespace.Serialization
 {
     /// <summary>
     /// Provides additional details about the value of a multipart encoded field.

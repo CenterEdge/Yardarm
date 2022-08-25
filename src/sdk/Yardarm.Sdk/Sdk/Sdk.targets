@@ -48,8 +48,8 @@
     Add the JSON tool of choice as an extension, if any.
   -->
   <ItemGroup>
-    <YardarmExtension Include="$(YardarmToolPath)Yardarm.NewtonsoftJson.dll" Condition=" '$(JsonMode)' == 'NewtonsoftJson' " />
-    <YardarmExtension Include="$(YardarmToolPath)Yardarm.SystemTextJson.dll" Condition=" '$(JsonMode)' == 'SystemTextJson' " />
+    <YardarmExtension Include="$(YardarmToolPath)Yardarm.NewtonsoftJson.dll" Condition=" '$(JsonMode)' == 'Newtonsoft.Json' " />
+    <YardarmExtension Include="$(YardarmToolPath)Yardarm.SystemTextJson.dll" Condition=" '$(JsonMode)' == 'System.Text.Json' " />
   </ItemGroup>
 
   <!--

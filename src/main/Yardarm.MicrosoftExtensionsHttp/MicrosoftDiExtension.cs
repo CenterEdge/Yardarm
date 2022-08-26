@@ -13,7 +13,8 @@ namespace Yardarm.MicrosoftExtensionsHttp
             services
                 .AddSingleton<IDependencyGenerator, DependencyInjectionDependencyGenerator>()
                 .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
-                .AddResourceFileEnricher<ServiceCollectionExtensionsEnricher>();
+                .AddResourceFileEnricher<ServiceCollectionExtensionsEnricher>()
+                .AddResourceFileEnricher<ApiBuilderExtensionsEnricher>();
 
             return services;
         }

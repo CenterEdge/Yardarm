@@ -15,6 +15,41 @@ namespace RootNamespace
     public static class ApiBuilderExtensions
     {
         /// <summary>
+        /// Add all APIs with their default concrete implementation.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureClient">Action to configure the <see cref="IHttpClientBuilder"/> called for each API. The first parameter is the type of the API interface.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method may not be combined with calls to AddApi to add specific APIs. If APIs are added individually,
+        /// they must all be added individually.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder AddAllApis(this IApiBuilder builder, Action<Type, IHttpClientBuilder>? configureClient = null)
+        {
+            builder.AddAllApisInternal(configureClient, false);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Add all unregistered APIs with their default concrete implementation.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureClient">Action to configure the <see cref="IHttpClientBuilder"/> called for each API. The first parameter is the type of the API interface.</param>
+        /// <remarks>
+        /// <para>
+        /// This method is called last on the <see cref="IApiBuilder"/> and only registers APIs which are not already
+        /// registered individually.
+        /// </para>
+        /// </remarks>
+        public static void AddAllOtherApis(this IApiBuilder builder, Action<Type, IHttpClientBuilder>? configureClient = null)
+        {
+            builder.AddAllApisInternal(configureClient, true);
+        }
+
+        /// <summary>
         /// Add an API with its concrete implementation to the <see cref="IApiBuilder"/> and the <see cref="IServiceCollection"/>.
         /// </summary>
         /// <typeparam name="TClient">The API interface.</typeparam>
@@ -40,6 +75,11 @@ namespace RootNamespace
         {
             ThrowHelper.ThrowIfNull(builder, nameof(builder));
 
+            if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
+            {
+                ThrowRegistrationError(typeof(TClient));
+            }
+
             var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>((serviceProvider, httpClient) =>
             {
                 var apiFactory = serviceProvider.GetRequiredService<ApiFactory>();
@@ -50,6 +90,47 @@ namespace RootNamespace
             configureClient?.Invoke(clientBuilder);
 
             return builder;
+        }
+
+        // Internal implementation used by AddAllApis and AddAllOtherApis
+        private static void AddAllApisInternal(this IApiBuilder builder,
+            Action<Type, IHttpClientBuilder>? configureClient,
+            bool skipIfAlreadyRegistered)
+        {
+            // This area will be dynamically enriched with calls to builder.AddApi<X, Y>(configureClient, skipIfAlreadyRegistered);
+        }
+
+        // Internal implementation used by AddAllApisInternal
+        private static void AddApi<TClient,
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+#endif
+            TImplementation>(this IApiBuilder builder,
+            Action<Type, IHttpClientBuilder>? configureClient,
+            bool skipIfAlreadyRegistered)
+            where TClient : class, IApi
+            where TImplementation : class, TClient
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+
+            if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
+            {
+                if (!skipIfAlreadyRegistered)
+                {
+                    ThrowRegistrationError(typeof(TClient));
+                }
+                return;
+            }
+
+            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>(
+                (serviceProvider, httpClient) =>
+                {
+                    var apiFactory = serviceProvider.GetRequiredService<ApiFactory>();
+
+                    apiFactory.ApplyHttpClientActions(httpClient);
+                });
+
+            configureClient?.Invoke(typeof(TClient), clientBuilder);
         }
 
         /// <summary>
@@ -120,6 +201,13 @@ namespace RootNamespace
             ThrowHelper.ThrowIfNull(uri, nameof(uri));
 
             return builder.ConfigureHttpClient(client => client.BaseAddress = uri);
+        }
+
+        [DoesNotReturn]
+        private static void ThrowRegistrationError(Type clientType)
+        {
+            throw new InvalidOperationException(
+                $"The API {clientType} has already been registered. It may only be registered once.");
         }
     }
 }

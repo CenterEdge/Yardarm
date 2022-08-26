@@ -7,6 +7,8 @@ WORKDIR /app
 COPY src/main/Yardarm/*.csproj ./main/Yardarm/
 COPY src/main/Yardarm.Client/*.csproj ./main/Yardarm.Client/
 COPY src/main/Yardarm.CommandLine/*.csproj ./main/Yardarm.CommandLine/
+COPY src/main/Yardarm.MicrosoftExtensionsHttp/*.csproj ./main/Yardarm.MicrosoftExtensionsHttp/
+COPY src/main/Yardarm.MicrosoftExtensionsHttp.Client/*.csproj ./main/Yardarm.MicrosoftExtensionsHttp.Client/
 COPY src/main/Yardarm.NewtonsoftJson/*.csproj ./main/Yardarm.NewtonsoftJson/
 COPY src/main/Yardarm.NewtonsoftJson.Client/*.csproj ./main/Yardarm.NewtonsoftJson.Client/
 COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/

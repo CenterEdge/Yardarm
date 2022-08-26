@@ -20,6 +20,12 @@
     -->
     <JsonMode Condition=" '$(JsonMode)' == '' ">System.Text.Json</JsonMode>
 
+    <!--
+      Set to "Microsoft.Extensions.Http" to automatically add dependency injection for HTTP client factories.
+      Any other value, such as None, will not add DI support to the generated SDK.
+    -->
+    <DependencyInjectionMode Condition=" '$(DependencyInjectionMode)' == '' ">Microsoft.Extensions.Http</DependencyInjectionMode>
+
     <!-- By default embed source files with debug symbols -->
     <EmbedAllSources Condition=" '$(EmbedAllSources)' == '' ">true</EmbedAllSources>
 

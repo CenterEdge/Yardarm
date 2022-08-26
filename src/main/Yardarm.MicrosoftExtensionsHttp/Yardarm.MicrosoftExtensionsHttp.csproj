@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Description>Extension for Yardarm to generate SDKs that use Microsoft.Extensions.Http for dependency injection.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Collect cs files from Yardarm.Client as resources so we can compile them into generated SDKs -->
+    <EmbeddedResource Include="../Yardarm.MicrosoftExtensionsHttp.Client/**/*.cs" Exclude="../Yardarm.MicrosoftExtensionsHttp.Client/bin/**;../Yardarm.MicrosoftExtensionsHttp.Client/obj/**">
+      <Visible>False</Visible>
+      <LogicalName>$([System.String]::Copy('%(RelativeDir)').Substring(3).Replace('/', '.').Replace('\', '.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

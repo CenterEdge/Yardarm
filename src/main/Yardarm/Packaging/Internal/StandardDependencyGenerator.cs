@@ -44,7 +44,7 @@ namespace Yardarm.Packaging.Internal
                     {
                         Name = "System.ComponentModel.Annotations",
                         TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("4.7.0")
+                        VersionRange = VersionRange.Parse("5.0.0")
                     }
                 };
 

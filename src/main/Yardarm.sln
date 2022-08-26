@@ -21,7 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.SystemTextJson", "Y
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.SystemTextJson.Client", "Yardarm.SystemTextJson.Client\Yardarm.SystemTextJson.Client.csproj", "{7F80C514-3A76-4EBD-8D19-98B4C7D6E2D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.SystemTextJson.UnitTests", "Yardarm.SystemTextJson.UnitTests\Yardarm.SystemTextJson.UnitTests.csproj", "{D69528D7-7308-4E44-A00C-3E95A6BC1F7B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.SystemTextJson.UnitTests", "Yardarm.SystemTextJson.UnitTests\Yardarm.SystemTextJson.UnitTests.csproj", "{D69528D7-7308-4E44-A00C-3E95A6BC1F7B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensionsHttp", "Yardarm.MicrosoftExtensionsHttp\Yardarm.MicrosoftExtensionsHttp.csproj", "{0E269322-37BE-479D-BB3B-6FD9DA81AEBB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensionsHttp.Client", "Yardarm.MicrosoftExtensionsHttp.Client\Yardarm.MicrosoftExtensionsHttp.Client.csproj", "{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +73,14 @@ Global
 		{D69528D7-7308-4E44-A00C-3E95A6BC1F7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D69528D7-7308-4E44-A00C-3E95A6BC1F7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D69528D7-7308-4E44-A00C-3E95A6BC1F7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E269322-37BE-479D-BB3B-6FD9DA81AEBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E269322-37BE-479D-BB3B-6FD9DA81AEBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E269322-37BE-479D-BB3B-6FD9DA81AEBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E269322-37BE-479D-BB3B-6FD9DA81AEBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

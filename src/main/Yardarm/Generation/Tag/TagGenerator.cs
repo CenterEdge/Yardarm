@@ -11,45 +11,42 @@ namespace Yardarm.Generation.Tag
     {
         private readonly OpenApiDocument _document;
         private readonly ITypeGeneratorRegistry<OpenApiTag> _tagGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<OpenApiTag, TagImplementationCategory> _tagImplementationGeneratorRegistry;
 
-        public TagGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry)
+        public TagGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
+            ITypeGeneratorRegistry<OpenApiTag, TagImplementationCategory> tagImplementationGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _tagGeneratorRegistry = tagGeneratorRegistry ?? throw new ArgumentNullException(nameof(tagGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(tagGeneratorRegistry);
+            ArgumentNullException.ThrowIfNull(tagImplementationGeneratorRegistry);
+
+            _document = document;
+            _tagGeneratorRegistry = tagGeneratorRegistry;
+            _tagImplementationGeneratorRegistry = tagImplementationGeneratorRegistry;
         }
 
-        public IEnumerable<SyntaxTree> Generate() => GetTags()
-            .Select(p => _tagGeneratorRegistry.Get(p).GenerateSyntaxTree()!)
-            .Where(p => p != null);
+        public IEnumerable<SyntaxTree> Generate()
+        {
+            foreach (ILocatedOpenApiElement<OpenApiTag> tag in GetTags())
+            {
+                SyntaxTree? tree = _tagGeneratorRegistry.Get(tag).GenerateSyntaxTree();
+                if (tree is not null)
+                {
+                    yield return tree;
+                }
+
+                tree = _tagImplementationGeneratorRegistry.Get(tag).GenerateSyntaxTree();
+                if (tree is not null)
+                {
+                    yield return tree;
+                }
+            }
+        }
 
         private IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags() => _document.Paths.ToLocatedElements()
             .GetOperations()
             .GetTags()
-            .Distinct(new TagComparer());
+            .Distinct(TagComparer.Instance);
 
-        private class TagComparer : IEqualityComparer<ILocatedOpenApiElement<OpenApiTag>>
-        {
-            public bool Equals(ILocatedOpenApiElement<OpenApiTag>? x, ILocatedOpenApiElement<OpenApiTag>? y)
-            {
-                if (x == null)
-                {
-                    return y == null;
-                }
-
-                if (y == null)
-                {
-                    return false;
-                }
-
-                if (ReferenceEquals(x, y))
-                {
-                    return true;
-                }
-
-                return x.Element.Name == y.Element.Name;
-            }
-
-            public int GetHashCode(ILocatedOpenApiElement<OpenApiTag> obj) => obj.Element.Name.GetHashCode();
-        }
     }
 }

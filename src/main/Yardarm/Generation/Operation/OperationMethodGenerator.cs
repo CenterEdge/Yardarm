@@ -58,7 +58,7 @@ namespace Yardarm.Generation.Operation
                 .AddVariables(VariableDeclarator("responseMessage")
                     .WithInitializer(EqualsValueClause(
                         SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
-                                SyntaxHelpers.MemberAccess(TagTypeGenerator.HttpClientFieldName, "SendAsync"))
+                                SyntaxHelpers.MemberAccess(TagImplementationTypeGenerator.HttpClientFieldName, "SendAsync"))
                             .AddArgumentListArguments(
                                 Argument(IdentifierName(RequestMessageVariableName)),
                                 Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))))))));
@@ -79,7 +79,7 @@ namespace Yardarm.Generation.Operation
         protected virtual StatementSyntax GenerateAuthenticatorVariable() =>
             MethodHelpers.LocalVariableDeclarationWithInitializer(AuthenticatorVariableName,
                 InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(TagTypeGenerator.AuthenticatorsFieldName),
+                        IdentifierName(TagImplementationTypeGenerator.AuthenticatorsFieldName),
                         IdentifierName("SelectAuthenticator")))
                     .AddArgumentListArguments(
                         Argument(IdentifierName(RequestParameterName))));
@@ -89,7 +89,7 @@ namespace Yardarm.Generation.Operation
             MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
                 BuildRequestMethodGenerator.InvokeBuildRequest(
                     IdentifierName(RequestParameterName),
-                    IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)));
+                    IdentifierName(TagImplementationTypeGenerator.TypeSerializerRegistryFieldName)));
 
         protected virtual ExpressionSyntax GenerateResponse(
             ILocatedOpenApiElement<OpenApiOperation> operation, ExpressionSyntax responseMessage) =>
@@ -106,13 +106,13 @@ namespace Yardarm.Generation.Operation
                                 Context.TypeGeneratorRegistry.Get(p).TypeInfo.Name)
                             .AddArgumentListArguments(
                                 Argument(IdentifierName("responseMessage")),
-                                Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))))))
+                                Argument(IdentifierName(TagImplementationTypeGenerator.TypeSerializerRegistryFieldName)))))))
                 .AddArms(SwitchExpressionArm(DiscardPattern(),
                     ObjectCreationExpression(
                         Context.TypeGeneratorRegistry.Get(operation.GetResponseSet().GetUnknownResponse()).TypeInfo.Name)
                         .AddArgumentListArguments(
                             Argument(IdentifierName("responseMessage")),
-                            Argument(IdentifierName(TagTypeGenerator.TypeSerializerRegistryFieldName)))));
+                            Argument(IdentifierName(TagImplementationTypeGenerator.TypeSerializerRegistryFieldName)))));
 
         [Pure]
         private static ExpressionSyntax ParseStatusCode(string statusCodeStr) =>

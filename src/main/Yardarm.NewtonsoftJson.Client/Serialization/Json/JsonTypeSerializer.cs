@@ -10,6 +10,8 @@ namespace RootNamespace.Serialization.Json
 {
     public class JsonTypeSerializer : ITypeSerializer
     {
+        private static readonly UTF8Encoding s_utf8NoBomEncoding = new(false);
+
         public static string[] SupportedMediaTypes => new []
         {
             "application/json",
@@ -34,7 +36,7 @@ namespace RootNamespace.Serialization.Json
             var stream = new MemoryStream();
             try
             {
-                using var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true);
+                using var writer = new StreamWriter(stream, s_utf8NoBomEncoding, 1024, true);
                 _serializer.Serialize(writer, value, typeof(T));
                 writer.Flush();
 
@@ -43,7 +45,7 @@ namespace RootNamespace.Serialization.Json
                 {
                     Headers =
                     {
-                        ContentType = new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName},
+                        ContentType = new MediaTypeHeaderValue(mediaType) {CharSet = s_utf8NoBomEncoding.WebName},
                         ContentLength = stream.Length
                     }
                 };

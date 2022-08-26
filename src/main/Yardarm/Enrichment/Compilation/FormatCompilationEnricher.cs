@@ -30,7 +30,8 @@ namespace Yardarm.Enrichment.Compilation
             typeof(VersionAssemblyInfoEnricher),
             typeof(SyntaxTreeCompilationEnricher),
             typeof(DefaultTypeSerializersEnricher),
-            typeof(OpenApiCompilationEnricher)
+            typeof(OpenApiCompilationEnricher),
+            typeof(ResourceFileCompilationEnricher)
         };
 
         public FormatCompilationEnricher(YardarmGenerationSettings settings,
@@ -67,10 +68,11 @@ namespace Yardarm.Enrichment.Compilation
 
             workspace.TryApplyChanges(solution);
 
-            // Exclude resource files (already formatted) or files with no path (won't be embedded)
+            // Exclude files with no path (won't be embedded)
+            // We still format resource files, which are typically already formatted, because they may have
+            // been mutated by other enrichers.
             IEnumerable<SyntaxTree> treesToBeFormatted = target.SyntaxTrees
-                .Where(static p => p.FilePath != "" && p.HasCompilationUnitRoot &&
-                                   p.GetCompilationUnitRoot().GetResourceNameAnnotation() is null);
+                .Where(static p => p.FilePath != "" && p.HasCompilationUnitRoot);
 
             // Process formatting in parallel, this gives a slight perf boost
             object lockObj = new();

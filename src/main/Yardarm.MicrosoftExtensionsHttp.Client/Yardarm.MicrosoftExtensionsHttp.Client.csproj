@@ -19,13 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!--
-    We need access to these attributes to compile for testing, but we don't want them included
-    in the SDK because they would be included multiple times. Yardarm.Client should have the only
-    copy that's embedded.
-    -->
-    <Compile Include="../Yardarm.Client/Internal/NullableAttributes.cs" />
-
     <Compile Remove="**/*.netstandard.cs" Condition=" '$(TargetFramework)' == 'net6.0' " />
     <Compile Remove="**/*.netcoreapp.cs" Condition=" '$(TargetFramework)' == 'netstandard2.0' " />
   </ItemGroup>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Yardarm.Enrichment.Compilation;
 using Yardarm.Generation;
 using Yardarm.MicrosoftExtensionsHttp.Internal;
 using Yardarm.Packaging;
@@ -11,7 +12,8 @@ namespace Yardarm.MicrosoftExtensionsHttp
         {
             services
                 .AddSingleton<IDependencyGenerator, DependencyInjectionDependencyGenerator>()
-                .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>();
+                .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
+                .AddResourceFileEnricher<ServiceCollectionExtensionsEnricher>();
 
             return services;
         }

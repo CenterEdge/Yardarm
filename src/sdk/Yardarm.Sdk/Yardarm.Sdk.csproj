@@ -17,7 +17,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
-    <NoWarn>$(NoWarn);NU5100;NU5128</NoWarn>
+    <NoWarn>$(NoWarn);NU5100;NU5128;NU5129</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <Content Include="Sdk\**\*.props;Sdk\**\*.targets" Pack="true" PackagePath="Sdk" />
+    <Content Include="build\**\*" Pack="true" PackagePath="build" />
     <None Remove="@(Content)" />
     <!-- Make sure VS considers any change to any of the targets as requiring a new build/pack -->
     <UpToDateCheckInput Include="@(Content)" />

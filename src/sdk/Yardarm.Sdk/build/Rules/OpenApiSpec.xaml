@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Rule Name="OpenApiSpec" DisplayName="File Properties" PageTemplate="generic" Description="File Properties" PropertyPagesHidden="true"
+      xmlns="http://schemas.microsoft.com/build/2009/properties">
+
+  <Rule.Categories>
+    <Category Name="Misc" DisplayName="Misc" />
+    <Category Name="Advanced" DisplayName="Advanced" />
+  </Rule.Categories>
+
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" HasConfigurationCondition="false" ItemType="OpenApiSpec" SourceOfDefaultValue="AfterContext"/>
+  </Rule.DataSource>
+
+  <DynamicEnumProperty Name="{}{ItemType}" EnumProvider="ItemTypes" />
+
+  <StringProperty Name="FullPath" DisplayName="Full Path" ReadOnly="true" Category="Misc" Description="Location of the file.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="OpenApiSpec" PersistedName="FullPath" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <StringProperty Name="FileNameAndExtension" DisplayName="File Name" ReadOnly="true" Category="Misc" Description="Name of the file.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="OpenApiSpec" PersistedName="FileNameAndExtension" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <StringProperty Name="Link" Visible="false">
+    <StringProperty.DataSource>
+      <DataSource PersistenceStyle="Attribute" SourceOfDefaultValue="AfterContext" />
+    </StringProperty.DataSource>
+    <StringProperty.Metadata>
+      <NameValuePair Name="DoNotCopyAcrossProjects" Value="true" />
+    </StringProperty.Metadata>
+  </StringProperty>
+
+  <BoolProperty Name="Visible" Visible="false" />
+</Rule>

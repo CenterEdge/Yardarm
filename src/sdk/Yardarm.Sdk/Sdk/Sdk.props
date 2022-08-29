@@ -60,6 +60,9 @@
 
     <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
     <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>
+
+    <!-- Nullable ref types are always enabled in Yardarm -->
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Target Name="CreateManifestResourceNames" />
@@ -71,7 +74,7 @@
   -->
   <ItemGroup Condition=" '$(EnableDefaultItems)' == 'true' ">
     <OpenApiSpec Include="**/*.json;**/*.yaml;**/*.yml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" Condition=" '$(EnableDefaultOpenApiItems)' == 'true' " />
-    <None Remove="@(OpenApiSpec)" Condition=" '$(EnableDefaultNoneItems)' == 'true' " />
+    <None Remove="@(OpenApiSpec)" Condition=" '$(EnableDefaultOpenApiItems)' == 'true' And '$(EnableDefaultNoneItems)' == 'true' " />
   </ItemGroup>
 
   <Import Project="$(CustomAfterYardarmProps)" Condition=" '$(CustomAfterYardarmProps)' != '' And Exists('$(CustomAfterYardarmProps)') " />

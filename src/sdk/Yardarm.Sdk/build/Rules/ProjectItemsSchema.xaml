@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties">
+    <ContentType Name="OpenApiSpecFile" DisplayName="OpenAPI Spec" ItemType="OpenApiSpec" />
+
+    <!--<ItemType Name="None" DisplayName="None"/>-->
+    <ItemType Name="OpenApiSpec" DisplayName="OpenAPI Spec"/>
+
+    <FileExtension Name=".json" ContentType="OpenApiSpecFile" />
+    <FileExtension Name=".yaml" ContentType="OpenApiSpecFile" />
+    <FileExtension Name=".yml"  ContentType="OpenApiSpecFile" />
+</ProjectSchemaDefinitions>

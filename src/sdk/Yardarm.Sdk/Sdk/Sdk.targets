@@ -7,6 +7,9 @@
 
   <Import Project="$(CustomBeforeYardarm)" Condition="'$(CustomBeforeYardarm)' != '' and Exists('$(CustomBeforeYardarm)')" />
 
+  <!-- For VS/CPS support -->
+  <Import Project="$(MSBuildThisFileDirectory)..\build\Yardarm.VisualStudio.targets" />
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
   <!--
@@ -58,10 +61,6 @@
     so the target is replaced with a no-op
   -->
   <Target Name="ComputeIntermediateSatelliteAssemblies" />
-
-  <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets"
-          Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
 
   <!--
     The GetReferenceAssemblyPaths does not need to run since reference assemblies aren't needed.

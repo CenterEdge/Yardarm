@@ -1,0 +1,28 @@
+<Project>
+  <!-- Make sure we've imported the standard targets -->
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Common.DesignTime.targets"
+          Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Common.DesignTime.targets')" />
+
+  <PropertyGroup>
+    <SupportedOutputTypes>Library</SupportedOutputTypes>
+  </PropertyGroup>
+
+  <!-- Describes the rules files used by CPS to represent the project -->
+  <PropertyGroup>
+    <RulesDirectory>$(MSBuildThisFileDirectory)Rules\$(LangName)\</RulesDirectory>
+    <RulesDirectory Condition=" '$(LangName)' == '' OR !Exists($(RulesDirectory)) ">$(MSBuildThisFileDirectory)Rules\</RulesDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(RulesDirectory)OpenApiSpec.xaml">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(RulesDirectory)OpenApiSpec.BrowseObject.xaml">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(RulesDirectory)ProjectItemsSchema.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+</Project>

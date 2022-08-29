@@ -8,7 +8,11 @@ namespace Yardarm.Build.Tasks
     {
         protected abstract string Verb { get; }
 
+        [Required]
         public string? AssemblyName { get; set; }
+
+        [Required]
+        public string? RootNamespace { get; set; }
 
         [Required]
         public string? TargetFramework { get; set; }
@@ -26,6 +30,18 @@ namespace Yardarm.Build.Tasks
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(AssemblyName))
+            {
+                Log.LogError("AssemblyName is required.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(RootNamespace))
+            {
+                Log.LogError("RootNamespace is required.");
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(TargetFramework))
             {
                 Log.LogError("TargetFramework is required.");
@@ -38,7 +54,8 @@ namespace Yardarm.Build.Tasks
         protected override string GenerateCommandLineCommands()
         {
             var builder = new StringBuilder(Verb);
-            builder.AppendFormat(" -n {0}", string.IsNullOrEmpty(AssemblyName) ? "YardarmSdk" : AssemblyName);
+            builder.AppendFormat(" -n {0}", AssemblyName);
+            builder.AppendFormat(" --root-namespace {0}", RootNamespace);
             builder.AppendFormat(" -f {0}", TargetFramework);
 
             builder.AppendFormat(" -i {0}", SpecFile![0].ItemSpec);

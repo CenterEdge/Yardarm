@@ -36,6 +36,7 @@ namespace Yardarm.CommandLine
 
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
+                RootNamespace = _options.RootNamespace ?? _options.AssemblyName,
                 // For deterministic builds, BasePath must start with "/_x", where x is a number. This is consistent
                 // with how deterministic source paths are generated on CI servers for regular C# projects when the
                 // DeterministicSourcePaths property is set to true.

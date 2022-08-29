@@ -12,6 +12,9 @@ namespace Yardarm.CommandLine
         [Option('n', "name", Required = true, HelpText = "Generated assembly name")]
         public string AssemblyName { get; set; }
 
+        [Option("root-namespace", HelpText = "Root namespace of the generated assembly")]
+        public string RootNamespace { get; set; }
+
         [Option('f', "frameworks", HelpText = "List of target framework monikers. Must be a single item unless outputting a NuGet package.")]
         public IEnumerable<string> TargetFrameworks { get; set; }
 

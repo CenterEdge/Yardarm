@@ -29,6 +29,7 @@ namespace Yardarm.CommandLine
 
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
+                RootNamespace = _options.RootNamespace ?? _options.AssemblyName,
                 IntermediateOutputPath = _options.IntermediateOutputPath,
             };
 

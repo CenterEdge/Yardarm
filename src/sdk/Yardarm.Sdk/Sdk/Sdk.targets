@@ -103,6 +103,7 @@
     <YardarmCollectDependencies
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
+      RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
       SpecFile="@(OpenApiSpec)"
       Extensions="@(YardarmExtension)"
@@ -147,6 +148,7 @@
     <YardarmGenerate
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
+      RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
       Version="$(Version)"
       SpecFile="@(OpenApiSpec)"

@@ -138,8 +138,12 @@ namespace Yardarm.Packaging.Internal
         {
             var generators = new List<ISourceGenerator>();
 
-            LockFileTarget lockFileTarget = lockFile.Targets
-                .First(p => p.TargetFramework == targetFramework);
+            LockFileTarget? lockFileTarget = lockFile.Targets?
+                .FirstOrDefault(p => p.TargetFramework == targetFramework);
+            if (lockFileTarget is null)
+            {
+                return generators;
+            }
 
             foreach (var directDependency in _packageSpec.Dependencies
                          .Concat(_packageSpec.TargetFrameworks

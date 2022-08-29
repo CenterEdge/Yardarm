@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Interfaces;
 using Yardarm.Helpers;
@@ -26,22 +28,73 @@ namespace Yardarm.Generation
         /// <inheritdoc />
         protected override string? GetSourceFilePath()
         {
-            string? elementPath = Element.ToString();
-            if (string.IsNullOrEmpty(elementPath))
+            StringBuilder builder = StringBuilderCache.Acquire();
+            try
             {
-                return null;
-            }
+                builder.Append(Context.Settings.BasePath);
+                if (Context.Settings.BasePath.EndsWith("/"))
+                {
+                    builder.Length -= 1;
+                }
 
-            if (elementPath[0] == '/')
-            {
-                elementPath = $"{elementPath[1..]}.cs";
-            }
-            else
-            {
-                elementPath = $"{elementPath}.cs";
-            }
+                if (TypeInfo.Name is QualifiedNameSyntax qualifiedName)
+                {
+                    var stack = new Stack<SimpleNameSyntax>(4);
+                    QualifiedNameSyntax current = qualifiedName;
+                    while (true)
+                    {
+                        stack.Push(current.Right);
 
-            return Path.Combine(Context.Settings.BasePath, PathHelpers.NormalizePath(elementPath));
+                        if (current.Left is QualifiedNameSyntax leftQualifiedName)
+                        {
+                            current = leftQualifiedName;
+                        }
+                        else
+                        {
+                            if (current.Left is SimpleNameSyntax simpleName)
+                            {
+                                stack.Push(simpleName);
+                            }
+                            else if (current.Left is AliasQualifiedNameSyntax aliasedName)
+                            {
+                                stack.Push(aliasedName.Name);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    while (stack.Count > 0)
+                    {
+                        builder.Append('/');
+                        builder.Append(stack.Pop().Identifier.ValueText);
+                    }
+                }
+                else
+                {
+                    // Fallback for corner cases
+
+                    string? elementPath = Element.ToString();
+                    if (string.IsNullOrEmpty(elementPath))
+                    {
+                        return null;
+                    }
+
+                    if (elementPath[0] != '/')
+                    {
+                        elementPath = $"/{elementPath}";
+                    }
+
+                    builder.Append(PathHelpers.NormalizePath(elementPath));
+                }
+
+                builder.Append(".cs");
+                return builder.ToString();
+            }
+            finally
+            {
+                StringBuilderCache.Release(builder);
+            }
         }
     }
 }

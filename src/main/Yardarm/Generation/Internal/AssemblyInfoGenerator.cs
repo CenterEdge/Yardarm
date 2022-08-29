@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
+using Yardarm.Helpers;
 
 namespace Yardarm.Generation.Internal
 {
@@ -27,7 +28,7 @@ namespace Yardarm.Generation.Internal
                 SyntaxFactory.CompilationUnit()
                     .Enrich(_enrichers)
                     .NormalizeWhitespace(),
-                path: Path.Combine(_context.Settings.BasePath, "Properties", "AssemblyInfo.cs"),
+                path: PathHelpers.Combine(_context.Settings.BasePath, "Properties", "AssemblyInfo.cs"),
                 encoding: Encoding.UTF8);
         }
     }

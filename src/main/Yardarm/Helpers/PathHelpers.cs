@@ -41,15 +41,59 @@ namespace Yardarm.Helpers
             {
                 char ch = builder[i];
 
-                if (Path.DirectorySeparatorChar != '/' && ch == '/')
+                if (Path.DirectorySeparatorChar != '/' && ch == Path.DirectorySeparatorChar)
                 {
-                    builder[i] = Path.DirectorySeparatorChar;
+                    builder[i] = '/';
                 }
                 else if (s_invalidPathChars.Contains(ch))
                 {
                     builder[i] = '_';
                 }
             }
+        }
+
+        /// <summary>
+        /// Combine paths in an OS-agnostic manner, always using a "/" separator.
+        /// </summary>
+        public static string Combine(string path1, string path2)
+        {
+            ArgumentNullException.ThrowIfNull(path1);
+            ArgumentNullException.ThrowIfNull(path2);
+
+            if (path1 == "")
+            {
+                return path2;
+            }
+
+            if (path2 == "")
+            {
+                return "";
+            }
+
+            if (path1[^1] == '/' && path2[0] == '/')
+            {
+                return $"{path1}{path2[1..]}";
+            }
+
+            if (path1[^1] != '/' && path2[0] != '/')
+            {
+                return $"{path1}/{path2}";
+            }
+
+            return $"{path1}{path2}";
+        }
+
+        /// <summary>
+        /// Combine paths in an OS-agnostic manner, always using a "/" separator.
+        /// </summary>
+        public static string Combine(string path1, string path2, string path3)
+        {
+            ArgumentNullException.ThrowIfNull(path1);
+            ArgumentNullException.ThrowIfNull(path2);
+            ArgumentNullException.ThrowIfNull(path3);
+
+            string temp = Combine(path1, path2);
+            return Combine(temp, path3);
         }
     }
 }

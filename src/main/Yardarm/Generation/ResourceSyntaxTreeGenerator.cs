@@ -63,7 +63,7 @@ namespace Yardarm.Generation
                 CSharpParseOptions.Default
                     .WithLanguageVersion(LanguageVersion.CSharp10)
                     .WithPreprocessorSymbols(preprocessorSymbols),
-                path: Path.Combine(
+                path: PathHelpers.Combine(
                     GenerationContext.Settings.BasePath,
                     "Resources",
                     PathHelpers.NormalizePath(resourceName)));

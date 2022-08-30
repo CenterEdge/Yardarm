@@ -20,7 +20,6 @@ namespace RootNamespace
         {
             services.TryAddSingleton<Authentication.Authenticators>();
             services.TryAddSingleton(static _ => TypeSerializerRegistry.Instance); // Use a delegate to lazy initialize the instance
-            services.TryAddSingleton<ApiFactory>();
 
             return new ApiBuilder(services);
         }

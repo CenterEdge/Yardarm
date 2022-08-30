@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using RootNamespace.Api;
 using RootNamespace.Internal;
@@ -14,6 +17,8 @@ namespace RootNamespace
     /// </summary>
     public static class ApiBuilderExtensions
     {
+        private static readonly TimeSpan s_minimumHandlerLifetime = TimeSpan.FromSeconds(1);
+
         /// <summary>
         /// Add all APIs with their default concrete implementation.
         /// </summary>
@@ -80,12 +85,10 @@ namespace RootNamespace
                 ThrowRegistrationError(typeof(TClient));
             }
 
-            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>((serviceProvider, httpClient) =>
-            {
-                var apiFactory = serviceProvider.GetRequiredService<ApiFactory>();
+            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>();
 
-                apiFactory.ApplyHttpClientActions(httpClient);
-            });
+            // Register common configuration before any customer per-API configuration
+            AddCommonConfiguration(clientBuilder);
 
             configureClient?.Invoke(clientBuilder);
 
@@ -122,13 +125,10 @@ namespace RootNamespace
                 return;
             }
 
-            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>(
-                (serviceProvider, httpClient) =>
-                {
-                    var apiFactory = serviceProvider.GetRequiredService<ApiFactory>();
+            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>();
 
-                    apiFactory.ApplyHttpClientActions(httpClient);
-                });
+            // Register common configuration before any customer per-API configuration
+            AddCommonConfiguration(clientBuilder);
 
             configureClient?.Invoke(typeof(TClient), clientBuilder);
         }
@@ -184,6 +184,156 @@ namespace RootNamespace
         }
 
         /// <summary>
+        /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureHandler">A function to create the <see cref="HttpMessageHandler"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <paramref name="configureHandler"/> will be applied before any other configuration applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder ConfigurePrimaryHttpMessageHandler(this IApiBuilder builder, Func<HttpMessageHandler> configureHandler)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = configureHandler());
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureHandler">A function to create the <see cref="HttpMessageHandler"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <paramref name="configureHandler"/> will be applied before any other configuration applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder ConfigurePrimaryHttpMessageHandler(this IApiBuilder builder, Func<IServiceProvider, HttpMessageHandler> configureHandler)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = configureHandler(b.Services));
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
+        /// </summary>
+        /// <typeparam name="THandler">The type of the <see cref="HttpMessageHandler"/> to request from the DI container.</typeparam>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <typeparamref name="THandler"/> will be applied before any other configuration applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder ConfigurePrimaryHttpMessageHandler<THandler>(this IApiBuilder builder)
+            where THandler : HttpMessageHandler
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = b.Services.GetRequiredService<THandler>());
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a delegate that will be used to create an additional message handler for all APIs.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureHandler">A delegate used to create a <see cref="DelegatingHandler"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <typeref name="DelegatingHandler"/> will be applied before any other handlers applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder AddHttpMessageHandler(this IApiBuilder builder, Func<DelegatingHandler> configureHandler)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.HttpMessageHandlerBuilderActions.Add(b => b.AdditionalHandlers.Add(configureHandler()));
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a delegate that will be used to create an additional message handler for all APIs.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureHandler">A delegate used to create a <see cref="DelegatingHandler"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <typeref name="DelegatingHandler"/> will be applied before any other handlers applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder AddHttpMessageHandler(this IApiBuilder builder, Func<IServiceProvider, DelegatingHandler> configureHandler)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.HttpMessageHandlerBuilderActions.Add(b => b.AdditionalHandlers.Add(configureHandler(b.Services)));
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds an additional message handler from the dependency injection container to all APIs.
+        /// </summary>
+        /// <typeparam name="THandler">The type of the <see cref="DelegatingHandler"/> to request from the DI container.</typeparam>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The <typeparamref name="THandler"/> will be applied before any other handlers applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder AddHttpMessageHandler<THandler>(this IApiBuilder builder)
+            where THandler : DelegatingHandler
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.HttpMessageHandlerBuilderActions.Add(b => b.AdditionalHandlers.Add(b.Services.GetRequiredService<THandler>()));
+            });
+
+            return builder;
+        }
+
+        /// <summary>
         /// Apply a default base <see cref="Uri"/> for all APIs.
         /// </summary>
         /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
@@ -201,6 +351,91 @@ namespace RootNamespace
             ThrowHelper.ThrowIfNull(uri, nameof(uri));
 
             return builder.ConfigureHttpClient(client => client.BaseAddress = uri);
+        }
+
+        /// <summary>
+        /// Sets the default delegate which determines whether to redact the HTTP header value before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="shouldRedactHeaderValue">The delegate which determines whether to redact the HTTP header value before logging.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The provided <paramref name="shouldRedactHeaderValue"/> predicate will be evaluated for each header value when logging. If the predicate returns <c>true</c> then the header value will be replaced with a marker value <c>*</c> in logs; otherwise the header value will be logged.
+        /// </para>
+        /// <para>
+        /// Any value set for a specific API via an <see cref="IHttpClientBuilder"/> overrides this default value.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder RedactLoggedHeaders(this IApiBuilder builder, Func<string, bool> shouldRedactHeaderValue)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(shouldRedactHeaderValue, nameof(shouldRedactHeaderValue));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                options.ShouldRedactHeaderValue = shouldRedactHeaderValue;
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the default collection of HTTP headers names for which values should be redacted before logging.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="redactedLoggedHeaderNames">The collection of HTTP headers names for which values should be redacted before logging.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// Any value set for a specific API via an <see cref="IHttpClientBuilder"/> overrides this default value.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder RedactLoggedHeaders(this IApiBuilder builder, IEnumerable<string> redactedLoggedHeaderNames)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(redactedLoggedHeaderNames, nameof(redactedLoggedHeaderNames));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+            {
+                var sensitiveHeaders = new HashSet<string>(redactedLoggedHeaderNames, StringComparer.OrdinalIgnoreCase);
+
+                options.ShouldRedactHeaderValue = (header) => sensitiveHeaders.Contains(header);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Apply a default length of time that a <see cref="HttpMessageHandler"/> instance can be reused to all APIs.
+        /// The default value is two minutes. Set the lifetime to <see cref="Timeout.InfiniteTimeSpan"/> to disable handler expiry.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Any value set for a specific API via an <see cref="IHttpClientBuilder"/> overrides this default value.
+        /// </para>
+        /// <para>
+        /// See <see cref="HttpClientBuilderExtensions.SetHandlerLifetime"/> for more details.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder SetHandlerLifetime(this IApiBuilder builder, TimeSpan handlerLifetime)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+
+            if (handlerLifetime != Timeout.InfiniteTimeSpan && handlerLifetime < s_minimumHandlerLifetime)
+            {
+                throw new ArgumentException("Invalid value.", nameof(handlerLifetime));
+            }
+
+            builder.Services.Configure<ApiFactoryOptions>(options => options.HandlerLifetime = handlerLifetime);
+            return builder;
+        }
+
+        private static void AddCommonConfiguration(IHttpClientBuilder builder)
+        {
+            builder.Services.AddSingleton<IConfigureOptions<HttpClientFactoryOptions>>(serviceProvider =>
+                ActivatorUtilities.CreateInstance<YardarmConfigureHttpClientFactoryOptions>(serviceProvider,
+                    builder.Name));
         }
 
         [DoesNotReturn]

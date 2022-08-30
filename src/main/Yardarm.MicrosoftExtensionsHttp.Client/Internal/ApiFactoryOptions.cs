@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Http;
+using RootNamespace.Authentication;
 
 namespace RootNamespace.Internal
 {
@@ -12,6 +13,8 @@ namespace RootNamespace.Internal
         public List<Action<HttpClient>> HttpClientActions { get; } = new();
 
         public List<Action<HttpMessageHandlerBuilder>> HttpMessageHandlerBuilderActions { get; } = new();
+
+        public List<Action<Authenticators>> AuthenticatorActions { get; } = new();
 
         public TimeSpan HandlerLifetime { get; set; } = s_defaultHandlerLifetime;
 

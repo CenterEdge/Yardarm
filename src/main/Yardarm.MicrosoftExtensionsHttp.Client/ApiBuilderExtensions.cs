@@ -19,6 +19,8 @@ namespace RootNamespace
     {
         private static readonly TimeSpan s_minimumHandlerLifetime = TimeSpan.FromSeconds(1);
 
+        #region APIs
+
         /// <summary>
         /// Add all APIs with their default concrete implementation.
         /// </summary>
@@ -133,6 +135,55 @@ namespace RootNamespace
             configureClient?.Invoke(typeof(TClient), clientBuilder);
         }
 
+        #endregion
+
+        #region ConfigureAuthenticators
+
+        /// <summary>
+        /// Configure the default <see cref="Authentication.Authenticators"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureAuthenticators">Delegate to configure the <see cref="Authentication.Authenticators"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        public static IApiBuilder ConfigureAuthenticators(this IApiBuilder builder,
+            Action<Authentication.Authenticators> configureAuthenticators)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureAuthenticators, nameof(configureAuthenticators));
+
+            builder.Services.Configure<ApiFactoryOptions>(options =>
+                options.AuthenticatorActions.Add(configureAuthenticators));
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Configure the default <see cref="Authentication.Authenticators"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureAuthenticators">Delegate to configure the <see cref="Authentication.Authenticators"/>.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        public static IApiBuilder ConfigureAuthenticators(this IApiBuilder builder,
+            Action<IServiceProvider, Authentication.Authenticators> configureAuthenticators)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureAuthenticators, nameof(configureAuthenticators));
+
+            builder.Services.AddTransient<IConfigureOptions<ApiFactoryOptions>>(services =>
+            {
+                return new ConfigureOptions<ApiFactoryOptions>(options =>
+                {
+                    options.AuthenticatorActions.Add(authenticators => configureAuthenticators(services, authenticators));
+                });
+            });
+
+            return builder;
+        }
+
+        #endregion
+
+        #region ConfigureHttpClient
+
         /// <summary>
         /// Apply common configuration to the <see cref="HttpClient"/> for all APIs.
         /// </summary>
@@ -182,6 +233,10 @@ namespace RootNamespace
 
             return builder;
         }
+
+        #endregion
+
+        #region ConfigurePrimaryHttpMessageHandler
 
         /// <summary>
         /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
@@ -258,6 +313,10 @@ namespace RootNamespace
             return builder;
         }
 
+        #endregion
+
+        #region AddHttpMessageHandler
+
         /// <summary>
         /// Adds a delegate that will be used to create an additional message handler for all APIs.
         /// </summary>
@@ -333,6 +392,10 @@ namespace RootNamespace
             return builder;
         }
 
+        #endregion
+
+        #region ConfigureBaseAddress
+
         /// <summary>
         /// Apply a default base <see cref="Uri"/> for all APIs.
         /// </summary>
@@ -352,6 +415,30 @@ namespace RootNamespace
 
             return builder.ConfigureHttpClient(client => client.BaseAddress = uri);
         }
+
+        /// <summary>
+        /// Apply a default base <see cref="Uri"/> for all APIs.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="configureUri">A delegate which retrieves the base URI. The URI should generally end with a trailing "/".</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// The base URI will be applied to the <see cref="HttpClient"/> before any other configuration applied
+        /// via the <see cref="IHttpClientBuilder"/> for a specific API.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder ConfigureBaseAddress(this IApiBuilder builder, Func<IServiceProvider, Uri> configureUri)
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(configureUri, nameof(configureUri));
+
+            return builder.ConfigureHttpClient((serviceProvider, client) => client.BaseAddress = configureUri(serviceProvider));
+        }
+
+        #endregion
+
+        #region RedactLoggedHeaders
 
         /// <summary>
         /// Sets the default delegate which determines whether to redact the HTTP header value before logging.
@@ -406,6 +493,10 @@ namespace RootNamespace
             return builder;
         }
 
+        #endregion
+
+        #region SetHandlerLifetime
+
         /// <summary>
         /// Apply a default length of time that a <see cref="HttpMessageHandler"/> instance can be reused to all APIs.
         /// The default value is two minutes. Set the lifetime to <see cref="Timeout.InfiniteTimeSpan"/> to disable handler expiry.
@@ -431,6 +522,10 @@ namespace RootNamespace
             return builder;
         }
 
+        #endregion
+
+        #region Helpers
+
         private static void AddCommonConfiguration(IHttpClientBuilder builder)
         {
             builder.Services.AddSingleton<IConfigureOptions<HttpClientFactoryOptions>>(serviceProvider =>
@@ -444,5 +539,7 @@ namespace RootNamespace
             throw new InvalidOperationException(
                 $"The API {clientType} has already been registered. It may only be registered once.");
         }
+
+        #endregion
     }
 }

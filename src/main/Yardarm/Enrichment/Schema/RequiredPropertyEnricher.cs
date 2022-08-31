@@ -15,24 +15,32 @@ namespace Yardarm.Enrichment.Schema
                 context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
                 parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
-            return isRequired
-                ? AddRequiredAttribute(syntax, context)
-                : syntax.MakeNullable();
+            if (!isRequired || context.Element.Nullable)
+            {
+                // If the property is optional OR nullable then the property should be nullable
+                // This is because .NET does not have a good way to differentiate between missing and null
+                syntax = syntax.MakeNullable();
+            }
+            else if (syntax.Parent is not InterfaceDeclarationSyntax)
+            {
+                // The value needs to be initialized to avoid nullable ref type warnings
+                syntax = syntax.MakeNullableOrInitializeIfReferenceType(context.Compilation);
+            }
+
+            if (isRequired)
+            {
+                // Explicitly annotate as required if the schema requires the property
+                // This must be done after any potential call to MakeNullableOrInitializeIfReferenceType to avoid errors
+                syntax = AddRequiredAttribute(syntax);
+            }
+
+            return syntax;
         }
 
-        private PropertyDeclarationSyntax AddRequiredAttribute(PropertyDeclarationSyntax syntax,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
-        {
-            var newSyntax = context.Element.Nullable
-                // If the schema is nullable the property should be nullable
-                ? syntax.MakeNullable()
-                // If the schema is not nullable we should try to initialize it, fallback to making it nullable if we can't
-                : syntax.MakeNullableOrInitializeIfReferenceType(context.Compilation);
-
-            return newSyntax
+        private PropertyDeclarationSyntax AddRequiredAttribute(PropertyDeclarationSyntax syntax) =>
+            syntax
                 .AddAttributeLists(AttributeList(SingletonSeparatedList(
-                    Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)))
+                        Attribute(WellKnownTypes.System.ComponentModel.DataAnnotations.RequiredAttribute.Name)))
                     .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
-        }
     }
 }

@@ -112,7 +112,7 @@ namespace Yardarm
             RootNamespace = assemblyName;
         }
 
-        public IServiceProvider BuildServiceProvider(OpenApiDocument document)
+        public IServiceProvider BuildServiceProvider(OpenApiDocument? document)
         {
             IServiceCollection services = new ServiceCollection()
                 .AddLogging(builder =>

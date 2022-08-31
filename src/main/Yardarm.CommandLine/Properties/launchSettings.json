@@ -6,11 +6,11 @@
         },
         "Restore": {
             "commandName": "Project",
-            "commandLineArgs": "restore -n Test.Yardarm -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --intermediate-dir output/obj -i centeredge-cardsystemapi.yaml"
+            "commandLineArgs": "restore -n Test.Yardarm -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --intermediate-dir output/obj"
         },
         "CollectDependencies": {
             "commandName": "Project",
-            "commandLineArgs": "collect-dependencies -n Test -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --intermediate-dir output/obj -i centeredge-cardsystemapi.yaml"
+            "commandLineArgs": "collect-dependencies -n Test -x Yardarm.NewtonsoftJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net6.0 --intermediate-dir output/obj"
         }
     }
 }

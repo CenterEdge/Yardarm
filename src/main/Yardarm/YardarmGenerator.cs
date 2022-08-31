@@ -14,7 +14,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
-using NuGet.ProjectModel;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Internal;
@@ -23,46 +22,19 @@ using Yardarm.Packaging.Internal;
 
 namespace Yardarm
 {
-    public class YardarmGenerator
+    /// <summary>
+    /// Generator creates an assembly from an OpenApiDocument.
+    /// </summary>
+    public class YardarmGenerator : YardarmProcessor
     {
         private readonly OpenApiDocument _document;
-        private readonly YardarmGenerationSettings _settings;
-        private readonly IServiceProvider _serviceProvider;
 
         public YardarmGenerator(OpenApiDocument document, YardarmGenerationSettings settings)
+            : base(settings, settings.BuildServiceProvider(document))
         {
             ArgumentNullException.ThrowIfNull(document);
-            ArgumentNullException.ThrowIfNull(settings);
-            
+
             _document = document;
-            _settings = settings;
-            _serviceProvider = settings.BuildServiceProvider(document);
-        }
-
-        public Task<PackageSpec> GetPackageSpecAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(_serviceProvider.GetRequiredService<PackageSpec>());
-        }
-
-        public async Task<NuGetRestoreInfo> RestoreAsync(CancellationToken cancellationToken = default)
-        {
-            var context = _serviceProvider.GetRequiredService<GenerationContext>();
-
-            await PerformRestoreAsync(context, false, cancellationToken);
-
-            return context.NuGetRestoreInfo!;
-        }
-
-        private async Task PerformRestoreAsync(GenerationContext context, bool readLockFileOnly, CancellationToken cancellationToken = default)
-        {
-            // Perform the NuGet restore
-            var restoreProcessor = context.GenerationServices.GetRequiredService<NuGetRestoreProcessor>();
-            context.NuGetRestoreInfo = await restoreProcessor.ExecuteAsync(readLockFileOnly, cancellationToken).ConfigureAwait(false);
-
-            if (context.Settings.TargetFrameworkMonikers.Length == 0)
-            {
-                throw new InvalidOperationException("No target framework monikers provided.");
-            }
         }
 
         public async Task<YardarmGenerationResult> EmitAsync(CancellationToken cancellationToken = default)
@@ -70,35 +42,35 @@ namespace Yardarm
             var toDispose = new List<IDisposable>();
             try
             {
-                var context = _serviceProvider.GetRequiredService<GenerationContext>();
+                var context = ServiceProvider.GetRequiredService<GenerationContext>();
 
-                await PerformRestoreAsync(context, _settings.NoRestore, cancellationToken);
+                await PerformRestoreAsync(context, Settings.NoRestore, cancellationToken);
 
                 var compilationResults = new List<YardarmCompilationResult>();
 
-                if (_settings.TargetFrameworkMonikers.Length == 1)
+                if (Settings.TargetFrameworkMonikers.Length == 1)
                 {
-                    var targetFramework = NuGetFramework.Parse(_settings.TargetFrameworkMonikers[0]);
+                    var targetFramework = NuGetFramework.Parse(Settings.TargetFrameworkMonikers[0]);
 
                     // Perform the compilation
                     var (emitResult, additionalDiagnostics) = await BuildForTargetFrameworkAsync(
                         context, targetFramework,
-                        _settings.DllOutput, _settings.PdbOutput, _settings.XmlDocumentationOutput, _settings.ReferenceAssemblyOutput,
+                        Settings.DllOutput, Settings.PdbOutput, Settings.XmlDocumentationOutput, Settings.ReferenceAssemblyOutput,
                         cancellationToken).ConfigureAwait(false);
 
                     compilationResults.Add(new(targetFramework, emitResult,
-                        _settings.DllOutput, _settings.PdbOutput, _settings.XmlDocumentationOutput, _settings.ReferenceAssemblyOutput,
+                        Settings.DllOutput, Settings.PdbOutput, Settings.XmlDocumentationOutput, Settings.ReferenceAssemblyOutput,
                         additionalDiagnostics));
                 }
                 else
                 {
-                    if (_settings.NuGetOutput is null)
+                    if (Settings.NuGetOutput is null)
                     {
                         throw new InvalidOperationException(
                             "Targeting multiple frameworks is only supported with NuGet output.");
                     }
 
-                    foreach (var targetFramework in _settings.TargetFrameworkMonikers.Select(NuGetFramework.Parse))
+                    foreach (var targetFramework in Settings.TargetFrameworkMonikers.Select(NuGetFramework.Parse))
                     {
                         var dllOutput = new MemoryStream();
                         toDispose.Add(dllOutput);
@@ -123,7 +95,7 @@ namespace Yardarm
 
                 if (compilationResults.All(p => p.EmitResult.Success))
                 {
-                    if (_settings.NuGetOutput != null)
+                    if (Settings.NuGetOutput != null)
                     {
                         PackNuGet(compilationResults);
                     }
@@ -148,8 +120,8 @@ namespace Yardarm
             context.CurrentTargetFramework = targetFramework;
 
             // Create the empty compilation
-            var compilation = CSharpCompilation.Create(_settings.AssemblyName)
-                .WithOptions(_settings.CompilationOptions);
+            var compilation = CSharpCompilation.Create(Settings.AssemblyName)
+                .WithOptions(Settings.CompilationOptions);
 
             // Run all enrichers against the compilation
             var enrichers = context.GenerationServices.GetRequiredService<IEnumerable<ICompilationEnricher>>();
@@ -190,7 +162,7 @@ namespace Yardarm
         private async IAsyncEnumerable<EmbeddedText> GetEmbeddedTextsAsync(
             CSharpCompilation compilation, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            if (!_settings.EmbedAllSources)
+            if (!Settings.EmbedAllSources)
             {
                 yield break;
             }
@@ -229,7 +201,7 @@ namespace Yardarm
                 result.XmlDocumentationOutput.Seek(0, SeekOrigin.Begin);
                 result.ReferenceAssemblyOutput?.Seek(0, SeekOrigin.Begin);
 
-                if (_settings.NuGetSymbolsOutput != null)
+                if (Settings.NuGetSymbolsOutput != null)
                 {
                     if (!result.PdbOutput.CanRead || !result.PdbOutput.CanSeek)
                     {
@@ -242,13 +214,13 @@ namespace Yardarm
             }
 
 
-            var packer = _serviceProvider.GetRequiredService<NuGetPacker>();
+            var packer = ServiceProvider.GetRequiredService<NuGetPacker>();
 
-            packer.Pack(results, _settings.NuGetOutput!);
+            packer.Pack(results, Settings.NuGetOutput!);
 
-            if (_settings.NuGetSymbolsOutput != null)
+            if (Settings.NuGetSymbolsOutput != null)
             {
-                if (!_settings.PdbOutput.CanRead || !_settings.PdbOutput.CanSeek)
+                if (!Settings.PdbOutput.CanRead || !Settings.PdbOutput.CanSeek)
                 {
                     throw new InvalidOperationException(
                         $"{nameof(YardarmGenerationSettings.PdbOutput)} must be seekable and readable to pack a NuGet symbols package.");
@@ -256,7 +228,7 @@ namespace Yardarm
 
 
 
-                packer.PackSymbols(results, _settings.NuGetSymbolsOutput);
+                packer.PackSymbols(results, Settings.NuGetSymbolsOutput);
             }
         }
 

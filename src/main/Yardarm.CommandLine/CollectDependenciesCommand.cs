@@ -27,8 +27,6 @@ namespace Yardarm.CommandLine
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var document = await ReadDocumentAsync();
-
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
                 IntermediateOutputPath = _options.IntermediateOutputPath,
@@ -48,7 +46,7 @@ namespace Yardarm.CommandLine
                             .AddSerilog();
                     });
 
-                var generator = new YardarmGenerator(document, settings);
+                var generator = new YardarmProcessor(settings);
                 var packageSpec = await generator.GetPackageSpecAsync(cancellationToken);
 
                 foreach (var dependency in packageSpec.Dependencies.Where(p => !p.AutoReferenced))

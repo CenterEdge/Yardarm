@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using Microsoft.Build.Framework;
 
 namespace Yardarm.Build.Tasks;
@@ -23,12 +21,19 @@ public class YardarmGenerate : YardarmCommonTask
     public string? DelaySign { get; set; }
     public string? PublicSign { get; set; }
 
+    public ITaskItem[]? SpecFile { get; set; }
     public ITaskItem[]? References { get; set; }
 
     protected override bool ValidateParameters()
     {
         if (!base.ValidateParameters())
         {
+            return false;
+        }
+
+        if (SpecFile is null || SpecFile.Length != 1)
+        {
+            Log.LogError("Must supply a single SpecFile.");
             return false;
         }
 
@@ -44,6 +49,8 @@ public class YardarmGenerate : YardarmCommonTask
     protected override void AppendAdditionalArguments(StringBuilder builder)
     {
         builder.AppendFormat(" --no-restore"); // Restore is performed by MSBuild
+
+        builder.AppendFormat(" -i {0}", SpecFile![0].ItemSpec);
 
         if (!string.IsNullOrEmpty(Version))
         {

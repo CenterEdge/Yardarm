@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,6 +15,7 @@ namespace Yardarm.Helpers
         /// </summary>
         /// <param name="property">The <see cref="PropertyDeclarationSyntax"/> to update.</param>
         /// <returns>The mutated property declaration, or the original if no mutation was required.</returns>
+        [Pure]
         public static PropertyDeclarationSyntax MakeNullable(this PropertyDeclarationSyntax property) =>
             property.Type is NullableTypeSyntax
                 ? property // Already nullable
@@ -27,6 +29,7 @@ namespace Yardarm.Helpers
         /// <param name="property">The <see cref="PropertyDeclarationSyntax"/> to update. Must be on a <see cref="SyntaxTree"/>.</param>
         /// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
         /// <returns>The mutated property declaration, or the original if no mutation was required.</returns>
+        [Pure]
         public static PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(this PropertyDeclarationSyntax property,
             CSharpCompilation compilation) =>
             MakeNullableOrInitializeIfReferenceType(property, compilation.GetSemanticModel(property.SyntaxTree));
@@ -39,6 +42,7 @@ namespace Yardarm.Helpers
         /// <param name="property">The <see cref="PropertyDeclarationSyntax"/> to update. Must be on a <see cref="SyntaxTree"/>.</param>
         /// <param name="semanticModel"><see cref="SemanticModel"/> used to perform type analysis.</param>
         /// <returns>The mutated property declaration, or the original if no mutation was required.</returns>
+        [Pure]
         public static PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(this PropertyDeclarationSyntax property,
             SemanticModel semanticModel)
         {

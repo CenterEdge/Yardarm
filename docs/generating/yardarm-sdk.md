@@ -22,7 +22,7 @@ Create the below as a `.csproj` file and include a `.yaml` or `.json` OpenAPI sp
 file in the same directory.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta001">
+<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -42,7 +42,7 @@ file in the same directory.
 ## Multi-targeting
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta001">
+<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
 
   <PropertyGroup>
     <!-- Note that Yardarm doesn't support net4x targets, except via netstandard2.0 -->
@@ -55,7 +55,7 @@ file in the same directory.
 ## Yardarm Extensions
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta001">
+<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -78,7 +78,7 @@ A wide variety of C# project properties are supported as well. These may also be
 i.e. `dotnet build /p:Version=5.6.7`.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta001">
+<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -112,7 +112,7 @@ within MSBuild. When the target is complete, the `OpenApiSpec` item should be
 added to the project.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta001">
+<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

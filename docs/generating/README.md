@@ -6,7 +6,7 @@ Create the below as a `.csproj` file and include a `.yaml` or `.json` OpenAPI sp
 file in the same directory.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta001">
+<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
@@ -24,7 +24,7 @@ There are a variety of tools available for generating SDKs from the command line
 ### .NET Core Global Tool
 
 ```sh
-dotnet tool install --global Yardarm.CommandLine --version 0.3.0-beta001
+dotnet tool install --global Yardarm.CommandLine --version 0.3.0-beta0001
 
 yardarm help generate
 ```
@@ -32,7 +32,7 @@ yardarm help generate
 ### Docker
 
 ```sh
-docker run -it ghcr.io/centeredge/yardarm:0.3.0-beta001
+docker run -it ghcr.io/centeredge/yardarm:0.3.0-beta0001
 
 yardarm help generate
 ```

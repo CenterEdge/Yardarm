@@ -28,7 +28,7 @@ namespace Yardarm
 {
     public static class YardarmCoreServiceCollectionExtensions
     {
-        public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, OpenApiDocument document)
+        public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, OpenApiDocument? document)
         {
             services.AddDefaultEnrichers();
 
@@ -118,11 +118,23 @@ namespace Yardarm
             // Other
             services
                 .AddLogging()
-                .AddSingleton<GenerationContext>()
                 .AddTransient<NuGetRestoreProcessor>()
                 .AddSingleton(settings)
-                .AddSingleton(document)
                 .AddTransient<NuGetPacker>();
+
+            if (document is not null)
+            {
+                services
+                    .AddSingleton<GenerationContext>()
+                    // When requesting the YardarmContext simply return the GenerationContext
+                    .AddTransient<YardarmContext>(serviceProvider => serviceProvider.GetRequiredService<GenerationContext>())
+                    .AddSingleton(document);
+            }
+            else
+            {
+                // We don't have a document, so supply a basic YardarmContext only
+                services.AddSingleton<YardarmContext>();
+            }
 
             services.TryAddSingleton<IOpenApiElementRegistry, OpenApiElementRegistry>();
 

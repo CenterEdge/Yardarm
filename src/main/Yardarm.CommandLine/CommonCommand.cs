@@ -23,15 +23,6 @@ namespace Yardarm.CommandLine
             _options = options;
         }
 
-        protected async Task<OpenApiDocument> ReadDocumentAsync()
-        {
-            var reader = new OpenApiStreamReader();
-
-            await using var stream = File.OpenRead(_options.InputFile);
-
-            return reader.Read(stream, out _);
-        }
-
         protected void ApplyExtensions(YardarmGenerationSettings settings)
         {
             foreach (string extensionFile in _options.ExtensionFiles)

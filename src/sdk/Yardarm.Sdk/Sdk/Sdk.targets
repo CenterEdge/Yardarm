@@ -98,14 +98,13 @@
   <Target Name="YardarmCollectDependencies"
           Condition=" '$(TargetFramework)' != '' "
           BeforeTargets="CollectPackageReferences;CollectPackageDownloads"
-          DependsOnTargets="_VerifyOpenApiSpecs"
+          DependsOnTargets="CollectYardarmExtensions"
           Returns="@(PackageReference);@(PackageDownload)">
     <YardarmCollectDependencies
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
       RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
-      SpecFile="@(OpenApiSpec)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
     >
@@ -131,7 +130,8 @@
   <PropertyGroup>
     <CoreCompileDependsOn>
       $(CoreCompileDependsOn);
-      _VerifyOpenApiSpecs
+      _VerifyOpenApiSpecs;
+      CollectYardarmExtensions
     </CoreCompileDependsOn>
   </PropertyGroup>
   <Target Name="CoreCompile"

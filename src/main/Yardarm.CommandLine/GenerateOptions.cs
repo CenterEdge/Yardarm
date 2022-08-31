@@ -7,6 +7,9 @@ namespace Yardarm.CommandLine
     [Verb("generate", HelpText = "Generate an assembly")]
     public class GenerateOptions : CommonOptions
     {
+        [Option('i', "input", Required = true, HelpText = "OpenAPI 3 files to process")]
+        public string InputFile { get; set; }
+
         [Option('v', "version", Default = "1.0.0", HelpText = "Generated assembly version")]
         public string Version { get; set; }
 

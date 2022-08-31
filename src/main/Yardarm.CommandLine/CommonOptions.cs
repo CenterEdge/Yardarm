@@ -6,9 +6,6 @@ namespace Yardarm.CommandLine
 {
     public class CommonOptions
     {
-        [Option('i', "input", Required = true, HelpText = "OpenAPI 3 files to process")]
-        public string InputFile { get; set; }
-
         [Option('n', "name", Required = true, HelpText = "Generated assembly name")]
         public string AssemblyName { get; set; }
 

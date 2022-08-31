@@ -9,7 +9,7 @@ using Yardarm.Spec;
 
 namespace Yardarm
 {
-    public class GenerationContext
+    public class GenerationContext : YardarmContext
     {
         private readonly Lazy<OpenApiDocument> _openApiDocument;
         private readonly Lazy<IOpenApiElementRegistry> _elementRegistry;
@@ -17,27 +17,17 @@ namespace Yardarm
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
 
-        public YardarmGenerationSettings Settings { get; }
         public OpenApiDocument Document => _openApiDocument.Value;
         public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
-        public IServiceProvider GenerationServices { get; }
         public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
         public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
 
-        /// <summary>
-        /// Details about the NuGet restore operation, once it is completed.
-        /// </summary>
-        public NuGetRestoreInfo? NuGetRestoreInfo { get; set; }
+        public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
 
         public NuGetFramework CurrentTargetFramework { get; set; } = NuGetFramework.UnsupportedFramework;
 
-        public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
-
-        public GenerationContext(IServiceProvider serviceProvider)
+        public GenerationContext(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            GenerationServices = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            Settings = serviceProvider.GetRequiredService<YardarmGenerationSettings>();
-
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
             _elementRegistry = new Lazy<IOpenApiElementRegistry>(serviceProvider.GetRequiredService<IOpenApiElementRegistry>);
             _namespaceProvider = new Lazy<INamespaceProvider>(serviceProvider.GetRequiredService<INamespaceProvider>);

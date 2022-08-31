@@ -82,6 +82,9 @@
   <!-- Extension point for dynamically generating/collecting OpenApiSpec items -->
   <Target Name="CollectOpenApiSpecs" />
 
+  <!-- Extension point for dynamically generating/collecting YardarmExtension items -->
+  <Target Name="CollectYardarmExtensions" />
+
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
 </Project>

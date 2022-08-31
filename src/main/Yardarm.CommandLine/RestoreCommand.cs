@@ -25,8 +25,6 @@ namespace Yardarm.CommandLine
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var document = await ReadDocumentAsync();
-
             var settings = new YardarmGenerationSettings(_options.AssemblyName)
             {
                 RootNamespace = _options.RootNamespace ?? _options.AssemblyName,
@@ -47,7 +45,7 @@ namespace Yardarm.CommandLine
                             .AddSerilog();
                     });
 
-                var generator = new YardarmGenerator(document, settings);
+                var generator = new YardarmProcessor(settings);
                 await generator.RestoreAsync(cancellationToken);
 
                 stopwatch.Stop();

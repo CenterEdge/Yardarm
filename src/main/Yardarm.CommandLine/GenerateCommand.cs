@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Readers;
 using NuGet.Packaging.Core;
 using Serilog;
 using Serilog.Events;
@@ -118,6 +120,15 @@ namespace Yardarm.CommandLine
                     await stream.DisposeAsync();
                 }
             }
+        }
+
+        protected async Task<OpenApiDocument> ReadDocumentAsync()
+        {
+            var reader = new OpenApiStreamReader();
+
+            await using var stream = File.OpenRead(_options.InputFile);
+
+            return reader.Read(stream, out _);
         }
 
         private void ApplyVersion(YardarmGenerationSettings settings)

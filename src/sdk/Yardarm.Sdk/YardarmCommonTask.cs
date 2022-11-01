@@ -52,7 +52,8 @@ namespace Yardarm.Build.Tasks
 
             if (!string.IsNullOrEmpty(BaseIntermediateOutputPath))
             {
-                builder.AppendFormat(" --intermediate-dir {0}", BaseIntermediateOutputPath);
+                builder.Append(" --intermediate-dir ");
+                builder.AppendQuoted(BaseIntermediateOutputPath);
             }
 
             if (Extensions is {Length: > 0})
@@ -61,7 +62,7 @@ namespace Yardarm.Build.Tasks
                 foreach (var extension in Extensions)
                 {
                     builder.Append(' ');
-                    builder.Append(extension.ItemSpec);
+                    builder.AppendQuoted(extension.ItemSpec);
                 }
             }
 

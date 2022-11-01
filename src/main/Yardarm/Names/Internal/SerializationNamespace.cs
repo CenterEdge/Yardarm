@@ -19,6 +19,7 @@ namespace Yardarm.Names.Internal
         public NameSyntax PathSegmentStyle { get; }
         public NameSyntax PathSegmentSerializer { get; }
         public ExpressionSyntax PathSegmentSerializerInstance { get; }
+        public NameSyntax QueryStringBuilder { get; }
         public NameSyntax TypeSerializerRegistryExtensions { get; }
         public NameSyntax UnknownMediaTypeException { get; }
 
@@ -70,6 +71,10 @@ namespace Yardarm.Names.Internal
             PathSegmentSerializerInstance = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                 PathSegmentSerializer,
                 IdentifierName("Instance"));
+
+            QueryStringBuilder = QualifiedName(
+                Name,
+                IdentifierName("QueryStringBuilder"));
 
             TypeSerializerRegistryExtensions = QualifiedName(
                 Name,

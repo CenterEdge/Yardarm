@@ -15,6 +15,7 @@ namespace Yardarm.Names
         NameSyntax PathSegmentStyle { get; }
         NameSyntax PathSegmentSerializer { get; }
         ExpressionSyntax PathSegmentSerializerInstance { get; }
+        NameSyntax QueryStringBuilder { get; }
         NameSyntax TypeSerializerRegistryExtensions { get; }
         NameSyntax UnknownMediaTypeException { get; }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -40,6 +39,14 @@ namespace Yardarm.Generation.Request
                 yield break;
             }
 
+            yield return GenerateHeader(operation)
+                .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
+                .WithBody(Block(GenerateBody(operation, mediaType)));
+        }
+
+        public IEnumerable<StatementSyntax> GenerateBody(ILocatedOpenApiElement<OpenApiOperation> operation,
+            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        {
             var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
             var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parent!;
@@ -72,28 +79,62 @@ namespace Yardarm.Generation.Request
 
             if (queryParameters.Length > 0)
             {
-                NameSyntax keyValuePairType = WellKnownTypes.System.Collections.Generic.KeyValuePair.Name(
-                    PredefinedType(Token(SyntaxKind.StringKeyword)),
-                    NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword))));
+                const string queryStringBuilderVariableName = "queryStringBuilder";
 
-                ExpressionSyntax buildArrayExpression = ArrayCreationExpression(
-                        ArrayType(keyValuePairType)
-                            .AddRankSpecifiers(ArrayRankSpecifier().AddSizes(OmittedArraySizeExpression())))
-                    .WithInitializer(InitializerExpression(SyntaxKind.ArrayInitializerExpression,
-                        SeparatedList<ExpressionSyntax>(queryParameters
-                            .Select(parameter => ObjectCreationExpression(keyValuePairType)
-                                .AddArgumentListArguments(
-                                    Argument(SyntaxHelpers.StringLiteral(parameter.Name)),
-                                    Argument(IdentifierName(propertyNameFormatter.Format(parameter.Name))))))));
+                yield return LocalDeclarationStatement(VariableDeclaration(SerializationNamespace.QueryStringBuilder,
+                    SingletonSeparatedList(VariableDeclarator(
+                        Identifier(queryStringBuilderVariableName),
+                        null,
+                        EqualsValueClause(ImplicitObjectCreationExpression(
+                            Token(SyntaxKind.NewKeyword),
+                            ArgumentList(SingletonSeparatedList(Argument(pathExpression))),
+                            null))))));
 
-                pathExpression = WellKnownTypes.Yardarm.Client.OperationHelpers.AddQueryParameters(
-                    pathExpression, buildArrayExpression);
+                foreach (var queryParameter in queryParameters)
+                {
+                    if (queryParameter.Schema.Type == "array")
+                    {
+                        yield return ExpressionStatement(InvocationExpression(MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName(queryStringBuilderVariableName),
+                                IdentifierName("AppendList")),
+                            ArgumentList(SeparatedList(new ArgumentSyntax[]
+                            {
+                                Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
+                                Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
+                                Argument(LiteralExpression(queryParameter.Explode ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
+                                Argument(queryParameter.Style switch
+                                {
+                                    ParameterStyle.SpaceDelimited => SyntaxHelpers.StringLiteral("%20"),
+                                    ParameterStyle.PipeDelimited => SyntaxHelpers.StringLiteral("|"),
+                                    _ => SyntaxHelpers.StringLiteral(",")
+                                }),
+                                Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression))
+                            }))));
+                    }
+                    else
+                    {
+                        yield return ExpressionStatement(InvocationExpression(MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName(queryStringBuilderVariableName),
+                                IdentifierName("AppendPrimitive")),
+                            ArgumentList(SeparatedList(new ArgumentSyntax[]
+                            {
+                                Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
+                                Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
+                                Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression))
+                            }))));
+                    }
+                }
+
+                yield return ReturnStatement(
+                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(queryStringBuilderVariableName), IdentifierName("ToString"))));
             }
-
-            yield return GenerateHeader(operation)
-                .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
-                .WithExpressionBody(ArrowExpressionClause(pathExpression))
-                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+            else
+            {
+                yield return ReturnStatement(pathExpression);
+            }
         }
 
         public static InvocationExpressionSyntax InvokeBuildUri(ExpressionSyntax requestInstance) =>

@@ -50,7 +50,8 @@ public class YardarmGenerate : YardarmCommonTask
     {
         builder.AppendFormat(" --no-restore"); // Restore is performed by MSBuild
 
-        builder.AppendFormat(" -i {0}", SpecFile![0].ItemSpec);
+        builder.Append(" -i ");
+        builder.AppendQuoted(SpecFile![0].ItemSpec);
 
         if (!string.IsNullOrEmpty(Version))
         {
@@ -59,29 +60,36 @@ public class YardarmGenerate : YardarmCommonTask
 
         if (EmbedAllSources)
         {
-            builder.AppendFormat(" --embed");
+            builder.Append(" --embed");
         }
 
-        builder.AppendFormat(" -o {0}", OutputAssembly);
+        builder.Append(" -o ");
+        builder.AppendQuoted(OutputAssembly);
+
         if (!string.IsNullOrEmpty(OutputRefAssembly))
         {
-            builder.AppendFormat(" --ref {0}", OutputRefAssembly);
+            builder.Append(" --ref ");
+            builder.AppendQuoted(OutputRefAssembly);
         }
         if (!string.IsNullOrEmpty(OutputDebugSymbols))
         {
-            builder.AppendFormat(" --pdb {0}", OutputDebugSymbols);
+            builder.Append(" --pdb ");
+            builder.AppendQuoted(OutputDebugSymbols);
         }
         if (!string.IsNullOrEmpty(OutputXmlDocumentation))
         {
-            builder.AppendFormat(" --xml {0}", OutputXmlDocumentation);
+            builder.Append(" --xml ");
+            builder.AppendQuoted(OutputXmlDocumentation);
         }
         if (!string.IsNullOrEmpty(KeyFile))
         {
-            builder.AppendFormat(" --keyfile {0}", KeyFile);
+            builder.Append(" --keyfile ");
+            builder.AppendQuoted(KeyFile);
         }
         if (!string.IsNullOrEmpty(KeyContainerName))
         {
-            builder.AppendFormat(" --keycontainername {0}", KeyContainerName);
+            builder.Append(" --keycontainername ");
+            builder.AppendQuoted(KeyContainerName);
         }
         if (DelaySign == "true")
         {
@@ -104,7 +112,8 @@ public class YardarmGenerate : YardarmCommonTask
                     referencePath = reference.ItemSpec;
                 }
 
-                builder.AppendFormat(" \"{0}\"", referencePath);
+                builder.Append(' ');
+                builder.AppendQuoted(referencePath);
             }
         }
     }

@@ -77,18 +77,31 @@ namespace Yardarm.Generation.Request
             {
                 string propertyName = propertyNameFormatter.Format(headerParameter.Name);
 
+                ExpressionSyntax valueExpression;
+                if (headerParameter is {Schema.Type: "array"})
+                {
+                    valueExpression = InvocationExpression(
+                        MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            SerializationNamespace.HeaderSerializerInstance,
+                            IdentifierName("SerializeList")),
+                        ArgumentList(SingletonSeparatedList(Argument(IdentifierName(propertyName)))));
+                }
+                else
+                {
+                    valueExpression = InvocationExpression(
+                        MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            SerializationNamespace.HeaderSerializerInstance,
+                            IdentifierName("SerializePrimitive")),
+                        ArgumentList(SingletonSeparatedList(Argument(IdentifierName(propertyName)))));
+                }
+
                 StatementSyntax statement = ExpressionStatement(InvocationExpression(
                         SyntaxHelpers.MemberAccess(RequestMessageParameterName, "Headers", "Add"))
                     .AddArgumentListArguments(
                         Argument(SyntaxHelpers.StringLiteral(headerParameter.Name)),
-                        Argument(InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            SerializationNamespace.HeaderSerializerInstance,
-                            IdentifierName("Serialize")))
-                            .AddArgumentListArguments(
-                                Argument(IdentifierName(propertyName)),
-                                Argument(headerParameter.Explode
-                                    ? LiteralExpression(SyntaxKind.TrueLiteralExpression)
-                                    : LiteralExpression(SyntaxKind.FalseLiteralExpression))))));
+                        Argument(valueExpression)));
 
                 if (!headerParameter.Required)
                 {

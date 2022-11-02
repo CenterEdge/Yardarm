@@ -77,16 +77,23 @@ namespace Yardarm.Enrichment.Responses
 
                 TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(schemaElement).TypeInfo.Name;
 
-                InvocationExpressionSyntax deserializeExpression =
-                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                InvocationExpressionSyntax deserializeExpression;
+                if (schemaElement is {Element.Type: "array"})
+                {
+                    deserializeExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             _serializationNamespace.HeaderSerializerInstance,
-                            GenericName("Deserialize")
-                                .AddTypeArgumentListArguments(typeName)))
-                        .AddArgumentListArguments(
-                            Argument(valuesName),
-                            Argument(header.Element.Explode
-                                ? LiteralExpression(SyntaxKind.TrueLiteralExpression)
-                                : LiteralExpression(SyntaxKind.FalseLiteralExpression)));
+                            GenericName("DeserializeList")
+                                .AddTypeArgumentListArguments(typeName)),
+                        ArgumentList(SingletonSeparatedList(Argument(valuesName))));
+                }
+                else
+                {
+                    deserializeExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            _serializationNamespace.HeaderSerializerInstance,
+                            GenericName("DeserializePrimitive")
+                                .AddTypeArgumentListArguments(typeName)),
+                        ArgumentList(SingletonSeparatedList(Argument(valuesName))));
+                }
 
                 yield return IfStatement(
                     WellKnownTypes.System.Net.Http.Headers.HttpHeaders.TryGetValues(

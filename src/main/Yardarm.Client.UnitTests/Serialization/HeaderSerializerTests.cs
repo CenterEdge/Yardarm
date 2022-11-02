@@ -7,115 +7,103 @@ namespace Yardarm.Client.UnitTests.Serialization
 {
     public class HeaderSerializerTests
     {
-        #region Serialize
+        #region SerializePrimitive
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_String_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_String_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize("test", explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive("test");
 
             // Assert
 
             result.Should().Be("test");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_Integer_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_Integer_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(105, explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive(105);
 
             // Assert
 
             result.Should().Be("105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_Long_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_Long_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(105L, explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive(105L);
 
             // Assert
 
             result.Should().Be("105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_Float_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_Float_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(1.05f, explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive(1.05f);
 
             // Assert
 
             result.Should().Be("1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_Double_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_Double_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(1.05, explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive(1.05);
 
             // Assert
 
             result.Should().Be("1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_True_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_True_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(true, explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive(true);
 
             // Assert
 
             result.Should().Be("true");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_False_ReturnsString(bool explode)
+        [Fact]
+        public void SerializePrimitive_False_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(false, explode);
+            string result = HeaderSerializer.Instance.SerializePrimitive(false);
 
             // Assert
 
             result.Should().Be("false");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_List_ReturnsCommaDelimitedString(bool explode)
+        #endregion
+
+        #region SerializeList
+
+        [Fact]
+        public void SerializeList_List_ReturnsCommaDelimitedString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Serialize(
-                new List<string> { "abc", "def", "ghi" }, explode);
+            string result = HeaderSerializer.Instance.SerializeList(
+                new List<string> { "abc", "def", "ghi" });
 
             // Assert
 
@@ -124,152 +112,136 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
-        #region Serialize
+        #region DeserializePrimitive
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_String_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_String_ReturnsString()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Deserialize<string>(
-                new [] {"test"}, explode);
+            string result = HeaderSerializer.Instance.DeserializePrimitive<string>(
+                new [] {"test"});
 
             // Assert
 
             result.Should().Be("test");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_MultipleStrings_ReturnsJoined(bool explode)
+        [Fact]
+        public void DeserializePrimitive_MultipleStrings_ReturnsJoined()
         {
             // Act
 
-            string result = HeaderSerializer.Instance.Deserialize<string>(
-                new [] {"test", "value"}, explode);
+            string result = HeaderSerializer.Instance.DeserializePrimitive<string>(
+                new [] {"test", "value"});
 
             // Assert
 
             result.Should().Be("test,value");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_Integer_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_Integer_ReturnsString()
         {
             // Act
 
-            int result = HeaderSerializer.Instance.Deserialize<int>(
-                new [] {"105"}, explode);
+            int result = HeaderSerializer.Instance.DeserializePrimitive<int>(
+                new [] {"105"});
 
             // Assert
 
             result.Should().Be(105);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_Long_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_Long_ReturnsString()
         {
             // Act
 
-            long result = HeaderSerializer.Instance.Deserialize<long>(
-                new [] {"105"}, explode);
+            long result = HeaderSerializer.Instance.DeserializePrimitive<long>(
+                new [] {"105"});
 
             // Assert
 
             result.Should().Be(105L);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_Float_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_Float_ReturnsString()
         {
             // Act
 
-            float result = HeaderSerializer.Instance.Deserialize<float>(
-                new [] {"1.05"}, explode);
+            float result = HeaderSerializer.Instance.DeserializePrimitive<float>(
+                new [] {"1.05"});
 
             // Assert
 
             result.Should().Be(1.05f);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_Double_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_Double_ReturnsString()
         {
             // Act
 
-            double result = HeaderSerializer.Instance.Deserialize<double>(
-                new [] {"1.05"}, explode);
+            double result = HeaderSerializer.Instance.DeserializePrimitive<double>(
+                new [] {"1.05"});
 
             // Assert
 
             result.Should().Be(1.05);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_True_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_True_ReturnsString()
         {
             // Act
 
-            bool result = HeaderSerializer.Instance.Deserialize<bool>(
-                new [] {"true"}, explode);
+            bool result = HeaderSerializer.Instance.DeserializePrimitive<bool>(
+                new [] {"true"});
 
             // Assert
 
             result.Should().Be(true);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_False_ReturnsString(bool explode)
+        [Fact]
+        public void DeserializePrimitive_False_ReturnsString()
         {
             // Act
 
-            bool result = HeaderSerializer.Instance.Deserialize<bool>(
-                new[] {"false"}, explode);
+            bool result = HeaderSerializer.Instance.DeserializePrimitive<bool>(
+                new[] {"false"});
 
             // Assert
 
             result.Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_ListOfStrings_ReturnsCommaDelimitedString(bool explode)
+        #endregion
+
+        #region DeserializeList
+
+        [Fact]
+        public void DeserializeList_ListOfStrings_ReturnsStrings()
         {
             // Act
 
-            List<string> result = HeaderSerializer.Instance.Deserialize<List<string>>(
-                new[] { "abc", "def", "ghi" }, explode);
+            List<string> result = HeaderSerializer.Instance.DeserializeList<string>(
+                new[] { "abc", "def", "ghi" });
 
             // Assert
 
             result.Should().BeEquivalentTo("abc", "def", "ghi");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Deserialize_ListOfIntegers_ReturnsCommaDelimitedString(bool explode)
+        [Fact]
+        public void DeserializeList_ListOfIntegers_ReturnsIntegers()
         {
             // Act
 
-            List<int> result = HeaderSerializer.Instance.Deserialize<List<int>>(
-                new[] { "1", "3", "5" }, explode);
+            List<int> result = HeaderSerializer.Instance.DeserializeList<int>(
+                new[] { "1", "3", "5" });
 
             // Assert
 

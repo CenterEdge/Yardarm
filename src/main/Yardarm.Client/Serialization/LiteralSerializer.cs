@@ -15,9 +15,6 @@ namespace RootNamespace.Serialization
         private static readonly MethodInfo s_joinListMethod =
             ((Func<string, IEnumerable<string>, string>)Instance.JoinList<string>).GetMethodInfo().GetGenericMethodDefinition();
 
-        private static readonly MethodInfo s_deserializeListMethod =
-            ((Func<IEnumerable<string>, List<string>>)Instance.DeserializeList<string>).GetMethodInfo().GetGenericMethodDefinition();
-
         public string Serialize<T>(T value) =>
             value != null
                 ? value switch {
@@ -39,20 +36,11 @@ namespace RootNamespace.Serialization
             return (string)joinList.Invoke(this, new object[] {separator, list})!;
         }
 
-        public object DeserializeList(IEnumerable<string> values, Type itemType)
-        {
-            MethodInfo deserializeList = s_deserializeListMethod.MakeGenericMethod(itemType);
-
-            return deserializeList.Invoke(this, new object[] {values})!;
-        }
-
-        // ReSharper disable once UnusedMember.Local
-        private string JoinList<T>(string separator, IEnumerable<T> list) =>
+        public string JoinList<T>(string separator, IEnumerable<T> list) =>
             string.Join(separator, list
                 .Select(Serialize));
 
-        // ReSharper disable once UnusedMember.Local
-        private List<T> DeserializeList<T>(IEnumerable<string> values) =>
+        public List<T> DeserializeList<T>(IEnumerable<string> values) =>
             new List<T>(values.Select(Deserialize<T>));
     }
 }

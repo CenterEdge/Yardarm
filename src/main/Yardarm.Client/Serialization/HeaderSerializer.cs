@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -46,7 +47,11 @@ namespace RootNamespace.Serialization
         public T DeserializePrimitive<T>(IEnumerable<string> values)
         {
             // Rejoin the values from the header into a simple string
+#if NET6_0_OR_GREATER
             string value = string.Join(',', values);
+#else
+            string value = string.Join(",", values);
+#endif
 
             if (typeof(T) == typeof(string))
             {

@@ -27,18 +27,5 @@ namespace RootNamespace.Serialization
             itemType = interfaceType.GetGenericArguments()[0];
             return true;
         }
-
-        public static bool IsList(Type type,
-            [NotNullWhen(true)] out Type? itemType)
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                itemType = type.GetGenericArguments()[0];
-                return true;
-            }
-
-            itemType = null;
-            return false;
-        }
     }
 }

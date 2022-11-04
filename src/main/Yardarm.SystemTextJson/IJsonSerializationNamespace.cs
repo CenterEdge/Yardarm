@@ -5,6 +5,7 @@ namespace Yardarm.SystemTextJson
     public interface IJsonSerializationNamespace
     {
         NameSyntax Name { get; }
+        NameSyntax JsonDateConverter { get; }
         NameSyntax JsonTypeSerializer { get; }
 
         TypeSyntax JsonStringEnumConverter(TypeSyntax valueType);

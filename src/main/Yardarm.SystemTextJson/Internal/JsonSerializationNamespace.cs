@@ -9,6 +9,7 @@ namespace Yardarm.SystemTextJson.Internal
     internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationNamespace
     {
         public NameSyntax Name { get; }
+        public NameSyntax JsonDateConverter { get; }
         public NameSyntax JsonTypeSerializer { get; }
         public NameSyntax JsonHelpers { get; }
 
@@ -22,6 +23,10 @@ namespace Yardarm.SystemTextJson.Internal
             Name = QualifiedName(
                 serializationNamespace.Name,
                 IdentifierName("Json"));
+
+            JsonDateConverter = QualifiedName(
+                Name,
+                IdentifierName("JsonDateConverter"));
 
             JsonTypeSerializer = QualifiedName(
                 Name,

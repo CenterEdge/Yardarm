@@ -12,6 +12,7 @@ namespace Yardarm.NewtonsoftJson.Internal
         public NameSyntax DynamicAdditionalPropertiesDictionary { get; }
         public NameSyntax JsonTypeSerializer { get; }
         public NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; }
+        public NameSyntax OpenApiDateConverter { get; }
 
         public JsonSerializationNamespace(ISerializationNamespace serializationNamespace)
         {
@@ -39,6 +40,10 @@ namespace Yardarm.NewtonsoftJson.Internal
             NullableDynamicAdditionalPropertiesDictionary = QualifiedName(
                 Name,
                 IdentifierName("NullableDynamicAdditionalPropertiesDictionary"));
+
+            OpenApiDateConverter = QualifiedName(
+                Name,
+                IdentifierName("OpenApiDateConverter"));
         }
 
         public TypeSyntax AdditionalPropertiesDictionary(TypeSyntax valueType) =>

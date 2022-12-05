@@ -9,6 +9,7 @@ namespace Yardarm.NewtonsoftJson
         NameSyntax DynamicAdditionalPropertiesDictionary { get; }
         NameSyntax JsonTypeSerializer { get; }
         NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; }
+        public NameSyntax OpenApiDateConverter { get; }
 
         TypeSyntax AdditionalPropertiesDictionary(TypeSyntax valueType);
     }

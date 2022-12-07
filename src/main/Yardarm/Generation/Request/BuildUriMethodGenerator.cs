@@ -70,7 +70,8 @@ namespace Yardarm.Generation.Request
                             Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
                             Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
                             Argument(GetStyleExpression(parameter)),
-                            Argument(GetExplodeExpression(parameter)));
+                            Argument(GetExplodeExpression(parameter)),
+                            Argument(SyntaxHelpers.StringLiteral(parameter.Schema?.Format)));
                 });
 
             OpenApiParameter[] queryParameters = operation.Element.Parameters
@@ -109,7 +110,8 @@ namespace Yardarm.Generation.Request
                                     ParameterStyle.PipeDelimited => SyntaxHelpers.StringLiteral("|"),
                                     _ => SyntaxHelpers.StringLiteral(",")
                                 }),
-                                Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression))
+                                Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
+                                Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema.Format))
                             }))));
                     }
                     else
@@ -122,7 +124,8 @@ namespace Yardarm.Generation.Request
                             {
                                 Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
                                 Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
-                                Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression))
+                                Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
+                                Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema.Format))
                             }))));
                     }
                 }

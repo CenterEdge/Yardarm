@@ -7,19 +7,18 @@ namespace RootNamespace.Serialization
 {
     internal class PathSegmentSerializer
     {
-
         public static PathSegmentSerializer Instance { get; } = new PathSegmentSerializer();
 
         public string Serialize<
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false) =>
+            T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false, string? format = null) =>
             style switch
             {
-                PathSegmentStyle.Simple => SerializeSimple(value, explode),
-                PathSegmentStyle.Label => SerializeLabel(value, explode),
-                PathSegmentStyle.Matrix => SerializeMatrix(name, value, explode),
+                PathSegmentStyle.Simple => SerializeSimple(value, explode, format),
+                PathSegmentStyle.Label => SerializeLabel(value, explode, format),
+                PathSegmentStyle.Matrix => SerializeMatrix(name, value, explode, format),
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
 
@@ -27,7 +26,7 @@ namespace RootNamespace.Serialization
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(T value, bool explode)
+            T>(T value, bool explode, string? format = null)
         {
             if (value == null)
             {
@@ -42,17 +41,17 @@ namespace RootNamespace.Serialization
 
             if (SerializationHelpers.IsEnumerable(typeof(T), out Type? itemType))
             {
-                return LiteralSerializer.Instance.JoinList(",", value, itemType);
+                return LiteralSerializer.Instance.JoinList(",", value, itemType, format);
             }
 
-            return LiteralSerializer.Instance.Serialize(value);
+            return LiteralSerializer.Instance.Serialize(value, format);
         }
 
         private static string SerializeLabel<
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(T value, bool explode)
+            T>(T value, bool explode, string? format)
         {
             if (value == null)
             {
@@ -67,17 +66,17 @@ namespace RootNamespace.Serialization
 
             if (SerializationHelpers.IsEnumerable(typeof(T), out Type? itemType))
             {
-                return "." + LiteralSerializer.Instance.JoinList(explode ? "." : ",", value, itemType);
+                return "." + LiteralSerializer.Instance.JoinList(explode ? "." : ",", value, itemType, format);
             }
 
-            return "." + LiteralSerializer.Instance.Serialize(value);
+            return "." + LiteralSerializer.Instance.Serialize(value, format);
         }
 
         private static string SerializeMatrix<
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(string name, T value, bool explode)
+            T>(string name, T value, bool explode, string? format)
         {
             if (value == null)
             {
@@ -94,10 +93,10 @@ namespace RootNamespace.Serialization
             {
                 string prefix = $";{name}=";
 
-                return prefix + LiteralSerializer.Instance.JoinList(explode ? prefix : ",", value, itemType);
+                return prefix + LiteralSerializer.Instance.JoinList(explode ? prefix : ",", value, itemType, format);
             }
 
-            return $";{name}={LiteralSerializer.Instance.Serialize(value)}";
+            return $";{name}={LiteralSerializer.Instance.Serialize(value, format)}";
         }
     }
 }

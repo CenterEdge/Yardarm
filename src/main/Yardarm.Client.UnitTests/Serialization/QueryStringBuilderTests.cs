@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using RootNamespace.Serialization;
 using Xunit;
 
@@ -92,6 +93,23 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
+        public void ToString_Date_AddsWithDateFormat()
+        {
+            // Arrange
+
+            var builder = new QueryStringBuilder("base/uri");
+            builder.AppendPrimitive("name", new DateTime(2020, 1, 2), false, "date");
+
+            // Act
+
+            var result = builder.ToString();
+
+            // Assert
+
+            result.Should().Be("base/uri?name=2020-01-02");
+        }
+
+        [Fact]
         public void ToString_NullRefType_Skips()
         {
             // Arrange
@@ -126,12 +144,29 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
+        public void ToString_NonNullValueType_Serializes()
+        {
+            // Arrange
+
+            var builder = new QueryStringBuilder("base/uri");
+            builder.AppendPrimitive("name", (long?) 10, false);
+
+            // Act
+
+            var result = builder.ToString();
+
+            // Assert
+
+            result.Should().Be("base/uri?name=10");
+        }
+
+        [Fact]
         public void ToString_ListExplode_MultipleValues()
         {
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", "value2" }, true, ",", false);
+            builder.AppendList("name", new[] { "value1", "value2" }, true, ",", false);
 
             // Act
 
@@ -148,7 +183,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", null, "value2" }, true, ",", false);
+            builder.AppendList("name", new[] { "value1", null, "value2" }, true, ",", false);
 
             // Act
 
@@ -165,7 +200,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", "value2 " }, true, ",", true);
+            builder.AppendList("name", new[] { "value1", "value2 " }, true, ",", true);
 
             // Act
 
@@ -182,7 +217,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", "value2 " }, true, ",", false);
+            builder.AppendList("name", new[] { "value1", "value2 " }, true, ",", false);
 
             // Act
 
@@ -194,12 +229,29 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
+        public void ToString_DateListExplode_MultipleValuesWithDateFormat()
+        {
+            // Arrange
+
+            var builder = new QueryStringBuilder("base/uri");
+            builder.AppendList("name", new[] { new DateTime(2020, 1, 2), new DateTime(2021, 3, 4) }, true, ",", false, "date");
+
+            // Act
+
+            var result = builder.ToString();
+
+            // Assert
+
+            result.Should().Be("base/uri?name=2020-01-02&name=2021-03-04");
+        }
+
+        [Fact]
         public void ToString_ListDelimited_Concatenates()
         {
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", "value2" }, false, "%20", false);
+            builder.AppendList("name", new[] { "value1", "value2" }, false, "%20", false);
 
             // Act
 
@@ -216,7 +268,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", "value2 " }, false, "%20", true);
+            builder.AppendList("name", new[] { "value1", "value2 " }, false, "%20", true);
 
             // Act
 
@@ -233,7 +285,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new object[] { "value1", "value2 " }, false, "%20", false);
+            builder.AppendList("name", new[] { "value1", "value2 " }, false, "%20", false);
 
             // Act
 
@@ -242,6 +294,23 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be("base/uri?name=value1%20value2%20");
+        }
+
+        [Fact]
+        public void ToString_DateListDelimited_ConcatenatesWithDateFormat()
+        {
+            // Arrange
+
+            var builder = new QueryStringBuilder("base/uri");
+            builder.AppendList("name", new[] { new DateTime(2020, 1, 2), new DateTime(2021, 3, 4) }, false, "%20", false, "date");
+
+            // Act
+
+            var result = builder.ToString();
+
+            // Assert
+
+            result.Should().Be("base/uri?name=2020-01-02%202021-03-04");
         }
     }
 }

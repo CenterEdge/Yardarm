@@ -25,17 +25,18 @@ namespace RootNamespace.Serialization
         /// <param name="name">Name of the query parameter. Should be URL encoded.</param>
         /// <param name="value">Value to serialize.</param>
         /// <param name="allowReserved">If true, do not URL encode the serialized value.</param>
+        /// <param name="format">Open API format specifier, i.e. "date" or "date-time".</param>
         /// <remarks>
         /// Null values are ignored.
         /// </remarks>
-        public void AppendPrimitive<T>(string name, T value, bool allowReserved)
+        public void AppendPrimitive<T>(string name, T value, bool allowReserved, string? format = null)
         {
             if (value is null)
             {
                 return;
             }
 
-            Append(name, EscapeValue(value, allowReserved));
+            Append(name, EscapeValue(value, allowReserved, format));
         }
 
         /// <summary>
@@ -47,10 +48,11 @@ namespace RootNamespace.Serialization
         /// <param name="explode">If true, add a separate query parameter for each item in the list.</param>
         /// <param name="delimiter">If <paramref name="explode"/> is <c>false</c>, this string separates each value.</param>
         /// <param name="allowReserved">If true, do not URL encode the serialized values.</param>
+        /// <param name="format">Open API format specifier, i.e. "date" or "date-time".</param>
         /// <remarks>
         /// Null values are ignored. Also, <paramref name="delimiter"/> is not url-encoded, special characters should be encoded in advance.
         /// </remarks>
-        public void AppendList<T>(string name, IEnumerable<T>? list, bool explode, string delimiter, bool allowReserved)
+        public void AppendList<T>(string name, IEnumerable<T>? list, bool explode, string delimiter, bool allowReserved, string? format = null)
         {
             if (list is null)
             {
@@ -63,7 +65,7 @@ namespace RootNamespace.Serialization
                 {
                     if (item is not null)
                     {
-                        Append(name, EscapeValue(item, allowReserved));
+                        Append(name, EscapeValue(item, allowReserved, format));
                     }
                 }
             }
@@ -86,7 +88,7 @@ namespace RootNamespace.Serialization
                             _stringBuilder.Append(delimiter);
                         }
 
-                        _stringBuilder.Append(EscapeValue(item, allowReserved));
+                        _stringBuilder.Append(EscapeValue(item, allowReserved, format));
                     }
                 }
             }
@@ -109,9 +111,9 @@ namespace RootNamespace.Serialization
             _stringBuilder.Append(value);
         }
 
-        private static string EscapeValue<T>(T value, bool allowReserved) =>
+        private static string EscapeValue<T>(T value, bool allowReserved, string? format) =>
             allowReserved
-                ? LiteralSerializer.Instance.Serialize(value)
-                : Uri.EscapeDataString(LiteralSerializer.Instance.Serialize(value));
+                ? LiteralSerializer.Instance.Serialize(value, format)
+                : Uri.EscapeDataString(LiteralSerializer.Instance.Serialize(value, format));
     }
 }

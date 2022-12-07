@@ -18,7 +18,7 @@ namespace RootNamespace.Serialization
             _literalSerializer = literalSerializer;
         }
 
-        public string SerializePrimitive<T>(T value)
+        public string SerializePrimitive<T>(T value, string? format = null)
         {
             if (value == null)
             {
@@ -31,20 +31,20 @@ namespace RootNamespace.Serialization
                 return str;
             }
 
-            return _literalSerializer.Serialize(value);
+            return _literalSerializer.Serialize(value, format);
         }
 
-        public string SerializeList<T>(IEnumerable<T>? list)
+        public string SerializeList<T>(IEnumerable<T>? list, string? format = null)
         {
             if (list == null)
             {
                 return "";
             }
 
-            return _literalSerializer.JoinList(",", list);
+            return _literalSerializer.JoinList(",", list, format);
         }
 
-        public T DeserializePrimitive<T>(IEnumerable<string> values)
+        public T DeserializePrimitive<T>(IEnumerable<string> values, string? format = null)
         {
             // Rejoin the values from the header into a simple string
 #if NET6_0_OR_GREATER
@@ -60,14 +60,14 @@ namespace RootNamespace.Serialization
             }
 
             // We're not dealing with a list, so join the values back together
-            return _literalSerializer.Deserialize<T>(value);
+            return _literalSerializer.Deserialize<T>(value, format);
         }
 
-        public List<T> DeserializeList<T>(IEnumerable<string> values)
+        public List<T> DeserializeList<T>(IEnumerable<string> values, string? format = null)
         {
             ThrowHelper.ThrowIfNull(values, nameof(values));
 
-            return _literalSerializer.DeserializeList<T>(values);
+            return _literalSerializer.DeserializeList<T>(values, format);
         }
     }
 }

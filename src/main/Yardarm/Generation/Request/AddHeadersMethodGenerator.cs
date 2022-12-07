@@ -85,7 +85,11 @@ namespace Yardarm.Generation.Request
                             SyntaxKind.SimpleMemberAccessExpression,
                             SerializationNamespace.HeaderSerializerInstance,
                             IdentifierName("SerializeList")),
-                        ArgumentList(SingletonSeparatedList(Argument(IdentifierName(propertyName)))));
+                        ArgumentList(SeparatedList(new[]
+                        {
+                            Argument(IdentifierName(propertyName)),
+                            Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema.Format))
+                        })));
                 }
                 else
                 {
@@ -94,7 +98,11 @@ namespace Yardarm.Generation.Request
                             SyntaxKind.SimpleMemberAccessExpression,
                             SerializationNamespace.HeaderSerializerInstance,
                             IdentifierName("SerializePrimitive")),
-                        ArgumentList(SingletonSeparatedList(Argument(IdentifierName(propertyName)))));
+                        ArgumentList(SeparatedList(new []
+                        {
+                            Argument(IdentifierName(propertyName)),
+                            Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema.Format))
+                        })));
                 }
 
                 StatementSyntax statement = ExpressionStatement(InvocationExpression(

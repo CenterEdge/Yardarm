@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using RootNamespace.Serialization;
 using Xunit;
@@ -105,6 +106,54 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be("false");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Serialize_SimpleDate_ReturnsString(bool explode)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTime(2020, 1, 2), PathSegmentStyle.Simple, explode, "date");
+
+            // Assert
+
+            result.Should().Be("2020-01-02");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Serialize_SimpleDateTime_ReturnsString(bool explode)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTime(2020, 1, 2, 3, 4, 5), PathSegmentStyle.Simple, explode, "date-time");
+
+            // Assert
+
+            result.Should().Be("2020-01-02T03:04:05.0000000");
+        }
+
+        [Theory]
+        [InlineData(false, null)]
+        [InlineData(true, null)]
+        [InlineData(false, "date-time")]
+        [InlineData(true, "date-time")]
+        public void Serialize_SimpleDateTimeOffset_ReturnsString(bool explode, string format)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
+                PathSegmentStyle.Simple, explode, format);
+
+            // Assert
+
+            result.Should().Be("2020-01-02T03:04:05.0000000-04:00");
         }
 
         [Theory]
@@ -222,6 +271,39 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be(".false");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Serialize_LabelDateTime_ReturnsString(bool explode)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTime(2020, 1, 2), PathSegmentStyle.Label, explode, "date");
+
+            // Assert
+
+            result.Should().Be(".2020-01-02");
+        }
+
+        [Theory]
+        [InlineData(false, null)]
+        [InlineData(true, null)]
+        [InlineData(false, "date-time")]
+        [InlineData(true, "date-time")]
+        public void Serialize_LabelDateTimeOffset_ReturnsString(bool explode, string format)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
+                PathSegmentStyle.Label, explode, format);
+
+            // Assert
+
+            result.Should().Be(".2020-01-02T03:04:05.0000000-04:00");
         }
 
         [Fact]
@@ -350,6 +432,39 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be(";id=false");
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Serialize_MatrixDateTime_ReturnsString(bool explode)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTime(2020, 1, 2), PathSegmentStyle.Matrix, explode, "date");
+
+            // Assert
+
+            result.Should().Be(";id=2020-01-02");
+        }
+
+        [Theory]
+        [InlineData(false, null)]
+        [InlineData(true, null)]
+        [InlineData(false, "date-time")]
+        [InlineData(true, "date-time")]
+        public void Serialize_MatrixDateTimeOffset_ReturnsString(bool explode, string format)
+        {
+            // Act
+
+            string result = PathSegmentSerializer.Instance.Serialize("id",
+                new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
+                PathSegmentStyle.Matrix, explode, format);
+
+            // Assert
+
+            result.Should().Be(";id=2020-01-02T03:04:05.0000000-04:00");
         }
 
         [Fact]

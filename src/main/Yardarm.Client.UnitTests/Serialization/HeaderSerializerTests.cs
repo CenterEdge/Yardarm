@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using RootNamespace.Serialization;
 using Xunit;
@@ -93,6 +94,30 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be("false");
         }
 
+        [Fact]
+        public void SerializePrimitive_DateTime_ReturnsString()
+        {
+            // Act
+
+            string result = HeaderSerializer.Instance.SerializePrimitive(new DateTime(2020, 1, 2, 3, 4, 5));
+
+            // Assert
+
+            result.Should().Be("2020-01-02T03:04:05.0000000");
+        }
+
+        [Fact]
+        public void SerializePrimitive_Date_ReturnsString()
+        {
+            // Act
+
+            string result = HeaderSerializer.Instance.SerializePrimitive(new DateTime(2020, 1, 2, 3, 4, 5), "date");
+
+            // Assert
+
+            result.Should().Be("2020-01-02");
+        }
+
         #endregion
 
         #region SerializeList
@@ -108,6 +133,22 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be("abc,def,ghi");
+        }
+
+        [Fact]
+        public void SerializeList_DateList_ReturnsCommaDelimitedString()
+        {
+            // Act
+
+            string result = HeaderSerializer.Instance.SerializeList(
+                new List<DateTime> {
+                    new(2020, 01, 02, 3, 4, 5),
+                    new(2021, 01, 02, 3, 4, 5)
+                }, "date");
+
+            // Assert
+
+            result.Should().Be("2020-01-02,2021-01-02");
         }
 
         #endregion
@@ -216,6 +257,44 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().BeFalse();
+        }
+
+        [Fact]
+        public void DeserializePrimitive_Date_ReturnsString()
+        {
+            // Act
+
+            var result = HeaderSerializer.Instance.DeserializePrimitive<DateTime>(
+                new[] {"2020-01-02"}, "date");
+
+            // Assert
+
+            result.Should().Be(new DateTime(2020, 01, 02));
+        }
+
+        [Fact]
+        public void DeserializePrimitive_DateWithUnexpectedTime_FormatException()
+        {
+            // Act/Assert
+
+            var action = () => HeaderSerializer.Instance.DeserializePrimitive<DateTime>(
+                new[] {"2020-01-02T03:04:05-04:00"}, "date");
+            action.Should().Throw<FormatException>();
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("date-time")]
+        public void DeserializePrimitive_DateTimeOffset_ReturnsString(string format)
+        {
+            // Act
+
+            var result = HeaderSerializer.Instance.DeserializePrimitive<DateTimeOffset>(
+                new[] {"2020-01-02T03:04:05-04:00"}, format);
+
+            // Assert
+
+            result.Should().Be(new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)));
         }
 
         #endregion

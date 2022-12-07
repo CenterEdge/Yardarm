@@ -64,8 +64,10 @@ namespace Yardarm.Helpers
                     (agg, current) =>
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, agg, IdentifierName(current)));
 
-        public static LiteralExpressionSyntax StringLiteral(string value) =>
-            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value));
+        public static LiteralExpressionSyntax StringLiteral(string? value) =>
+            value is not null
+                ? LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
+                : LiteralExpression(SyntaxKind.NullLiteralExpression);
 
         public static ExpressionSyntax ParameterWithNullCheck(string parameterName) =>
             BinaryExpression(SyntaxKind.CoalesceExpression,

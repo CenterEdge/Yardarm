@@ -84,7 +84,11 @@ namespace Yardarm.Enrichment.Responses
                             _serializationNamespace.HeaderSerializerInstance,
                             GenericName("DeserializeList")
                                 .AddTypeArgumentListArguments(typeName)),
-                        ArgumentList(SingletonSeparatedList(Argument(valuesName))));
+                        ArgumentList(SeparatedList(new []
+                        {
+                            Argument(valuesName),
+                            Argument(SyntaxHelpers.StringLiteral(schemaElement.Element.Format))
+                        })));
                 }
                 else
                 {
@@ -92,7 +96,10 @@ namespace Yardarm.Enrichment.Responses
                             _serializationNamespace.HeaderSerializerInstance,
                             GenericName("DeserializePrimitive")
                                 .AddTypeArgumentListArguments(typeName)),
-                        ArgumentList(SingletonSeparatedList(Argument(valuesName))));
+                        ArgumentList(SeparatedList(new [] {
+                            Argument(valuesName),
+                            Argument(SyntaxHelpers.StringLiteral(schemaElement.Element.Format))
+                        })));
                 }
 
                 yield return IfStatement(

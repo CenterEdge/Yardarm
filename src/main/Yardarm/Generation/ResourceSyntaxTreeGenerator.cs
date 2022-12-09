@@ -111,7 +111,7 @@ namespace Yardarm.Generation
             {
                 var result = new List<string> {$"NET{v.Major}_{v.Minor}"};
 
-                foreach (var version in new Version[] {new(5, 0), new(6, 0)}.Where(p => p <= v))
+                foreach (var version in new Version[] {new(5, 0), new(6, 0), new(7, 0)}.Where(p => p <= v))
                 {
                     result.Add($"NET{version.Major}_{version.Minor}_OR_GREATER");
                 }

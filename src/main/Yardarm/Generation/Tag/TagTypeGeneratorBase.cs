@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Tag
             // is missing the name attribute in the OpenAPI spec, the MethodDeclaration step will fail
             if (string.IsNullOrEmpty(methodName))
             {
-                throw new NullReferenceException($"{nameof(GenerateOperationMethodHeader)} ran into an error. Please ensure the method at the path {operation.Key} {operation} is decorated correctly.");
+                throw new NullReferenceException($"{nameof(GenerateOperationMethodHeader)} ran into an error. Please ensure the method at the path {operation.Key} {operation} is decorated correctly with the OperationId present.");
             }
 
             var methodDeclaration = MethodDeclaration(responseType, methodName)

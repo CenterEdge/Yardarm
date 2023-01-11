@@ -52,8 +52,8 @@ yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -f net6.0 -o output/director
 # Generate a NuGet package and symbols package, with System.Text.Json and DI support targeting net6.0 and netstandard2.0
 yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -f net6.0 netstandard2.0 --nupkg output/directory/ -x Yardarm.SystemTextJson Yardarm.MicrosoftExtensionsHttp
 
-# Generate a NuGet package and symbols package, with Newtonsoft.Json, DI support targeting net6.0 and author name and description
-yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -f net6.0 --author "Some Name Here" --description "Some description here" --nupkg output/directory/ -x Yardarm.NewtonsoftJson Yardarm.MicrosoftExtensionsHttp
+# Generate a NuGet package and symbols package, with Newtonsoft.Json and DI support targeting net6.0 with author name, owner and description
+yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -f net6.0 --author "Some Name Here" --owner "Some Owner Here" --description "Some description here" --nupkg output/directory/ -x Yardarm.NewtonsoftJson Yardarm.MicrosoftExtensionsHttp
 
 # Note the trailing slash on the output directory. If there is no trailing slash, it is assumed to be a DLL or nupkg file name.
 # Related files will be output beside that file.

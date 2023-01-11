@@ -43,6 +43,7 @@ namespace Yardarm.Packaging
                 Description = _settings.Description ?? _settings.AssemblyName,
                 Summary = _document.Info.Description,
                 Authors = {_settings.Author},
+                Owners = {_settings.Owner},
                 Repository = _settings.Repository
             };
 
@@ -90,7 +91,8 @@ namespace Yardarm.Packaging
                 },
                 Description = _settings.Description ?? _settings.AssemblyName,
                 Summary = _document.Info.Description,
-                Authors = { _settings.Author }
+                Authors = {_settings.Author},
+                Owners = {_settings.Owner},
             };
 
             builder.Files.AddRange(compilationResults

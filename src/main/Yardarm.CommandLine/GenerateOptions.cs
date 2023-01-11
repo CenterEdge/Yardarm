@@ -64,6 +64,9 @@ namespace Yardarm.CommandLine
         [Option("author", HelpText = "Author to show for the .nupkg/.snupkg package file", SetName = "nuget")]
         public string Author { get; set; }
 
+        [Option("owner", HelpText = "Owner to show for the .nupkg/.snupkg package file", SetName = "nuget")]
+        public string Owner { get; set; }
+
         [Option("description", HelpText = "Description to show for the .nupkg/.snupkg package file", SetName = "nuget")]
         public string Description { get; set; }
 

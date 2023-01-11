@@ -334,6 +334,7 @@ namespace Yardarm.CommandLine
 
             settings.Author = _options.Author;
             settings.Description= _options.Description;
+            settings.Owner = _options.Owner;
         }
 
         // Holds a temporary file which will eventually be persisted to a final file.

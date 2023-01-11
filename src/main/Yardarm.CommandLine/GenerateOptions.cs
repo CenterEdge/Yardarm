@@ -61,6 +61,12 @@ namespace Yardarm.CommandLine
 
         #region NuGet
 
+        [Option("author", HelpText = "Author to show in the generation of the .nupkg package file.", SetName = "nuget")]
+        public string Author { get; set; }
+
+        [Option("description", HelpText = "Description to show in the generation of the .nupkg package file.", SetName = "nuget")]
+        public string Description { get; set; }
+
         [Option("nupkg", HelpText = "Output directory or .nupkg package file. Indicate a directory with a trailing slash.", SetName = "nuget")]
         public string OutputPackageFile { get; set; }
 

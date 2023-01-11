@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -28,6 +29,13 @@ namespace Yardarm.Generation.Tag
 
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
                 .Format(operation.Element.OperationId);
+
+            // This is here to show a useful error that there is an error with the Spec provided. If the operation
+            // is missing the name attribute in the OpenAPI spec, the MethodDeclaration step will fail
+            if (string.IsNullOrEmpty(methodName))
+            {
+                throw new NullReferenceException($"{nameof(GenerateOperationMethodHeader)} ran into an error. Please ensure all methods are decorated correctly in the operation {operation.Key} {operation}.");
+            }
 
             var methodDeclaration = MethodDeclaration(responseType, methodName)
                 .AddElementAnnotation(operation, Context.ElementRegistry)

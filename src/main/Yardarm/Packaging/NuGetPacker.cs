@@ -40,7 +40,7 @@ namespace Yardarm.Packaging
                 Version = new NuGetVersion(_settings.Version,
                     _settings.VersionSuffix?.TrimStart('-').Split(new[] {'.'}, StringSplitOptions.RemoveEmptyEntries),
                     null, null),
-                Description = _settings.AssemblyName,
+                Description = _settings.Description ?? _settings.AssemblyName,
                 Summary = _document.Info.Description,
                 Authors = {_settings.Author},
                 Repository = _settings.Repository
@@ -88,7 +88,7 @@ namespace Yardarm.Packaging
                 {
                     PackageType.SymbolsPackage
                 },
-                Description = _settings.AssemblyName,
+                Description = _settings.Description ?? _settings.AssemblyName,
                 Summary = _document.Info.Description,
                 Authors = { _settings.Author }
             };

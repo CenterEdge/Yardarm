@@ -331,6 +331,9 @@ namespace Yardarm.CommandLine
                     new RepositoryMetadata(_options.RepositoryType, _options.RepositoryUrl, _options.RepositoryBranch,
                         _options.RepositoryCommit);
             }
+
+            settings.Author = _options.Author;
+            settings.Description= _options.Description;
         }
 
         // Holds a temporary file which will eventually be persisted to a final file.

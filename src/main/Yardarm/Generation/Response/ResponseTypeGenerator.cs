@@ -91,6 +91,12 @@ namespace Yardarm.Generation.Response
                     GenerateHeaderProperties()
                         .Concat(GenerateBodyField(bodyType))
                         .ToArray());
+
+                if (bodyType is not null)
+                {
+                    // Add the IOperationResponse<TBody> interface for responses with a body
+                    declaration = declaration.AddBaseListTypes(SimpleBaseType(ResponsesNamespace.IOperationResponseTBody(bodyType)));
+                }
             }
 
             (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();

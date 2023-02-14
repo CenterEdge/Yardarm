@@ -99,7 +99,8 @@ namespace Yardarm
                 .WithSpecificDiagnosticOptions(new KeyValuePair<string, ReportDiagnostic>[]
                 {
                     // Don't warn for binding redirects
-                    new("CS1701", ReportDiagnostic.Suppress)
+                    new("CS1701", ReportDiagnostic.Suppress),
+                    new("CS1702", ReportDiagnostic.Suppress)
                 });
 
         public YardarmGenerationSettings()

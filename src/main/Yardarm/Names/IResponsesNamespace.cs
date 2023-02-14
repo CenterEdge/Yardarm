@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Names
 {
@@ -9,5 +10,11 @@ namespace Yardarm.Names
         NameSyntax OperationResponse { get; }
         NameSyntax StatusCodeMismatchException { get; }
         NameSyntax UnknownResponse { get; }
+
+        NameSyntax IOperationResponseTBody(TypeSyntax bodyType) =>
+            QualifiedName(
+                Name,
+                GenericName(Identifier("IOperationResponse"),
+                    TypeArgumentList(SingletonSeparatedList(bodyType))));
     }
 }

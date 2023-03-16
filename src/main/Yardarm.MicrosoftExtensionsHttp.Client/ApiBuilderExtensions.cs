@@ -89,7 +89,43 @@ namespace RootNamespace
 
             var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>();
 
-            // Register common configuration before any customer per-API configuration
+            // Register common configuration before any custom per-API configuration
+            AddCommonConfiguration(clientBuilder);
+
+            configureClient?.Invoke(clientBuilder);
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Add an API by name with its concrete implementation to the <see cref="IApiBuilder"/> and the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TClient">The concrete API implementation.</typeparam>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="configureClient">An action to configure the <see cref="HttpClient"/> used by the API.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IHttpClientFactory" /> by providing the <paramref name="name"/>.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder AddApi<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+#endif
+            TClient>(this IApiBuilder builder,
+            string name,
+            Action<IHttpClientBuilder>? configureClient = null)
+            where TClient : class
+        {
+            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(name, nameof(name));
+
+            var clientBuilder = builder.Services.AddHttpClient<TClient>(name);
+
+            // Register common configuration before any custom per-API configuration
             AddCommonConfiguration(clientBuilder);
 
             configureClient?.Invoke(clientBuilder);

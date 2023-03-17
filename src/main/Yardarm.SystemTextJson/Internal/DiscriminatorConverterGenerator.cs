@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
-using Yardarm.Generation.Schema;
 using Yardarm.Spec;
 
 namespace Yardarm.SystemTextJson.Internal
@@ -28,20 +27,16 @@ namespace Yardarm.SystemTextJson.Internal
         {
             var schemas = _document
                 .GetAllSchemas()
-                .Where(schema => schema.Element.OneOf.Count > 0);
+                .Where(schema => schema.Element.Discriminator?.PropertyName is not null);
 
             foreach (var schema in schemas)
             {
-                var schemaGenerator = _schemaTypeGeneratorRegistry.Get(schema);
-                if (schemaGenerator is OneOfSchemaGenerator)
-                {
-                    var converterGenerator = _converterTypeGeneratorRegistry.Get(schema);
+                var converterGenerator = _converterTypeGeneratorRegistry.Get(schema);
 
-                    var syntaxTree = converterGenerator.GenerateSyntaxTree();
-                    if (syntaxTree != null)
-                    {
-                        yield return syntaxTree;
-                    }
+                var syntaxTree = converterGenerator.GenerateSyntaxTree();
+                if (syntaxTree != null)
+                {
+                    yield return syntaxTree;
                 }
             }
         }

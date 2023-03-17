@@ -228,7 +228,8 @@ namespace Yardarm.SystemTextJson.Internal
                 Argument(IdentifierName("options"))
             }));
 
-            var mappings = GetOneOfTypes()
+            var mappings = GetStronglyTypedMappings()
+                .Select(p => p.typeName)
                 .Distinct()
                 .Select(typeName =>
                     SwitchSection(
@@ -291,24 +292,64 @@ namespace Yardarm.SystemTextJson.Internal
         }
 
         private IEnumerable<(string key, TypeSyntax typeName)> GetStronglyTypedMappings() =>
-            Element.Element.Discriminator?.Mapping?
-                .Select(mapping =>
-                {
-                    var referencedSchema = Element.Element.OneOf
-                        .FirstOrDefault(p => p.Reference?.ReferenceV3 == mapping.Value);
+            GetMappings(Element)
+                .Select(p => (p.Key, Context.TypeGeneratorRegistry.Get(p.Schema).TypeInfo.Name))
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                .Where(p => p.Item2 != null);
 
-                    var locatedReferencedSchema = referencedSchema?.CreateRoot(referencedSchema.Reference.Id);
-
-                    TypeSyntax? typeName = null;
-                    if (locatedReferencedSchema != null)
+        /// <summary>
+        /// Collects the list of value to schema mappings defined for the type, choosing from the
+        /// best source for various kinds of mappings and polymorphism.
+        /// </summary>
+        /// <remarks>
+        /// The preferred choice is specifically defined mappings on the discriminator. However, when
+        /// missing it will fallback all oneOf's defined on the type. If that is not the case, it will
+        /// look for cases of anyOf inheritance from schemas defined in the components section.
+        /// </remarks>
+        private IEnumerable<(string Key, ILocatedOpenApiElement<OpenApiSchema> Schema)> GetMappings(
+            ILocatedOpenApiElement<OpenApiSchema> element)
+        {
+            if (element.Element.Discriminator.Mapping is {Count: > 0})
+            {
+                // Use specifically listed mappings
+                return element.Element.Discriminator.Mapping
+                    .Select(p =>
                     {
-                        typeName = Context.TypeGeneratorRegistry.Get(locatedReferencedSchema).TypeInfo.Name;
-                    }
+                        // TODO: We should really be parsing this rather than just checking a prefix, but the OpenAPI parser isn't exposed
+                        if (p.Value.StartsWith("#/components/schemas/"))
+                        {
+                            string schemaName = p.Value.Substring("#/components/schemas/".Length);
+                            if (Context.Document.Components.Schemas.TryGetValue(schemaName, out var schema))
+                            {
+                                return (p.Key, Schema: schema.CreateRoot(p.Key));
+                            }
+                        }
 
-                    return (key: mapping.Key, typeName: typeName!);
+                        return (p.Key, Schema: null!);
+                    })
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                    .Where(p => p.Schema is not null);
+            }
+
+            if (element.Element.OneOf is {Count: > 0})
+            {
+                // Gather mappings from "oneOf" that get a default mapping based on the schema name
+                return element.Element.OneOf
+                    .Where(p => p.Reference is not null)
+                    .Select(p => (p.Reference.Id, p.CreateRoot(p.Reference.Id)));
+            }
+
+            // Find other schemas that reference this one using anyOf. This only applies to base
+            // classes, don't try this with interfaces.
+            return Context.Document.Components.Schemas
+                .Where(p =>
+                {
+                    var firstAnyOf = p.Value.AnyOf?.FirstOrDefault();
+                    return firstAnyOf?.Reference is not null &&
+                           firstAnyOf.Reference.Id == element.Key;
                 })
-                .Where(p => p.typeName != null)
-            ?? Enumerable.Empty<(string, TypeSyntax)>();
+                .Select(p => (p.Key, p.Value.CreateRoot(p.Key)));
+        }
 
         private IEnumerable<TypeSyntax> GetOneOfTypes() =>
             Element.Element.OneOf

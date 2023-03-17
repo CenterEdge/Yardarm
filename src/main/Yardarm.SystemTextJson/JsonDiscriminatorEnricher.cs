@@ -4,33 +4,37 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
-using Yardarm.Generation.Schema;
-using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
-using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
 {
-    public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, OpenApiSchema>
+    public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, OpenApiSchema>,
+        IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
     {
-        protected GenerationContext Context { get; }
+        protected GenerationContext GenerationContext { get; }
         protected ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> TypeGeneratorRegistry { get; }
 
-        public JsonDiscriminatorEnricher(GenerationContext context,
+        public JsonDiscriminatorEnricher(GenerationContext generationContext,
             ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> typeGeneratorRegistry)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
+            GenerationContext = generationContext ?? throw new ArgumentNullException(nameof(generationContext));
             TypeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
         }
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            target.GetGeneratorAnnotation() == typeof(OneOfSchemaGenerator)
-                ? AddJsonConverter(target, context)
+            context.Element.Discriminator?.PropertyName is not null
+                ? (InterfaceDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 
-        protected virtual InterfaceDeclarationSyntax AddJsonConverter(InterfaceDeclarationSyntax target,
+        public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
+            OpenApiEnrichmentContext<OpenApiSchema> context) =>
+            context.Element.Discriminator?.PropertyName is not null
+                ? (ClassDeclarationSyntax) AddJsonConverter(target, context)
+                : target;
+
+        protected virtual TypeDeclarationSyntax AddJsonConverter(TypeDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context)
         {
             var converter = TypeGeneratorRegistry.Get(context.LocatedElement);

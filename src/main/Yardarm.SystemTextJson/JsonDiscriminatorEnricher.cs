@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.SystemTextJson.Helpers;
+using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
@@ -24,13 +25,13 @@ namespace Yardarm.SystemTextJson
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Discriminator?.PropertyName is not null
+            context.Element.Discriminator?.PropertyName is not null && context.LocatedElement.IsJsonSchema()
                 ? (InterfaceDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Discriminator?.PropertyName is not null
+            context.Element.Discriminator?.PropertyName is not null && context.LocatedElement.IsJsonSchema()
                 ? (ClassDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 

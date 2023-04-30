@@ -7,6 +7,7 @@ using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.SystemTextJson.Helpers;
+using Yardarm.SystemTextJson.Internal;
 
 namespace Yardarm.SystemTextJson
 {
@@ -15,6 +16,12 @@ namespace Yardarm.SystemTextJson
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context)
         {
+            if (!context.LocatedElement.IsJsonSchema())
+            {
+                // Don't enrich non-JSON schemas
+                return target;
+            }
+
             if (target.Parent is ClassDeclarationSyntax classDeclaration &&
                 classDeclaration.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator))
             {

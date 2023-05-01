@@ -10,7 +10,9 @@ using Yardarm.Enrichment;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Helpers;
+using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
+using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
@@ -25,11 +27,22 @@ namespace Yardarm.SystemTextJson
             typeof(AdditionalPropertiesEnricher)
         };
 
+        private readonly IOpenApiElementRegistry _elementRegistry;
+
+        public JsonAdditionalPropertiesEnricher(IOpenApiElementRegistry elementRegistry)
+        {
+            ArgumentNullException.ThrowIfNull(elementRegistry);
+            _elementRegistry = elementRegistry;
+        }
+
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context)
         {
-            var members = target.GetSpecialMembers(SpecialMembers.AdditionalProperties)
-                .OfType<PropertyDeclarationSyntax>().ToArray();
+            var members = target
+                .GetSpecialMembers(SpecialMembers.AdditionalProperties)
+                .OfType<PropertyDeclarationSyntax>()
+                .Where(p => p.Parent is ClassDeclarationSyntax classDeclaration && _elementRegistry.IsJsonSchema(classDeclaration))
+                .ToArray();
 
             if (members.Length == 0)
             {

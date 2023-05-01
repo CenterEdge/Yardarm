@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
+using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
@@ -20,6 +21,12 @@ namespace Yardarm.SystemTextJson
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
         {
+            if (!context.LocatedElement.IsJsonSchema())
+            {
+                // Don't enrich non-JSON schemas
+                return syntax;
+            }
+
             if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(_elementRegistry) is null)
             {
                 // We don't need to apply this to properties of request classes, only schemas

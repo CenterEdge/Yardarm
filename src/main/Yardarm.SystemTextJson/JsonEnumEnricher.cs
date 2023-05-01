@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.SystemTextJson.Helpers;
+using Yardarm.SystemTextJson.Internal;
 
 namespace Yardarm.SystemTextJson
 {
@@ -19,7 +20,7 @@ namespace Yardarm.SystemTextJson
 
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Type == "string"
+            context.Element.Type == "string" && context.LocatedElement.IsJsonSchema()
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                         SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName).AddArgumentListArguments(

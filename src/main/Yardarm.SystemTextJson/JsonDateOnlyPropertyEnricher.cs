@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
+using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
@@ -31,6 +32,12 @@ namespace Yardarm.SystemTextJson
             if (context.Element.Type != "string" || context.Element.Format != "date")
             {
                 // Only applies to date-only strings
+                return syntax;
+            }
+
+            if (!context.LocatedElement.IsJsonSchema())
+            {
+                // Don't enrich non-JSON schemas
                 return syntax;
             }
 

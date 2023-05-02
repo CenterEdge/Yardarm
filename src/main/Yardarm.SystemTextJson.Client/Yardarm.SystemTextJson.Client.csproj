@@ -6,7 +6,6 @@
     <OutputType>Library</OutputType>
 
     <Nullable>enable</Nullable>
-    <LangVersion>10</LangVersion>
     <IsPackable>false</IsPackable>
 
     <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>

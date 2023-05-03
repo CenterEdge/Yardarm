@@ -1,27 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Mime;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
 {
     public class PlainTextSerializer : ITypeSerializer
     {
-        private static readonly MethodInfo s_deserializeStringMethod =
-            ((Func<string, string>)Deserialize<string>).GetMethodInfo().GetGenericMethodDefinition();
-
         public static string[] SupportedMediaTypes => new [] { MediaTypeNames.Text.Plain };
 
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
-            new StringContent(Serialize<T>(value), Encoding.UTF8, mediaType);
+            new StringContent(Serialize(value), Encoding.UTF8, mediaType);
 
-        public string Serialize<T>(T value) => value?.ToString() ?? "";
+        private static string Serialize<T>(T value) => value?.ToString() ?? "";
 
         public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
         {
@@ -30,34 +23,15 @@ namespace RootNamespace.Serialization
             return Deserialize<T>(value);
         }
 
-        public T? Deserialize<T>(IEnumerable<string> values)
+        private static T Deserialize<T>(string value)
         {
-            Type type = typeof(T);
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            if (typeof(T) == typeof(string) || typeof(T) == typeof(object))
             {
-                Type itemType = type.GetGenericArguments()[0];
-                MethodInfo deserializeMethod = s_deserializeStringMethod.MakeGenericMethod(itemType);
+                return (T)(object)value;
+            }
 
-                return (T)(object) values
-                    .Select(p => deserializeMethod.Invoke(null, new object[] {p}))
-                    .ToList();
-            }
-            else
-            {
-                string? value = values.FirstOrDefault();
-                if (value == null)
-                {
-                    return default;
-                }
-                else
-                {
-                    return Deserialize<T>(value);
-                }
-            }
+            ThrowHelper.ThrowInvalidOperationException($"Type '{typeof(T).FullName}' is not supported for deserialization by {nameof(PlainTextSerializer)}.");
+            return default; // unreachable
         }
-
-        private static T Deserialize<T>(string value) =>
-            (T) TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString(value)!;
     }
 }

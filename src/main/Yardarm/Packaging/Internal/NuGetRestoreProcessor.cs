@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -145,6 +146,9 @@ namespace Yardarm.Packaging.Internal
                 return generators;
             }
 
+            // Determine the version of Roslyn we are using
+            Version roslynVersion = typeof(CSharpCompilation).Assembly.GetName().Version!;
+
             foreach (var directDependency in _packageSpec.Dependencies
                          .Concat(_packageSpec.TargetFrameworks
                              .Where(p => p.FrameworkName == targetFramework)
@@ -159,15 +163,43 @@ namespace Yardarm.Packaging.Internal
                     NuGet.Repositories.LocalPackageInfo localPackageInfo =
                         dependencyProviders.GlobalPackages.FindPackage(directDependency.Name, version);
 
-                    // For now, we explicitly only handle Roslyn 4.0 analyzers or unversioned analyzers
-                    // The regex also excludes resource assemblies in nested directories
-                    foreach (Match file in localPackageInfo.Files
-                                 .Select(p => Regex.Match(p, @"^(analyzers/dotnet/(?:roslyn4\.0/)?cs/[^/]+\.dll$)"))
-                                 .Where(p => p.Success))
+                    // Find the highest version of Roslyn listed in the package that is less than equal to
+                    // the version of Roslyn we are using. Failing that, fallback to include unversioned
+                    // analyzers.
+
+                    var analyzerFiles = localPackageInfo.Files
+                        .Select(p => Regex.Match(p, @"^(analyzers/dotnet/(?:roslyn(\d+\.\d+)/)?cs/[^/]+\.dll$)"))
+                        .Where(p => p.Success);
+
+                    var filesGroupedByVersion = analyzerFiles
+                        .Select(p =>
+                        {
+                            if (p.Groups.Count > 1)
+                            {
+                                Version.TryParse(p.Groups[2].Value, out Version? parsedVersion);
+
+                                return (Version: parsedVersion, File: p.Groups[1].Value);
+                            }
+                            else
+                            {
+                                return (Version: new Version(0, 0), File: p.Groups[1].Value);
+                            }
+                        })
+                        .Where(p => p.Version is not null)
+                        .GroupBy(p => p.Version!)
+                        .OrderByDescending(p => p.Key);
+
+                    var bestMatch = filesGroupedByVersion
+                        .FirstOrDefault(p => p.Key <= roslynVersion);
+
+                    if (bestMatch is not null)
                     {
-                        generators.AddRange(GetSourceGenerators(
-                            Path.Join(localPackageInfo.ExpandedPath, file.Groups[1].Value),
-                            assemblyLoadContext));
+                        foreach (string file in bestMatch.Select(p => p.File))
+                        {
+                            generators.AddRange(GetSourceGenerators(
+                                Path.Join(localPackageInfo.ExpandedPath, file),
+                                assemblyLoadContext));
+                        }
                     }
                 }
             }

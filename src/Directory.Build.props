@@ -6,5 +6,7 @@
     <Copyright>Copyright © 2020 Pathfinder Software, LLC D/B/A CenterEdge Software. All Rights Reserved.</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/CenterEdge/Yardarm</PackageProjectUrl>
+
+    <LangVersion>11</LangVersion>
   </PropertyGroup>
 </Project>

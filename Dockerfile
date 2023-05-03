@@ -1,6 +1,7 @@
 ARG VERSION=0.1.0-local
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+# Use 7.0 for build to get LangVersion 11 support
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 ARG VERSION
 WORKDIR /app
 

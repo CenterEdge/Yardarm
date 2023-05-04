@@ -7,6 +7,10 @@ namespace Yardarm.Client.Internal
     internal static class ThrowHelper
     {
         [DoesNotReturn]
+        public static void ThrowFormatException(string? message, Exception? innerException = null) =>
+            throw new FormatException(message, innerException);
+
+        [DoesNotReturn]
         public static void ThrowInvalidOperationException(string? message) =>
             throw new InvalidOperationException(message);
 
@@ -15,7 +19,7 @@ namespace Yardarm.Client.Internal
         /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
         public static void ThrowIfNull([NotNull] object? argument,
 #if NET6_0_OR_GREATER
-            [CallerArgumentExpression("argument")]
+            [CallerArgumentExpression(nameof(argument))]
 #endif
             string? paramName = null)
         {

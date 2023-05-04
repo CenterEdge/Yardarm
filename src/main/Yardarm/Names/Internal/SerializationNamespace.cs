@@ -67,11 +67,7 @@ namespace Yardarm.Names.Internal
             PathSegmentSerializer = QualifiedName(
                 Name,
                 IdentifierName("PathSegmentSerializer"));
-
-            PathSegmentSerializerInstance = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                PathSegmentSerializer,
-                IdentifierName("Instance"));
-
+            
             QueryStringBuilder = QualifiedName(
                 Name,
                 IdentifierName("QueryStringBuilder"));

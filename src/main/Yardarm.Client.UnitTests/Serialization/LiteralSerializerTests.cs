@@ -312,24 +312,6 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
-        #region JoinList
-
-        [Fact]
-        public void JoinList_Date_Serializes()
-        {
-            // Act
-
-            var result = LiteralSerializer.Instance.JoinList(",",
-                new[] {new DateTime(2020, 1, 2), new DateTime(2021, 2, 3)},
-                typeof(DateTime), "date");
-
-            // Assert
-
-            result.Should().Be("2020-01-02,2021-02-03");
-        }
-
-        #endregion
-
         #region JoinListT
 
         [Fact]

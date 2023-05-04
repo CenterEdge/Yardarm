@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FluentAssertions;
 using RootNamespace.Serialization;
 using Xunit;
@@ -134,6 +130,34 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be("2020-01-02T03:04:05.0000000-04:00");
         }
 
+        [Fact]
+        public void Serialize_Guid_ReturnsString()
+        {
+            // Arrange
+
+            var guid = Guid.NewGuid();
+
+            // Act
+
+            string result = LiteralSerializer.Instance.Serialize(guid);
+
+            // Assert
+
+            result.Should().Be(guid.ToString());
+        }
+
+        [Fact]
+        public void Serialize_Enum_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Instance.Serialize(StringComparison.Ordinal);
+
+            // Assert
+
+            result.Should().Be("Ordinal");
+        }
+
         #endregion
 
         #region Deserialize
@@ -257,6 +281,33 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be(new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)));
+        }
+
+        [Fact]
+        public void Deserialize_Guid_ReturnsValue()
+        {
+            // Range
+
+            const string guid = "00000001-0002-0003-0004-000000000005";
+            // Act
+
+            Guid result = LiteralSerializer.Instance.Deserialize<Guid>(guid);
+
+            // Assert
+
+            result.Should().Be(Guid.Parse(guid));
+        }
+
+        [Fact]
+        public void Deserialize_Enum_ReturnsValue()
+        {
+            // Act
+
+            StringComparison result = LiteralSerializer.Instance.Deserialize<StringComparison>("Ordinal");
+
+            // Assert
+
+            result.Should().Be(StringComparison.Ordinal);
         }
 
         #endregion

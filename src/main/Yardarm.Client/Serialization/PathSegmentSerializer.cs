@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
@@ -7,18 +8,30 @@ namespace RootNamespace.Serialization
 {
     internal class PathSegmentSerializer
     {
-        public static PathSegmentSerializer Instance { get; } = new PathSegmentSerializer();
-
-        public string Serialize<
+        public static string Serialize<
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false, string? format = null) =>
+            T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, string? format = null) =>
             style switch
             {
-                PathSegmentStyle.Simple => SerializeSimple(value, explode, format),
-                PathSegmentStyle.Label => SerializeLabel(value, explode, format),
-                PathSegmentStyle.Matrix => SerializeMatrix(name, value, explode, format),
+                PathSegmentStyle.Simple => SerializeSimple(value, format),
+                PathSegmentStyle.Label => SerializeLabel(value, format),
+                PathSegmentStyle.Matrix => SerializeMatrix(name, value, format),
+                _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
+            };
+
+        public static string SerializeList<
+#if NET6_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
+#endif
+            T>(string name, IEnumerable<T> values, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false, string? format = null) =>
+            style switch
+            {
+                PathSegmentStyle.Simple => LiteralSerializer.Instance.JoinList(",", values,  format),
+                PathSegmentStyle.Label => "." + LiteralSerializer.Instance.JoinList(explode ? "." : ",", values, format),
+                PathSegmentStyle.Matrix =>
+                    $";{name}={LiteralSerializer.Instance.JoinList(explode ? $";{name}=" : ",", values, format)}",
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
 
@@ -26,9 +39,9 @@ namespace RootNamespace.Serialization
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(T value, bool explode, string? format = null)
+            T>(T value, string? format = null)
         {
-            if (value == null)
+            if (value is null)
             {
                 return "";
             }
@@ -39,11 +52,6 @@ namespace RootNamespace.Serialization
                 return str;
             }
 
-            if (SerializationHelpers.IsEnumerable(typeof(T), out Type? itemType))
-            {
-                return LiteralSerializer.Instance.JoinList(",", value, itemType, format);
-            }
-
             return LiteralSerializer.Instance.Serialize(value, format);
         }
 
@@ -51,9 +59,9 @@ namespace RootNamespace.Serialization
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(T value, bool explode, string? format)
+            T>(T value, string? format)
         {
-            if (value == null)
+            if (value is null)
             {
                 return ".";
             }
@@ -64,11 +72,6 @@ namespace RootNamespace.Serialization
                 return "." + str;
             }
 
-            if (SerializationHelpers.IsEnumerable(typeof(T), out Type? itemType))
-            {
-                return "." + LiteralSerializer.Instance.JoinList(explode ? "." : ",", value, itemType, format);
-            }
-
             return "." + LiteralSerializer.Instance.Serialize(value, format);
         }
 
@@ -76,9 +79,9 @@ namespace RootNamespace.Serialization
 #if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
 #endif
-            T>(string name, T value, bool explode, string? format)
+            T>(string name, T value, string? format)
         {
-            if (value == null)
+            if (value is null)
             {
                 return $";{name}=";
             }
@@ -87,13 +90,6 @@ namespace RootNamespace.Serialization
             {
                 // Short-circuit for strings
                 return $";{name}={str}";
-            }
-
-            if (SerializationHelpers.IsEnumerable(typeof(T), out Type? itemType))
-            {
-                string prefix = $";{name}=";
-
-                return prefix + LiteralSerializer.Instance.JoinList(explode ? prefix : ",", value, itemType, format);
             }
 
             return $";{name}={LiteralSerializer.Instance.Serialize(value, format)}";

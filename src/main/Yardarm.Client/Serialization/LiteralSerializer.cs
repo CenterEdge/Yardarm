@@ -13,9 +13,6 @@ namespace RootNamespace.Serialization
     {
         public static LiteralSerializer Instance { get; } = new();
 
-        private static readonly MethodInfo s_joinListMethod =
-            ((Func<string, IEnumerable<string>, string, string>)Instance.JoinList<string>).GetMethodInfo().GetGenericMethodDefinition();
-
         public string Serialize<T>(T value, string? format = null)
         {
             if (value is null)
@@ -156,13 +153,6 @@ namespace RootNamespace.Serialization
 
             ThrowHelper.ThrowInvalidOperationException($"Type '{typeof(T).FullName}' is not supported for deserialization by {nameof(LiteralSerializer)}.");
             return default!; // unreachable
-        }
-
-        public string JoinList(string separator, object list, Type itemType, string? format = null)
-        {
-            MethodInfo joinList = s_joinListMethod.MakeGenericMethod(itemType);
-
-            return (string)joinList.Invoke(this, new object?[] {separator, list, format})!;
         }
 
         public string JoinList<T>(string separator, IEnumerable<T> list, string? format = null) =>

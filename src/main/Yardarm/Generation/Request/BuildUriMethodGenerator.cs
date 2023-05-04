@@ -63,15 +63,33 @@ namespace Yardarm.Generation.Request
                             $"Missing path parameter '{pathSegment.Value}' in operation '{operation.Element.OperationId}'.");
                     }
 
-                    return InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            SerializationNamespace.PathSegmentSerializerInstance,
-                            IdentifierName("Serialize")))
-                        .AddArgumentListArguments(
-                            Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
-                            Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
-                            Argument(GetStyleExpression(parameter)),
-                            Argument(GetExplodeExpression(parameter)),
-                            Argument(SyntaxHelpers.StringLiteral(parameter.Schema?.Format)));
+                    if (parameter.Schema?.Type == "array")
+                    {
+                        return InvocationExpression(
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SerializationNamespace.PathSegmentSerializer,
+                                IdentifierName("SerializeList")),
+                            ArgumentList(SeparatedList(new[] {
+                                Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
+                                Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
+                                Argument(GetStyleExpression(parameter)),
+                                Argument(GetExplodeExpression(parameter)),
+                                Argument(SyntaxHelpers.StringLiteral(parameter.Schema?.Format))
+                            })));
+                    }
+                    else
+                    {
+                        return InvocationExpression(
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SerializationNamespace.PathSegmentSerializer,
+                                IdentifierName("Serialize")),
+                            ArgumentList(SeparatedList(new[] {
+                                Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
+                                Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
+                                Argument(GetStyleExpression(parameter)),
+                                Argument(SyntaxHelpers.StringLiteral(parameter.Schema?.Format)
+                            )})));
+                    }
                 });
 
             OpenApiParameter[] queryParameters = operation.Element.Parameters

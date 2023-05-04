@@ -10,128 +10,110 @@ namespace Yardarm.Client.UnitTests.Serialization
     {
         #region Simple
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleString_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleString_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", "test", PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", "test", PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("test");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleInteger_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleInteger_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 105, PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", 105, PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleLong_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleLong_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 105L, PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", 105L, PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleFloat_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleFloat_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 1.05f, PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", 1.05f, PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleDouble_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleDouble_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 1.05, PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", 1.05, PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleTrue_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleTrue_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", true, PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", true, PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("true");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleFalse_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleFalse_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", false, PathSegmentStyle.Simple, explode);
+            string result = PathSegmentSerializer.Serialize("id", false, PathSegmentStyle.Simple);
 
             // Assert
 
             result.Should().Be("false");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleDate_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleDate_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
-                new DateTime(2020, 1, 2), PathSegmentStyle.Simple, explode, "date");
+            string result = PathSegmentSerializer.Serialize("id",
+                new DateTime(2020, 1, 2), PathSegmentStyle.Simple, "date");
 
             // Assert
 
             result.Should().Be("2020-01-02");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_SimpleDateTime_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_SimpleDateTime_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
-                new DateTime(2020, 1, 2, 3, 4, 5), PathSegmentStyle.Simple, explode, "date-time");
+            string result = PathSegmentSerializer.Serialize("id",
+                new DateTime(2020, 1, 2, 3, 4, 5), PathSegmentStyle.Simple, "date-time");
 
             // Assert
 
@@ -139,17 +121,15 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Theory]
-        [InlineData(false, null)]
-        [InlineData(true, null)]
-        [InlineData(false, "date-time")]
-        [InlineData(true, "date-time")]
-        public void Serialize_SimpleDateTimeOffset_ReturnsString(bool explode, string format)
+        [InlineData(null)]
+        [InlineData( "date-time")]
+        public void Serialize_SimpleDateTimeOffset_ReturnsString(string format)
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.Serialize("id",
                 new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
-                PathSegmentStyle.Simple, explode, format);
+                PathSegmentStyle.Simple,  format);
 
             // Assert
 
@@ -163,7 +143,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.SerializeList("id",
                 new List<string> { "abc", "def", "ghi" }, PathSegmentStyle.Simple, explode);
 
             // Assert
@@ -175,113 +155,97 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #region Label
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelString_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelString_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", "test", PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", "test", PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".test");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelInteger_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelInteger_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 105, PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", 105, PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelLong_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelLong_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 105L, PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", 105L, PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelFloat_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelFloat_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 1.05f, PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", 1.05f, PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelDouble_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelDouble_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 1.05, PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", 1.05, PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelTrue_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelTrue_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", true, PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", true, PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".true");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelFalse_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelFalse_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", false, PathSegmentStyle.Label, explode);
+            string result = PathSegmentSerializer.Serialize("id", false, PathSegmentStyle.Label);
 
             // Assert
 
             result.Should().Be(".false");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_LabelDateTime_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_LabelDateTime_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
-                new DateTime(2020, 1, 2), PathSegmentStyle.Label, explode, "date");
+            string result = PathSegmentSerializer.Serialize("id",
+                new DateTime(2020, 1, 2), PathSegmentStyle.Label, "date");
 
             // Assert
 
@@ -289,17 +253,15 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Theory]
-        [InlineData(false, null)]
-        [InlineData(true, null)]
-        [InlineData(false, "date-time")]
-        [InlineData(true, "date-time")]
-        public void Serialize_LabelDateTimeOffset_ReturnsString(bool explode, string format)
+        [InlineData( null)]
+        [InlineData("date-time")]
+        public void Serialize_LabelDateTimeOffset_ReturnsString(string format)
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.Serialize("id",
                 new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
-                PathSegmentStyle.Label, explode, format);
+                PathSegmentStyle.Label, format);
 
             // Assert
 
@@ -311,7 +273,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.SerializeList("id",
                 new List<string> { "abc", "def", "ghi" }, PathSegmentStyle.Label, false);
 
             // Assert
@@ -324,7 +286,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.SerializeList("id",
                 new List<string> { "abc", "def", "ghi" }, PathSegmentStyle.Label, true);
 
             // Assert
@@ -336,113 +298,97 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #region Matrix
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixString_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixString_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", "test", PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", "test", PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=test");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixInteger_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixInteger_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 105, PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", 105, PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixLong_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixLong_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 105L, PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", 105L, PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=105");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixFloat_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixFloat_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 1.05f, PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", 1.05f, PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixDouble_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixDouble_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", 1.05, PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", 1.05, PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=1.05");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixTrue_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixTrue_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", true, PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", true, PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=true");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixFalse_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixFalse_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id", false, PathSegmentStyle.Matrix, explode);
+            string result = PathSegmentSerializer.Serialize("id", false, PathSegmentStyle.Matrix);
 
             // Assert
 
             result.Should().Be(";id=false");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Serialize_MatrixDateTime_ReturnsString(bool explode)
+        [Fact]
+        public void Serialize_MatrixDateTime_ReturnsString()
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
-                new DateTime(2020, 1, 2), PathSegmentStyle.Matrix, explode, "date");
+            string result = PathSegmentSerializer.Serialize("id",
+                new DateTime(2020, 1, 2), PathSegmentStyle.Matrix, "date");
 
             // Assert
 
@@ -450,17 +396,15 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Theory]
-        [InlineData(false, null)]
-        [InlineData(true, null)]
-        [InlineData(false, "date-time")]
-        [InlineData(true, "date-time")]
-        public void Serialize_MatrixDateTimeOffset_ReturnsString(bool explode, string format)
+        [InlineData( null)]
+        [InlineData("date-time")]
+        public void Serialize_MatrixDateTimeOffset_ReturnsString(string format)
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.Serialize("id",
                 new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
-                PathSegmentStyle.Matrix, explode, format);
+                PathSegmentStyle.Matrix, format);
 
             // Assert
 
@@ -472,7 +416,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.SerializeList("id",
                 new List<string> { "abc", "def", "ghi" }, PathSegmentStyle.Matrix, false);
 
             // Assert
@@ -485,7 +429,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = PathSegmentSerializer.Instance.Serialize("id",
+            string result = PathSegmentSerializer.SerializeList("id",
                 new List<string> { "abc", "def", "ghi" }, PathSegmentStyle.Matrix, true);
 
             // Assert

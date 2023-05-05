@@ -8,6 +8,7 @@ namespace Yardarm.Enrichment.Compilation
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
+                .AddAssemblyInfoEnricher<IsTrimmableAssemblyInfoEnricher>()
                 .AddCompilationEnricher<ReferenceCompilationEnricher>()
                 .AddCompilationEnricher<ResourceFileCompilationEnricher>()
                 .AddCompilationEnricher<SyntaxTreeCompilationEnricher>()

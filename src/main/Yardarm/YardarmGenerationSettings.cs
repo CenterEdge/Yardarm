@@ -31,6 +31,8 @@ namespace Yardarm
         public string Author { get; set; } = "anonymous";
         public RepositoryMetadata? Repository { get; set; }
 
+        public IReadOnlyList<YardarmExtension> Extensions => _extensions;
+
         /// <summary>
         /// Base path for generated source files. Files are not persisted to this path,
         /// but it is used within Roslyn to uniquely identify source files.

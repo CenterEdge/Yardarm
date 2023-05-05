@@ -18,5 +18,7 @@ namespace Yardarm.MicrosoftExtensionsHttp
 
             return services;
         }
+
+        public override bool IsOutputTrimmable(GenerationContext context) => true;
     }
 }

@@ -133,7 +133,8 @@ namespace Yardarm
             {
                 var sourceGenerators = context.GenerationServices.GetRequiredService<NuGetRestoreProcessor>()
                     .GetSourceGenerators(context.NuGetRestoreInfo!.Providers, context.NuGetRestoreInfo!.LockFile,
-                        targetFramework, assemblyLoadContext);
+                        targetFramework, assemblyLoadContext)
+                    .ToList();
 
                 // Execute the source generators
                 compilation = ExecuteSourceGenerators(compilation,

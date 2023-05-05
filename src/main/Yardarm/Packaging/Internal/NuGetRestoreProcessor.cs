@@ -13,10 +13,13 @@ using Microsoft.Extensions.Logging;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Repositories;
+using NuGet.Versioning;
 using Yardarm.Generation.Internal;
 
 namespace Yardarm.Packaging.Internal
@@ -134,28 +137,24 @@ namespace Yardarm.Packaging.Internal
         }
 
         // Collect C# source generators from the direct NuGet dependencies (ignores transitive dependencies)
-        public List<ISourceGenerator> GetSourceGenerators(RestoreCommandProviders dependencyProviders, LockFile lockFile,
+        public IEnumerable<ISourceGenerator> GetSourceGenerators(RestoreCommandProviders dependencyProviders, LockFile lockFile,
             NuGetFramework targetFramework, AssemblyLoadContext assemblyLoadContext)
         {
-            var generators = new List<ISourceGenerator>();
-
             LockFileTarget? lockFileTarget = lockFile.Targets?
                 .FirstOrDefault(p => p.TargetFramework == targetFramework);
             if (lockFileTarget is null)
             {
-                return generators;
+                yield break;
             }
 
-            // Determine the version of Roslyn we are using
-            Version roslynVersion = typeof(CSharpCompilation).Assembly.GetName().Version!;
+            TargetFrameworkInformation? frameworkInformation = _packageSpec.TargetFrameworks
+                .FirstOrDefault(p => p.FrameworkName == targetFramework);
 
-            foreach (var directDependency in _packageSpec.Dependencies
-                         .Concat(_packageSpec.TargetFrameworks
-                             .Where(p => p.FrameworkName == targetFramework)
-                             .SelectMany(framework => framework.Dependencies)))
+            foreach (LibraryDependency directDependency in _packageSpec.Dependencies
+                         .Concat(frameworkInformation?.Dependencies ?? Enumerable.Empty<LibraryDependency>()))
             {
                 // Get the exact version we restored
-                var version = lockFileTarget.Libraries
+                NuGetVersion? version = lockFileTarget.Libraries
                     .FirstOrDefault(p => string.Equals(p.Name, directDependency.Name, StringComparison.OrdinalIgnoreCase))?
                     .Version;
                 if (version is not null)
@@ -163,53 +162,84 @@ namespace Yardarm.Packaging.Internal
                     NuGet.Repositories.LocalPackageInfo localPackageInfo =
                         dependencyProviders.GlobalPackages.FindPackage(directDependency.Name, version);
 
-                    // Find the highest version of Roslyn listed in the package that is less than equal to
-                    // the version of Roslyn we are using. Failing that, fallback to include unversioned
-                    // analyzers.
-
-                    var analyzerFiles = localPackageInfo.Files
-                        .Select(p => Regex.Match(p, @"^(analyzers/dotnet/(?:roslyn(\d+\.\d+)/)?cs/[^/]+\.dll$)"))
-                        .Where(p => p.Success);
-
-                    var filesGroupedByVersion = analyzerFiles
-                        .Select(p =>
-                        {
-                            if (p.Groups.Count > 1)
-                            {
-                                Version.TryParse(p.Groups[2].Value, out Version? parsedVersion);
-
-                                return (Version: parsedVersion, File: p.Groups[1].Value);
-                            }
-                            else
-                            {
-                                return (Version: new Version(0, 0), File: p.Groups[1].Value);
-                            }
-                        })
-                        .Where(p => p.Version is not null)
-                        .GroupBy(p => p.Version!)
-                        .OrderByDescending(p => p.Key);
-
-                    var bestMatch = filesGroupedByVersion
-                        .FirstOrDefault(p => p.Key <= roslynVersion);
-
-                    if (bestMatch is not null)
+                    foreach (ISourceGenerator generator in GetSourceGenerators(localPackageInfo.ExpandedPath, localPackageInfo.Files, assemblyLoadContext))
                     {
-                        foreach (string file in bestMatch.Select(p => p.File))
-                        {
-                            generators.AddRange(GetSourceGenerators(
-                                Path.Join(localPackageInfo.ExpandedPath, file),
-                                assemblyLoadContext));
-                        }
+                        yield return generator;
                     }
                 }
             }
 
-            return generators;
+            if (frameworkInformation is not null)
+            {
+                foreach (string frameworkDirectory in frameworkInformation.GetFrameworkReferenceDirectories(
+                             dependencyProviders))
+                {
+                    string[] files = Directory.GetFiles(frameworkDirectory, "*.dll",
+                        new EnumerationOptions {IgnoreInaccessible = true, RecurseSubdirectories = true});
+
+                    IEnumerable<string> relativeFilePaths = files.Select(
+                        p => Path.GetRelativePath(frameworkDirectory, p));
+
+                    foreach (ISourceGenerator generator in GetSourceGenerators(frameworkDirectory, relativeFilePaths, assemblyLoadContext))
+                    {
+                        yield return generator;
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<ISourceGenerator> GetSourceGenerators(string basePath, IEnumerable<string> files,
+            AssemblyLoadContext assemblyLoadContext)
+        {
+            // Find the highest version of Roslyn listed in the package that is less than equal to
+            // the version of Roslyn we are using. Failing that, fallback to include unversioned
+            // analyzers.
+
+            // Determine the version of Roslyn we are using
+            Version roslynVersion = typeof(CSharpCompilation).Assembly.GetName().Version!;
+
+            IEnumerable<Match> analyzerFiles = files
+                .Select(p => Regex.Match(p, @"^(analyzers[/\\]dotnet[/\\](?:roslyn(\d+\.\d+)[/\\])?cs[/\\][^/\\]+\.dll$)"))
+                .Where(p => p.Success);
+
+            var filesGroupedByVersion = analyzerFiles
+                .Select(p =>
+                {
+                    if (p.Groups[2].Success)
+                    {
+                        Version.TryParse(p.Groups[2].Value, out Version? parsedVersion);
+
+                        return (Version: parsedVersion, File: p.Groups[1].Value);
+                    }
+                    else
+                    {
+                        return (Version: new Version(0, 0), File: p.Groups[1].Value);
+                    }
+                })
+                .Where(p => p.Version is not null)
+                .GroupBy(p => p.Version!)
+                .OrderByDescending(p => p.Key);
+
+            var bestMatch = filesGroupedByVersion
+                .FirstOrDefault(p => p.Key <= roslynVersion);
+
+            if (bestMatch is not null)
+            {
+                foreach (ISourceGenerator generator in bestMatch
+                             .SelectMany(p => GetSourceGenerators(
+                                 Path.Join(basePath, p.File),
+                                 assemblyLoadContext)))
+                {
+                    yield return generator;
+                }
+            }
         }
 
         // Instantiate source generators from an analyzer assembly
         private static IEnumerable<ISourceGenerator> GetSourceGenerators(string file, AssemblyLoadContext assemblyLoadContext)
         {
+            using var resolver = new PathAssemblyResolver(assemblyLoadContext, Path.GetDirectoryName(file)!);
+
             var assembly = assemblyLoadContext.LoadFromAssemblyPath(file);
 
             var generatorTypes = assembly.ExportedTypes.Where(p =>
@@ -228,6 +258,36 @@ namespace Yardarm.Packaging.Internal
                         yield return incrementalGenerator.AsSourceGenerator();
                         break;
                 }
+            }
+        }
+
+        private class PathAssemblyResolver : IDisposable
+        {
+            private readonly AssemblyLoadContext _assemblyLoadContext;
+            private readonly string _basePath;
+
+            public PathAssemblyResolver(AssemblyLoadContext assemblyLoadContext, string basePath)
+            {
+                _assemblyLoadContext = assemblyLoadContext;
+                _basePath = basePath;
+
+                _assemblyLoadContext.Resolving += Resolving;
+            }
+
+            private Assembly? Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
+            {
+                string fileName = Path.Combine(_basePath, $"{assemblyName.Name}.dll");
+                if (File.Exists(fileName))
+                {
+                    return assemblyLoadContext.LoadFromAssemblyPath(fileName);
+                }
+
+                return null;
+            }
+
+            public void Dispose()
+            {
+                _assemblyLoadContext.Resolving -= Resolving;
             }
         }
     }

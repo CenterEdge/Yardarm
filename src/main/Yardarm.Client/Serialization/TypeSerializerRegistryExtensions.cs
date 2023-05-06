@@ -32,29 +32,18 @@ namespace RootNamespace.Serialization
             return typeSerializerRegistry;
         }
 
-        public static ITypeSerializerRegistry Add<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-            T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            IEnumerable<string> mediaTypes)
+        public static ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+            this ITypeSerializerRegistry typeSerializerRegistry, IEnumerable<string> mediaTypes)
             where T : ITypeSerializer =>
             typeSerializerRegistry.Add<T>(mediaTypes, null);
 
-        public static ITypeSerializerRegistry Add<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-            T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            IEnumerable<Type> schemaTypes)
+        public static ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+            this ITypeSerializerRegistry typeSerializerRegistry, IEnumerable<Type> schemaTypes)
             where T : ITypeSerializer =>
             typeSerializerRegistry.Add<T>(null, schemaTypes);
 
-        internal static ITypeSerializerRegistry Add<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-            T>(this ITypeSerializerRegistry typeSerializerRegistry,
+        internal static ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+            this ITypeSerializerRegistry typeSerializerRegistry,
             IEnumerable<string>? mediaTypes = null,
             IEnumerable<Type>? schemaTypes = null)
             where T : ITypeSerializer

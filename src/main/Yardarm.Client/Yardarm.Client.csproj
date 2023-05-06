@@ -1,12 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net6.0;net7.0</TargetFrameworks>
     <RootNamespace>RootNamespace</RootNamespace>
     <OutputType>Library</OutputType>
 
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+
     <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
   </PropertyGroup>
 

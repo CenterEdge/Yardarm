@@ -62,22 +62,8 @@ namespace Yardarm.Packaging.Internal
                 .First(p => p.FrameworkName == _context.CurrentTargetFramework);
 
             // Collect platform reference assemblies, i.e. .NET 6 assemblies
-            dependencies.AddRange(frameworkInformation.FrameworkReferences
-                .Select(frameworkReference =>
-                {
-                    string refAssemblyName = $"{frameworkReference.Name}.Ref";
-
-                    var version = frameworkInformation.FrameworkName.Version;
-                    var versionRange = new VersionRange(
-                        new NuGetVersion(version),
-                        maxVersion: new NuGetVersion(version.Major, version.Minor + 1, 0),
-                        includeMaxVersion: false);
-
-                    return _context.NuGetRestoreInfo!.Providers.GlobalPackages.FindPackagesById(refAssemblyName)
-                        .Where(package => versionRange.Satisfies(package.Version))
-                        .MaxBy(package => package.Version)?.ExpandedPath;
-                })
-                .Where(directory => directory is not null)
+            dependencies.AddRange(frameworkInformation
+                .GetFrameworkReferenceDirectories(_context.NuGetRestoreInfo!)
                 .SelectMany(directory =>
                     Directory.GetFiles(directory!, "*.dll", new EnumerationOptions
                     {

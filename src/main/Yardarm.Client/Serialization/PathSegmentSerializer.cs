@@ -8,11 +8,7 @@ namespace RootNamespace.Serialization
 {
     internal class PathSegmentSerializer
     {
-        public static string Serialize<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
-#endif
-            T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, string? format = null) =>
+        public static string Serialize<T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, string? format = null) =>
             style switch
             {
                 PathSegmentStyle.Simple => SerializeSimple(value, format),
@@ -21,11 +17,7 @@ namespace RootNamespace.Serialization
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
 
-        public static string SerializeList<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
-#endif
-            T>(string name, IEnumerable<T> values, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false, string? format = null) =>
+        public static string SerializeList<T>(string name, IEnumerable<T> values, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false, string? format = null) =>
             style switch
             {
                 PathSegmentStyle.Simple => LiteralSerializer.Instance.JoinList(",", values,  format),
@@ -35,11 +27,7 @@ namespace RootNamespace.Serialization
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
 
-        private static string SerializeSimple<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
-#endif
-            T>(T value, string? format = null)
+        private static string SerializeSimple<T>(T value, string? format = null)
         {
             if (value is null)
             {
@@ -55,11 +43,7 @@ namespace RootNamespace.Serialization
             return LiteralSerializer.Instance.Serialize(value, format);
         }
 
-        private static string SerializeLabel<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
-#endif
-            T>(T value, string? format)
+        private static string SerializeLabel<T>(T value, string? format)
         {
             if (value is null)
             {
@@ -75,11 +59,7 @@ namespace RootNamespace.Serialization
             return "." + LiteralSerializer.Instance.Serialize(value, format);
         }
 
-        private static string SerializeMatrix<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)]
-#endif
-            T>(string name, T value, string? format)
+        private static string SerializeMatrix<T>(string name, T value, string? format)
         {
             if (value is null)
             {

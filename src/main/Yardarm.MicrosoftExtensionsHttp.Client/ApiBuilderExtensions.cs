@@ -71,11 +71,8 @@ namespace RootNamespace
         /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddApi<TClient,
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-            TImplementation>(this IApiBuilder builder,
+        public static IApiBuilder AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+            this IApiBuilder builder,
             Action<IHttpClientBuilder>? configureClient = null)
             where TClient : class, IApi
             where TImplementation : class, TClient
@@ -111,11 +108,8 @@ namespace RootNamespace
         /// can be retrieved from <see cref="IHttpClientFactory" /> by providing the <paramref name="name"/>.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddApi<
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-            TClient>(this IApiBuilder builder,
+        public static IApiBuilder AddApi<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClient>(
+            this IApiBuilder builder,
             string name,
             Action<IHttpClientBuilder>? configureClient = null)
             where TClient : class
@@ -142,11 +136,8 @@ namespace RootNamespace
         }
 
         // Internal implementation used by AddAllApisInternal
-        private static void AddApi<TClient,
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-            TImplementation>(this IApiBuilder builder,
+        private static void AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+            this IApiBuilder builder,
             Action<Type, IHttpClientBuilder>? configureClient,
             bool skipIfAlreadyRegistered)
             where TClient : class, IApi

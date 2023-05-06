@@ -297,7 +297,7 @@ namespace Yardarm.SystemTextJson.Internal
         /// <remarks>
         /// The preferred choice is specifically defined mappings on the discriminator. However, when
         /// missing it will fallback all oneOf's defined on the type. If that is not the case, it will
-        /// look for cases of anyOf inheritance from schemas defined in the components section.
+        /// look for cases of allOf inheritance from schemas defined in the components section.
         /// </remarks>
         private IEnumerable<(string Key, ILocatedOpenApiElement<OpenApiSchema> Schema)> GetMappings(
             ILocatedOpenApiElement<OpenApiSchema> element)
@@ -332,21 +332,16 @@ namespace Yardarm.SystemTextJson.Internal
                     .Select(p => (p.Reference.Id, p.CreateRoot(p.Reference.Id)));
             }
 
-            // Find other schemas that reference this one using anyOf. This only applies to base
+            // Find other schemas that reference this one using allOf. This only applies to base
             // classes, don't try this with interfaces.
             return Context.Document.Components.Schemas
                 .Where(p =>
                 {
-                    var firstAnyOf = p.Value.AnyOf?.FirstOrDefault();
-                    return firstAnyOf?.Reference is not null &&
-                           firstAnyOf.Reference.Id == element.Key;
+                    var firstAllOf = p.Value.AllOf?.FirstOrDefault();
+                    return firstAllOf?.Reference is not null &&
+                           firstAllOf.Reference.Id == element.Key;
                 })
                 .Select(p => (p.Key, p.Value.CreateRoot(p.Key)));
         }
-
-        private IEnumerable<TypeSyntax> GetOneOfTypes() =>
-            Element.Element.OneOf
-                .Where(p => p.Reference is not null)
-                .Select(p => Context.TypeGeneratorRegistry.Get(p.CreateRoot(p.Reference.Id)).TypeInfo.Name);
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Internal;
@@ -128,12 +129,11 @@ namespace Yardarm
             compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
 
             ImmutableArray<Diagnostic> additionalDiagnostics;
-            var assemblyLoadContext = new YardarmAssemblyLoadContext();
-            try
+            using (var sourceGeneratorLoadContext = new SourceGeneratorLoadContext(context.NuGetRestoreInfo!.Providers))
             {
-                var sourceGenerators = context.GenerationServices.GetRequiredService<NuGetRestoreProcessor>()
-                    .GetSourceGenerators(context.NuGetRestoreInfo!.Providers, context.NuGetRestoreInfo!.LockFile,
-                        targetFramework, assemblyLoadContext)
+                var sourceGenerators = sourceGeneratorLoadContext
+                    .GetSourceGenerators(context.GenerationServices.GetRequiredService<PackageSpec>(),
+                        context.NuGetRestoreInfo!.LockFile, targetFramework)
                     .ToList();
 
                 // Execute the source generators
@@ -141,10 +141,6 @@ namespace Yardarm
                     sourceGenerators,
                     out additionalDiagnostics,
                     cancellationToken);
-            }
-            finally
-            {
-                assemblyLoadContext.Unload();
             }
 
             return (compilation.Emit(dllOutput,

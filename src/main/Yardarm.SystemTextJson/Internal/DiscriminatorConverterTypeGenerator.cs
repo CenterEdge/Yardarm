@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,8 +16,6 @@ namespace Yardarm.SystemTextJson.Internal
 {
     internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSchema>
     {
-        public static ReadOnlySpan<byte> X => new byte[] {1, 2};
-
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
         private readonly NameSyntax _typeName;
 
@@ -87,7 +84,7 @@ namespace Yardarm.SystemTextJson.Internal
 
         private PropertyDeclarationSyntax GeneratePropertyNameProperty()
         {
-            byte[] propertyName = Encoding.UTF8.GetBytes(Element.Element.Discriminator.PropertyName);
+            string propertyName = Element.Element.Discriminator.PropertyName;
 
             return PropertyDeclaration(
                 default,
@@ -96,13 +93,9 @@ namespace Yardarm.SystemTextJson.Internal
                 default,
                 Identifier("PropertyName"),
                 null,
-                ArrowExpressionClause(ArrayCreationExpression(
-                    ArrayType(
-                        PredefinedType(Token(SyntaxKind.ByteKeyword)), new SyntaxList<ArrayRankSpecifierSyntax>(
-                            ArrayRankSpecifier(SingletonSeparatedList<ExpressionSyntax>(OmittedArraySizeExpression())))),
-                    InitializerExpression(SyntaxKind.ArrayInitializerExpression,
-                        SeparatedList(propertyName.Select(p =>
-                            (ExpressionSyntax)LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(p))))))),
+                ArrowExpressionClause(LiteralExpression(
+                    SyntaxKind.Utf8StringLiteralExpression,
+                    Token(default, SyntaxKind.Utf8StringLiteralToken, SymbolDisplay.FormatLiteral(propertyName, quote: true) + "u8", propertyName, default))),
                 null,
                 Token(SyntaxKind.SemicolonToken));
         }

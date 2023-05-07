@@ -21,11 +21,6 @@ namespace Yardarm.SystemTextJson
     /// </remarks>
     public class JsonNodeEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiSchema>
     {
-        public Type[] ExecuteAfter { get; } =
-        {
-            typeof(JsonAdditionalPropertiesEnricher),
-        };
-
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context)
         {

@@ -28,6 +28,17 @@ namespace Yardarm.Helpers
             return typeSyntax is IdentifierNameSyntax nameSyntax && nameSyntax.Identifier.ValueText == "dynamic";
         }
 
+        public static bool IsObject(TypeSyntax typeSyntax, out bool isNullable)
+        {
+            isNullable = IsNullable(typeSyntax, out TypeSyntax? innerTypeSyntax);
+            if (isNullable)
+            {
+                typeSyntax = innerTypeSyntax!;
+            }
+
+            return typeSyntax is PredefinedTypeSyntax {Keyword.ValueText: "object"};
+        }
+
         public static bool IsNullable(TypeSyntax typeSyntax, [MaybeNullWhen(false)] out TypeSyntax innerTypeSyntax)
         {
             if (typeSyntax is NullableTypeSyntax nullableSyntax)

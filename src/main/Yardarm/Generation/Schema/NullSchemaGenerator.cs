@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
 using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
@@ -19,8 +20,8 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
-            SyntaxFactory.IdentifierName("dynamic"),
+        public YardarmTypeInfo TypeInfo { get; } = new(
+            NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword))),
             isGenerated: false);
 
         public SyntaxTree? GenerateSyntaxTree() => null;

@@ -3,10 +3,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Names;
 using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
@@ -22,17 +22,16 @@ namespace Yardarm.Generation.Schema
             new YardarmTypeInfo(
                 (Element.Element.Type, Element.Element.Format) switch
                 {
-                    (_, "int32") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword)),
-                    (_, "integer") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword)),
-                    (_, "int") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword)),
-                    (_, "int64") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.LongKeyword)),
-                    (_, "byte") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.ByteKeyword)),
-                    ("integer", _) => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.LongKeyword)),
-                    ("number", "decimal") => SyntaxFactory.PredefinedType(
-                        SyntaxFactory.Token(SyntaxKind.DecimalKeyword)),
-                    ("number", "float") => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.FloatKeyword)),
-                    ("number", _) => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.DoubleKeyword)),
-                    _ => SyntaxFactory.IdentifierName("dynamic")
+                    (_, "int32") => PredefinedType(Token(SyntaxKind.IntKeyword)),
+                    (_, "integer") => PredefinedType(Token(SyntaxKind.IntKeyword)),
+                    (_, "int") => PredefinedType(Token(SyntaxKind.IntKeyword)),
+                    (_, "int64") => PredefinedType(Token(SyntaxKind.LongKeyword)),
+                    (_, "byte") => PredefinedType(Token(SyntaxKind.ByteKeyword)),
+                    ("integer", _) => PredefinedType(Token(SyntaxKind.LongKeyword)),
+                    ("number", "decimal") => PredefinedType(Token(SyntaxKind.DecimalKeyword)),
+                    ("number", "float") => PredefinedType(Token(SyntaxKind.FloatKeyword)),
+                    ("number", _) => PredefinedType(Token(SyntaxKind.DoubleKeyword)),
+                    _ => PredefinedType(Token(SyntaxKind.ObjectKeyword))
                 },
                 NameKind.Struct,
                 isGenerated: false);

@@ -111,13 +111,24 @@ namespace Yardarm.Enrichment.Schema
         private MemberDeclarationSyntax GenerateAdditionalPropertiesMembers(TypeSyntax dictionaryType, TypeSyntax interfaceType,
             string propertyName, bool isShadowing)
         {
-            var property = PropertyDeclaration(interfaceType, Identifier(propertyName))
-                .AddSpecialMemberAnnotation(SpecialMembers.AdditionalProperties)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))
-                .WithInitializer(EqualsValueClause(ObjectCreationExpression(dictionaryType)));
+            var property = PropertyDeclaration(
+                    default,
+                    TokenList(Token(SyntaxKind.PublicKeyword)),
+                    interfaceType,
+                    null,
+                    Identifier(propertyName),
+                    AccessorList(SingletonList(AccessorDeclaration(
+                        SyntaxKind.GetAccessorDeclaration,
+                        default,
+                        default,
+                        Token(SyntaxKind.GetKeyword),
+                        null,
+                        null,
+                        Token(SyntaxKind.SemicolonToken)))),
+                    null,
+                    EqualsValueClause(ObjectCreationExpression(dictionaryType, ArgumentList(), null)),
+                    Token(SyntaxKind.SemicolonToken))
+                .AddSpecialMemberAnnotation(SpecialMembers.AdditionalProperties);
 
             if (isShadowing)
             {

@@ -72,7 +72,7 @@ namespace Yardarm.NewtonsoftJson
                 .First()
                 .TypeArgumentList.Arguments[1];
 
-            bool isDynamic = SyntaxHelpers.IsDynamic(valueType, out bool isNullable);
+            bool isDynamic = SyntaxHelpers.IsObject(valueType, out bool isNullable);
 
             TypeSyntax wrapperType = isDynamic
                 ? isNullable

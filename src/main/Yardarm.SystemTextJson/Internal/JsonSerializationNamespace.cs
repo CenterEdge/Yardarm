@@ -10,6 +10,7 @@ namespace Yardarm.SystemTextJson.Internal
     {
         public NameSyntax Name { get; }
         public NameSyntax JsonDateConverter { get; }
+        public NameSyntax JsonNullableDateConverter { get; }
         public NameSyntax JsonTypeSerializer { get; }
         public NameSyntax JsonHelpers { get; }
 
@@ -27,6 +28,10 @@ namespace Yardarm.SystemTextJson.Internal
             JsonDateConverter = QualifiedName(
                 Name,
                 IdentifierName("JsonDateConverter"));
+
+            JsonNullableDateConverter = QualifiedName(
+                Name,
+                IdentifierName("JsonNullableDateConverter"));
 
             JsonTypeSerializer = QualifiedName(
                 Name,

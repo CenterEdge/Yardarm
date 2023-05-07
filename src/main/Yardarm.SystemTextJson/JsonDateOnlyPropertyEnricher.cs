@@ -63,7 +63,9 @@ namespace Yardarm.SystemTextJson
                 .AddAttributeLists(AttributeList(SingletonSeparatedList(
                     Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
                         AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
-                            SyntaxFactory.TypeOfExpression(_serializationNamespace.JsonDateConverter))))))))
+                            TypeOfExpression(syntax.Type is NullableTypeSyntax
+                                ? _serializationNamespace.JsonNullableDateConverter
+                                : _serializationNamespace.JsonDateConverter))))))))
                     .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
 
         private static bool IsDateTime(INamedTypeSymbol? type)

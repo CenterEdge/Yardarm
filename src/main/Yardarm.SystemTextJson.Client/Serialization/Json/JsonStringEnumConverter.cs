@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -8,8 +9,8 @@ using System.Text.Json.Serialization;
 
 namespace RootNamespace.Serialization.Json
 {
-    internal class JsonStringEnumConverter<T> : JsonConverter<T>
-        where T : Enum
+    internal class JsonStringEnumConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T> : JsonConverter<T>
+        where T : struct, Enum
     {
         private static readonly TypeCode _enumTypeCode = Type.GetTypeCode(typeof(T));
 
@@ -33,7 +34,7 @@ namespace RootNamespace.Serialization.Json
             }
         }
 
-        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             switch (reader.TokenType)
             {
@@ -98,10 +99,11 @@ namespace RootNamespace.Serialization.Json
                             break;
                     }
 
-                    throw new JsonException();
+                    break;
             }
 
-            return default;
+            JsonHelpers.ThrowJsonException();
+            return default!; // unreachable
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -139,7 +141,8 @@ namespace RootNamespace.Serialization.Json
                     writer.WriteNumberValue(Unsafe.As<T, sbyte>(ref value));
                     break;
                 default:
-                    throw new JsonException();
+                    JsonHelpers.ThrowJsonException();
+                    break;
             }
         }
     }

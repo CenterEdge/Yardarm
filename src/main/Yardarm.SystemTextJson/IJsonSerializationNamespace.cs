@@ -6,6 +6,7 @@ namespace Yardarm.SystemTextJson
     {
         NameSyntax Name { get; }
         NameSyntax JsonDateConverter { get; }
+        NameSyntax JsonNullableDateConverter { get; }
         NameSyntax JsonTypeSerializer { get; }
 
         TypeSyntax JsonStringEnumConverter(TypeSyntax valueType);

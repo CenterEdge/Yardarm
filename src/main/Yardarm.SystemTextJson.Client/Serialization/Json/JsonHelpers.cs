@@ -68,7 +68,7 @@ namespace RootNamespace.Serialization.Json
         }
 
         [DoesNotReturn]
-        private static void ThrowJsonException()
+        public static void ThrowJsonException()
         {
             throw new JsonException();
         }

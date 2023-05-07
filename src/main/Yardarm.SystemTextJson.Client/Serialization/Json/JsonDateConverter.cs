@@ -16,7 +16,10 @@ namespace RootNamespace.Serialization.Json
         private const int FormatLength = 10;
         private const int MaxEscapedFormatLength = FormatLength * 6;
 
-        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+            Read(ref reader);
+
+        public static DateTime Read(ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.String)
             {
@@ -47,6 +50,9 @@ namespace RootNamespace.Serialization.Json
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+            => Write(writer, value);
+
+        public static void Write(Utf8JsonWriter writer, DateTime value)
         {
 #if NET6_0_OR_GREATER
             Span<char> buffer = stackalloc char[FormatLength];

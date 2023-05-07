@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
+using Yardarm.Helpers;
 using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
 using Yardarm.SystemTextJson.Internal;
@@ -63,10 +64,40 @@ namespace Yardarm.SystemTextJson
                 dictionaryType = qualifiedName.Right;
             }
 
-            if (dictionaryType is not GenericNameSyntax genericName)
+            if (dictionaryType is not GenericNameSyntax genericName || genericName.TypeArgumentList.Arguments.Count != 2)
             {
                 // Don't mutate
                 return property;
+            }
+
+            if (!SyntaxHelpers.IsObject(genericName.TypeArgumentList.Arguments[1], out var isNullable))
+            {
+                // System.Text.Json requires dictionary values be JsonElement or object, so replace the types with object.
+                // We don't want to use JsonElement because it's very difficult to build those dynamically.
+                // We could use JsonObject instead of a dictionary, but there is currently an issue in System.Text.Json which prevents this
+                // https://github.com/dotnet/runtime/issues/60560
+
+                TypeSyntax valueType = PredefinedType(Token(SyntaxKind.ObjectKeyword));
+                if (isNullable)
+                {
+                    valueType = NullableType(valueType);
+                }
+
+                var newDictionaryType = WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
+                    genericName.TypeArgumentList.Arguments[0],
+                    valueType);
+
+                var interfaceType = WellKnownTypes.System.Collections.Generic.IDictionaryT.Name(
+                    genericName.TypeArgumentList.Arguments[0],
+                    valueType);
+
+                property = property
+                    .WithType(interfaceType)
+                    .WithInitializer(EqualsValueClause(ObjectCreationExpression(
+                        newDictionaryType,
+                        ArgumentList(),
+                        null)))
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
             }
 
             return property

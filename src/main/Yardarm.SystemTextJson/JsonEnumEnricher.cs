@@ -1,11 +1,11 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.SystemTextJson.Helpers;
 using Yardarm.SystemTextJson.Internal;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
 {
@@ -22,11 +22,13 @@ namespace Yardarm.SystemTextJson
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
             context.Element.Type == "string" && context.LocatedElement.IsJsonSchema()
                 ? target
-                    .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                        SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName).AddArgumentListArguments(
-                            SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(
-                                _jsonSerializationNamespace.JsonStringEnumConverter(SyntaxFactory.IdentifierName(target.Identifier))))))
-                        .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed))
+                    .AddAttributeLists(AttributeList(SingletonSeparatedList(
+                        Attribute(
+                            SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
+                            AttributeArgumentList(SingletonSeparatedList(
+                                AttributeArgument(TypeOfExpression(
+                                    _jsonSerializationNamespace.JsonStringEnumConverter(IdentifierName(target.Identifier)))))))))
+                        .WithTrailingTrivia(ElasticCarriageReturnLineFeed))
                 : target;
     }
 }

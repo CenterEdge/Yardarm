@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
@@ -8,6 +7,7 @@ using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.SystemTextJson.Helpers;
 using Yardarm.SystemTextJson.Internal;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
 {
@@ -29,10 +29,12 @@ namespace Yardarm.SystemTextJson
                 return target;
             }
 
-            return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                SyntaxFactory.Attribute(SystemTextJsonTypes.Serialization.JsonPropertyNameAttributeName).AddArgumentListArguments(
-                    SyntaxFactory.AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key))))
-                .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
+            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(
+                    Attribute(
+                        SystemTextJsonTypes.Serialization.JsonPropertyNameAttributeName,
+                        AttributeArgumentList(SingletonSeparatedList(
+                        AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))))))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
         }
     }
 }

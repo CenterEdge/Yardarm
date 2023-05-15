@@ -146,6 +146,27 @@ namespace Yardarm.Helpers
                 }
             }
 
+            public static class Diagnostics
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("Diagnostics"));
+
+                public static class CodeAnalysis
+                {
+                    public static NameSyntax Name { get; } = QualifiedName(
+                        Diagnostics.Name,
+                        IdentifierName("CodeAnalysis"));
+
+                    public static class UnconditionalSuppressMessageAttribute
+                    {
+                        public static NameSyntax Name { get; } = QualifiedName(
+                            CodeAnalysis.Name,
+                            IdentifierName("UnconditionalSuppressMessageAttribute"));
+                    }
+                }
+            }
+
             public static class IDisposable
             {
                 public static NameSyntax Name { get; } = QualifiedName(

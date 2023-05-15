@@ -66,6 +66,10 @@ namespace Yardarm.SystemTextJson.Helpers
                 SystemTextJson,
                 IdentifierName("Serialization"));
 
+            public static NameSyntax JsonDerivedTypeAttributeName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonDerivedTypeAttribute"));
+
             public static NameSyntax JsonExtensionDataAttributeName { get; } = QualifiedName(
                 Name,
                 IdentifierName("JsonExtensionDataAttribute"));
@@ -73,6 +77,10 @@ namespace Yardarm.SystemTextJson.Helpers
             public static NameSyntax JsonIgnoreAttributeName { get; } = QualifiedName(
                 Name,
                 IdentifierName("JsonIgnoreAttribute"));
+
+            public static NameSyntax JsonPolymorphicAttributeName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonPolymorphicAttribute"));
 
             public static class JsonIgnoreCondition
             {

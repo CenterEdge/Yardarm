@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -40,11 +41,31 @@ namespace Yardarm.SystemTextJson
         {
             var converter = TypeGeneratorRegistry.Get(context.LocatedElement);
 
-            var attribute = Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
-                AttributeArgumentList(SingletonSeparatedList(AttributeArgument(TypeOfExpression(converter.TypeInfo.Name)))));
+            var attributes = new List<AttributeListSyntax>
+            {
+                AttributeList(SingletonSeparatedList(Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
+                    AttributeArgumentList(
+                        SingletonSeparatedList(AttributeArgument(TypeOfExpression(converter.TypeInfo.Name)))))))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed),
+                AttributeList(SingletonSeparatedList(Attribute(SystemTextJsonTypes.Serialization.JsonPolymorphicAttributeName)))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed)
+            };
 
-            return target.AddAttributeLists(AttributeList(SingletonSeparatedList(attribute))
-                .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
+            // Add JsonDerivedType attributes. This ensures that anytime this type is included on a JsonSerializerContext
+            // all of the derived types are also included. This, in turn, allows the JsonConverter to serialize the
+            // derived types.
+            foreach (var (_, derivedType) in SchemaHelper.GetDiscriminatorMappings(GenerationContext, context.LocatedElement))
+            {
+                attributes.Add(AttributeList(SingletonSeparatedList(
+                        Attribute(SystemTextJsonTypes.Serialization.JsonDerivedTypeAttributeName,
+                            AttributeArgumentList(SeparatedList(new []
+                            {
+                                AttributeArgument(TypeOfExpression(derivedType))
+                            })))))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
+            }
+
+            return target.AddAttributeLists(attributes.ToArray());
         }
     }
 }

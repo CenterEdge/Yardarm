@@ -16,6 +16,36 @@ namespace Yardarm.SystemTextJson.Internal
 {
     internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSchema>
     {
+        private const string TrimJustification =
+            "This is trim and AOT safe so long as the options came from a JsonSerializerContext because JsonDerivedType was used to include the descendants we're referencing.";
+
+        private static readonly SyntaxList<AttributeListSyntax> s_suppressTrimAndAotWarnings =
+            List(new[]
+            {
+                AttributeList(SingletonSeparatedList(Attribute(
+                    WellKnownTypes.System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute.Name,
+                    AttributeArgumentList(SeparatedList(new[]
+                    {
+                        AttributeArgument(SyntaxHelpers.StringLiteral("ReflectionAnalysis")),
+                        AttributeArgument(SyntaxHelpers.StringLiteral("IL2026")),
+                        AttributeArgument(
+                            NameEquals(IdentifierName("Justification")),
+                            null,
+                            SyntaxHelpers.StringLiteral(TrimJustification))
+                    }))))),
+                AttributeList(SingletonSeparatedList(Attribute(
+                    WellKnownTypes.System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute.Name,
+                    AttributeArgumentList(SeparatedList(new[]
+                    {
+                        AttributeArgument(SyntaxHelpers.StringLiteral("Aot")),
+                        AttributeArgument(SyntaxHelpers.StringLiteral("IL3050:RequiresDynamicCode")),
+                        AttributeArgument(
+                            NameEquals(IdentifierName("Justification")),
+                            null,
+                            SyntaxHelpers.StringLiteral(TrimJustification))
+                    })))))
+            });
+
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
         private readonly NameSyntax _typeName;
 
@@ -60,7 +90,7 @@ namespace Yardarm.SystemTextJson.Internal
 
             var declaration = ClassDeclaration(
                     default,
-                    TokenList(Token(SyntaxKind.InternalKeyword)),
+                    TokenList(Token(SyntaxKind.PublicKeyword)),
                     Identifier(className),
                     null,
                     BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(baseType))),
@@ -136,7 +166,7 @@ namespace Yardarm.SystemTextJson.Internal
 
             if (!string.IsNullOrEmpty(Element.Element.Discriminator?.PropertyName))
             {
-                var mappings = GetStronglyTypedMappings()
+                var mappings = SchemaHelper.GetDiscriminatorMappings(Context, Element)
                     .Select(mapping =>
                         SwitchExpressionArm(
                             ConstantPattern(LiteralExpression(SyntaxKind.StringLiteralExpression,
@@ -181,7 +211,7 @@ namespace Yardarm.SystemTextJson.Internal
             }
 
             return MethodDeclaration(
-                default,
+                s_suppressTrimAndAotWarnings,
                 TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword)),
                 schemaType,
                 default,
@@ -221,7 +251,7 @@ namespace Yardarm.SystemTextJson.Internal
                 Argument(IdentifierName("options"))
             }));
 
-            var mappings = GetStronglyTypedMappings()
+            var mappings = SchemaHelper.GetDiscriminatorMappings(Context, Element)
                 .Select(p => p.typeName)
                 .Distinct()
                 .Select(typeName =>
@@ -253,7 +283,7 @@ namespace Yardarm.SystemTextJson.Internal
                     new SyntaxList<SwitchSectionSyntax>(mappings))));
 
             return MethodDeclaration(
-                default,
+                s_suppressTrimAndAotWarnings,
                 TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword)),
                 PredefinedType(Token(SyntaxKind.VoidKeyword)),
                 default,
@@ -282,66 +312,6 @@ namespace Yardarm.SystemTextJson.Internal
                 default,
                 body,
                 null);
-        }
-
-        private IEnumerable<(string key, TypeSyntax typeName)> GetStronglyTypedMappings() =>
-            GetMappings(Element)
-                .Select(p => (p.Key, Context.TypeGeneratorRegistry.Get(p.Schema).TypeInfo.Name))
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                .Where(p => p.Item2 != null);
-
-        /// <summary>
-        /// Collects the list of value to schema mappings defined for the type, choosing from the
-        /// best source for various kinds of mappings and polymorphism.
-        /// </summary>
-        /// <remarks>
-        /// The preferred choice is specifically defined mappings on the discriminator. However, when
-        /// missing it will fallback all oneOf's defined on the type. If that is not the case, it will
-        /// look for cases of allOf inheritance from schemas defined in the components section.
-        /// </remarks>
-        private IEnumerable<(string Key, ILocatedOpenApiElement<OpenApiSchema> Schema)> GetMappings(
-            ILocatedOpenApiElement<OpenApiSchema> element)
-        {
-            if (element.Element.Discriminator.Mapping is {Count: > 0})
-            {
-                // Use specifically listed mappings
-                return element.Element.Discriminator.Mapping
-                    .Select(p =>
-                    {
-                        // TODO: We should really be parsing this rather than just checking a prefix, but the OpenAPI parser isn't exposed
-                        if (p.Value.StartsWith("#/components/schemas/"))
-                        {
-                            string schemaName = p.Value.Substring("#/components/schemas/".Length);
-                            if (Context.Document.Components.Schemas.TryGetValue(schemaName, out var schema))
-                            {
-                                return (p.Key, Schema: schema.CreateRoot(p.Key));
-                            }
-                        }
-
-                        return (p.Key, Schema: null!);
-                    })
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                    .Where(p => p.Schema is not null);
-            }
-
-            if (element.Element.OneOf is {Count: > 0})
-            {
-                // Gather mappings from "oneOf" that get a default mapping based on the schema name
-                return element.Element.OneOf
-                    .Where(p => p.Reference is not null)
-                    .Select(p => (p.Reference.Id, p.CreateRoot(p.Reference.Id)));
-            }
-
-            // Find other schemas that reference this one using allOf. This only applies to base
-            // classes, don't try this with interfaces.
-            return Context.Document.Components.Schemas
-                .Where(p =>
-                {
-                    var firstAllOf = p.Value.AllOf?.FirstOrDefault();
-                    return firstAllOf?.Reference is not null &&
-                           firstAllOf.Reference.Id == element.Key;
-                })
-                .Select(p => (p.Key, p.Value.CreateRoot(p.Key)));
         }
     }
 }

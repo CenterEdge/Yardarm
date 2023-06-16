@@ -43,6 +43,10 @@ namespace Yardarm.SystemTextJson.Internal
             return false;
         }
 
+        public static bool IsPolymorphic(OpenApiSchema schema) =>
+            schema is {Discriminator.PropertyName: not null} or {OneOf.Count: > 0};
+
+
         private static bool IsJsonMediaType(string mediaType) =>
             mediaType.EndsWith("/json") || mediaType.EndsWith("+json");
 
@@ -69,7 +73,7 @@ namespace Yardarm.SystemTextJson.Internal
             GenerationContext context,
             ILocatedOpenApiElement<OpenApiSchema> element)
         {
-            if (element.Element.Discriminator.Mapping is {Count: > 0})
+            if (element.Element.Discriminator is {Mapping.Count: > 0})
             {
                 // Use specifically listed mappings
                 return element.Element.Discriminator.Mapping

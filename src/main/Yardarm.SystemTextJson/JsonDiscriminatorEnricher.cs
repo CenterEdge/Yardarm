@@ -26,13 +26,13 @@ namespace Yardarm.SystemTextJson
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Discriminator?.PropertyName is not null && context.LocatedElement.IsJsonSchema()
+            SchemaHelper.IsPolymorphic(context.Element) && context.LocatedElement.IsJsonSchema()
                 ? (InterfaceDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Discriminator?.PropertyName is not null && context.LocatedElement.IsJsonSchema()
+            SchemaHelper.IsPolymorphic(context.Element) && context.LocatedElement.IsJsonSchema()
                 ? (ClassDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 

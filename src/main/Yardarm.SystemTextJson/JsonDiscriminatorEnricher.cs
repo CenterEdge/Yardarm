@@ -22,15 +22,18 @@ namespace Yardarm.SystemTextJson
             TypeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
         }
 
+        internal static bool IsPolymorphic(OpenApiSchema schema) =>
+            schema is {Discriminator.PropertyName: not null} or {OneOf.Count: > 0};
+
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Discriminator?.PropertyName is not null
+            IsPolymorphic(context.Element)
                 ? (InterfaceDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Discriminator?.PropertyName is not null
+            IsPolymorphic(context.Element)
                 ? (ClassDeclarationSyntax) AddJsonConverter(target, context)
                 : target;
 

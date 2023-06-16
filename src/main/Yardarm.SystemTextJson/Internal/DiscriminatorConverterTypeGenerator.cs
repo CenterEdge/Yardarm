@@ -309,7 +309,7 @@ namespace Yardarm.SystemTextJson.Internal
         private IEnumerable<(string Key, ILocatedOpenApiElement<OpenApiSchema> Schema)> GetMappings(
             ILocatedOpenApiElement<OpenApiSchema> element)
         {
-            if (element.Element.Discriminator.Mapping is {Count: > 0})
+            if (element.Element.Discriminator is {Mapping.Count: > 0})
             {
                 // Use specifically listed mappings
                 return element.Element.Discriminator.Mapping

@@ -11,15 +11,12 @@ namespace Yardarm.SystemTextJson.Internal
     internal class DiscriminatorConverterGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiSchema> _schemaTypeGeneratorRegistry;
         private readonly ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> _converterTypeGeneratorRegistry;
 
         public DiscriminatorConverterGenerator(OpenApiDocument document,
-            ITypeGeneratorRegistry<OpenApiSchema> schemaTypeGeneratorRegistry,
             ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> converterTypeGeneratorRegistry)
         {
             _document = document ?? throw new ArgumentNullException(nameof(document));
-            _schemaTypeGeneratorRegistry = schemaTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(schemaTypeGeneratorRegistry));
             _converterTypeGeneratorRegistry = converterTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(converterTypeGeneratorRegistry));
         }
 
@@ -27,7 +24,7 @@ namespace Yardarm.SystemTextJson.Internal
         {
             var schemas = _document
                 .GetAllSchemas()
-                .Where(schema => schema.Element.Discriminator?.PropertyName is not null);
+                .Where(schema => JsonDiscriminatorEnricher.IsPolymorphic(schema.Element));
 
             foreach (var schema in schemas)
             {

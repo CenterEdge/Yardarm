@@ -106,7 +106,7 @@
       RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
       Extensions="@(YardarmExtension)"
-      BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
+      BaseIntermediateOutputPath="$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))"
     >
       <Output TaskParameter="PackageReference" ItemName="_YardarmPackageReference" />
       <Output TaskParameter="PackageDownload" ItemName="PackageDownload" />

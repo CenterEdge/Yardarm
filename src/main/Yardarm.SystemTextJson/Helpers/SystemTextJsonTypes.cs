@@ -121,6 +121,10 @@ namespace Yardarm.SystemTextJson.Helpers
             public static TypeSyntax JsonConverterName(TypeSyntax t) =>
                 QualifiedName(Name, GenericName(Identifier("JsonConverter"),
                     TypeArgumentList(SingletonSeparatedList(t))));
+
+            public static TypeSyntax JsonStringEnumConverterName(TypeSyntax enumType) =>
+                QualifiedName(Name, GenericName(Identifier("JsonStringEnumConverter"),
+                    TypeArgumentList(SingletonSeparatedList(enumType))));
         }
 
         public static NameSyntax Utf8JsonReader { get; } = QualifiedName(

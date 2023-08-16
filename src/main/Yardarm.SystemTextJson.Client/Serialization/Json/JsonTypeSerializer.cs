@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace RootNamespace.Serialization.Json
         }
 
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
-            JsonContent.Create(value, new MediaTypeHeaderValue("application/json"), _options);
+            JsonContent.Create(value, new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName}, _options);
 
         public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
         {

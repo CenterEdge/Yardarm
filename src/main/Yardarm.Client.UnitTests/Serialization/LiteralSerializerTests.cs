@@ -105,12 +105,14 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be("2020-01-02T03:04:05.0000000");
         }
 
-        [Fact]
-        public void Serialize_Date_ReturnsString()
+        [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void Serialize_Date_ReturnsString(string format)
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(new DateTime(2020, 1, 2, 3, 4, 5), "date");
+            string result = LiteralSerializer.Instance.Serialize(new DateTime(2020, 1, 2, 3, 4, 5), format);
 
             // Assert
 
@@ -131,6 +133,31 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
+        public void Serialize_TimeSpan_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Instance.Serialize(
+                new TimeSpan(0, 3, 4, 5), "partial-time");
+
+            // Assert
+
+            result.Should().Be("03:04:05");
+        }
+
+        [Fact]
+        public void Serialize_TimeSpanMillis_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Instance.Serialize(
+                new TimeSpan(0, 3, 4, 5, 123), "partial-time");
+
+            // Assert
+
+            result.Should().Be("03:04:05.1230000");
+        }
+            
         public void Serialize_Guid_ReturnsString()
         {
             // Arrange
@@ -246,16 +273,42 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().BeFalse();
         }
 
-        [Fact]
-        public void Deserialize_Date_ReturnsString()
+        [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void Deserialize_Date_ReturnsString(string format)
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<DateTime>("2020-01-02", "date");
+            var result = LiteralSerializer.Instance.Deserialize<DateTime>("2020-01-02", format);
 
             // Assert
 
             result.Should().Be(new DateTime(2020, 01, 02));
+        }
+
+        [Fact]
+        public void Deserialize_TimeSpan_ReturnsString()
+        {
+            // Act
+
+            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02", "partial-time");
+
+            // Assert
+
+            result.Should().Be(new TimeSpan(0, 13, 1, 2));
+        }
+
+        [Fact]
+        public void Deserialize_TimeSpanWithMillis_ReturnsString()
+        {
+            // Act
+
+            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02.234000", "partial-time");
+
+            // Assert
+
+            result.Should().Be(new TimeSpan(0, 13, 1, 2, 234));
         }
 
         [Fact]

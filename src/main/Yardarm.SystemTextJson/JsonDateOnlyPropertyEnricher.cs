@@ -29,7 +29,7 @@ namespace Yardarm.SystemTextJson
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
         {
-            if (context.Element.Type != "string" || context.Element.Format != "date")
+            if (context.Element.Type != "string" || context.Element.Format is not "date" and not "full-date")
             {
                 // Only applies to date-only strings
                 return syntax;

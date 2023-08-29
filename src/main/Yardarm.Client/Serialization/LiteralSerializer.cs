@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace RootNamespace.Serialization
 
                 return format switch
                 {
-                    "date" => dateTime.ToString("yyyy-MM-dd"),
+                    "date" or "full-date" => dateTime.ToString("yyyy-MM-dd"),
                     _ => dateTime.ToString("O")
                 };
             }
@@ -41,9 +42,14 @@ namespace RootNamespace.Serialization
 
                 return format switch
                 {
-                    "date" => dateTime.ToString("yyyy-MM-dd"),
+                    "date" or "full-date" => dateTime.ToString("yyyy-MM-dd"),
                     _ => dateTime.ToString("O")
                 };
+            }
+            if (typeof(T) == typeof(TimeSpan) || typeof(T) == typeof(TimeSpan?))
+            {
+                var timeSpan = (TimeSpan)(object)value;
+                return timeSpan.ToString("c");
             }
 
             if (value is IFormattable formattable)
@@ -115,7 +121,7 @@ namespace RootNamespace.Serialization
             {
                 return (T)(object)(format switch
                 {
-                    "date" => DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    "date" or "full-date" => DateTime.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture),
                     _ => DateTime.Parse(value, CultureInfo.InvariantCulture)
                 });
             }
@@ -123,8 +129,16 @@ namespace RootNamespace.Serialization
             {
                 return (T)(object)(format switch
                 {
-                    "date" => DateTimeOffset.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    "date" or "full-date" => DateTimeOffset.ParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture),
                     _ => DateTimeOffset.Parse(value, CultureInfo.InvariantCulture)
+                });
+            }
+            if (typeof(T) == typeof(TimeSpan) || typeof(T) == typeof(TimeSpan?))
+            {
+                return (T)(object)(format switch
+                {
+                    "partial-time" => TimeSpan.ParseExact(value, "c", CultureInfo.InvariantCulture),
+                    _ => TimeSpan.Parse(value, CultureInfo.InvariantCulture)
                 });
             }
             if (typeof(T) == typeof(Guid) || typeof(T) == typeof(Guid?))

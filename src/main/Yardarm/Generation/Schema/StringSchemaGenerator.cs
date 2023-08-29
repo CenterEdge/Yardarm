@@ -22,7 +22,8 @@ namespace Yardarm.Generation.Schema
             new YardarmTypeInfo(
                 Element.Element.Format switch
                 {
-                    "date" => QualifiedName(IdentifierName("System"), IdentifierName("DateTime")),
+                    "date" or "full-date" => QualifiedName(IdentifierName("System"), IdentifierName("DateTime")),
+                    "partial-time" => QualifiedName(IdentifierName("System"), IdentifierName("TimeSpan")),
                     "date-time" => QualifiedName(IdentifierName("System"), IdentifierName("DateTimeOffset")),
                     "uuid" => QualifiedName(IdentifierName("System"), IdentifierName("Guid")),
                     "uri" => QualifiedName(IdentifierName("System"), IdentifierName("Uri")),

@@ -157,7 +157,8 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             result.Should().Be("03:04:05.1230000");
         }
-            
+
+        [Fact]
         public void Serialize_Guid_ReturnsString()
         {
             // Arrange

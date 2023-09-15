@@ -9,6 +9,9 @@
     <IsPackable>false</IsPackable>
 
     <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
+
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,7 +10,6 @@ namespace Yardarm.SystemTextJson.Internal
     {
         public NameSyntax Name { get; }
         public NameSyntax JsonDateConverter { get; }
-        public NameSyntax JsonNullableDateConverter { get; }
         public NameSyntax JsonTypeSerializer { get; }
         public NameSyntax JsonHelpers { get; }
 
@@ -29,10 +28,6 @@ namespace Yardarm.SystemTextJson.Internal
                 Name,
                 IdentifierName("JsonDateConverter"));
 
-            JsonNullableDateConverter = QualifiedName(
-                Name,
-                IdentifierName("JsonNullableDateConverter"));
-
             JsonTypeSerializer = QualifiedName(
                 Name,
                 IdentifierName("JsonTypeSerializer"));
@@ -41,13 +36,6 @@ namespace Yardarm.SystemTextJson.Internal
                 Name,
                 IdentifierName("JsonHelpers"));
         }
-
-        public TypeSyntax JsonStringEnumConverter(TypeSyntax valueType) =>
-            QualifiedName(
-                Name,
-                GenericName(
-                    Identifier("JsonStringEnumConverter"),
-                    TypeArgumentList(SingletonSeparatedList(valueType))));
 
         public InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName) =>
             InvocationExpression(

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -63,9 +61,7 @@ namespace Yardarm.SystemTextJson
                 .AddAttributeLists(AttributeList(SingletonSeparatedList(
                     Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
                         AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
-                            TypeOfExpression(syntax.Type is NullableTypeSyntax
-                                ? _serializationNamespace.JsonNullableDateConverter
-                                : _serializationNamespace.JsonDateConverter))))))))
+                            TypeOfExpression(_serializationNamespace.JsonDateConverter))))))))
                     .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
 
         private static bool IsDateTime(INamedTypeSymbol? type)

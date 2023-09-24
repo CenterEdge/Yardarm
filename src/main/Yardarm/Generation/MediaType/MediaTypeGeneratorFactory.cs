@@ -31,7 +31,7 @@ namespace Yardarm.Generation.MediaType
             _memberGenerators = memberGenerators.ToList();
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiMediaType> element, ITypeGenerator parent)
+        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiMediaType> element, ITypeGenerator? parent)
         {
             ArgumentNullException.ThrowIfNull(parent);
 

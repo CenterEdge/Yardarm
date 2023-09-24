@@ -71,6 +71,21 @@ namespace Yardarm.Helpers
                             IdentifierName("HttpClient"));
                     }
 
+                    public static class HttpCompletionOption
+                    {
+                        public static NameSyntax Name { get; } = QualifiedName(
+                            Http.Name,
+                            IdentifierName("HttpCompletionOption"));
+
+                        public static NameSyntax ResponseContentRead { get; } = QualifiedName(
+                            Name,
+                            IdentifierName("ResponseContentRead"));
+
+                        public static NameSyntax ResponseHeadersRead { get; } = QualifiedName(
+                            Name,
+                      IdentifierName("ResponseHeadersRead"));
+                    }
+
                     public static class HttpContent
                     {
                         public static NameSyntax Name { get; } = QualifiedName(

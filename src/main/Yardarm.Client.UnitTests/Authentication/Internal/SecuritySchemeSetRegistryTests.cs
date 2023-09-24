@@ -223,12 +223,14 @@ namespace Yardarm.Client.UnitTests.Authentication.Internal
         public class NoSchemesRequest : IOperationRequest
         {
             public IAuthenticator Authenticator { get; set; }
+            public bool EnableResponseStreaming { get; set; }
         }
 
         [SecuritySchemeSet(typeof(TestAuth1))]
         public class OneSchemeRequest : IOperationRequest
         {
             public IAuthenticator Authenticator { get; set; }
+            public bool EnableResponseStreaming { get; set; }
         }
 
         [SecuritySchemeSet(typeof(TestAuth1))]
@@ -236,12 +238,14 @@ namespace Yardarm.Client.UnitTests.Authentication.Internal
         public class TwoSchemesRequest : IOperationRequest
         {
             public IAuthenticator Authenticator { get; set; }
+            public bool EnableResponseStreaming { get; set; }
         }
 
         [SecuritySchemeSet(typeof(TestAuth1), typeof(TestAuth2))]
         public class JoinedSchemesRequest : IOperationRequest
         {
             public IAuthenticator Authenticator { get; set; }
+            public bool EnableResponseStreaming { get; set; }
         }
 
         #endregion

@@ -9,5 +9,8 @@ namespace RootNamespace.Requests
     {
         /// <inheritdoc />
         public IAuthenticator? Authenticator { get; set; }
+
+        /// <inheritdoc />
+        public bool EnableResponseStreaming { get; set; }
     }
 }

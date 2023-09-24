@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -54,26 +55,55 @@ namespace Yardarm.Generation.Operation
                         Argument(IdentifierName(RequestMessageVariableName)),
                         Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName)))))));
 
-            yield return LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))
-                .AddVariables(VariableDeclarator("responseMessage")
-                    .WithInitializer(EqualsValueClause(
+            yield return LocalDeclarationStatement(VariableDeclaration(
+                IdentifierName("var"),
+                SingletonSeparatedList(VariableDeclarator(
+                    Identifier("responseMessage"),
+                    null,
+                    EqualsValueClause(
                         SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
-                                SyntaxHelpers.MemberAccess(TagImplementationTypeGenerator.HttpClientFieldName, "SendAsync"))
-                            .AddArgumentListArguments(
+                            SyntaxHelpers.MemberAccess(TagImplementationTypeGenerator.HttpClientFieldName, "SendAsync"),
+                            ArgumentList(SeparatedList(new[]
+                            {
                                 Argument(IdentifierName(RequestMessageVariableName)),
-                                Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))))))));
+                                Argument(ConditionalExpression(
+                                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                        IdentifierName(RequestParameterName),
+                                        IdentifierName("EnableResponseStreaming")),
+                                    WellKnownTypes.System.Net.Http.HttpCompletionOption.ResponseHeadersRead,
+                                    WellKnownTypes.System.Net.Http.HttpCompletionOption.ResponseContentRead)),
+                                Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))
+                            })))))))));
 
-            yield return MethodHelpers.IfNotNull(
-                IdentifierName(AuthenticatorVariableName),
-                Block(ExpressionStatement(SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(AuthenticatorVariableName),
-                            IdentifierName("ProcessResponseAsync")))
-                    .AddArgumentListArguments(
-                        Argument(IdentifierName("responseMessage")),
-                        Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName)))))));
+            // If there is an exception handling the response before we return, for example in the authenticator or in header parsing,
+            // it's important that we dispose the response in the case of HttpCompletionOption.ResponseHeadersRead. Wrap in a
+            // try..catch with a rethrow to ensure that happens.
 
-            yield return ReturnStatement(GenerateResponse(operation, IdentifierName("responseMessage")));
+            yield return TryStatement(
+                Block(
+                    MethodHelpers.IfNotNull(
+                        IdentifierName(AuthenticatorVariableName),
+                        Block(ExpressionStatement(SyntaxHelpers.AwaitConfiguredFalse(InvocationExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    IdentifierName(AuthenticatorVariableName),
+                                    IdentifierName("ProcessResponseAsync")),
+                                ArgumentList(SeparatedList(new[] {
+                                    Argument(IdentifierName("responseMessage")),
+                                    Argument(IdentifierName(MethodHelpers.CancellationTokenParameterName))
+                                }))))))),
+                    ReturnStatement(GenerateResponse(operation, IdentifierName("responseMessage")))
+                ),
+                SingletonList(CatchClause(
+                    null,
+                    null,
+                    Block(
+                        ExpressionStatement(InvocationExpression(
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName("responseMessage"),
+                                IdentifierName("Dispose")))),
+                        ThrowStatement()
+                    ))),
+                null);
         }
 
         protected virtual StatementSyntax GenerateAuthenticatorVariable() =>

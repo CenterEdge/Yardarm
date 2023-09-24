@@ -15,8 +15,11 @@ namespace Yardarm
 
         public YardarmGenerationResult(GenerationContext context, IList<YardarmCompilationResult> compilationResults)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            CompilationResults = compilationResults ?? throw new ArgumentNullException(nameof(compilationResults));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(compilationResults);
+
+            Context = context;
+            CompilationResults = compilationResults;
         }
 
         public IEnumerable<Diagnostic> GetAllDiagnostics() =>

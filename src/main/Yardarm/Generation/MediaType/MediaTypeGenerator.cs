@@ -17,9 +17,13 @@ namespace Yardarm.Generation.MediaType
         public MediaTypeGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiMediaType> mediaTypeGeneratorRegistry,
             ISerializerSelector serializerSelector)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _mediaTypeGeneratorRegistry = mediaTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(mediaTypeGeneratorRegistry));
-            _serializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(mediaTypeGeneratorRegistry);
+            ArgumentNullException.ThrowIfNull(serializerSelector);
+
+            _document = document;
+            _mediaTypeGeneratorRegistry = mediaTypeGeneratorRegistry;
+            _serializerSelector = serializerSelector;
         }
 
         public IEnumerable<SyntaxTree> Generate()

@@ -14,10 +14,13 @@ namespace Yardarm.Generation.Response
             IResponsesNamespace responsesNamespace,
             ISerializationNamespace serializationNamespace)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _responsesNamespace = responsesNamespace ??
-                                  throw new ArgumentNullException(nameof(responsesNamespace));
-            _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+
+            _context = context;
+            _responsesNamespace = responsesNamespace;
+            _serializationNamespace = serializationNamespace;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiUnknownResponse> element, ITypeGenerator? parent) =>

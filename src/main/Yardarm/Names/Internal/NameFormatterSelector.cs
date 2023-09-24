@@ -10,10 +10,7 @@ namespace Yardarm.Names.Internal
 
         public NameFormatterSelector(INameConverterRegistry nameConverterRegistry)
         {
-            if (nameConverterRegistry == null)
-            {
-                throw new ArgumentNullException(nameof(nameConverterRegistry));
-            }
+            ArgumentNullException.ThrowIfNull(nameConverterRegistry);
 
             _default = new PascalCaseNameFormatter(nameConverterRegistry);
             _interfacePrefix = new PascalCaseNameFormatter(nameConverterRegistry, "I", "");

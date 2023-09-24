@@ -15,9 +15,13 @@ namespace Yardarm.SystemTextJson.Internal
         public DiscriminatorConverterTypeGeneratorFactory(GenerationContext context, IJsonSerializationNamespace jsonSerializationNamespace,
             IRootNamespace rootNamespace)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _jsonSerializationNamespace = jsonSerializationNamespace ?? throw new ArgumentNullException(nameof(jsonSerializationNamespace));
-            _rootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(jsonSerializationNamespace);
+            ArgumentNullException.ThrowIfNull(rootNamespace);
+
+            _context = context;
+            _jsonSerializationNamespace = jsonSerializationNamespace;
+            _rootNamespace = rootNamespace;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>

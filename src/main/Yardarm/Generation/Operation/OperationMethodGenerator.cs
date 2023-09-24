@@ -29,9 +29,13 @@ namespace Yardarm.Generation.Operation
 
         public OperationMethodGenerator(GenerationContext context, IRequestsNamespace requestsNamespace, IResponsesNamespace responsesNamespace)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
-            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(requestsNamespace);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+
+            Context = context;
+            RequestsNamespace = requestsNamespace;
+            ResponsesNamespace = responsesNamespace;
         }
 
         public BlockSyntax Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>

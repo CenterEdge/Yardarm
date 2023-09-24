@@ -10,12 +10,13 @@ namespace Yardarm.Serialization
 
         public SerializerMediaType(string mediaType, double quality)
         {
+            ArgumentNullException.ThrowIfNull(mediaType);
             if (quality < 0 || quality > 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(quality), $"{nameof(quality)} must be between 0 and 1, inclusive.");
             }
 
-            MediaType = mediaType ?? throw new ArgumentNullException(nameof(mediaType));
+            MediaType = mediaType;
             Quality = quality;
         }
 

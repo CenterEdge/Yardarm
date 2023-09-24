@@ -16,7 +16,9 @@ namespace Yardarm.SystemTextJson
 
         public JsonOptionalPropertyEnricher(IOpenApiElementRegistry elementRegistry)
         {
-            _elementRegistry = elementRegistry ?? throw new ArgumentNullException(nameof(elementRegistry));
+            ArgumentNullException.ThrowIfNull(elementRegistry);
+
+            _elementRegistry = elementRegistry;
         }
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)

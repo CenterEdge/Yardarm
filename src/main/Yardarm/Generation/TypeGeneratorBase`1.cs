@@ -17,7 +17,9 @@ namespace Yardarm.Generation
         protected TypeGeneratorBase(ILocatedOpenApiElement<T> element, GenerationContext context, ITypeGenerator? parent)
             : base(context, parent)
         {
-            Element = element ?? throw new ArgumentNullException(nameof(element));
+            ArgumentNullException.ThrowIfNull(element);
+
+            Element = element;
         }
 
         public override CompilationUnitSyntax GenerateCompilationUnit(MemberDeclarationSyntax[] members) =>

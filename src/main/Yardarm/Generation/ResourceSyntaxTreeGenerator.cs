@@ -23,8 +23,11 @@ namespace Yardarm.Generation
 
         protected ResourceSyntaxTreeGenerator(GenerationContext generationContext, IRootNamespace rootNamespace)
         {
-            GenerationContext = generationContext ?? throw new ArgumentNullException(nameof(generationContext));
-            RootNamespace = rootNamespace ?? throw new ArgumentNullException(nameof(rootNamespace));
+            ArgumentNullException.ThrowIfNull(generationContext);
+            ArgumentNullException.ThrowIfNull(rootNamespace);
+
+            GenerationContext = generationContext;
+            RootNamespace = rootNamespace;
         }
 
         public virtual IEnumerable<SyntaxTree> Generate()

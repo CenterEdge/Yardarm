@@ -14,8 +14,11 @@ namespace Yardarm.Generation.Authentication
 
         public SecuritySchemeGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiSecurityScheme> securitySchemeGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _securitySchemeGeneratorRegistry = securitySchemeGeneratorRegistry ?? throw new ArgumentNullException(nameof(securitySchemeGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(securitySchemeGeneratorRegistry);
+
+            _document = document;
+            _securitySchemeGeneratorRegistry = securitySchemeGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate()

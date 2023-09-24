@@ -24,9 +24,13 @@ namespace Yardarm.Enrichment.Responses
         public ResponseTypeCastExtensionEnricher(GenerationContext context, IResponsesNamespace responsesNamespace,
             IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _responsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
-            _httpResponseCodeNameProvider = httpResponseCodeNameProvider ?? throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+            ArgumentNullException.ThrowIfNull(httpResponseCodeNameProvider);
+
+            _context = context;
+            _responsesNamespace = responsesNamespace;
+            _httpResponseCodeNameProvider = httpResponseCodeNameProvider;
         }
 
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,

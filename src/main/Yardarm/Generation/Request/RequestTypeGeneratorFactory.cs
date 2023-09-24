@@ -21,11 +21,17 @@ namespace Yardarm.Generation.Request
             IEnumerable<IRequestMemberGenerator> memberGenerators,
             IRequestsNamespace requestsNamespace, ISerializerSelector serializerSelector)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _mediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            _memberGenerators = memberGenerators?.ToArray() ?? throw new ArgumentNullException(nameof(memberGenerators));
-            _requestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
-            _serializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(memberGenerators);
+            ArgumentNullException.ThrowIfNull(requestsNamespace);
+            ArgumentNullException.ThrowIfNull(serializerSelector);
+
+            _context = context;
+            _mediaTypeSelector = mediaTypeSelector;
+            _memberGenerators = memberGenerators.ToArray();
+            _requestsNamespace = requestsNamespace;
+            _serializerSelector = serializerSelector;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiOperation> element, ITypeGenerator? parent) =>

@@ -22,9 +22,13 @@ namespace Yardarm.Generation.Response
         public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, GenerationContext context,
             ISerializationNamespace serializationNamespace)
         {
-            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+
+            MediaTypeSelector = mediaTypeSelector;
+            Context = context;
+            SerializationNamespace = serializationNamespace;
         }
 
         public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className)

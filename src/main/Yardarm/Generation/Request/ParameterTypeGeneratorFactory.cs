@@ -10,7 +10,9 @@ namespace Yardarm.Generation.Request
 
         public ParameterTypeGeneratorFactory(GenerationContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
+
+            _context = context;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiParameter> element, ITypeGenerator? parent) =>

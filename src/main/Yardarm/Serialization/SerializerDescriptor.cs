@@ -14,9 +14,13 @@ namespace Yardarm.Serialization
 
         public SerializerDescriptor(IImmutableSet<SerializerMediaType> mediaTypes, string nameSegment, TypeSyntax serializerType)
         {
-            MediaTypes = mediaTypes ?? throw new ArgumentNullException(nameof(mediaTypes));
-            NameSegment = nameSegment ?? throw new ArgumentNullException(nameof(nameSegment));
-            SerializerType = serializerType ?? throw new ArgumentNullException(nameof(serializerType));
+            ArgumentNullException.ThrowIfNull(mediaTypes);
+            ArgumentNullException.ThrowIfNull(nameSegment);
+            ArgumentNullException.ThrowIfNull(serializerType);
+
+            MediaTypes = mediaTypes;
+            NameSegment = nameSegment;
+            SerializerType = serializerType;
         }
     }
 }

@@ -29,15 +29,14 @@ namespace Yardarm.Generation.MediaType
             ISerializerSelector serializerSelector, IList<IRequestMemberGenerator> memberGenerators)
             : base(mediaTypeElement, context, parent)
         {
-            if (parent == null)
-            {
-                throw new ArgumentNullException(nameof(parent));
-            }
+            ArgumentNullException.ThrowIfNull(parent);
+            ArgumentNullException.ThrowIfNull(requestsNamespace);
+            ArgumentNullException.ThrowIfNull(serializerSelector);
+            ArgumentNullException.ThrowIfNull(memberGenerators);
 
-            RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
-            SerializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
-            MemberGenerators = memberGenerators ??
-                               throw new ArgumentNullException(nameof(memberGenerators));
+            RequestsNamespace = requestsNamespace;
+            SerializerSelector = serializerSelector;
+            MemberGenerators = memberGenerators;
 
             RequestTypeGenerator = FindParentRequestTypeGenerator(parent)
                                    ?? throw new InvalidOperationException(

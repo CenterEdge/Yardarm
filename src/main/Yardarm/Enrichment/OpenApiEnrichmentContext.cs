@@ -28,10 +28,15 @@ namespace Yardarm.Enrichment
         public OpenApiEnrichmentContext(CSharpCompilation compilation, SyntaxTree syntaxTree,
             ILocatedOpenApiElement<TElement> locatedElement, SyntaxNode originalNode)
         {
-            Compilation = compilation ?? throw new ArgumentNullException(nameof(compilation));
-            SyntaxTree = syntaxTree ?? throw new ArgumentNullException(nameof(syntaxTree));
-            LocatedElement = locatedElement ?? throw new ArgumentNullException(nameof(locatedElement));
-            OriginalNode = originalNode ?? throw new ArgumentNullException(nameof(originalNode));
+            ArgumentNullException.ThrowIfNull(compilation);
+            ArgumentNullException.ThrowIfNull(syntaxTree);
+            ArgumentNullException.ThrowIfNull(locatedElement);
+            ArgumentNullException.ThrowIfNull(originalNode);
+
+            Compilation = compilation;
+            SyntaxTree = syntaxTree;
+            LocatedElement = locatedElement;
+            OriginalNode = originalNode;
         }
     }
 }

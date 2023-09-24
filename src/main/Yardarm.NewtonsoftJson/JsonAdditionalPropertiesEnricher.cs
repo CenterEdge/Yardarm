@@ -50,7 +50,9 @@ namespace Yardarm.NewtonsoftJson
 
         public JsonAdditionalPropertiesEnricher(IJsonSerializationNamespace jsonSerializationNamespace)
         {
-            _jsonSerializationNamespace = jsonSerializationNamespace ?? throw new ArgumentNullException(nameof(jsonSerializationNamespace));
+            ArgumentNullException.ThrowIfNull(jsonSerializationNamespace);
+
+            _jsonSerializationNamespace = jsonSerializationNamespace;
         }
 
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,

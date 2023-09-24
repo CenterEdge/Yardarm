@@ -19,9 +19,13 @@ namespace Yardarm.Names
 
         public PascalCaseNameFormatter(INameConverterRegistry nameConverterRegistry, string prefix, string suffix)
         {
-            _nameConverterRegistry = nameConverterRegistry ?? throw new ArgumentNullException(nameof(nameConverterRegistry));
-            Prefix = prefix ?? throw new ArgumentNullException(nameof(prefix));
-            Suffix = suffix ?? throw new ArgumentNullException(nameof(suffix));
+            ArgumentNullException.ThrowIfNull(nameConverterRegistry);
+            ArgumentNullException.ThrowIfNull(prefix);
+            ArgumentNullException.ThrowIfNull(suffix);
+
+            _nameConverterRegistry = nameConverterRegistry;
+            Prefix = prefix;
+            Suffix = suffix;
         }
 
         [return: NotNullIfNotNull("name")]

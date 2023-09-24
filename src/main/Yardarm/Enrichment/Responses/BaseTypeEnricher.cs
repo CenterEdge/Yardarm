@@ -11,7 +11,9 @@ namespace Yardarm.Enrichment.Responses
 
         public BaseTypeEnricher(IResponseBaseTypeRegistry responseBaseTypeRegistry)
         {
-            _responseBaseTypeRegistry = responseBaseTypeRegistry ?? throw new ArgumentNullException(nameof(responseBaseTypeRegistry));
+            ArgumentNullException.ThrowIfNull(responseBaseTypeRegistry);
+
+            _responseBaseTypeRegistry = responseBaseTypeRegistry;
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,

@@ -15,10 +15,7 @@ namespace Yardarm.Names
         /// <returns>The name to use. May be the name with a number appended to prevent conflicts.</returns>
         public string RegisterName(string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentNullException.ThrowIfNull(name);
 
             if (!_names.TryGetValue(name, out int count))
             {

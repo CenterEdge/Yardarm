@@ -14,8 +14,11 @@ namespace Yardarm.Generation.Request
 
         public ParameterGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiParameter> parameterGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _parameterGeneratorRegistry = parameterGeneratorRegistry ?? throw new ArgumentNullException(nameof(parameterGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(parameterGeneratorRegistry);
+
+            _document = document;
+            _parameterGeneratorRegistry = parameterGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate()

@@ -15,9 +15,13 @@ namespace Yardarm.Generation.Authentication
         public SecuritySchemeTypeGeneratorFactory(GenerationContext context, IAuthenticationNamespace authenticationNamespace,
             ILogger<NoopSecuritySchemeTypeGenerator> logger)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _authenticationNamespace = authenticationNamespace ?? throw new ArgumentNullException(nameof(authenticationNamespace));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(authenticationNamespace);
+            ArgumentNullException.ThrowIfNull(logger);
+
+            _context = context;
+            _authenticationNamespace = authenticationNamespace;
+            _logger = logger;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSecurityScheme> element, ITypeGenerator? parent)

@@ -142,12 +142,22 @@ namespace Yardarm
         }
 
         public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
-            SerializerDescriptor descriptor) =>
-            services.AddSingleton(descriptor ?? throw new ArgumentNullException(nameof(descriptor)));
+            SerializerDescriptor descriptor)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(descriptor);
+
+            return services.AddSingleton(descriptor);
+        }
 
         public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
-            Func<IServiceProvider, SerializerDescriptor> descriptorFactory) =>
-            services.AddSingleton(descriptorFactory ?? throw new ArgumentNullException(nameof(descriptorFactory)));
+            Func<IServiceProvider, SerializerDescriptor> descriptorFactory)
+        {
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(descriptorFactory);
+
+            return services.AddSingleton(descriptorFactory);
+        }
 
         public static void TryAddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services)
             where TElement : IOpenApiElement

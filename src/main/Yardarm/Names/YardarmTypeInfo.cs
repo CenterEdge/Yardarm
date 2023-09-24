@@ -13,7 +13,9 @@ namespace Yardarm.Names
 
         public YardarmTypeInfo(TypeSyntax name, NameKind kind = NameKind.Class, bool isGenerated = true)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
+
+            Name = name;
             Kind = kind;
             IsGenerated = isGenerated;
         }

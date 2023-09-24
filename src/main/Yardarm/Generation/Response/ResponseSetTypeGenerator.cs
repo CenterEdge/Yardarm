@@ -21,7 +21,9 @@ namespace Yardarm.Generation.Response
             IResponsesNamespace responsesNamespace)
             : base(element, context, null)
         {
-            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+
+            ResponsesNamespace = responsesNamespace;
 
             Operation = element.Parent?.Element as OpenApiOperation ?? throw new ArgumentException("Parent must be an OpenApiOperation", nameof(element));
         }

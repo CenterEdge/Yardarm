@@ -36,8 +36,11 @@ namespace Yardarm.Spec
 
         protected LocatedOpenApiElement(IOpenApiElement element, string key, ILocatedOpenApiElement? parent)
         {
-            Element = element ?? throw new ArgumentNullException(nameof(element));
-            Key = key ?? throw new ArgumentNullException(nameof(key));
+            ArgumentNullException.ThrowIfNull(element);
+            ArgumentNullException.ThrowIfNull(key);
+
+            Element = element;
+            Key = key;
             Parent = parent;
         }
 

@@ -11,10 +11,7 @@ namespace Yardarm.Spec.Path
     {
         public static PathSegment[] Parse(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            ArgumentNullException.ThrowIfNull(path);
 
             return ParseInternal(path).ToArray();
         }

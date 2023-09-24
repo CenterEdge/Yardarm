@@ -20,7 +20,9 @@ namespace Yardarm.Enrichment.Authentication
 
         public AuthenticatorsSchemeEnricher(GenerationContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
+
+            _context = context;
         }
 
         public bool ShouldEnrich(string resourceName) =>

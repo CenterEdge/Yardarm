@@ -18,8 +18,11 @@ namespace Yardarm.Generation.Internal
         public AssemblyInfoGenerator(GenerationContext context,
             IEnumerable<IAssemblyInfoEnricher> enrichers)
         {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(enrichers);
+
             _context = context;
-            _enrichers = enrichers ?? throw new ArgumentNullException(nameof(enrichers));
+            _enrichers = enrichers;
         }
 
         public IEnumerable<SyntaxTree> Generate()

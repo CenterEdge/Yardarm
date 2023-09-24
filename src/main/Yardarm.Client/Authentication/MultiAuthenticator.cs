@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Authentication
 {
@@ -22,10 +23,7 @@ namespace RootNamespace.Authentication
 
         public MultiAuthenticator(IEnumerable<IAuthenticator> authenticators)
         {
-            if (authenticators == null)
-            {
-                throw new ArgumentNullException(nameof(authenticators));
-            }
+            ThrowHelper.ThrowIfNull(authenticators);
 
             Authenticators = new ReadOnlyCollection<IAuthenticator>(authenticators.ToArray());
         }

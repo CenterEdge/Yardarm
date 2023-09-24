@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
@@ -24,7 +25,12 @@ namespace RootNamespace.Serialization
                 Interlocked.CompareExchange(ref s_instance, CreateDefaultRegistry(), null);
                 return s_instance;
             }
-            set => s_instance = value ?? throw new ArgumentNullException(nameof(value));
+            set
+            {
+                ThrowHelper.ThrowIfNull(value);
+
+                s_instance = value;
+            }
         }
 
         private readonly Dictionary<string, ITypeSerializer> _mediaTypeRegistry = new();
@@ -32,17 +38,21 @@ namespace RootNamespace.Serialization
 
         public ITypeSerializer Get(string mediaType)
         {
-            if (mediaType is null)
-            {
-                throw new ArgumentNullException(nameof(mediaType));
-            }
+            ThrowHelper.ThrowIfNull(mediaType);
 
             return _mediaTypeRegistry[mediaType];
         }
 
-        public ITypeSerializer Get(Type schemaType) => TryGet(schemaType, out ITypeSerializer? serializer)
-            ? serializer
-            : throw new KeyNotFoundException();
+        public ITypeSerializer Get(Type schemaType)
+        {
+            if (TryGet(schemaType, out ITypeSerializer? serializer))
+            {
+                return serializer;
+            }
+
+            ThrowHelper.ThrowKeyNotFoundException();
+            return null!;
+        }
 
         public bool TryGet(string mediaType, [MaybeNullWhen(false)] out ITypeSerializer typeSerializer) =>
             _mediaTypeRegistry.TryGetValue(mediaType, out typeSerializer);
@@ -70,14 +80,8 @@ namespace RootNamespace.Serialization
 
         public ITypeSerializerRegistry Add(string mediaType, ITypeSerializer serializer)
         {
-            if (mediaType == null)
-            {
-                throw new ArgumentNullException(nameof(mediaType));
-            }
-            if (serializer == null)
-            {
-                throw new ArgumentNullException(nameof(serializer));
-            }
+            ThrowHelper.ThrowIfNull(mediaType);
+            ThrowHelper.ThrowIfNull(serializer);
 
             _mediaTypeRegistry.Add(mediaType, serializer);
 
@@ -86,14 +90,8 @@ namespace RootNamespace.Serialization
 
         public ITypeSerializerRegistry Add(Type schemaType, ITypeSerializer serializer)
         {
-            if (schemaType == null)
-            {
-                throw new ArgumentNullException(nameof(schemaType));
-            }
-            if (serializer == null)
-            {
-                throw new ArgumentNullException(nameof(serializer));
-            }
+            ThrowHelper.ThrowIfNull(schemaType);
+            ThrowHelper.ThrowIfNull(serializer);
 
             _schemaTypeRegistry.Add(schemaType, serializer);
 

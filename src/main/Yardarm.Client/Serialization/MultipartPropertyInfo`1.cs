@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization
 {
@@ -21,24 +22,9 @@ namespace RootNamespace.Serialization
         protected MultipartPropertyInfo(Func<T, MultipartFieldDetails?> detailsGetter,
             string propertyName, params string[] mediaTypes)
         {
-#if NET6_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(detailsGetter);
-            ArgumentNullException.ThrowIfNull(propertyName);
-            ArgumentNullException.ThrowIfNull(mediaTypes);
-#else
-            if (detailsGetter is null)
-            {
-                throw new ArgumentNullException(nameof(detailsGetter));
-            }
-            if (propertyName is null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-            if (mediaTypes is null)
-            {
-                throw new ArgumentNullException(nameof(mediaTypes));
-            }
-#endif
+            ThrowHelper.ThrowIfNull(detailsGetter);
+            ThrowHelper.ThrowIfNull(propertyName);
+            ThrowHelper.ThrowIfNull(mediaTypes);
 
             _detailsGetter = detailsGetter;
             PropertyName = propertyName;

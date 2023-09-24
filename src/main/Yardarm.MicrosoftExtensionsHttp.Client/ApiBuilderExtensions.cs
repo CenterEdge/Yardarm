@@ -77,7 +77,7 @@ namespace RootNamespace
             where TClient : class, IApi
             where TImplementation : class, TClient
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(builder);
 
             if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
             {
@@ -114,8 +114,8 @@ namespace RootNamespace
             Action<IHttpClientBuilder>? configureClient = null)
             where TClient : class
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(name, nameof(name));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(name);
 
             var clientBuilder = builder.Services.AddHttpClient<TClient>(name);
 
@@ -143,7 +143,7 @@ namespace RootNamespace
             where TClient : class, IApi
             where TImplementation : class, TClient
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(builder);
 
             if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
             {
@@ -175,8 +175,8 @@ namespace RootNamespace
         public static IApiBuilder ConfigureAuthenticators(this IApiBuilder builder,
             Action<Authentication.Authenticators> configureAuthenticators)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureAuthenticators, nameof(configureAuthenticators));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureAuthenticators);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
                 options.AuthenticatorActions.Add(configureAuthenticators));
@@ -193,8 +193,8 @@ namespace RootNamespace
         public static IApiBuilder ConfigureAuthenticators(this IApiBuilder builder,
             Action<IServiceProvider, Authentication.Authenticators> configureAuthenticators)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureAuthenticators, nameof(configureAuthenticators));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureAuthenticators);
 
             builder.Services.AddTransient<IConfigureOptions<ApiFactoryOptions>>(services =>
             {
@@ -225,8 +225,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder ConfigureHttpClient(this IApiBuilder builder, Action<HttpClient> configureClient)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureClient, nameof(configureClient));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureClient);
 
             builder.Services.Configure<ApiFactoryOptions>(options => options.HttpClientActions.Add(configureClient));
 
@@ -247,8 +247,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder ConfigureHttpClient(this IApiBuilder builder, Action<IServiceProvider, HttpClient> configureClient)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureClient, nameof(configureClient));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureClient);
 
             builder.Services.AddTransient<IConfigureOptions<ApiFactoryOptions>>(services =>
             {
@@ -279,8 +279,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder ConfigurePrimaryHttpMessageHandler(this IApiBuilder builder, Func<HttpMessageHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -304,8 +304,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder ConfigurePrimaryHttpMessageHandler(this IApiBuilder builder, Func<IServiceProvider, HttpMessageHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -330,7 +330,7 @@ namespace RootNamespace
         public static IApiBuilder ConfigurePrimaryHttpMessageHandler<THandler>(this IApiBuilder builder)
             where THandler : HttpMessageHandler
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(builder);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -358,8 +358,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder AddHttpMessageHandler(this IApiBuilder builder, Func<DelegatingHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -383,8 +383,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder AddHttpMessageHandler(this IApiBuilder builder, Func<IServiceProvider, DelegatingHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureHandler, nameof(configureHandler));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -409,7 +409,7 @@ namespace RootNamespace
         public static IApiBuilder AddHttpMessageHandler<THandler>(this IApiBuilder builder)
             where THandler : DelegatingHandler
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(builder);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -437,8 +437,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder ConfigureBaseAddress(this IApiBuilder builder, Uri uri)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(uri, nameof(uri));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(uri);
 
             return builder.ConfigureHttpClient(client => client.BaseAddress = uri);
         }
@@ -457,8 +457,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder ConfigureBaseAddress(this IApiBuilder builder, Func<IServiceProvider, Uri> configureUri)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(configureUri, nameof(configureUri));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(configureUri);
 
             return builder.ConfigureHttpClient((serviceProvider, client) => client.BaseAddress = configureUri(serviceProvider));
         }
@@ -483,8 +483,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder RedactLoggedHeaders(this IApiBuilder builder, Func<string, bool> shouldRedactHeaderValue)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(shouldRedactHeaderValue, nameof(shouldRedactHeaderValue));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(shouldRedactHeaderValue);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -507,8 +507,8 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder RedactLoggedHeaders(this IApiBuilder builder, IEnumerable<string> redactedLoggedHeaderNames)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
-            ThrowHelper.ThrowIfNull(redactedLoggedHeaderNames, nameof(redactedLoggedHeaderNames));
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(redactedLoggedHeaderNames);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -538,7 +538,7 @@ namespace RootNamespace
         /// </remarks>
         public static IApiBuilder SetHandlerLifetime(this IApiBuilder builder, TimeSpan handlerLifetime)
         {
-            ThrowHelper.ThrowIfNull(builder, nameof(builder));
+            ThrowHelper.ThrowIfNull(builder);
 
             if (handlerLifetime != Timeout.InfiniteTimeSpan && handlerLifetime < s_minimumHandlerLifetime)
             {

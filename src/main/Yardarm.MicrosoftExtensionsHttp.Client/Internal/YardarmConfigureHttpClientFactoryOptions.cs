@@ -13,7 +13,7 @@ namespace RootNamespace.Internal
         public YardarmConfigureHttpClientFactoryOptions(string name, IOptions<ApiFactoryOptions> apiFactoryOptions)
         {
             ThrowHelper.ThrowIfNull(name, nameof(name));
-            ThrowHelper.ThrowIfNull(apiFactoryOptions, nameof(apiFactoryOptions));
+            ThrowHelper.ThrowIfNull(apiFactoryOptions);
 
             Name = name;
             _apiFactoryOptions = apiFactoryOptions;

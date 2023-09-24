@@ -1,4 +1,5 @@
 ﻿using System;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Authentication
 {
@@ -10,12 +11,19 @@ namespace RootNamespace.Authentication
         public Type[] SecuritySchemes
         {
             get => _securitySchemes;
-            set => _securitySchemes = value ?? throw new ArgumentNullException(nameof(value));
+            set
+            {
+                ThrowHelper.ThrowIfNull(value);
+
+                _securitySchemes = value;
+            }
         }
 
         public SecuritySchemeSetAttribute(params Type[] types)
         {
-            _securitySchemes = types ?? throw new ArgumentNullException(nameof(types));
+            ThrowHelper.ThrowIfNull(types);
+
+            _securitySchemes = types;
         }
     }
 }

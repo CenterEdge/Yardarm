@@ -79,14 +79,5 @@ namespace Yardarm.Helpers
             value is not null
                 ? LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
                 : LiteralExpression(SyntaxKind.NullLiteralExpression);
-
-        public static ExpressionSyntax ParameterWithNullCheck(string parameterName) =>
-            BinaryExpression(SyntaxKind.CoalesceExpression,
-                IdentifierName(parameterName),
-                ThrowExpression(ObjectCreationExpression(
-                    QualifiedName(IdentifierName("System"), IdentifierName("ArgumentNullException")),
-                    ArgumentList(SingletonSeparatedList(Argument(
-                        StringLiteral(parameterName)))),
-                    null)));
     }
 }

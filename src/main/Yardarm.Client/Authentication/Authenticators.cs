@@ -1,6 +1,7 @@
 ﻿using System;
 using RootNamespace.Authentication.Internal;
 using RootNamespace.Requests;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Authentication
 {
@@ -18,10 +19,7 @@ namespace RootNamespace.Authentication
 
         public IAuthenticator? SelectAuthenticator(IOperationRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
+            ThrowHelper.ThrowIfNull(request);
 
             return request.Authenticator ?? _securitySchemeSetRegistry.SelectAuthenticator(request.GetType());
         }

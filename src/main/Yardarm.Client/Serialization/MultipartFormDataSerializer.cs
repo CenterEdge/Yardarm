@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization
 {
@@ -12,7 +13,9 @@ namespace RootNamespace.Serialization
 
         public MultipartFormDataSerializer(ITypeSerializerRegistry typeSerializerRegistry)
         {
-            _typeSerializerRegistry = typeSerializerRegistry ?? throw new ArgumentNullException(nameof(typeSerializerRegistry));
+            ThrowHelper.ThrowIfNull(typeSerializerRegistry);
+
+            _typeSerializerRegistry = typeSerializerRegistry;
         }
 
         public HttpContent Serialize<T>(T value, string mediaType, MultipartFormDataSerializationData<T> serializationData)

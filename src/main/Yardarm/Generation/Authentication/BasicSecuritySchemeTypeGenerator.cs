@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -42,33 +43,57 @@ namespace Yardarm.Generation.Authentication
                         VariableDeclarator(Identifier(CacheFieldName))))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword));
 
-            yield return PropertyDeclaration(PredefinedType(Token(SyntaxKind.StringKeyword)),
-                    UsernamePropertyName)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(UsernameFieldName)))
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration, Block(
-                        ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName(UsernameFieldName),
-                            MethodHelpers.ArgumentOrThrowIfNull("value"))),
-                        ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName(CacheFieldName), LiteralExpression(SyntaxKind.NullLiteralExpression))))));
+            yield return PropertyDeclaration(
+                default,
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                PredefinedType(Token(SyntaxKind.StringKeyword)),
+                null,
+                Identifier(UsernamePropertyName),
+                AccessorList(List(new[]
+                {
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
+                        default,
+                        default,
+                        Token(SyntaxKind.GetKeyword),
+                        ArrowExpressionClause(IdentifierName(UsernameFieldName)),
+                        Token(SyntaxKind.SemicolonToken)),
+                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
+                        default,
+                        default,
+                        Block(
+                            MethodHelpers.ThrowIfArgumentNull("value"),
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName(UsernameFieldName),
+                                IdentifierName("value"))),
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName(CacheFieldName), LiteralExpression(SyntaxKind.NullLiteralExpression)))))
+                })));
 
-            yield return PropertyDeclaration(PredefinedType(Token(SyntaxKind.StringKeyword)),
-                    PasswordPropertyName)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(PasswordFieldName)))
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration, Block(
-                        ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName(PasswordFieldName),
-                            MethodHelpers.ArgumentOrThrowIfNull("value"))),
-                        ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                            IdentifierName(CacheFieldName), LiteralExpression(SyntaxKind.NullLiteralExpression))))));
+            yield return PropertyDeclaration(
+                default,
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                PredefinedType(Token(SyntaxKind.StringKeyword)),
+                null,
+                Identifier(PasswordPropertyName),
+                AccessorList(List(new[]
+                {
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
+                        default,
+                        default,
+                        Token(SyntaxKind.GetKeyword),
+                        ArrowExpressionClause(IdentifierName(PasswordFieldName)),
+                        Token(SyntaxKind.SemicolonToken)),
+                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
+                        default,
+                        default,
+                        Block(
+                            MethodHelpers.ThrowIfArgumentNull("value"),
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName(PasswordFieldName),
+                                IdentifierName("value"))),
+                            ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName(CacheFieldName), LiteralExpression(SyntaxKind.NullLiteralExpression)))))
+                })));
         }
 
         protected override BlockSyntax GenerateApplyAsyncBody() => Block(

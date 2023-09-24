@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization
 {
@@ -18,14 +19,7 @@ namespace RootNamespace.Serialization
             params string[] mediaTypes)
             : base(detailsGetter, propertyName, mediaTypes)
         {
-#if NET6_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(propertyGetter);
-#else
-            if (propertyGetter is null)
-            {
-                throw new ArgumentNullException(nameof(propertyGetter));
-            }
-#endif
+            ThrowHelper.ThrowIfNull(propertyGetter);
 
             _propertyGetter = propertyGetter;
         }

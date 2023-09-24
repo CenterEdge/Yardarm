@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization
 {
@@ -20,14 +21,7 @@ namespace RootNamespace.Serialization
 
         public MultipartFormDataSerializationData(params MultipartPropertyInfo<T>[] properties)
         {
-#if NET6_0_OR_GREATER
-            ArgumentNullException.ThrowIfNull(properties);
-#else
-            if (properties is null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-#endif
+            ThrowHelper.ThrowIfNull(properties);
 
             _properties = properties.ToDictionary(static p => p.PropertyName);
         }

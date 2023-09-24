@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -93,25 +94,29 @@ namespace Yardarm.Generation.Tag
 
         protected virtual IEnumerable<ConstructorDeclarationSyntax> GenerateConstructors(string className)
         {
-            yield return ConstructorDeclaration(className)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddParameterListParameters(
-                    Parameter(Identifier("httpClient"))
-                        .WithType(WellKnownTypes.System.Net.Http.HttpClient.Name),
-                    Parameter(Identifier("typeSerializerRegistry"))
-                        .WithType(_serializationNamespace.ITypeSerializerRegistry),
-                    Parameter(Identifier("authenticators"))
-                        .WithType(_authenticationNamespace.Authenticators))
-                .WithBody(Block(
+            yield return ConstructorDeclaration(
+                default,
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier(className),
+                ParameterList(SeparatedList(new[] {
+                    Parameter(default, default, WellKnownTypes.System.Net.Http.HttpClient.Name, Identifier("httpClient"), null),
+                    Parameter(default, default, _serializationNamespace.ITypeSerializerRegistry, Identifier("typeSerializerRegistry"), null),
+                    Parameter(default ,default, _authenticationNamespace.Authenticators, Identifier("authenticators"), null)
+                })),
+                default,
+                Block(
+                    MethodHelpers.ThrowIfArgumentNull("httpClient"),
+                    MethodHelpers.ThrowIfArgumentNull("typeSerializerRegistry"),
+                    MethodHelpers.ThrowIfArgumentNull("authenticators"),
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(HttpClientFieldName),
-                        MethodHelpers.ArgumentOrThrowIfNull("httpClient"))),
+                        IdentifierName("httpClient"))),
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(TypeSerializerRegistryFieldName),
-                        MethodHelpers.ArgumentOrThrowIfNull("typeSerializerRegistry"))),
+                        IdentifierName("typeSerializerRegistry"))),
                     ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName(AuthenticatorsFieldName),
-                        MethodHelpers.ArgumentOrThrowIfNull("authenticators")))));
+                        IdentifierName("authenticators")))));
         }
 
         private string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(Tag.Name);

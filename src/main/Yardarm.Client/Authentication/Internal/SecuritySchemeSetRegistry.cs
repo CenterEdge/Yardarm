@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Yardarm.Client.Internal;
 
 namespace RootNamespace.Authentication.Internal
 {
@@ -24,15 +25,14 @@ namespace RootNamespace.Authentication.Internal
 
         public SecuritySchemeSetRegistry(T authenticators)
         {
-            _authenticators = authenticators ?? throw new ArgumentNullException(nameof(authenticators));
+            ThrowHelper.ThrowIfNull(authenticators);
+
+            _authenticators = authenticators;
         }
 
         public IAuthenticator? SelectAuthenticator(Type operationType)
         {
-            if (operationType == null)
-            {
-                throw new ArgumentNullException(nameof(operationType));
-            }
+            ThrowHelper.ThrowIfNull(operationType);
 
             return SelectAuthenticator(_cache.GetOrAdd(operationType, GetSecuritySchemeSets));
         }
@@ -60,10 +60,7 @@ namespace RootNamespace.Authentication.Internal
 
         private IAuthenticator? SelectAuthenticator(PropertyInfo[][] sets)
         {
-            if (sets == null)
-            {
-                throw new ArgumentNullException(nameof(sets));
-            }
+            ThrowHelper.ThrowIfNull(sets);
 
             foreach (PropertyInfo[] set in sets)
             {

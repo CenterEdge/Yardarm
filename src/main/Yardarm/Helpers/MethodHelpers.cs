@@ -1,5 +1,7 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using System;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NuGet.Frameworks;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Helpers
@@ -7,13 +9,6 @@ namespace Yardarm.Helpers
     public static class MethodHelpers
     {
         public const string CancellationTokenParameterName = "cancellationToken";
-
-        public static ExpressionSyntax ArgumentOrThrowIfNull(string parameterName) =>
-            BinaryExpression(SyntaxKind.CoalesceExpression,
-                IdentifierName(parameterName),
-                ThrowExpression(
-                    ObjectCreationExpression(WellKnownTypes.System.ArgumentNullException.Name)
-                        .AddArgumentListArguments(Argument(SyntaxHelpers.StringLiteral(parameterName)))));
 
         public static ParameterSyntax DefaultedCancellationTokenParameter() =>
             Parameter(Identifier(CancellationTokenParameterName))
@@ -31,9 +26,9 @@ namespace Yardarm.Helpers
 
         public static StatementSyntax IfNotNull(ExpressionSyntax expressionToTest, BlockSyntax trueBlock) =>
             IfStatement(
-                BinaryExpression(SyntaxKind.NotEqualsExpression,
+                IsPatternExpression(
                     expressionToTest,
-                    LiteralExpression(SyntaxKind.NullLiteralExpression)),
+                    UnaryPattern(Token(SyntaxKind.NotKeyword), ConstantPattern(LiteralExpression(SyntaxKind.NullLiteralExpression)))),
                 trueBlock);
 
         public static StatementSyntax LocalVariableDeclarationWithInitializer(string variableName,
@@ -41,11 +36,11 @@ namespace Yardarm.Helpers
             LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))
                 .AddVariables(VariableDeclarator(variableName).WithInitializer(EqualsValueClause(initializer))));
 
-        public static StatementSyntax ThrowIfArgumentNull(string parameterName) =>
-            IfNull(
-                IdentifierName(parameterName),
-                Block(ThrowStatement(
-                    ObjectCreationExpression(WellKnownTypes.System.ArgumentNullException.Name)
-                        .AddArgumentListArguments(Argument(SyntaxHelpers.StringLiteral(parameterName))))));
+        public static StatementSyntax ThrowIfArgumentNull(string parameterName, NuGetFramework? targetFramework = null)
+        {
+            return ExpressionStatement(InvocationExpression(
+                WellKnownTypes.Yardarm.Client.Internal.ThrowHelper.ThrowIfNull,
+                ArgumentList(SingletonSeparatedList(Argument(IdentifierName(parameterName))))));
+        }
     }
 }

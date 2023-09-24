@@ -13,7 +13,7 @@ namespace RootNamespace.Serialization
 
         public HeaderSerializer(LiteralSerializer literalSerializer)
         {
-            ThrowHelper.ThrowIfNull(literalSerializer, nameof(literalSerializer));
+            ThrowHelper.ThrowIfNull(literalSerializer);
 
             _literalSerializer = literalSerializer;
         }
@@ -65,7 +65,7 @@ namespace RootNamespace.Serialization
 
         public List<T> DeserializeList<T>(IEnumerable<string> values, string? format = null)
         {
-            ThrowHelper.ThrowIfNull(values, nameof(values));
+            ThrowHelper.ThrowIfNull(values);
 
             return _literalSerializer.DeserializeList<T>(values, format);
         }

@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using RootNamespace.Serialization;
+using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Responses
@@ -37,8 +38,11 @@ namespace RootNamespace.Responses
 
         protected OperationResponse(HttpResponseMessage message, ITypeSerializerRegistry typeSerializerRegistry)
         {
-            Message = message ?? throw new ArgumentNullException(nameof(message));
-            TypeSerializerRegistry = typeSerializerRegistry ?? throw new ArgumentNullException(nameof(typeSerializerRegistry));
+            ThrowHelper.ThrowIfNull(message);
+            ThrowHelper.ThrowIfNull(typeSerializerRegistry);
+
+            Message = message;
+            TypeSerializerRegistry = typeSerializerRegistry;
 
             // ReSharper disable once VirtualMemberCallInConstructor
             ParseHeaders(message.Headers);

@@ -15,9 +15,13 @@ namespace Yardarm.Enrichment.Compilation
         public ResourceFileEnrichmentContext(CSharpCompilation compilation, SyntaxTree syntaxTree,
             string resourceName)
         {
-            Compilation = compilation ?? throw new ArgumentNullException(nameof(compilation));
-            SyntaxTree = syntaxTree ?? throw new ArgumentNullException(nameof(syntaxTree));
-            ResourceName = resourceName ?? throw new ArgumentNullException(nameof(resourceName));
+            ArgumentNullException.ThrowIfNull(compilation);
+            ArgumentNullException.ThrowIfNull(syntaxTree);
+            ArgumentNullException.ThrowIfNull(resourceName);
+
+            Compilation = compilation;
+            SyntaxTree = syntaxTree;
+            ResourceName = resourceName;
         }
     }
 }

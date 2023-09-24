@@ -1,0 +1,1181 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v2/agency/addUpdate": {
+      "post": {
+        "operationId": "AgencyController_addUpdateAgency",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Agency" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["agency"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/siteEnterprise/addUpdate": {
+      "post": {
+        "operationId": "SiteEnterpriseController_addUpdateAgency",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SiteEnterprise" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["siteEnterprise"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/siteGroup/addUpdate": {
+      "post": {
+        "operationId": "SiteGroupController_addUpdateAgency",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SiteGroup" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["siteGroup"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/site/addUpdate": {
+      "post": {
+        "operationId": "SiteController_addUpdateSite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddUpdateSiteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["site"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/site/{site_id}/invoice/addUpdate": {
+      "post": {
+        "operationId": "SiteController_addUpdateInvoice",
+        "parameters": [
+          {
+            "name": "site_id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddUpdateInvoiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateInvoiceResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["site"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/site/{site_id}/customer/addUpdate": {
+      "post": {
+        "operationId": "SiteController_addUpdateCustomer",
+        "parameters": [
+          {
+            "name": "site_id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Customer" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["site"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/site/{site_id}/payment/addUpdate": {
+      "post": {
+        "operationId": "SiteController_addUpdatePayment",
+        "parameters": [
+          {
+            "name": "site_id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Payment" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["site"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/site/{site_id}/product/addUpdate": {
+      "post": {
+        "operationId": "SiteController_addUpdateProduct",
+        "parameters": [
+          {
+            "name": "site_id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Product" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AddUpdateResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["site"],
+        "security": [{ "api_key": [] }]
+      }
+    },
+    "/api/v2/site/{site_id}/invoice/{external_id}": {
+      "get": {
+        "operationId": "SiteController_getInvoice",
+        "parameters": [
+          {
+            "name": "site_id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "external_id",
+            "required": true,
+            "in": "path",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GetInvoiceResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Returned on invalid requests",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "429": {
+            "description": "Returned when requests are throttled",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Returned when an error occurs on the Hyfin side",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        },
+        "tags": ["site"],
+        "security": [{ "api_key": [] }]
+      }
+    }
+  },
+  "info": {
+    "title": "TextPay",
+    "description": "TextPay API",
+    "version": "2.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "api_key": { "type": "apiKey", "in": "header", "name": "x-access-token" }
+    },
+    "schemas": {
+      "Agency": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the agency."
+          },
+          "active": {
+            "type": "boolean",
+            "default": true,
+            "description": "This flag represents whether the agency record is active and available to be used or not."
+          }
+        },
+        "required": ["external_id", "name"]
+      },
+      "AddUpdateInvoiceResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "action": { "type": "string", "enum": ["added", "updated"] },
+          "errors": { "type": "array", "items": { "type": "string" } },
+          "link": { "type": "string" },
+          "id": { "type": "string" }
+        },
+        "required": ["success"]
+      },
+      "AddUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "action": { "type": "string", "enum": ["added", "updated"] },
+          "errors": { "type": "array", "items": { "type": "string" } },
+          "id": { "type": "string" }
+        },
+        "required": ["success"]
+      },
+      "SiteEnterprise": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the agency."
+          },
+          "active": {
+            "type": "boolean",
+            "default": true,
+            "description": "This flag represents whether the agency record is active and available to be used or not."
+          }
+        },
+        "required": ["external_id", "name"]
+      },
+      "SiteGroup": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the agency."
+          },
+          "active": {
+            "type": "boolean",
+            "default": true,
+            "description": "This flag represents whether the agency record is active and available to be used or not."
+          }
+        },
+        "required": ["external_id", "name"]
+      },
+      "InvoiceOptions": {
+        "type": "object",
+        "properties": {
+          "tipping_enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable or disables the popup window that requests gratuity"
+          },
+          "cash_discount_disabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set to true, cash discount will be disabled for the invoice."
+          }
+        },  
+        "required": ["tipping_enabled"]
+      },
+      "ExternalId": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          }
+        },
+        "required": ["external_id"]
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "address_line1": {
+            "type": "string",
+            "description": "The business address for this location (line 1)."
+          },
+          "address_line2": {
+            "type": "string",
+            "description": "The business address for this location (line 2)."
+          },
+          "city": {
+            "type": "string",
+            "description": "The city of the business location."
+          },
+          "state_code": {
+            "type": "string",
+            "description": "2-digit state abbreviation code of the business location."
+          },
+          "zip_code": {
+            "type": "number",
+            "description": "5-digit zip code of the the business location."
+          },
+          "phone": {
+            "type": "string",
+            "description": "10-digit main phone number of the business."
+          },
+          "website": {
+            "type": "string",
+            "description": "The website of the business."
+          }
+        },
+        "required": ["address_line1", "city", "state_code", "zip_code", "phone"]
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "description": "First name of the primary contact."
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Last name of the primary contact."
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address of the primary contact."
+          },
+          "mobile_phone": {
+            "type": "string",
+            "description": "10-digit mobile phone number of the primary contact."
+          }
+        },
+        "required": ["first_name", "last_name", "email"]
+      },
+      "Gateway": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The gateway used to access the credit card processor.",
+            "enum": [
+              "heartland_secure_submit",
+              "first_data_card_connect",
+              "tsys_multi_pass",
+              "worldpay_express",
+              "nmi",
+              "datacap",
+              "auth_net",
+              "spreedly"
+            ]
+          },
+          "gateway_fields": {
+            "type": "object",
+            "description": "The specific fields required to access the gateway for this site",
+            "additionalProperties": true
+          }
+        },
+        "required": ["code", "gateway_fields"]
+      },
+      "Branding": {
+        "type": "object",
+        "properties": {
+          "logo_url": {
+            "type": "string",
+            "description": "The URL pointing to the company logo. Must be accessible over the internet."
+          },
+          "logo_base64": {
+            "type": "string",
+            "description": "The image data of your logo encoded in Base64"
+          },
+          "color": {
+            "type": "string",
+            "description": "The business primary color in HEX (RGB) format (Ex. #336699)"
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "description": "Used to enable or disable webhooks for this site.",
+            "default": false
+          },
+          "url": {
+            "type": "string",
+            "description": "The remote url to send site updates to when data for this site is added or updated. \nPlease view the Webhooks section of the API docs for details.",
+            "default": false
+          }
+        }
+      },
+      "AddUpdateSiteRequest": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the site/business."
+          },
+          "merchant_id": {
+            "type": "string",
+            "description": "The merchant id assigned to the business by the aquiring bank/processor."
+          },
+          "agency": {
+            "description": "A reference to the agency record.",
+            "oneOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "$ref": "#/components/schemas/Agency" }
+            ]
+          },
+          "location": {
+            "description": "The business address of this site.",
+            "allOf": [{ "$ref": "#/components/schemas/Location" }]
+          },
+          "primary_contact": {
+            "description": "The main person responsible for the business.",
+            "allOf": [{ "$ref": "#/components/schemas/Contact" }]
+          },
+          "gateway": {
+            "description": "The gateway used to access the processing account.",
+            "allOf": [{ "$ref": "#/components/schemas/Gateway" }]
+          },
+          "site_enterprise": {
+            "description": "A reference to the site enterprise record.",
+            "oneOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "$ref": "#/components/schemas/SiteEnterprise" }
+            ]
+          },
+          "site_group": {
+            "description": "A reference to the site group record.",
+            "oneOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "$ref": "#/components/schemas/SiteGroup" }
+            ]
+          },
+          "branding": {
+            "description": "The unique branding of the business including the logo and primary color.",
+            "allOf": [{ "$ref": "#/components/schemas/Branding" }]
+          },
+          "access_type": {
+            "type": "string",
+            "description": "The level of access the site is requesting.",
+            "enum": ["api_only", "basic", "pro"],
+            "default": "basic"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "This flag represents whether the site record is active and available to be used or not.",
+            "default": true
+          },
+          "webhook": {
+            "description": "Setup webhooks to receive real-time updates when data related to this site is updated.",
+            "allOf": [{ "$ref": "#/components/schemas/Webhook" }]
+          }
+        },
+        "required": [
+          "external_id",
+          "name",
+          "merchant_id",
+          "agency",
+          "location",
+          "primary_contact",
+          "gateway"
+        ]
+      },
+      "NotificationOptions": {
+        "type": "object",
+        "properties": {
+          "notify_phone": {
+            "type": "boolean",
+            "description": "The customer agrees to receive text messages on their mobile phone.",
+            "default": true
+          },
+          "notify_email": {
+            "type": "boolean",
+            "description": "The customer agrees to receive email messages.",
+            "default": true
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "first_name": {
+            "type": "string",
+            "description": "The first name of the customer."
+          },
+          "last_name": {
+            "type": "string",
+            "description": "The last name of the customer."
+          },
+          "account_name": {
+            "type": "string",
+            "description": "If the customer is a business, you may use this field as an extra identifier.",
+            "example": "Ex. 123 Main Street or ABC Company"
+          },
+          "mobile_phone": {
+            "type": "string",
+            "description": "The customers mobile phone number. The customers mobile_phone is required if notification_options.notify_phone is enabled"
+          },
+          "email": {
+            "type": "string",
+            "description": "The customers email address. The customers email is required if notification_options.notify_email is enabled"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "This flag represents whether the customer record is active and available to be used or not.",
+            "default": true
+          },
+          "notification_options": {
+            "description": "The customers preferrences for receiving notifications via text message and email.",
+            "allOf": [{ "$ref": "#/components/schemas/NotificationOptions" }]
+          }
+        },
+        "required": ["external_id", "first_name", "last_name"]
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique id assigned by TextPay"
+          },
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "gateway_transaction_id": {
+            "type": "string",
+            "description": "The unique id that was assigned to the payment record from the gateway when the payment was processed."
+          },
+          "display_name": {
+            "type": "string",
+            "description": "The secure friendly display name of the payment method",
+            "example": "VISA **** 3421"
+          },
+          "last_4": {
+            "type": "string",
+            "description": "The last 4 digits of the payment method.",
+            "example": "3421"
+          },
+          "auth_code": {
+            "type": "string",
+            "description": "The authorization code for the payment",
+            "example": "93896G"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal",
+            "description": "#####.## The amount that was paid."
+          },
+          "paid_on": {
+            "format": "date-time",
+            "type": "string",
+            "description": "yyyy-MM-ddTHH:mm:ssZ The date and time of when the payment was made."
+          },
+          "tip": {
+            "type": "number",
+            "format": "decimal",
+            "description": "#####.## The tip amount that was added."
+          },
+          "invoice": {
+            "description": "The reference to the invoice record. Use the external_id used in the Add/Update Invoice call.",
+            "allOf": [{ "$ref": "#/components/schemas/ExternalId" }]
+          },
+          "payment_type": {
+            "type": "string",
+            "description": "The type of payment method used to make the payment.",
+            "enum": ["payment_card", "ach", "cash"]
+          },
+          "payment_sub_type": {
+            "type": "string",
+            "description": "The sub type of the payment method used to make the payment.",
+            "enum": [
+              "checking",
+              "savings",
+              "visa",
+              "mastercard",
+              "discover",
+              "amex",
+              "cash",
+              "other"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the payment.",
+            "default": "paid",
+            "enum": ["paid", "voided", "refunded"]
+          },
+          "active": {
+            "type": "boolean",
+            "description": "This flag represents whether the payment record is active.",
+            "default": true
+          },
+          "payment_token": {
+            "type": "string",
+            "description": "The tokenized form of the Card payment that was received at the time payment was collected.",
+            "example": "DC4:ABCD1234"
+          }
+        },
+        "required": [
+          "external_id",
+          "gateway_transaction_id",
+          "display_name",
+          "amount",
+          "paid_on"
+        ]
+      },
+      "Total": {
+        "type": "object",
+        "properties": {
+          "tax": {
+            "type": "number",
+            "format": "decimal",
+            "description": "The tax amount on the invoice",
+            "default": 0
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal",
+            "description": "The total amount of the invoice (including tax)."
+          },
+          "cash_total": {
+            "type": "number",
+            "format": "decimal",
+            "description": "The cash price of the invoice (including tax).",
+            "nullable": true
+          }
+        },
+        "required": ["total"]
+      },
+      "InvoiceLine": {
+        "type": "object",
+        "properties": {
+          "unit_price": {
+            "type": "number",
+            "format": "decimal",
+            "description": "#####.## The price per unit of the line item."
+          },
+          "qty": {
+            "type": "number",
+            "format": "int32",
+            "description": "The qty of units for the line item."
+          },
+          "total": {
+            "type": "number",
+            "format": "decimal",
+            "description": "#####.## The total price of the line item. Should equal unit_price * qty."
+          },
+          "description": {
+            "type": "string",
+            "description": "\tA description of the product or service. This field is only required if the product for this line is not passed in."
+          },
+          "product": {
+            "description": "A reference to the product record. This field is only required if the description for this line is not passed in.",
+            "allOf": [{ "$ref": "#/components/schemas/Product" }]
+          },
+          "cash_unit_price": {
+            "type": "number",
+            "format": "decimal",
+            "description": "The cash price per unit of the line item.",
+            "nullable": true
+          },
+          "cash_total": {
+            "type": "number",
+            "format": "decimal",
+            "description": "The cash price of the line item. Should equal cash_unit_price * qty.",
+            "nullable": true
+          }
+        },
+        "required": ["unit_price", "qty", "total"]
+      },
+      "AddUpdateInvoiceRequest": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "invoice_number": {
+            "type": "string",
+            "description": "The unique number assigned from the source system and displayed to the customer on the invoice."
+          },
+          "totals": {
+            "description": "The total amounts on the invoice",
+            "allOf": [{ "$ref": "#/components/schemas/Total" }]
+          },
+          "customer": {
+            "description": "A reference to the customer record. Omit this field to receive a link to the invoice.",
+            "oneOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "$ref": "#/components/schemas/Customer" }
+            ]
+          }, 
+          "options": {
+            "description": "A set of options for an invoice",
+            "allOf": [{ "$ref": "#/components/schemas/InvoiceOptions" }]
+          },
+          "lines": {
+            "description": "A list of line items on the invoice. This field is only required if description is not passed in.",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InvoiceLine" }
+          },
+          "description": {
+            "type": "string",
+            "description": "A short description of the products/services on the invoice used in the payment request displayed to the customer. This field is only required if lines are not passed in."
+          },
+          "invoice_date": {
+            "format": "date",
+            "type": "string",
+            "description": "YYYY-MM-DD The date of the invoice. If left blank, it will default to today."
+          },
+          "due_date": {
+            "format": "date",
+            "type": "string",
+            "description": "YYYY-MM-DD The date the invoice is due."
+          },
+          "customer_memo": {
+            "type": "string",
+            "description": "A note presented to the customer on the bottom of the invoice."
+          },
+          "internal_memo": {
+            "type": "string",
+            "description": "A memo added to the bottom of the invoice and is only presented to internal staff members and never displayed to customers."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "This flag represents whether the invoice record is active and available to be used or not.",
+            "default": true
+          },
+          "payments": {
+            "type": "array",
+            "description": "A list of payments made on the invoice.",
+            "items": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/ExternalId" },
+                { "$ref": "#/components/schemas/Payment" }
+              ]
+            }
+          }
+        },
+        "required": ["external_id", "invoice_number", "totals"]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the product."
+          },
+          "unit_price": {
+            "type": "number",
+            "format": "decimal",
+            "description": "#####.## The price per unit of the product."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "This flag represents whether the product record is active and available to be used or not.",
+            "default": true
+          }
+        },
+        "required": ["external_id", "name", "unit_price"]
+      },
+      "GetInvoiceResponse": {
+        "type": "object",
+        "properties": {
+          "external_id": {
+            "type": "string",
+            "description": "The unique id assigned by the source system/database. If we detect a record with the same external_id, it will be updated, otherwise it will be added."
+          },
+          "invoice_number": {
+            "type": "string",
+            "description": "The unique number assigned from the source system and displayed to the customer on the invoice."
+          },
+          "totals": {
+            "description": "The total amounts on the invoice",
+            "allOf": [{ "$ref": "#/components/schemas/Total" }]
+          },
+          "customer": {
+            "description": "A reference to the customer record. Omit this field to receive a link to the invoice.",
+            "allOf": [{ "$ref": "#/components/schemas/Customer" }]
+          },
+          "lines": {
+            "description": "A list of line items on the invoice. This field is only required if description is not passed in.",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InvoiceLine" }
+          },
+          "description": {
+            "type": "string",
+            "description": "A short description of the products/services on the invoice used in the payment request displayed to the customer. This field is only required if lines are not passed in."
+          },
+          "invoice_date": {
+            "format": "date",
+            "type": "string",
+            "description": "YYYY-MM-DD The date of the invoice. If left blank, it will default to today."
+          },
+          "due_date": {
+            "format": "date",
+            "type": "string",
+            "description": "YYYY-MM-DD The date the invoice is due."
+          },
+          "customer_memo": {
+            "type": "string",
+            "description": "A note presented to the customer on the bottom of the invoice."
+          },
+          "internal_memo": {
+            "type": "string",
+            "description": "A memo added to the bottom of the invoice and is only presented to internal staff members and never displayed to customers."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "This flag represents whether the invoice record is active and available to be used or not.",
+            "default": true
+          },
+          "payments": {
+            "type": "array",
+            "description": "A list of payments made on the invoice.",
+            "items": { "$ref": "#/components/schemas/Payment" }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "A flag that signals if the request was successful"
+          },
+          "errors": {
+            "type": "array",
+            "description": "A list of errors returned from the endpoint",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

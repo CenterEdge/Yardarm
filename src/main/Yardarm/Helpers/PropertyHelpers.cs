@@ -46,14 +46,8 @@ namespace Yardarm.Helpers
         public static PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(this PropertyDeclarationSyntax property,
             SemanticModel semanticModel)
         {
-            if (property == null)
-            {
-                throw new ArgumentNullException(nameof(property));
-            }
-            if (semanticModel == null)
-            {
-                throw new ArgumentNullException(nameof(semanticModel));
-            }
+            ArgumentNullException.ThrowIfNull(property);
+            ArgumentNullException.ThrowIfNull(semanticModel);
 
             if (property.Initializer != null || property.ExpressionBody != null)
             {

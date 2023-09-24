@@ -19,10 +19,7 @@ namespace Yardarm.Names.Internal
 
         public AuthenticationNamespace(IRootNamespace rootNamespace)
         {
-            if (rootNamespace == null)
-            {
-                throw new ArgumentNullException(nameof(rootNamespace));
-            }
+            ArgumentNullException.ThrowIfNull(rootNamespace);
 
             Name = QualifiedName(rootNamespace.Name, IdentifierName("Authentication"));
 

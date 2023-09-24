@@ -21,8 +21,11 @@ namespace Yardarm.Generation.Response
             IResponsesNamespace responsesNamespace)
             : base(responseElement, context, null)
         {
-            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
-            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+
+            SerializationNamespace = serializationNamespace;
+            ResponsesNamespace = responsesNamespace;
         }
 
         protected override YardarmTypeInfo GetTypeInfo()

@@ -23,7 +23,9 @@ namespace Yardarm.Generation
 
         protected TypeGeneratorBase(GenerationContext context, ITypeGenerator? parent)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
+
+            Context = context;
             Parent = parent;
         }
 

@@ -14,8 +14,11 @@ namespace Yardarm.Generation.Response
 
         public HeaderGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiHeader> headerGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _headerGeneratorRegistry = headerGeneratorRegistry ?? throw new ArgumentNullException(nameof(headerGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(headerGeneratorRegistry);
+
+            _document = document;
+            _headerGeneratorRegistry = headerGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate()

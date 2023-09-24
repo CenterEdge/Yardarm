@@ -21,8 +21,11 @@ namespace Yardarm.Generation.Request
 
         public BuildUriMethodGenerator(GenerationContext context, ISerializationNamespace serializationNamespace)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+
+            Context = context;
+            SerializationNamespace = serializationNamespace;
         }
 
         public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>

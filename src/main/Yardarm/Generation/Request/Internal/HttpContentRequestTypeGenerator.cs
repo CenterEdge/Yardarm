@@ -24,7 +24,9 @@ namespace Yardarm.Generation.Request.Internal
             RequestTypeGenerator parent, MethodDeclarationSyntax buildContentMethod)
             : base(element, context, parent)
         {
-            _buildContentMethod = buildContentMethod ?? throw new ArgumentNullException(nameof(buildContentMethod));
+            ArgumentNullException.ThrowIfNull(buildContentMethod);
+
+            _buildContentMethod = buildContentMethod;
         }
 
         protected override YardarmTypeInfo GetTypeInfo()

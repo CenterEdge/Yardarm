@@ -13,9 +13,11 @@ namespace Yardarm.Generation.Response
         public ResponseSetTypeGeneratorFactory(GenerationContext context,
             IResponsesNamespace responsesNamespace)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _responsesNamespace = responsesNamespace ??
-                                  throw new ArgumentNullException(nameof(responsesNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+
+            _context = context;
+            _responsesNamespace = responsesNamespace;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponses> element, ITypeGenerator? parent) =>

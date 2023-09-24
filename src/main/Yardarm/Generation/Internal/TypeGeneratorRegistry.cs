@@ -17,15 +17,14 @@ namespace Yardarm.Generation.Internal
 
         public TypeGeneratorRegistry(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            ArgumentNullException.ThrowIfNull(serviceProvider);
+
+            _serviceProvider = serviceProvider;
         }
 
         public ITypeGenerator Get(ILocatedOpenApiElement element, Type generatorCategory)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
+            ArgumentNullException.ThrowIfNull(element);
 
             var getTypedMethod = s_getTypedMethod ??=
                 ((Func<ILocatedOpenApiElement<OpenApiSchema>, ITypeGenerator>)Get<OpenApiSchema, SchemaGenerator>).GetMethodInfo()

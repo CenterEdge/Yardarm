@@ -34,12 +34,17 @@ namespace Yardarm.Generation.Response
             IEnumerable<IResponseMethodGenerator> methodGenerators)
             : base(responseElement, context, null)
         {
-            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            HttpResponseCodeNameProvider = httpResponseCodeNameProvider ??
-                                           throw new ArgumentNullException(nameof(httpResponseCodeNameProvider));
-            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
-            ResponsesNamespace = responsesNamespace ?? throw new ArgumentNullException(nameof(responsesNamespace));
-            MethodGenerators = (methodGenerators ?? throw new ArgumentNullException(nameof(methodGenerators))).ToArray();
+            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(httpResponseCodeNameProvider);
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+            ArgumentNullException.ThrowIfNull(responsesNamespace);
+            ArgumentNullException.ThrowIfNull(methodGenerators);
+
+            MediaTypeSelector = mediaTypeSelector;
+            HttpResponseCodeNameProvider = httpResponseCodeNameProvider;
+            SerializationNamespace = serializationNamespace;
+            ResponsesNamespace = responsesNamespace;
+            MethodGenerators = methodGenerators.ToArray();
         }
 
         protected override YardarmTypeInfo GetTypeInfo()

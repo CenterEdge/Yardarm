@@ -12,7 +12,9 @@ namespace Yardarm.Enrichment.Compilation
 
         public VersionAssemblyInfoEnricher(YardarmGenerationSettings settings)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            ArgumentNullException.ThrowIfNull(settings);
+
+            _settings = settings;
         }
 
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target) =>

@@ -17,7 +17,10 @@ namespace Yardarm.Packaging
 
         public DefaultPackageSpecGenerator(YardarmGenerationSettings settings, IEnumerable<IPackageSpecEnricher> enrichers)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            ArgumentNullException.ThrowIfNull(settings);
+            ArgumentNullException.ThrowIfNull(enrichers);
+
+            _settings = settings;
             Enrichers = enrichers.ToArray();
         }
 

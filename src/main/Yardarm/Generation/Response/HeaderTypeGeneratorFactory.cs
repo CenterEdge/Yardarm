@@ -10,7 +10,9 @@ namespace Yardarm.Generation.Response
 
         public HeaderTypeGeneratorFactory(GenerationContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
+
+            _context = context;
         }
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiHeader> element, ITypeGenerator? parent) =>

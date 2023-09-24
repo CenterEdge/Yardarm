@@ -17,9 +17,13 @@ namespace Yardarm.Generation.Response
             ITypeGeneratorRegistry<OpenApiResponses> responsesGeneratorRegistry,
             ITypeGeneratorRegistry<OpenApiUnknownResponse> unknownResponseGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _responsesGeneratorRegistry = responsesGeneratorRegistry ?? throw new ArgumentNullException(nameof(responsesGeneratorRegistry));
-            _unknownResponseGeneratorRegistry = unknownResponseGeneratorRegistry ?? throw new ArgumentNullException(nameof(unknownResponseGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(responsesGeneratorRegistry);
+            ArgumentNullException.ThrowIfNull(unknownResponseGeneratorRegistry);
+
+            _document = document;
+            _responsesGeneratorRegistry = responsesGeneratorRegistry;
+            _unknownResponseGeneratorRegistry = unknownResponseGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate() =>

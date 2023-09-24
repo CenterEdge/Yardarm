@@ -27,7 +27,10 @@ namespace Yardarm.Enrichment.Compilation
         public OpenApiCompilationEnricher(IOpenApiElementRegistry elementRegistry,
             IEnumerable<IOpenApiSyntaxNodeEnricher> enrichers)
         {
-            _elementRegistry = elementRegistry ?? throw new ArgumentNullException(nameof(elementRegistry));
+            ArgumentNullException.ThrowIfNull(elementRegistry);
+            ArgumentNullException.ThrowIfNull(enrichers);
+
+            _elementRegistry = elementRegistry;
             _enrichers = enrichers.ToArray();
         }
 

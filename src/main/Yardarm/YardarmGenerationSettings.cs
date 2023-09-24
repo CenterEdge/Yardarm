@@ -48,19 +48,34 @@ namespace Yardarm
         public Stream DllOutput
         {
             get => _dllOutput ??= new MemoryStream();
-            set => _dllOutput = value ?? throw new ArgumentNullException(nameof(value));
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+
+                _dllOutput = value;
+            }
         }
 
         public Stream PdbOutput
         {
             get => _pdbOutput ??= new MemoryStream();
-            set => _pdbOutput = value ?? throw new ArgumentNullException(nameof(value));
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+
+                _pdbOutput = value;
+            }
         }
 
         public Stream XmlDocumentationOutput
         {
             get => _xmlDocumentationOutput ??= new MemoryStream();
-            set => _xmlDocumentationOutput = value ?? throw new ArgumentNullException(nameof(value));
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+
+                _xmlDocumentationOutput = value;
+            }
         }
 
         public Stream? ReferenceAssemblyOutput { get; set; }
@@ -135,10 +150,7 @@ namespace Yardarm
 
         public YardarmGenerationSettings AddExtension(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
+            ArgumentNullException.ThrowIfNull(type);
             if (!typeof(YardarmExtension).IsAssignableFrom(type))
             {
                 throw new ArgumentException($"Type {type.FullName} must inherit from YardarmExtension.");
@@ -172,10 +184,7 @@ namespace Yardarm
 
         public YardarmGenerationSettings AddLogging(Action<ILoggingBuilder> buildAction)
         {
-            if (buildAction == null)
-            {
-                throw new ArgumentNullException(nameof(buildAction));
-            }
+            ArgumentNullException.ThrowIfNull(buildAction);
 
             _loggingBuilders.Add(buildAction);
 

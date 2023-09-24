@@ -18,17 +18,13 @@ namespace Yardarm.Names.Internal
         public NameSyntax MultipartFormDataSerializer { get; }
         public NameSyntax PathSegmentStyle { get; }
         public NameSyntax PathSegmentSerializer { get; }
-        public ExpressionSyntax PathSegmentSerializerInstance { get; }
         public NameSyntax QueryStringBuilder { get; }
         public NameSyntax TypeSerializerRegistryExtensions { get; }
         public NameSyntax UnknownMediaTypeException { get; }
 
         public SerializationNamespace(IRootNamespace rootNamespace)
         {
-            if (rootNamespace == null)
-            {
-                throw new ArgumentNullException(nameof(rootNamespace));
-            }
+            ArgumentNullException.ThrowIfNull(rootNamespace);
 
             Name = QualifiedName(rootNamespace.Name, IdentifierName("Serialization"));
 
@@ -67,7 +63,7 @@ namespace Yardarm.Names.Internal
             PathSegmentSerializer = QualifiedName(
                 Name,
                 IdentifierName("PathSegmentSerializer"));
-            
+
             QueryStringBuilder = QualifiedName(
                 Name,
                 IdentifierName("QueryStringBuilder"));

@@ -10,7 +10,9 @@ namespace Yardarm.Names
 
         public CamelCaseNameFormatter(INameConverterRegistry nameConverterRegistry)
         {
-            _nameConverterRegistry = nameConverterRegistry ?? throw new ArgumentNullException(nameof(nameConverterRegistry));
+            ArgumentNullException.ThrowIfNull(nameConverterRegistry);
+
+            _nameConverterRegistry = nameConverterRegistry;
         }
 
         [return: NotNullIfNotNull("name")]

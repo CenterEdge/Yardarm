@@ -24,10 +24,7 @@ namespace Yardarm.Enrichment.Internal
         public IEnumerable<T> Sort<T>(IEnumerable<T> enrichers)
             where T : IEnricher
         {
-            if (enrichers == null)
-            {
-                throw new ArgumentNullException(nameof(enrichers));
-            }
+            ArgumentNullException.ThrowIfNull(enrichers, nameof(enrichers));
 
             if (enrichers is IList<T> list)
             {

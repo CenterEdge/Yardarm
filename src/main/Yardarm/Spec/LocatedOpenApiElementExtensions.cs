@@ -207,10 +207,7 @@ namespace Yardarm.Spec
         public static ILocatedOpenApiElement<OpenApiUnknownResponse> GetUnknownResponse(
             this ILocatedOpenApiElement<OpenApiResponses> responses)
         {
-            if (responses == null)
-            {
-                throw new ArgumentNullException(nameof(responses));
-            }
+            ArgumentNullException.ThrowIfNull(responses);
 
             return responses.CreateChild(_unknownResponses.GetOrCreateValue(responses.Element),
                 OpenApiUnknownResponse.Key);

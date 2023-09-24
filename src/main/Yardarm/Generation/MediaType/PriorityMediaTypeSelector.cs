@@ -12,7 +12,9 @@ namespace Yardarm.Generation.MediaType
 
         public PriorityMediaTypeSelector(ISerializerSelector serializerSelector)
         {
-            _serializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
+            ArgumentNullException.ThrowIfNull(serializerSelector);
+
+            _serializerSelector = serializerSelector;
         }
 
         public ILocatedOpenApiElement<OpenApiMediaType>? Select(ILocatedOpenApiElement<OpenApiResponse> response) =>

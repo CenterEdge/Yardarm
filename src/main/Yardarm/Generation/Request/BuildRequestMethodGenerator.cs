@@ -21,7 +21,9 @@ namespace Yardarm.Generation.Request
 
         public BuildRequestMethodGenerator(ISerializationNamespace serializationNamespace)
         {
-            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+
+            SerializationNamespace = serializationNamespace;
         }
 
         public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>

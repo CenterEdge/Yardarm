@@ -12,8 +12,9 @@ namespace Yardarm.NewtonsoftJson
 
         public JsonCreateDefaultRegistryEnricher(IJsonSerializationNamespace jsonSerializationNamespace)
         {
-            _jsonSerializationNamespace = jsonSerializationNamespace ??
-                                          throw new ArgumentNullException(nameof(jsonSerializationNamespace));
+            ArgumentNullException.ThrowIfNull(jsonSerializationNamespace);
+
+            _jsonSerializationNamespace = jsonSerializationNamespace;
         }
 
         public ExpressionSyntax Enrich(ExpressionSyntax target) =>

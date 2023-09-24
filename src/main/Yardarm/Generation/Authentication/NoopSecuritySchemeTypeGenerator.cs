@@ -19,7 +19,9 @@ namespace Yardarm.Generation.Authentication
             IAuthenticationNamespace authenticationNamespace, ILogger<NoopSecuritySchemeTypeGenerator> logger)
             : base(securitySchemeElement, context, authenticationNamespace)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(logger);
+
+            _logger = logger;
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()

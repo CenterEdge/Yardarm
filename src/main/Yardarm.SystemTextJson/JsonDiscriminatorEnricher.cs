@@ -20,8 +20,11 @@ namespace Yardarm.SystemTextJson
         public JsonDiscriminatorEnricher(GenerationContext generationContext,
             ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> typeGeneratorRegistry)
         {
-            GenerationContext = generationContext ?? throw new ArgumentNullException(nameof(generationContext));
-            TypeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(generationContext);
+            ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
+
+            GenerationContext = generationContext;
+            TypeGeneratorRegistry = typeGeneratorRegistry;
         }
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,

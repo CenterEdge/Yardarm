@@ -14,8 +14,11 @@ namespace Yardarm.Generation.Request
 
         public RequestGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiOperation> operationTypeGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _operationTypeGeneratorRegistry = operationTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(operationTypeGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(operationTypeGeneratorRegistry);
+
+            _document = document;
+            _operationTypeGeneratorRegistry = operationTypeGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate()

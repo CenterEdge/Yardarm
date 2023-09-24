@@ -22,7 +22,9 @@ namespace Yardarm.Packaging.Internal
 
         public NuGetReferenceGenerator(GenerationContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+            ArgumentNullException.ThrowIfNull(context);
+
+            _context = context;
         }
 
         public IAsyncEnumerable<MetadataReference> Generate(CancellationToken cancellationToken = default)

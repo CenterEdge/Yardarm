@@ -10,10 +10,7 @@ namespace Yardarm.Names.Internal
 
         public RootNamespace(YardarmGenerationSettings settings)
         {
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
+            ArgumentNullException.ThrowIfNull(settings);
 
             Name = SyntaxFactory.ParseName(settings.RootNamespace);
         }

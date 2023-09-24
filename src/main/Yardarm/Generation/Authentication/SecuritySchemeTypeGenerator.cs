@@ -34,7 +34,9 @@ namespace Yardarm.Generation.Authentication
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, null)
         {
-            AuthenticationNamespace = authenticationNamespace ?? throw new ArgumentNullException(nameof(authenticationNamespace));
+            ArgumentNullException.ThrowIfNull(authenticationNamespace);
+
+            AuthenticationNamespace = authenticationNamespace;
         }
 
         protected override YardarmTypeInfo GetTypeInfo() =>

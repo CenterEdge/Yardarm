@@ -18,8 +18,11 @@ namespace Yardarm.Enrichment.Responses
 
         public HeaderParsingEnricher(GenerationContext context, ISerializationNamespace serializationNamespace)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _serializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+
+            _context = context;
+            _serializationNamespace = serializationNamespace;
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,

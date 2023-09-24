@@ -16,10 +16,7 @@ namespace Yardarm.NewtonsoftJson.Internal
 
         public JsonSerializationNamespace(ISerializationNamespace serializationNamespace)
         {
-            if (serializationNamespace == null)
-            {
-                throw new ArgumentNullException(nameof(serializationNamespace));
-            }
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
 
             Name = QualifiedName(
                 serializationNamespace.Name,

@@ -25,9 +25,13 @@ namespace Yardarm.Generation.Request
         public AddHeadersMethodGenerator(IMediaTypeSelector mediaTypeSelector, INameFormatterSelector nameFormatterSelector,
             ISerializationNamespace serializationNamespace)
         {
-            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            NameFormatterSelector = nameFormatterSelector ?? throw new ArgumentNullException(nameof(nameFormatterSelector));
-            SerializationNamespace = serializationNamespace ?? throw new ArgumentNullException(nameof(serializationNamespace));
+            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(nameFormatterSelector);
+            ArgumentNullException.ThrowIfNull(serializationNamespace);
+
+            MediaTypeSelector = mediaTypeSelector;
+            NameFormatterSelector = nameFormatterSelector;
+            SerializationNamespace = serializationNamespace;
         }
 
         public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>

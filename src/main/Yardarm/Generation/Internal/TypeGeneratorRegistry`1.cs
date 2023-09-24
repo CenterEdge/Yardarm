@@ -21,9 +21,13 @@ namespace Yardarm.Generation.Internal
         public TypeGeneratorRegistry(ITypeGeneratorRegistry mainRegistry, ITypeGeneratorFactory<TElement, TGeneratorCategory> factory,
             OpenApiDocument document)
         {
-            _mainRegistry = mainRegistry ?? throw new ArgumentNullException(nameof(mainRegistry));
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            _document = document ?? throw new ArgumentNullException(nameof(document));
+            ArgumentNullException.ThrowIfNull(mainRegistry);
+            ArgumentNullException.ThrowIfNull(factory);
+            ArgumentNullException.ThrowIfNull(document);
+
+            _mainRegistry = mainRegistry;
+            _factory = factory;
+            _document = document;
 
             _createTypeGenerator = CreateTypeGenerator;
         }

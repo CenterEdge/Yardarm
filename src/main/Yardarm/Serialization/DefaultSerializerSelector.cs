@@ -12,10 +12,7 @@ namespace Yardarm.Serialization
 
         public DefaultSerializerSelector(IEnumerable<SerializerDescriptor> descriptors)
         {
-            if (descriptors == null)
-            {
-                throw new ArgumentNullException(nameof(descriptors));
-            }
+            ArgumentNullException.ThrowIfNull(descriptors);
 
             _descriptors = descriptors
                 .SelectMany(

@@ -54,9 +54,10 @@ namespace Yardarm.SystemTextJson.Internal
             IRootNamespace rootNamespace)
             : base(element, context, parent)
         {
-            _jsonSerializationNamespace = jsonSerializationNamespace ??
-                                          throw new ArgumentNullException(nameof(jsonSerializationNamespace));
+            ArgumentNullException.ThrowIfNull(jsonSerializationNamespace);
+            ArgumentNullException.ThrowIfNull(rootNamespace);
 
+            _jsonSerializationNamespace = jsonSerializationNamespace;
             _typeName = BuildTypeName(rootNamespace);
         }
 

@@ -190,6 +190,16 @@ paths:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - name: X-Primitive
+          in: header
+          schema:
+            type: string
+        - name: X-List
+          in: header
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Ok
@@ -1166,6 +1176,7 @@ components:
           type: string
           description: Error code
           example: null
+          nullable: true
           enum:
             - cardNotFound
             - cardExists

@@ -26,9 +26,14 @@ namespace Yardarm.Packaging
             PackageSpec packageSpec,
             IEnumerable<INuGetPackageEnricher> packageEnrichers)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            _packageSpec = packageSpec ?? throw new ArgumentNullException(nameof(packageSpec));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(settings);
+            ArgumentNullException.ThrowIfNull(packageSpec);
+            ArgumentNullException.ThrowIfNull(packageEnrichers);
+
+            _document = document;
+            _settings = settings;
+            _packageSpec = packageSpec;
             _packageEnrichers = packageEnrichers.ToArray();
         }
 

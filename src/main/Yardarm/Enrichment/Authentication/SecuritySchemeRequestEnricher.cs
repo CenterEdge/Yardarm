@@ -20,8 +20,11 @@ namespace Yardarm.Enrichment.Authentication
 
         public SecuritySchemeRequestEnricher(GenerationContext context, IAuthenticationNamespace authenticationNamespace)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _authenticationNamespace = authenticationNamespace ?? throw new ArgumentNullException(nameof(authenticationNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(authenticationNamespace);
+
+            _context = context;
+            _authenticationNamespace = authenticationNamespace;
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,

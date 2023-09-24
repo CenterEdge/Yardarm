@@ -29,10 +29,15 @@ namespace Yardarm.Generation.Request
             IRequestsNamespace requestsNamespace, ISerializerSelector serializerSelector)
             : base(operationElement, context, null)
         {
-            MediaTypeSelector = mediaTypeSelector ?? throw new ArgumentNullException(nameof(mediaTypeSelector));
-            MemberGenerators = memberGenerators ?? throw new ArgumentNullException(nameof(memberGenerators));
-            RequestsNamespace = requestsNamespace ?? throw new ArgumentNullException(nameof(requestsNamespace));
-            SerializerSelector = serializerSelector ?? throw new ArgumentNullException(nameof(serializerSelector));
+            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(memberGenerators);
+            ArgumentNullException.ThrowIfNull(requestsNamespace);
+            ArgumentNullException.ThrowIfNull(serializerSelector);
+
+            MediaTypeSelector = mediaTypeSelector;
+            MemberGenerators = memberGenerators;
+            RequestsNamespace = requestsNamespace;
+            SerializerSelector = serializerSelector;
         }
 
         protected override YardarmTypeInfo GetTypeInfo()

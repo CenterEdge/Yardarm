@@ -13,8 +13,11 @@ namespace Yardarm.Generation.Schema
 
         public SchemaGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _typeGeneratorRegistry = typeGeneratorRegistry ?? throw new ArgumentNullException(nameof(typeGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
+
+            _document = document;
+            _typeGeneratorRegistry = typeGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate()

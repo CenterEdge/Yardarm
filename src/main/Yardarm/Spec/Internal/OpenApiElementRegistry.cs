@@ -38,10 +38,7 @@ namespace Yardarm.Spec.Internal
         public string Add<T>(ILocatedOpenApiElement<T> element)
             where T : IOpenApiElement
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
+            ArgumentNullException.ThrowIfNull(element);
 
             var key = Guid.NewGuid().ToString();
             _registry.TryAdd(key, element);

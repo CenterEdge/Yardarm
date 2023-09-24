@@ -16,8 +16,11 @@ namespace Yardarm.SystemTextJson.Internal
         public DiscriminatorConverterGenerator(OpenApiDocument document,
             ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> converterTypeGeneratorRegistry)
         {
-            _document = document ?? throw new ArgumentNullException(nameof(document));
-            _converterTypeGeneratorRegistry = converterTypeGeneratorRegistry ?? throw new ArgumentNullException(nameof(converterTypeGeneratorRegistry));
+            ArgumentNullException.ThrowIfNull(document);
+            ArgumentNullException.ThrowIfNull(converterTypeGeneratorRegistry);
+
+            _document = document;
+            _converterTypeGeneratorRegistry = converterTypeGeneratorRegistry;
         }
 
         public IEnumerable<SyntaxTree> Generate()

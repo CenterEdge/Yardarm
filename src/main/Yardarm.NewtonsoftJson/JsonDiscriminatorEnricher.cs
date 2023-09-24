@@ -19,8 +19,11 @@ namespace Yardarm.NewtonsoftJson
         public JsonDiscriminatorEnricher(GenerationContext context,
             IJsonSerializationNamespace jsonSerializationNamespace)
         {
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-            JsonSerializationNamespace = jsonSerializationNamespace ?? throw new ArgumentNullException(nameof(jsonSerializationNamespace));
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(jsonSerializationNamespace);
+
+            Context = context;
+            JsonSerializationNamespace = jsonSerializationNamespace;
         }
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,

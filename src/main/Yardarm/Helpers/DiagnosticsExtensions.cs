@@ -15,14 +15,8 @@ namespace Yardarm.Helpers
     {
         public static string? GetSource(this Diagnostic diagnostic, IOpenApiElementRegistry elementRegistry)
         {
-            if (diagnostic == null)
-            {
-                throw new ArgumentNullException(nameof(diagnostic));
-            }
-            if (elementRegistry == null)
-            {
-                throw new ArgumentNullException(nameof(elementRegistry));
-            }
+            ArgumentNullException.ThrowIfNull(diagnostic);
+            ArgumentNullException.ThrowIfNull(elementRegistry);
 
             SyntaxTree? syntaxTree = diagnostic.Location.SourceTree;
             if (syntaxTree == null)

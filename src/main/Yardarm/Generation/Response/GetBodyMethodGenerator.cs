@@ -73,36 +73,51 @@ namespace Yardarm.Generation.Response
             ILocatedOpenApiElement<OpenApiResponse> response, TypeSyntax returnType)
         {
             // Return from _body field if not null, otherwise deserialize and set the _body field
-            // If we're dealing with System.IO.Stream, in which case we can just return the stream directly,
-            // otherwise deserialize the body first.
 
-            ExpressionSyntax bodyTaskExpression = returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name)
-                ? InvocationExpression(
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName("Message"),
-                            IdentifierName("Content")),
-                        IdentifierName("ReadAsStreamAsync")),
-                    ArgumentList(SingletonSeparatedList(
-                        Argument(IdentifierName("cancellationToken"))
-                    )))
-                : InvocationExpression(
+            static ReturnStatementSyntax BuildReturnStatement(ExpressionSyntax taskExpression) =>
+                ReturnStatement(AssignmentExpression(SyntaxKind.CoalesceAssignmentExpression,
+                    IdentifierName(ResponseTypeGenerator.BodyFieldName),
+                    SyntaxHelpers.AwaitConfiguredFalse(taskExpression)));
+
+            if (!returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name))
+            {
+                yield return BuildReturnStatement(InvocationExpression(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         SerializationNamespace.TypeSerializerRegistryExtensions,
                         GenericName(Identifier("DeserializeAsync"),
                             TypeArgumentList(SingletonSeparatedList(returnType)))),
                     ArgumentList(SeparatedList(new[]
                     {
-                        Argument(IdentifierName("TypeSerializerRegistry")),
-                        Argument(MemberAccessExpression(
+                        Argument(IdentifierName("TypeSerializerRegistry")), Argument(MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("Message"),
                             IdentifierName("Content")))
-                    })));
+                    }))));
+            }
+            else
+            {
+                // We're dealing with System.IO.Stream so we can just return the stream without deserializing.
+                // However, we need to deal with the lack of cancellation tokens in the .NET Standard 2.0 version.
 
-            yield return ReturnStatement(AssignmentExpression(SyntaxKind.CoalesceAssignmentExpression,
-                IdentifierName(ResponseTypeGenerator.BodyFieldName),
-                SyntaxHelpers.AwaitConfiguredFalse(bodyTaskExpression)));
+                ExpressionSyntax bodyTaskExpression = Context.PreprocessorSymbols.Contains("NET5_0_OR_GREATER")
+                    ? InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName("Message"),
+                                IdentifierName("Content")),
+                            IdentifierName("ReadAsStreamAsync")),
+                        ArgumentList(SingletonSeparatedList(
+                            Argument(IdentifierName("cancellationToken"))
+                        )))
+                    : InvocationExpression(
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName("Message"),
+                                IdentifierName("Content")),
+                            IdentifierName("ReadAsStreamAsync")));
+
+                yield return BuildReturnStatement(bodyTaskExpression);
+            }
         }
 
         public static InvocationExpressionSyntax InvokeGetBody(ExpressionSyntax requestInstance) =>

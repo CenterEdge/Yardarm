@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
+using Yardarm.Enrichment.Compilation;
 using Yardarm.Generation;
 using Yardarm.Packaging;
 using Yardarm.Serialization;
@@ -12,6 +13,8 @@ namespace Yardarm.SystemTextJson
 {
     public class SystemTextJsonExtension : YardarmExtension
     {
+        public override bool IsOutputTrimmable(GenerationContext context) => true;
+
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services
@@ -26,6 +29,8 @@ namespace Yardarm.SystemTextJson
                 .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()
                 .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
                 .AddSingleton<ISyntaxTreeGenerator, DiscriminatorConverterGenerator>()
+                .AddSingleton<ISyntaxTreeGenerator, JsonSerializerContextGenerator>()
+                .AddSingleton<ICompilationEnricher, JsonSerializableEnricher>()
                 .TryAddTypeGeneratorFactory<OpenApiSchema, SystemTextJsonGeneratorCategory, DiscriminatorConverterTypeGeneratorFactory>();
 
             services

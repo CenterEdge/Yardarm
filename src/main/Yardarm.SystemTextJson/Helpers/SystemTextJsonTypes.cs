@@ -122,6 +122,32 @@ namespace Yardarm.SystemTextJson.Helpers
                 QualifiedName(Name, GenericName(Identifier("JsonConverter"),
                     TypeArgumentList(SingletonSeparatedList(t))));
 
+            public static NameSyntax JsonSerializableAttributeName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonSerializableAttribute"));
+
+            public static NameSyntax JsonSerializerContextName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonSerializerContext"));
+
+            public static class JsonSourceGenerationMode
+            {
+                // ReSharper disable once MemberHidesStaticFromOuterClass
+                public static NameSyntax Name { get; } = QualifiedName(
+                    SystemTextJsonTypes.Serialization.Name,
+                    IdentifierName("JsonSourceGenerationMode"));
+
+                // ReSharper disable once MemberHidesStaticFromOuterClass
+                public static MemberAccessExpressionSyntax Metadata { get; } = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    Name,
+                    IdentifierName("Metadata"));
+            }
+
+            public static NameSyntax JsonSourceGenerationOptionsAttributeName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonSourceGenerationOptionsAttribute"));
+                
             public static TypeSyntax JsonStringEnumConverterName(TypeSyntax enumType) =>
                 QualifiedName(Name, GenericName(Identifier("JsonStringEnumConverter"),
                     TypeArgumentList(SingletonSeparatedList(enumType))));

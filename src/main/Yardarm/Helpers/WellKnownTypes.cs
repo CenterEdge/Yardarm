@@ -174,6 +174,20 @@ namespace Yardarm.Helpers
                     IdentifierName("IDisposable"));
             }
 
+            public static class IO
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("IO"));
+
+                public static class Stream
+                {
+                    public static NameSyntax Name { get; } = QualifiedName(
+                        IO.Name,
+                        IdentifierName("Stream"));
+                }
+            }
+
             public static partial class Net
             {
                 public static NameSyntax Name { get; } = QualifiedName(

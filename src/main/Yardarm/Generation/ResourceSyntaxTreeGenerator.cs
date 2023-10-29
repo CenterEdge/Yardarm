@@ -51,21 +51,10 @@ namespace Yardarm.Generation
             string rawText = reader.ReadToEnd();
             rawText = rawText.Replace("RootNamespace", RootNamespace.Name.ToString());
 
-            string[] preprocessorSymbols = GenerationContext.CurrentTargetFramework switch
-            {
-                {Framework: NuGetFrameworkConstants.NetStandardFramework} =>
-                    GetNetStandardPreprocessorSymbols(GenerationContext.CurrentTargetFramework.Version),
-                {Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: < 5 } =>
-                    GetNetCoreAppPreprocessorSymbols(GenerationContext.CurrentTargetFramework.Version),
-                {Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: >= 5 } =>
-                    GetNetPreprocessorSymbols(GenerationContext.CurrentTargetFramework.Version),
-                _ => Array.Empty<string>()
-            };
-
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(rawText, Encoding.UTF8),
                 CSharpParseOptions.Default
                     .WithLanguageVersion(LanguageVersion.CSharp11)
-                    .WithPreprocessorSymbols(preprocessorSymbols),
+                    .WithPreprocessorSymbols(GenerationContext.PreprocessorSymbols),
                 path: PathHelpers.Combine(
                     GenerationContext.Settings.BasePath,
                     "Resources",
@@ -79,50 +68,5 @@ namespace Yardarm.Generation
 
             return syntaxTree;
         }
-
-        private static readonly ConcurrentDictionary<Version, string[]> s_netStandardPreprocessorDirectives = new();
-        private static string[] GetNetStandardPreprocessorSymbols(Version version) =>
-            s_netStandardPreprocessorDirectives.GetOrAdd(version, static v =>
-            {
-                var result = new List<string> {"NETSTANDARD", $"NETSTANDARD{v.Major}_{v.Minor}"};
-
-                foreach (var version in new Version[] {new(2, 0), new(2, 1)}.Where(p => p <= v))
-                {
-                    result.Add($"NETSTANDARD{version.Major}_{version.Minor}_OR_GREATER");
-                }
-
-                return result.ToArray();
-            });
-
-        private static readonly ConcurrentDictionary<Version, string[]> s_netCoreAppPreprocessorDirectives = new();
-        private static string[] GetNetCoreAppPreprocessorSymbols(Version version) =>
-            s_netCoreAppPreprocessorDirectives.GetOrAdd(version, static v =>
-            {
-                var result = new List<string> {"NETCOREAPP", $"NETCOREAPP{v.Major}_{v.Minor}"};
-
-                foreach (var version in new Version[] {new(2, 0), new(2, 1), new(3, 0), new Version(3, 1)}.Where(p => p <= v))
-                {
-                    result.Add($"NETCOREAPP{version.Major}_{version.Minor}_OR_GREATER");
-                }
-
-                return result.ToArray();
-            });
-
-        private static readonly ConcurrentDictionary<Version, string[]> s_netPreprocessorDirectives = new();
-        private static string[] GetNetPreprocessorSymbols(Version version) =>
-            s_netPreprocessorDirectives.GetOrAdd(version, static v =>
-            {
-                var result = new List<string> {$"NET{v.Major}_{v.Minor}"};
-
-                foreach (var version in new Version[] {new(5, 0), new(6, 0), new(7, 0)}.Where(p => p <= v))
-                {
-                    result.Add($"NET{version.Major}_{version.Minor}_OR_GREATER");
-                }
-
-                // Also include all .NET Core 3.1 symbols except NETCOREAPP3_1
-                result.AddRange(GetNetCoreAppPreprocessorSymbols(new Version(3, 1)).Except(new[] {"NETCOREAPP3_1"}));
-
-                return result.ToArray();
-            });
     }
 }

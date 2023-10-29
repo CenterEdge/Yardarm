@@ -7,7 +7,9 @@
 
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
   </PropertyGroup>
@@ -21,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="**/*.netstandard.cs" Condition=" '$(TargetFramework)' == 'net6.0' " />
-    <Compile Remove="**/*.netcoreapp.cs" Condition=" '$(TargetFramework)' == 'netstandard2.0' " />
+    <Compile Remove="**/*.netstandard.cs" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
+    <Compile Remove="**/*.netcoreapp.cs" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
   </ItemGroup>
 
 </Project>

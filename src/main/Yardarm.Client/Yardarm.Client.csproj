@@ -7,9 +7,13 @@
 
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <IsTrimmable>true</IsTrimmable>
 
     <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

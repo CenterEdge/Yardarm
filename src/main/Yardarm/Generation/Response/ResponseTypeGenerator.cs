@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using Microsoft.CodeAnalysis;
@@ -92,13 +93,12 @@ namespace Yardarm.Generation.Response
 
             if (isPrimaryImplementation)
             {
-                declaration = declaration.AddMembers(
-                    GenerateHeaderProperties()
-                        .Concat(GenerateBodyField(bodyType))
-                        .ToArray());
+                declaration = declaration.WithMembers(declaration.Members.AddRange(GenerateHeaderProperties()));
 
                 if (bodyType is not null)
                 {
+                    declaration = declaration.WithMembers(declaration.Members.Add(GenerateBodyField(bodyType)));
+
                     // Add the IOperationResponse<TBody> interface for responses with a body
                     declaration = declaration.AddBaseListTypes(SimpleBaseType(ResponsesNamespace.IOperationResponseTBody(bodyType)));
                 }
@@ -107,7 +107,7 @@ namespace Yardarm.Generation.Response
             (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
             if (schemaGenerator != null && !schemaIsReference)
             {
-                declaration = declaration.AddMembers(schemaGenerator.Generate().ToArray());
+                declaration = declaration.WithMembers(declaration.Members.AddRange(schemaGenerator.Generate()));
             }
 
             yield return declaration;
@@ -192,14 +192,15 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private IEnumerable<MemberDeclarationSyntax> GenerateBodyField(TypeSyntax? bodyType)
+        [return: NotNullIfNotNull(nameof(bodyType))]
+        private MemberDeclarationSyntax? GenerateBodyField(TypeSyntax? bodyType)
         {
             if (bodyType is null)
             {
-                yield break;
+                return null;
             }
 
-            yield return FieldDeclaration(
+            return FieldDeclaration(
                 default,
                 new SyntaxTokenList(Token(SyntaxKind.PrivateKeyword)),
                 VariableDeclaration(

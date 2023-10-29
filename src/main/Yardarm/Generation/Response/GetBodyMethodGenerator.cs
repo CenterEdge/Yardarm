@@ -57,29 +57,52 @@ namespace Yardarm.Generation.Response
             TypeSyntax returnType = schemaGenerator.TypeInfo.Name;
 
             yield return MethodDeclaration(
-                    WellKnownTypes.System.Threading.Tasks.ValueTaskT.Name(returnType),
-                    GetBodyMethodName)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.AsyncKeyword))
-                .WithBody(Block(GenerateStatements(response, returnType)));
+                default,
+                TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.AsyncKeyword)),
+                WellKnownTypes.System.Threading.Tasks.ValueTaskT.Name(returnType),
+                null,
+                Identifier(GetBodyMethodName),
+                null,
+                ParameterList(SingletonSeparatedList(MethodHelpers.DefaultedCancellationTokenParameter())),
+                default,
+                Block(GenerateStatements(response, returnType)),
+                null);
         }
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
             ILocatedOpenApiElement<OpenApiResponse> response, TypeSyntax returnType)
         {
             // Return from _body field if not null, otherwise deserialize and set the _body field
+            // If we're dealing with System.IO.Stream, in which case we can just return the stream directly,
+            // otherwise deserialize the body first.
+
+            ExpressionSyntax bodyTaskExpression = returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name)
+                ? InvocationExpression(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName("Message"),
+                            IdentifierName("Content")),
+                        IdentifierName("ReadAsStreamAsync")),
+                    ArgumentList(SingletonSeparatedList(
+                        Argument(IdentifierName("cancellationToken"))
+                    )))
+                : InvocationExpression(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        SerializationNamespace.TypeSerializerRegistryExtensions,
+                        GenericName(Identifier("DeserializeAsync"),
+                            TypeArgumentList(SingletonSeparatedList(returnType)))),
+                    ArgumentList(SeparatedList(new[]
+                    {
+                        Argument(IdentifierName("TypeSerializerRegistry")),
+                        Argument(MemberAccessExpression(
+                            SyntaxKind.SimpleMemberAccessExpression,
+                            IdentifierName("Message"),
+                            IdentifierName("Content")))
+                    })));
 
             yield return ReturnStatement(AssignmentExpression(SyntaxKind.CoalesceAssignmentExpression,
                 IdentifierName(ResponseTypeGenerator.BodyFieldName),
-                SyntaxHelpers.AwaitConfiguredFalse(
-                    InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            SerializationNamespace.TypeSerializerRegistryExtensions,
-                            GenericName("DeserializeAsync")
-                                .AddTypeArgumentListArguments(returnType)))
-                        .AddArgumentListArguments(
-                            Argument(IdentifierName("TypeSerializerRegistry")),
-                            Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName("Message"),
-                                IdentifierName("Content")))))));
+                SyntaxHelpers.AwaitConfiguredFalse(bodyTaskExpression)));
         }
 
         public static InvocationExpressionSyntax InvokeGetBody(ExpressionSyntax requestInstance) =>

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Responses
@@ -12,7 +13,8 @@ namespace RootNamespace.Responses
         /// <summary>
         /// Get the body of the response.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The deserialized body.</returns>
-        ValueTask<TBody> GetBodyAsync();
+        ValueTask<TBody> GetBodyAsync(CancellationToken cancellationToken = default);
     }
 }

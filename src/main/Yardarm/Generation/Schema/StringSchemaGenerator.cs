@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -30,8 +31,7 @@ namespace Yardarm.Generation.Schema
                     "byte" => ArrayType(PredefinedType(Token(SyntaxKind.ByteKeyword)),
                         SingletonList(ArrayRankSpecifier(
                             SingletonSeparatedList<ExpressionSyntax>(OmittedArraySizeExpression())))),
-                    "binary" => QualifiedName(QualifiedName(IdentifierName("System"), IdentifierName("IO")),
-                        IdentifierName("Stream")),
+                    "binary" => WellKnownTypes.System.IO.Stream.Name,
                     _ => PredefinedType(Token(SyntaxKind.StringKeyword))
                 },
                 isGenerated: false);

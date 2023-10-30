@@ -132,26 +132,30 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be("2020-01-02T03:04:05.0000000-04:00");
         }
 
-        [Fact]
-        public void Serialize_TimeSpan_ReturnsString()
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void Serialize_TimeSpan_ReturnsString(string format)
         {
             // Act
 
             string result = LiteralSerializer.Instance.Serialize(
-                new TimeSpan(0, 3, 4, 5), "partial-time");
+                new TimeSpan(0, 3, 4, 5), format);
 
             // Assert
 
             result.Should().Be("03:04:05");
         }
 
-        [Fact]
-        public void Serialize_TimeSpanMillis_ReturnsString()
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void Serialize_TimeSpanMillis_ReturnsString(string format)
         {
             // Act
 
             string result = LiteralSerializer.Instance.Serialize(
-                new TimeSpan(0, 3, 4, 5, 123), "partial-time");
+                new TimeSpan(0, 3, 4, 5, 123), format);
 
             // Assert
 
@@ -288,24 +292,28 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be(new DateTime(2020, 01, 02));
         }
 
-        [Fact]
-        public void Deserialize_TimeSpan_ReturnsString()
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void Deserialize_TimeSpan_ReturnsString(string format)
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02", "partial-time");
+            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02", format);
 
             // Assert
 
             result.Should().Be(new TimeSpan(0, 13, 1, 2));
         }
 
-        [Fact]
-        public void Deserialize_TimeSpanWithMillis_ReturnsString()
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void Deserialize_TimeSpanWithMillis_ReturnsString(string format)
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02.234000", "partial-time");
+            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02.234000", format);
 
             // Assert
 

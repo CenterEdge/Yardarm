@@ -137,7 +137,7 @@ namespace RootNamespace.Serialization
             {
                 return (T)(object)(format switch
                 {
-                    "partial-time" => TimeSpan.ParseExact(value, "c", CultureInfo.InvariantCulture),
+                    "partial-time" or "date-span" => TimeSpan.ParseExact(value, "c", CultureInfo.InvariantCulture),
                     _ => TimeSpan.Parse(value, CultureInfo.InvariantCulture)
                 });
             }

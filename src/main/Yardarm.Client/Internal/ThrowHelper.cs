@@ -31,6 +31,12 @@ namespace Yardarm.Client.Internal
 #endif
         }
 
+        [DoesNotReturn]
+        public static void ThrowArgumentException(string? message, string? paramName)
+        {
+            throw new ArgumentException(message, paramName);
+        }
+
 #if !NET6_0_OR_GREATER
         // Use a separate method to throw so that ThrowIfNull may be inlined
         [DoesNotReturn]

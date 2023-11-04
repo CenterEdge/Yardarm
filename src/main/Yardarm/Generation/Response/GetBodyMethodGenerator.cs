@@ -91,7 +91,8 @@ namespace Yardarm.Generation.Response
                         Argument(IdentifierName("TypeSerializerRegistry")), Argument(MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
                             IdentifierName("Message"),
-                            IdentifierName("Content")))
+                            IdentifierName("Content"))),
+                        Argument(NameColon("cancellationToken"), default, IdentifierName("cancellationToken"))
                     }))));
             }
             else

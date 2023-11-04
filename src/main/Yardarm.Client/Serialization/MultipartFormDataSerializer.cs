@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Yardarm.Client.Internal;
 
@@ -47,14 +48,21 @@ namespace RootNamespace.Serialization
         {
             if (serializationData is not MultipartFormDataSerializationData<T> multipartData)
             {
-                throw new ArgumentException(
-                    $"{nameof(serializationData)} must be of type {typeof(MultipartFormDataSerializationData<T>).FullName}.");
+                ThrowHelper.ThrowArgumentException(
+                    $"{nameof(serializationData)} must be of type {typeof(MultipartFormDataSerializationData<T>).FullName}.",
+                    nameof(serializationData));
+                return null!; // unreachable
             }
 
             return Serialize(value, mediaType, multipartData);
         }
 
-        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null) =>
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData) =>
+            throw new NotImplementedException();
+
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
+            // ReSharper disable once MethodOverloadWithOptionalParameter
+            CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
     }
 }

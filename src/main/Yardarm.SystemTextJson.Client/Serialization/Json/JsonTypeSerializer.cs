@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using System.Threading.Tasks;
 using Yardarm.Client.Internal;
 
@@ -54,7 +55,16 @@ namespace RootNamespace.Serialization.Json
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
             JsonContent.Create(value, _options.GetTypeInfo(typeof(T)), new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName});
 
-        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null) =>
-            new(content.ReadFromJsonAsync((JsonTypeInfo<T>) _options.GetTypeInfo(typeof(T)))!);
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData) =>
+            DeserializeAsync<T>(content, serializationData, default);
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+            Justification = "Incompatible constructors are marked with RequiresUnreferencedCode")]
+        [UnconditionalSuppressMessage("Aot", "IL3050",
+            Justification = "Incompatible constructors are marked with RequiresDynamicCode")]
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
+            // ReSharper disable once MethodOverloadWithOptionalParameter
+            CancellationToken cancellationToken = default) =>
+            new(content.ReadFromJsonAsync<T>(_options, cancellationToken)!);
     }
 }

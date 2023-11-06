@@ -17,7 +17,7 @@ namespace RootNamespace.Responses
         [return: MaybeNull]
         public ValueTask<T> GetBodyAsync<T>(CancellationToken cancellationToken = default) =>
             Message.Content != null
-                ? TypeSerializerRegistry.DeserializeAsync<T>(Message.Content)
+                ? TypeSerializerRegistry.DeserializeAsync<T>(Message.Content, cancellationToken: cancellationToken)
                 : new ValueTask<T>(default(T)!);
     }
 }

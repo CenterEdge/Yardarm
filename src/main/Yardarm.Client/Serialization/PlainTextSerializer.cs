@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Yardarm.Client.Internal;
 
@@ -16,9 +17,19 @@ namespace RootNamespace.Serialization
 
         private static string Serialize<T>(T value) => value?.ToString() ?? "";
 
-        public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData) =>
+            DeserializeAsync<T>(content, serializationData, default);
+
+        public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
+            // ReSharper disable once MethodOverloadWithOptionalParameter
+            CancellationToken cancellationToken = default)
         {
+#if NET5_0_OR_GREATER
+            string value = await content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
+            cancellationToken.ThrowIfCancellationRequested();
             string value = await content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
 
             return Deserialize<T>(value);
         }

@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -58,9 +59,19 @@ namespace RootNamespace.Serialization.Json
             }
         }
 
-        public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null)
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null) =>
+            DeserializeAsync<T>(content, serializationData, default);
+
+        public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
+            // ReSharper disable once MethodOverloadWithOptionalParameter
+            CancellationToken cancellationToken = default)
         {
+#if NET5_0_OR_GREATER
+            string str = await content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+#else
+            cancellationToken.ThrowIfCancellationRequested();
             string str = await content.ReadAsStringAsync().ConfigureAwait(false);
+#endif
 
             using var reader = new JsonTextReader(new StringReader(str));
 

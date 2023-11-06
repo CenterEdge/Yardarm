@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
@@ -66,8 +67,15 @@ namespace RootNamespace.Serialization
             return typeSerializerRegistry;
         }
 
+        // Retained for backward compatibility of the public API surface in the generated SDK
         public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            HttpContent content, ISerializationData? serializationData = null)
+            HttpContent content, ISerializationData? serializationData) =>
+            typeSerializerRegistry.DeserializeAsync<T>(content, serializationData, default);
+
+        public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
+            HttpContent content, ISerializationData? serializationData = null,
+            // ReSharper disable once MethodOverloadWithOptionalParameter
+            CancellationToken cancellationToken = default)
         {
             string? mediaType = content.Headers.ContentType?.MediaType;
 
@@ -80,7 +88,7 @@ namespace RootNamespace.Serialization
                 }
             }
 
-            return typeSerializer.DeserializeAsync<T>(content, serializationData);
+            return typeSerializer.DeserializeAsync<T>(content, serializationData, cancellationToken);
         }
 
         public static HttpContent Serialize<T>(this ITypeSerializerRegistry typeSerializerRegistry,

@@ -164,6 +164,7 @@
       KeyContainerName="$(KeyContainerName)"
       DelaySign="$(DelaySign)"
       PublicSign="$(PublicSign)"
+      NoWarn="$(NoWarn)"
     >
     </YardarmGenerate>
 

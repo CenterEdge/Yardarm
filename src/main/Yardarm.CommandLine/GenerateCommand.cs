@@ -11,17 +11,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using Serilog;
 using Serilog.Events;
 using Yardarm.Helpers;
-using Yardarm.Packaging;
 using Yardarm.Spec;
 
 namespace Yardarm.CommandLine
 {
     public class GenerateCommand : CommonCommand
     {
+        private static readonly char[] s_separators = { ',', ';' };
+
         private readonly GenerateOptions _options;
 
         public GenerateCommand(GenerateOptions options) : base(options)
@@ -48,6 +50,9 @@ namespace Yardarm.CommandLine
                 NoRestore = _options.NoRestore,
                 ReferencedAssemblies = _options.References?.ToList(),
             };
+
+            settings.NoWarn.AddRange(
+                _options.NoWarn.Split(s_separators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
             ApplyVersion(settings);
 

@@ -71,7 +71,7 @@ namespace Yardarm.Packaging.Internal
                     SettingsUtility.GetGlobalPackagesFolder(settings),
                     Enumerable.Empty<string>(),
                     SettingsUtility.GetEnabledSources(settings).Select(source =>
-                        Repository.Factory.GetCoreV3(source.Source)),
+                        Repository.Factory.GetCoreV3(source)),
                     cacheContext,
                     new LocalPackageFileCache(),
                     logger);

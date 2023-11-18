@@ -16,7 +16,7 @@ namespace Yardarm.NewtonsoftJson
                 {
                     Name = "Newtonsoft.Json",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("13.0.1")
+                    VersionRange = VersionRange.Parse("13.0.3")
                 }
             };
         }

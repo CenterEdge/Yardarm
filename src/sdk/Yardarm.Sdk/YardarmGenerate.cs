@@ -20,6 +20,7 @@ public class YardarmGenerate : YardarmCommonTask
     public string? KeyContainerName { get; set; }
     public string? DelaySign { get; set; }
     public string? PublicSign { get; set; }
+    public string? NoWarn { get; set; }
 
     public ITaskItem[]? SpecFile { get; set; }
     public ITaskItem[]? References { get; set; }
@@ -98,6 +99,11 @@ public class YardarmGenerate : YardarmCommonTask
         if (PublicSign == "true")
         {
             builder.Append(" --public-sign");
+        }
+        if (!string.IsNullOrEmpty(NoWarn))
+        {
+            builder.Append(" --nowarn ");
+            builder.AppendQuoted(NoWarn);
         }
 
         if (References is {Length: > 0})

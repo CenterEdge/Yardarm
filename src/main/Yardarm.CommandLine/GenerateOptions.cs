@@ -31,6 +31,9 @@ namespace Yardarm.CommandLine
         [Option("references", HelpText = "Referenced assemblies to use, rather than calculated references. Typically only supplied by MSBuild. Should be a full path.")]
         public IEnumerable<string> References { get; set; }
 
+        [Option("nowarn", HelpText = "Warnings to suppress", Default = "CS1701,CS1702")]
+        public string NoWarn { get; set; }
+
         #region DLL
 
         [Option('o', "output", HelpText = "Output directory or .dll file. Indicate a directory with a trailing slash.", SetName = "dll")]

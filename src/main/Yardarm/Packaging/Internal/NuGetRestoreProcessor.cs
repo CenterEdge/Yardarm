@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -62,6 +65,15 @@ namespace Yardarm.Packaging.Internal
                     CrossTargeting = true,
                 };
                 _packageSpec.RestoreMetadata.ProjectUniqueName = _packageSpec.RestoreMetadata.ProjectPath;
+
+                foreach (string warningString in _settings.NoWarn)
+                {
+                    if (warningString.StartsWith("NU") && int.TryParse(warningString[2..], out int warningNumber))
+                    {
+                        _packageSpec.RestoreMetadata.ProjectWideWarningProperties.NoWarn.Add(
+                            (NuGetLogCode)warningNumber);
+                    }
+                }
 
                 var settings = Settings.LoadDefaultSettings(intermediatePath);
 

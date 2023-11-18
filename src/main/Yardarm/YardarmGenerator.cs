@@ -121,8 +121,13 @@ namespace Yardarm
             context.CurrentTargetFramework = targetFramework;
 
             // Create the empty compilation
+            var options = Settings.CompilationOptions.WithSpecificDiagnosticOptions(
+                Settings.CompilationOptions.SpecificDiagnosticOptions.AddRange(Settings.NoWarn
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Select(p => KeyValuePair.Create(char.IsDigit(p[0]) ? $"CS{p}" : p, ReportDiagnostic.Suppress))
+                    .Distinct()));
             var compilation = CSharpCompilation.Create(Settings.AssemblyName)
-                .WithOptions(Settings.CompilationOptions);
+                .WithOptions(options);
 
             // Run all enrichers against the compilation
             var enrichers = context.GenerationServices.GetRequiredService<IEnumerable<ICompilationEnricher>>();

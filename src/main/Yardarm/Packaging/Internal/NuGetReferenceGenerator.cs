@@ -4,12 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using NuGet.Versioning;
 using Yardarm.Generation;
 
 namespace Yardarm.Packaging.Internal
@@ -55,7 +52,7 @@ namespace Yardarm.Packaging.Internal
                 .SelectMany(
                     _ => lockFile.PackageFolders.Select(p => p.Path),
                     (dependency, folder) =>
-                        Path.Combine(folder, dependency.Library.Name.ToLowerInvariant(), dependency.Library.Version.ToString(), dependency.Path)
+                        Path.Combine(folder, dependency.Library.Name!.ToLowerInvariant(), dependency.Library.Version!.ToString(), dependency.Path)
                 )
                 .Where(File.Exists)
                 .ToList();
@@ -83,8 +80,8 @@ namespace Yardarm.Packaging.Internal
                 // which are imported via a MSBuild target file in the package. So we need to emulate that behavior here.
 
                 string refDirectory = lockFile.PackageFolders.Select(p => p.Path)
-                    .Select(p => Path.Combine(p, netstandardLibrary.Name.ToLowerInvariant(),
-                        netstandardLibrary.Version.ToString()))
+                    .Select(p => Path.Combine(p, netstandardLibrary.Name!.ToLowerInvariant(),
+                        netstandardLibrary.Version!.ToString()))
                     .First(Directory.Exists);
                 refDirectory = Path.Combine(refDirectory, "build", "netstandard2.0", "ref");
 
@@ -105,6 +102,7 @@ namespace Yardarm.Packaging.Internal
                     .OrderByDescending(q => q.name.Version)
                     .Select(q => q.path)
                     .First());
+
         private static string? GetPublicKeyTokenString(AssemblyName name)
         {
             byte[]? token = name.GetPublicKeyToken();
@@ -113,13 +111,7 @@ namespace Yardarm.Packaging.Internal
                 return null;
             }
 
-            var sb = new StringBuilder(16);
-            for (int i = 0; i < token.Length; i++)
-            {
-                sb.AppendFormat("{0:x2}", token[i]);
-            }
-
-            return sb.ToString();
+            return Convert.ToHexString(token);
         }
     }
 }

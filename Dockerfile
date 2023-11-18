@@ -1,7 +1,6 @@
 ARG VERSION=0.1.0-local
 
-# Use 7.0 for build to get LangVersion 11 support
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION
 WORKDIR /app
 
@@ -20,7 +19,7 @@ RUN dotnet restore ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 COPY ./src ./
 RUN dotnet pack -c Release -p:VERSION=${VERSION} ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 ARG VERSION
 WORKDIR /app
 

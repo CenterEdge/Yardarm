@@ -20,6 +20,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v3
       with:
+        # 6.0 needed for GitVersion
         dotnet-version: |
           6.0.x
           8.0.x

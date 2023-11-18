@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
 
@@ -23,7 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.3.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" Version="16.3.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,7 +57,7 @@
   <Target Name="CollectYardarmCommandLine">
     <ItemGroup>
       <_YardarmCommandLine Include="..\..\main\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
-        <AdditionalProperties>RuntimeIdentifier=win10-x64</AdditionalProperties>
+        <AdditionalProperties>RuntimeIdentifier=win-x64</AdditionalProperties>
       </_YardarmCommandLine>
       <_YardarmCommandLine Include="..\..\main\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
         <AdditionalProperties>RuntimeIdentifier=linux-x64</AdditionalProperties>
@@ -67,12 +67,7 @@
     <!--
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)"
-             Properties="Configuration=$(Configuration);TargetFramework=net6.0;SelfContained=False"
-             Targets="Build"
-             BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="false"
-             ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False" Targets="Build" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
     </MSBuild>
 
     <!--
@@ -80,12 +75,7 @@
       the cost of actually copying the files to a publish directory, instead it collects the returned items
       and we can load them directly into the NuGet package.
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)"
-             Properties="Configuration=$(Configuration);TargetFramework=net6.0;SelfContained=False"
-             Targets="ComputeFilesToPublish;PublishItemsOutputGroup"
-             BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="false"
-             ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False" Targets="ComputeFilesToPublish;PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
       <Output TaskParameter="TargetOutputs" ItemName="_YardarmCommandLineFiles" />
     </MSBuild>
 
@@ -98,7 +88,7 @@
       <_FilteredYardarmCommandLineFiles Include="@(_YardarmCommandLineFiles)" Condition=" '%(TargetPath)' == 'Yardarm.CommandLine.deps.json' " />
       <_FilteredYardarmCommandLineFiles Include="@(_YardarmCommandLineFiles)" Condition=" '%(TargetPath)' == 'Yardarm.CommandLine.runtimeconfig.json' " />
 
-      <_YardarmCommandLineLinuxExecutable Include="@(_YardarmCommandLineFiles->ClearMetadata())" Condition=" '%(TargetPath)' == 'Yardarm.CommandLine' " />
+      <_YardarmCommandLineLinuxExecutable Include="@(_YardarmCommandLineFiles-&gt;ClearMetadata())" Condition=" '%(TargetPath)' == 'Yardarm.CommandLine' " />
     </ItemGroup>
 
     <!--
@@ -107,9 +97,7 @@
       "Yardarm.CommandLine" from Linux will get put in a subdirectory (it's original name is "apphost"). Therefore, we must copy it
       to a temporary directory with a matching name and no TargetPath metadata.
     -->
-    <Copy SourceFiles="@(_YardarmCommandLineLinuxExecutable)"
-          DestinationFiles="@(_YardarmCommandLineLinuxExecutable->'$(BaseIntermediateOutputPath)pubtemp\Yardarm.CommandLine')"
-          SkipUnchangedFiles="true">
+    <Copy SourceFiles="@(_YardarmCommandLineLinuxExecutable)" DestinationFiles="@(_YardarmCommandLineLinuxExecutable->'$(BaseIntermediateOutputPath)pubtemp\Yardarm.CommandLine')" SkipUnchangedFiles="true">
       <Output TaskParameter="CopiedFiles" ItemName="_CopiedYardarmCommandLineLinuxExecutable" />
     </Copy>
     <ItemGroup>
@@ -122,16 +110,8 @@
       Convert the collected _FilteredYardarmCommandLineFiles into _PackageFiles items marked for pack in the appropriate directories.
     -->
     <ItemGroup>
-      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)"
-                     Condition=" '%(_FilteredYardarmCommandLineFiles.AdditionalProperties)' == 'RuntimeIdentifier=win10-x64' "
-                     BuildAction="None"
-                     Pack="true"
-                     PackagePath="tools\net6.0\win10-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
-      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)"
-                     Condition=" '%(_FilteredYardarmCommandLineFiles.AdditionalProperties)' == 'RuntimeIdentifier=linux-x64' "
-                     BuildAction="None"
-                     Pack="true"
-                     PackagePath="tools\net6.0\linux-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
+      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)" Condition=" '%(_FilteredYardarmCommandLineFiles.AdditionalProperties)' == 'RuntimeIdentifier=win-x64' " BuildAction="None" Pack="true" PackagePath="tools\net8.0\win-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
+      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)" Condition=" '%(_FilteredYardarmCommandLineFiles.AdditionalProperties)' == 'RuntimeIdentifier=linux-x64' " BuildAction="None" Pack="true" PackagePath="tools\net8.0\linux-x64\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
     </ItemGroup>
   </Target>
 

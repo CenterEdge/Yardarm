@@ -21,7 +21,7 @@ namespace RootNamespace.Internal
 
         public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
 
-        public void Configure(string name, HttpClientFactoryOptions options)
+        public void Configure(string? name, HttpClientFactoryOptions options)
         {
             ThrowHelper.ThrowIfNull(options, nameof(options));
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -26,10 +27,10 @@ namespace Yardarm.SystemTextJson
         private readonly string _rootNamespacePrefix;
 
         public Type[] ExecuteAfter { get; } =
-        {
+        [
             typeof(ResourceFileCompilationEnricher),
             typeof(SyntaxTreeCompilationEnricher)
-        };
+        ];
 
         public JsonSerializableEnricher(ITypeGeneratorRegistry<OpenApiSchema> schemaGeneratorRegistry, IRootNamespace rootNamespace)
         {
@@ -65,62 +66,78 @@ namespace Yardarm.SystemTextJson
 
         public ClassDeclarationSyntax AddAttributes(ClassDeclarationSyntax _, ClassDeclarationSyntax currentDeclaration)
         {
-            // Collect a list of schemas which have types generated
-            var types = _schemaGeneratorRegistry.GetAll()
-                .OfType<TypeGeneratorBase<OpenApiSchema>>()
-                .Where(p => p.Element.IsJsonSchema())
-                .Select(p =>
-                {
-                    YardarmTypeInfo typeInfo = p.TypeInfo;
-
-                    TypeSyntax modelName = typeInfo.Name;
-                    bool isList = false;
-                    if (!typeInfo.IsGenerated
-                        && WellKnownTypes.System.Collections.Generic.ListT.IsOfType(modelName, out var genericArgument))
-                    {
-                        isList = true;
-                        modelName = genericArgument;
-                    }
-
-                    return (typeInfo, modelName, isList);
-                })
-                .Where(p => p.isList || p.typeInfo.IsGenerated);
+            var schemas = GetSchemas();
 
             // Generate JsonSerializable attributes for each type
             var typeInfoPropertyName = NameEquals(IdentifierName("TypeInfoPropertyName"));
-            var attributeLists = types.Select(type =>
+            var attributeLists = schemas.Select(schema =>
                 AttributeList(SingletonSeparatedList(Attribute(
                     SystemTextJsonTypes.Serialization.JsonSerializableAttributeName,
                     AttributeArgumentList(SeparatedList(new[]
                     {
-                        AttributeArgument(TypeOfExpression(type.typeInfo.Name)),
+                        AttributeArgument(TypeOfExpression(schema.typeName)),
                         AttributeArgument(
                             typeInfoPropertyName,
                             default,
-                            SyntaxHelpers.StringLiteral(GetPropertyName(type.modelName, type.isList)))
+                            SyntaxHelpers.StringLiteral(schema.propertyName))
                     }))))));
 
-            return currentDeclaration.WithAttributeLists(currentDeclaration.AttributeLists.AddRange(attributeLists));
+            return currentDeclaration.WithAttributeLists(
+                currentDeclaration.AttributeLists.AddRange(attributeLists));
+        }
+
+        private IEnumerable<(TypeSyntax typeName, string propertyName)> GetSchemas()
+        {
+            // Track already generated types to avoid duplicates. This tends to occur with lists.
+            var alreadyEmitted = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var type in _schemaGeneratorRegistry.GetAll().OfType<TypeGeneratorBase<OpenApiSchema>>())
+            {
+                if (!type.Element.IsJsonSchema())
+                {
+                    continue;
+                }
+
+                YardarmTypeInfo typeInfo = type.TypeInfo;
+                TypeSyntax modelName = typeInfo.Name;
+                string modelNameString = modelName.ToString();
+
+                if (alreadyEmitted.Contains(modelNameString))
+                {
+                    continue;
+                }
+
+                if (typeInfo.IsGenerated)
+                {
+                    alreadyEmitted.Add(modelNameString);
+                    yield return (modelName, GetPropertyName(modelNameString, false));
+                }
+                else if (WellKnownTypes.System.Collections.Generic.ListT.IsOfType(modelName, out var genericArgument))
+                {
+                    alreadyEmitted.Add(modelNameString);
+                    yield return (modelName, GetPropertyName(genericArgument.ToString(), true));
+                }
+            }
         }
 
         // Since we may have multiple models with the same name but nested within different classes, we need
         // to avoid collisions by giving them a unique name.
-        private string GetPropertyName(TypeSyntax typeName, bool isList)
+        private string GetPropertyName(string typeName, bool isList)
         {
             const string listNamePrefix = "__List_";
 
-            ReadOnlySpan<char> typeNameString = typeName.ToString().AsSpan();
+            ReadOnlySpan<char> typeNameSpan = typeName.AsSpan();
 
-            if (typeNameString.StartsWith("global::"))
+            if (typeNameSpan.StartsWith("global::"))
             {
-                typeNameString = typeNameString.Slice("global::".Length);
+                typeNameSpan = typeNameSpan["global::".Length..];
             }
-            if (typeNameString.StartsWith(_rootNamespacePrefix))
+            if (typeNameSpan.StartsWith(_rootNamespacePrefix))
             {
-                typeNameString = typeNameString.Slice(_rootNamespacePrefix.Length);
+                typeNameSpan = typeNameSpan[_rootNamespacePrefix.Length..];
             }
 
-            Span<char> dest = stackalloc char[typeNameString.Length + listNamePrefix.Length];
+            Span<char> dest = stackalloc char[typeNameSpan.Length + listNamePrefix.Length];
 
             int length = 0;
             if (isList)
@@ -130,7 +147,7 @@ namespace Yardarm.SystemTextJson
             }
 
             // Skip separators
-            foreach (char ch in typeNameString)
+            foreach (char ch in typeNameSpan)
             {
                 dest[length++] = ch switch
                 {
@@ -140,7 +157,7 @@ namespace Yardarm.SystemTextJson
                 };
             }
 
-            return new string(dest.Slice(0, length));
+            return new string(dest[..length]);
         }
     }
 }

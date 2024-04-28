@@ -3,56 +3,40 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
 {
-    public class DefaultSchemaGeneratorFactory : ITypeGeneratorFactory<OpenApiSchema>
+    public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGeneratorFactory<OpenApiSchema>
     {
-        private readonly GenerationContext _context;
-
-        public DefaultSchemaGeneratorFactory(GenerationContext context)
-        {
-            _context = context;
-        }
-
-        public virtual ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent)
-        {
-            OpenApiSchema schema = element.Element;
-
-            if (schema.AllOf.Count > 0)
+        public virtual ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
+            element.Element switch
             {
-                return new AllOfSchemaGenerator(element, _context, parent);
-            }
-
-            if (schema.OneOf.Count > 0)
-            {
-                return new OneOfSchemaGenerator(element, _context, parent);
-            }
-
-            return schema.Type switch
-            {
-                "object" => GetObjectGenerator(element, parent),
-                "string" => GetStringGenerator(element, parent),
-                "number" => GetNumberGenerator(element, parent),
-                "integer" => GetNumberGenerator(element, parent),
-                "boolean" => GetBooleanGenerator(element),
-                "array" => GetArrayGenerator(element, parent),
-                _ => NullSchemaGenerator.Instance
+                { AllOf.Count: > 0 } => new AllOfSchemaGenerator(element, context, parent),
+                { OneOf.Count: > 0 } => new OneOfSchemaGenerator(element, context, parent),
+                { Type: "object" } => GetObjectGenerator(element, parent),
+                { Type: "string" } => GetStringGenerator(element, parent),
+                { Type: "number" or "integer" } => GetNumberGenerator(element, parent),
+                { Type: "boolean" } => GetBooleanGenerator(element),
+                { Type: "array" } => GetArrayGenerator(element, parent),
+                _ => new DynamicSchemaGenerator(element, context, parent)
             };
-        }
 
         protected virtual ITypeGenerator GetArrayGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
-            new ArraySchemaGenerator(element, _context, parent);
+            new ArraySchemaGenerator(element, context, parent);
 
         protected virtual ITypeGenerator GetBooleanGenerator(ILocatedOpenApiElement<OpenApiSchema> element) =>
             BooleanSchemaGenerator.Instance;
 
         protected virtual ITypeGenerator GetNumberGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
-            new NumberSchemaGenerator(element, _context, parent);
+            new NumberSchemaGenerator(element, context, parent);
 
         protected virtual ITypeGenerator GetObjectGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
-            new ObjectSchemaGenerator(element, _context, parent);
+            new ObjectSchemaGenerator(element, context, parent);
 
         protected virtual ITypeGenerator GetStringGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
-            element.Element.Enum?.Count > 0
-                ? (ITypeGenerator) new EnumSchemaGenerator(element, _context, parent)
-                : new StringSchemaGenerator(element, _context, parent);
+            element.Element.Enum is { Count: > 0 }
+                ? new EnumSchemaGenerator(element, context, parent)
+                : new StringSchemaGenerator(element, context, parent);
     }
+
+    // For the most common case, this allows inlining of calls to the various Get methods without guarded devirtualization by PGO.
+    internal sealed class DefaultSchemaGeneratorFactorySealed(GenerationContext context)
+        : DefaultSchemaGeneratorFactory(context);
 }

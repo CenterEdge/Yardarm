@@ -9,18 +9,38 @@ namespace Yardarm.Names
 
         public NameKind Kind { get; }
 
-        public bool IsGenerated { get; }
+        [Flags]
+        private enum Flags : byte
+        {
+            None = 0,
+            Generated = 1,
+            RequiresDynamicSerialization = 2
+        }
 
-        public YardarmTypeInfo(TypeSyntax name, NameKind kind = NameKind.Class, bool isGenerated = true)
+        private readonly Flags _flags;
+
+        public bool IsGenerated => _flags.HasFlag(Flags.Generated);
+
+        public bool RequiresDynamicSerialization => _flags.HasFlag(Flags.RequiresDynamicSerialization);
+
+        public YardarmTypeInfo(TypeSyntax name, NameKind kind, bool isGenerated)
+            : this(name, kind, isGenerated, false)
+        {
+        }
+
+        public YardarmTypeInfo(TypeSyntax name, NameKind kind = NameKind.Class, bool isGenerated = true,
+            bool requiresDynamicSerialization = false)
         {
             ArgumentNullException.ThrowIfNull(name);
 
             Name = name;
             Kind = kind;
-            IsGenerated = isGenerated;
+
+            _flags = (isGenerated ? Flags.Generated : Flags.None) |
+                     (requiresDynamicSerialization ? Flags.RequiresDynamicSerialization : Flags.None);
         }
 
-        private bool Equals(YardarmTypeInfo other) => Name.Equals(other.Name) && Kind == other.Kind && IsGenerated == other.IsGenerated;
+        private bool Equals(YardarmTypeInfo other) => Name.Equals(other.Name) && Kind == other.Kind && _flags == other._flags;
 
         public override bool Equals(object? obj)
         {
@@ -42,6 +62,6 @@ namespace Yardarm.Names
             return Equals((YardarmTypeInfo) obj);
         }
 
-        public override int GetHashCode() => HashCode.Combine(Name, (int) Kind, IsGenerated);
+        public override int GetHashCode() => HashCode.Combine(Name, (int) Kind, _flags);
     }
 }

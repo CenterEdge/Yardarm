@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
 using Yardarm.Spec;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
+    [Obsolete("Use DynamicSchemaGenerator instead.")]
     public class NullSchemaGenerator : ITypeGenerator
     {
-        public static NullSchemaGenerator Instance { get; } = new NullSchemaGenerator();
+        public static NullSchemaGenerator Instance { get; } = new();
 
         public ITypeGenerator? Parent => null;
 
@@ -20,14 +20,11 @@ namespace Yardarm.Generation.Schema
         {
         }
 
-        public YardarmTypeInfo TypeInfo { get; } = new(
-            NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword))),
-            isGenerated: false);
+        public YardarmTypeInfo TypeInfo => DynamicSchemaGenerator.DynamicObjectTypeInfo;
 
         public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public IEnumerable<MemberDeclarationSyntax> Generate() =>
-            Enumerable.Empty<MemberDeclarationSyntax>();
+        public IEnumerable<MemberDeclarationSyntax> Generate() => [];
 
         public QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
             where TChild : IOpenApiElement =>

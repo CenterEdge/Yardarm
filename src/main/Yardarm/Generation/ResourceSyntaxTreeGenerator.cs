@@ -53,7 +53,7 @@ namespace Yardarm.Generation
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(rawText, Encoding.UTF8),
                 CSharpParseOptions.Default
-                    .WithLanguageVersion(LanguageVersion.CSharp11)
+                    .WithLanguageVersion(LanguageVersion.CSharp12)
                     .WithPreprocessorSymbols(GenerationContext.PreprocessorSymbols),
                 path: PathHelpers.Combine(
                     GenerationContext.Settings.BasePath,

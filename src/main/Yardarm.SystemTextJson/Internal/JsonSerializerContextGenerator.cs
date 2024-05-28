@@ -37,7 +37,12 @@ namespace Yardarm.SystemTextJson.Internal
             var classDeclaration =
                 ClassDeclaration(
                     SingletonList(AttributeList(SingletonSeparatedList(Attribute(
-                        SystemTextJsonTypes.Serialization.JsonSourceGenerationOptionsAttributeName)))),
+                        SystemTextJsonTypes.Serialization.JsonSourceGenerationOptionsAttributeName,
+                        AttributeArgumentList(SingletonSeparatedList(
+                            AttributeArgument(
+                                nameEquals: NameEquals("NumberHandling"),
+                                nameColon: null,
+                                expression: SystemTextJsonTypes.Serialization.JsonNumberHandling.AllowReadingFromString))))))),
                     TokenList(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.PartialKeyword)),
                     TypeName,
                     null,

@@ -86,6 +86,18 @@ namespace Yardarm.SystemTextJson.Helpers
                 Name,
                 IdentifierName("JsonIgnoreAttribute"));
 
+            public static class JsonNumberHandling
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    Serialization.Name,
+                    IdentifierName("JsonNumberHandling"));
+
+                public static MemberAccessExpressionSyntax AllowReadingFromString { get; } = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    Name,
+                    IdentifierName("AllowReadingFromString"));
+            }
+
             public static NameSyntax JsonPolymorphicAttributeName { get; } = QualifiedName(
                 Name,
                 IdentifierName("JsonPolymorphicAttribute"));

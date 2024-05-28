@@ -42,6 +42,27 @@ namespace Yardarm.Helpers
                                 GenericName(
                                     Identifier("Dictionary"),
                                     TypeArgumentList(SeparatedList(new [] {keyType, valueType}))));
+
+                        public static bool IsOfType(TypeSyntax nameSyntax,
+                            [NotNullWhen(true)] out TypeSyntax? keyArgument,
+                            [NotNullWhen(true)] out TypeSyntax? valueArgument)
+                        {
+                            if (nameSyntax is QualifiedNameSyntax qualifiedName && qualifiedName.Left.IsEquivalentTo(Generic.Name))
+                            {
+                                if (qualifiedName.Right is GenericNameSyntax genericName
+                                    && genericName.Identifier.ValueText == "Dictionary"
+                                    && genericName.TypeArgumentList.Arguments.Count == 2)
+                                {
+                                    keyArgument = genericName.TypeArgumentList.Arguments[0];
+                                    valueArgument = genericName.TypeArgumentList.Arguments[1];
+                                    return true;
+                                }
+                            }
+
+                            keyArgument = null;
+                            valueArgument = null;
+                            return false;
+                        }
                     }
 
                     public static class IDictionaryT

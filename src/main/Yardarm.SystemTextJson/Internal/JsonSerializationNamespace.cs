@@ -42,5 +42,9 @@ namespace Yardarm.SystemTextJson.Internal
                 ArgumentList(SeparatedList<ArgumentSyntax>(new[] {
                     Argument(null, Token(SyntaxKind.RefKeyword), reader),
                     Argument(utf8PropertyName) })));
+
+        public TypeSyntax JsonNamedStringEnumConverterName(TypeSyntax enumType) =>
+            QualifiedName(Name, GenericName(Identifier("JsonNamedStringEnumConverter"),
+                TypeArgumentList(SingletonSeparatedList(enumType))));
     }
 }

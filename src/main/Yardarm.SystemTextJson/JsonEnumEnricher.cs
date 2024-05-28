@@ -8,7 +8,9 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson
 {
-    public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, OpenApiSchema>
+    public class JsonEnumEnricher(
+        IJsonSerializationNamespace serializationNamespace)
+        : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, OpenApiSchema>
     {
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
@@ -19,7 +21,7 @@ namespace Yardarm.SystemTextJson
                             SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
                             AttributeArgumentList(SingletonSeparatedList(
                                 AttributeArgument(TypeOfExpression(
-                                    SystemTextJsonTypes.Serialization.JsonStringEnumConverterName(IdentifierName(target.Identifier)))))))))
+                                    serializationNamespace.JsonNamedStringEnumConverterName(IdentifierName(target.Identifier)))))))))
                         .WithTrailingTrivia(ElasticCarriageReturnLineFeed))
                 : target;
     }

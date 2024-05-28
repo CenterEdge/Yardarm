@@ -10,6 +10,12 @@ namespace Yardarm.Generation.Schema
             {
                 { AllOf.Count: > 0 } => new AllOfSchemaGenerator(element, context, parent),
                 { OneOf.Count: > 0 } => new OneOfSchemaGenerator(element, context, parent),
+                {
+                    Type: "object",
+                    AdditionalPropertiesAllowed: true,
+                    Properties: null or { Count: 0 },
+                    AnyOf: null or { Count: 0 } // AllOf and OneOf are handled above, they don't need to be tested here
+                } => GetDictionaryGenerator(element, parent),
                 { Type: "object" } => GetObjectGenerator(element, parent),
                 { Type: "string" } => GetStringGenerator(element, parent),
                 { Type: "number" or "integer" } => GetNumberGenerator(element, parent),
@@ -34,9 +40,8 @@ namespace Yardarm.Generation.Schema
             element.Element.Enum is { Count: > 0 }
                 ? new EnumSchemaGenerator(element, context, parent)
                 : new StringSchemaGenerator(element, context, parent);
-    }
 
-    // For the most common case, this allows inlining of calls to the various Get methods without guarded devirtualization by PGO.
-    internal sealed class DefaultSchemaGeneratorFactorySealed(GenerationContext context)
-        : DefaultSchemaGeneratorFactory(context);
+        protected virtual ITypeGenerator GetDictionaryGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
+            new DictionarySchemaGenerator(element, context, parent);
+    }
 }

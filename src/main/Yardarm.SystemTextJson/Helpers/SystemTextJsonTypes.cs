@@ -14,6 +14,10 @@ namespace Yardarm.SystemTextJson.Helpers
                 IdentifierName("Text")),
             IdentifierName("Json"));
 
+        public static NameSyntax JsonElement { get; } = QualifiedName(
+            SystemTextJson,
+            IdentifierName("JsonElement"));
+
         public static NameSyntax JsonSerializer { get; } = QualifiedName(
             SystemTextJson,
             IdentifierName("JsonSerializer"));
@@ -58,6 +62,10 @@ namespace Yardarm.SystemTextJson.Helpers
             public static NameSyntax JsonNodeName { get; } = QualifiedName(
                 Name,
                 IdentifierName("JsonNode"));
+
+            public static NameSyntax JsonObjectName { get; } = QualifiedName(
+                Name,
+                IdentifierName("JsonObject"));
         }
 
         public static class Serialization
@@ -147,7 +155,7 @@ namespace Yardarm.SystemTextJson.Helpers
             public static NameSyntax JsonSourceGenerationOptionsAttributeName { get; } = QualifiedName(
                 Name,
                 IdentifierName("JsonSourceGenerationOptionsAttribute"));
-                
+
             public static TypeSyntax JsonStringEnumConverterName(TypeSyntax enumType) =>
                 QualifiedName(Name, GenericName(Identifier("JsonStringEnumConverter"),
                     TypeArgumentList(SingletonSeparatedList(enumType))));

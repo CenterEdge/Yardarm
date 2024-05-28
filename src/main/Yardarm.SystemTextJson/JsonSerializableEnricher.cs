@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,6 +91,8 @@ namespace Yardarm.SystemTextJson
         {
             // Track already generated types to avoid duplicates. This tends to occur with lists.
             var alreadyEmitted = new HashSet<string>(StringComparer.Ordinal);
+            bool hasEmittedDynamicTypes = false;
+            char[] workingBuffer = new char[256];
 
             foreach (var type in _schemaGeneratorRegistry.GetAll().OfType<TypeGeneratorBase<OpenApiSchema>>())
             {
@@ -102,6 +105,17 @@ namespace Yardarm.SystemTextJson
                 TypeSyntax modelName = typeInfo.Name;
                 string modelNameString = modelName.ToString();
 
+                if (!hasEmittedDynamicTypes && typeInfo.RequiresDynamicSerialization)
+                {
+                    // For JsonSerializerContext, it can't handle dynamic object cases unless we explicitly include
+                    // the dynamic types. If we have any dynamic object cases, include them, but only once.
+
+                    hasEmittedDynamicTypes = true;
+
+                    yield return (SystemTextJsonTypes.JsonElement, "JsonElement");
+                    yield return (SystemTextJsonTypes.Nodes.JsonObjectName, "JsonObject");
+                }
+
                 if (alreadyEmitted.Contains(modelNameString))
                 {
                     continue;
@@ -110,54 +124,131 @@ namespace Yardarm.SystemTextJson
                 if (typeInfo.IsGenerated)
                 {
                     alreadyEmitted.Add(modelNameString);
-                    yield return (modelName, GetPropertyName(modelNameString, false));
+                    yield return (modelName,
+                        GetPropertyName(workingBuffer, _rootNamespacePrefix, $"{modelNameString}"));
                 }
                 else if (WellKnownTypes.System.Collections.Generic.ListT.IsOfType(modelName, out var genericArgument))
                 {
                     alreadyEmitted.Add(modelNameString);
-                    yield return (modelName, GetPropertyName(genericArgument.ToString(), true));
+                    yield return (modelName,
+                        GetPropertyName(workingBuffer, _rootNamespacePrefix,$"__List__{genericArgument}"));
+                }
+                else if (WellKnownTypes.System.Collections.Generic.DictionaryT.IsOfType(modelName,
+                             out var keyArgument, out var valueArgument))
+                {
+                    alreadyEmitted.Add(modelNameString);
+                    yield return (modelName,
+                        GetPropertyName(workingBuffer, _rootNamespacePrefix, $"__Dictionary__Of__{keyArgument}__AndOf__{valueArgument}"));
                 }
             }
         }
 
         // Since we may have multiple models with the same name but nested within different classes, we need
         // to avoid collisions by giving them a unique name.
-        private string GetPropertyName(string typeName, bool isList)
+        private static string GetPropertyName(
+            Span<char> initialBuffer,
+            string rootNamespacePrefix,
+            [InterpolatedStringHandlerArgument(nameof(initialBuffer), nameof(rootNamespacePrefix))] ref IdentifierSafeInterpolatedStringHandler typeName) =>
+            typeName.ToStringAndClear();
+
+        [InterpolatedStringHandler]
+        private ref struct IdentifierSafeInterpolatedStringHandler(
+            int literalLength,
+            int formattedCount,
+            Span<char> initialBuffer,
+            string rootNamespacePrefix)
         {
-            const string listNamePrefix = "__List_";
+            private DefaultInterpolatedStringHandler _innerHandler = new(literalLength, formattedCount, null, initialBuffer);
 
-            ReadOnlySpan<char> typeNameSpan = typeName.AsSpan();
+            public void AppendLiteral(string s) => _innerHandler.AppendLiteral(s);
 
-            if (typeNameSpan.StartsWith("global::"))
+            public void AppendFormatted<T>(T value) => AppendFormatted(value?.ToString());
+
+            public void AppendFormatted(string? value)
             {
-                typeNameSpan = typeNameSpan["global::".Length..];
-            }
-            if (typeNameSpan.StartsWith(_rootNamespacePrefix))
-            {
-                typeNameSpan = typeNameSpan[_rootNamespacePrefix.Length..];
-            }
+                const string GlobalPrefix = "global::";
 
-            Span<char> dest = stackalloc char[typeNameSpan.Length + listNamePrefix.Length];
-
-            int length = 0;
-            if (isList)
-            {
-                listNamePrefix.CopyTo(dest);
-                length += listNamePrefix.Length;
-            }
-
-            // Skip separators
-            foreach (char ch in typeNameSpan)
-            {
-                dest[length++] = ch switch
+                if (value is null)
                 {
-                    '.' => '_',
-                    '<' or '>' => 'ſ',
-                    _ => ch
-                };
+                    return;
+                }
+
+                ReadOnlySpan<char> chars = value.AsSpan();
+
+                Span<char> buffer = chars.Length <= 256
+                    ? stackalloc char[chars.Length]
+                    : new char[chars.Length];
+
+                while (chars.Length > 0)
+                {
+                    if (chars.StartsWith(GlobalPrefix))
+                    {
+                        chars = chars[GlobalPrefix.Length..];
+                    }
+                    if (chars.StartsWith(rootNamespacePrefix))
+                    {
+                        chars = chars[rootNamespacePrefix.Length..];
+                    }
+
+                    // Skip separators
+                    int bufferLength = 0;
+                    bool newIdentifier = false;
+                    int i = 0;
+                    while (i < chars.Length && !newIdentifier)
+                    {
+                        char ch = chars[i];
+
+                        switch (ch)
+                        {
+                            case '.' or '?':
+                                buffer[bufferLength] = '_';
+                                bufferLength++;
+                                break;
+
+                            case '<':
+                                // Append the buffer so far, then append "__Of__" to indicate a generic type
+                                _innerHandler.AppendFormatted(buffer.Slice(0, bufferLength));
+                                bufferLength = 0;
+
+                                _innerHandler.AppendLiteral("__Of__");
+
+                                newIdentifier = true;
+                                break;
+
+                            case ',':
+                                // Append the buffer so far, then append "__AndOf__" to indicate a additional generic parameter
+                                _innerHandler.AppendFormatted(buffer.Slice(0, bufferLength));
+                                bufferLength = 0;
+
+                                _innerHandler.AppendLiteral("__AndOf__");
+
+                                newIdentifier = true;
+                                break;
+
+                            case '>':
+                                // Drop the trailing '>' character from the generic type
+                                break;
+
+                            default:
+                                buffer[bufferLength] = ch;
+                                bufferLength++;
+                                break;
+                        }
+
+                        i++;
+                    }
+
+                    chars = chars.Slice(i);
+                    if (bufferLength > 0)
+                    {
+                        _innerHandler.AppendFormatted(buffer.Slice(0, bufferLength));
+                    }
+                }
             }
 
-            return new string(dest[..length]);
+            public override string ToString() => _innerHandler.ToString();
+
+            public string ToStringAndClear() => _innerHandler.ToStringAndClear();
         }
     }
 }

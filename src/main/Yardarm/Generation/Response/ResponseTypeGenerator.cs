@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
@@ -8,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -15,38 +17,26 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    internal class ResponseTypeGenerator : TypeGeneratorBase<OpenApiResponse>
+    internal class ResponseTypeGenerator(
+        ILocatedOpenApiElement<OpenApiResponse> responseElement,
+        GenerationContext context,
+        IMediaTypeSelector mediaTypeSelector,
+        IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
+        ISerializationNamespace serializationNamespace,
+        IResponsesNamespace responsesNamespace,
+        IEnumerable<IResponseMethodGenerator> methodGenerators,
+        IOperationNameProvider operationNameProvider)
+        : TypeGeneratorBase<OpenApiResponse>(responseElement, context, null)
     {
         public const string BodyFieldName = "_body";
 
-        protected IResponsesNamespace ResponsesNamespace { get; }
-        protected IMediaTypeSelector MediaTypeSelector { get; }
-        protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; }
-        protected ISerializationNamespace SerializationNamespace { get; }
-        protected IResponseMethodGenerator[] MethodGenerators { get; }
+        protected IResponsesNamespace ResponsesNamespace { get; } = responsesNamespace;
+        protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
+        protected IHttpResponseCodeNameProvider HttpResponseCodeNameProvider { get; } = httpResponseCodeNameProvider;
+        protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
+        protected IResponseMethodGenerator[] MethodGenerators { get; } = methodGenerators.ToArray();
 
         protected OpenApiResponse Response => Element.Element;
-
-        public ResponseTypeGenerator(ILocatedOpenApiElement<OpenApiResponse> responseElement, GenerationContext context,
-            IMediaTypeSelector mediaTypeSelector,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
-            ISerializationNamespace serializationNamespace,
-            IResponsesNamespace responsesNamespace,
-            IEnumerable<IResponseMethodGenerator> methodGenerators)
-            : base(responseElement, context, null)
-        {
-            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
-            ArgumentNullException.ThrowIfNull(httpResponseCodeNameProvider);
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
-            ArgumentNullException.ThrowIfNull(responsesNamespace);
-            ArgumentNullException.ThrowIfNull(methodGenerators);
-
-            MediaTypeSelector = mediaTypeSelector;
-            HttpResponseCodeNameProvider = httpResponseCodeNameProvider;
-            SerializationNamespace = serializationNamespace;
-            ResponsesNamespace = responsesNamespace;
-            MethodGenerators = methodGenerators.ToArray();
-        }
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
@@ -239,16 +229,18 @@ namespace Yardarm.Generation.Response
             {
                 // We're in an operation
 
-                OpenApiOperation operation = Element.Parents()
+                ILocatedOpenApiElement<OpenApiOperation> operation = Element.Parents()
                     .OfType<LocatedOpenApiElement<OpenApiOperation>>()
-                    .First()
-                    .Element;
+                    .First();
+
+                string? operationName = operationNameProvider.GetOperationName(operation);
+                Debug.Assert(operationName is not null);
 
                 string responseCode = Enum.TryParse<HttpStatusCode>(Element.Key, out var statusCode)
                     ? HttpResponseCodeNameProvider.GetName(statusCode)
                     : Element.Key;
 
-                return formatter.Format($"{operation.OperationId}{responseCode}Response");
+                return formatter.Format($"{operationName}{responseCode}Response");
             }
         }
     }

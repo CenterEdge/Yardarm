@@ -25,8 +25,8 @@ namespace Yardarm.Generation.Tag
 
         public TagImplementationTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
             ISerializationNamespace serializationNamespace, IAuthenticationNamespace authenticationNamespace,
-            IOperationMethodGenerator operationMethodGenerator)
-            : base(tagElement, context)
+            IOperationMethodGenerator operationMethodGenerator, IOperationNameProvider operationNameProvider)
+            : base(tagElement, context, operationNameProvider)
         {
             ArgumentNullException.ThrowIfNull(serializationNamespace);
             ArgumentNullException.ThrowIfNull(authenticationNamespace);

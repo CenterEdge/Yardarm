@@ -1,26 +1,19 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Names;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {
-    public class ResponseSetTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiResponses>
+    public class ResponseSetTypeGeneratorFactory(IServiceProvider serviceProvider) : ITypeGeneratorFactory<OpenApiResponses>
     {
-        private readonly GenerationContext _context;
-        private readonly IResponsesNamespace _responsesNamespace;
-
-        public ResponseSetTypeGeneratorFactory(GenerationContext context,
-            IResponsesNamespace responsesNamespace)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            ArgumentNullException.ThrowIfNull(responsesNamespace);
-
-            _context = context;
-            _responsesNamespace = responsesNamespace;
-        }
+        private static readonly ObjectFactory<ResponseSetTypeGenerator> Factory =
+            ActivatorUtilities.CreateFactory<ResponseSetTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiResponses>)
+            ]);
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponses> element, ITypeGenerator? parent) =>
-            new ResponseSetTypeGenerator(element, _context, _responsesNamespace);
+            Factory(serviceProvider, [element]);
     }
 }

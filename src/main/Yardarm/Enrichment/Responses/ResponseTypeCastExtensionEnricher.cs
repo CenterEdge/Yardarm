@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -15,24 +17,13 @@ namespace Yardarm.Enrichment.Responses
     /// <summary>
     /// Adds extension methods to cast OpenApiResponses interfaces to specific response types.
     /// </summary>
-    public class ResponseTypeCastExtensionEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiResponses>
+    public class ResponseTypeCastExtensionEnricher(
+        GenerationContext context,
+        IResponsesNamespace responsesNamespace,
+        IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
+        IOperationNameProvider operationNameProvider)
+        : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiResponses>
     {
-        private readonly GenerationContext _context;
-        private readonly IResponsesNamespace _responsesNamespace;
-        private readonly IHttpResponseCodeNameProvider _httpResponseCodeNameProvider;
-
-        public ResponseTypeCastExtensionEnricher(GenerationContext context, IResponsesNamespace responsesNamespace,
-            IHttpResponseCodeNameProvider httpResponseCodeNameProvider)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            ArgumentNullException.ThrowIfNull(responsesNamespace);
-            ArgumentNullException.ThrowIfNull(httpResponseCodeNameProvider);
-
-            _context = context;
-            _responsesNamespace = responsesNamespace;
-            _httpResponseCodeNameProvider = httpResponseCodeNameProvider;
-        }
-
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
             OpenApiEnrichmentContext<OpenApiResponses> context)
         {
@@ -49,9 +40,12 @@ namespace Yardarm.Enrichment.Responses
         {
             var operation = (ILocatedOpenApiElement<OpenApiOperation>)responseSet.Parent!;
 
-            var nameFormatter = _context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            var nameFormatter = context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
-            return ClassDeclaration(nameFormatter.Format(operation.Element.OperationId + "-ResponseExtensions"))
+            string? operationName = operationNameProvider.GetOperationName(operation);
+            Debug.Assert(operationName is not null);
+
+            return ClassDeclaration(nameFormatter.Format(operationName + "-ResponseExtensions"))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
                 .AddMembers(GenerateExtensions(responseSet).ToArray<MemberDeclarationSyntax>());
         }
@@ -59,17 +53,17 @@ namespace Yardarm.Enrichment.Responses
         private IEnumerable<MethodDeclarationSyntax> GenerateExtensions(
             ILocatedOpenApiElement<OpenApiResponses> responseSet)
         {
-            var nameFormatter = _context.NameFormatterSelector.GetFormatter(NameKind.Method);
+            var nameFormatter = context.NameFormatterSelector.GetFormatter(NameKind.Method);
 
-            TypeSyntax interfaceTypeName = _context.TypeGeneratorRegistry.Get(responseSet).TypeInfo.Name;
+            TypeSyntax interfaceTypeName = context.TypeGeneratorRegistry.Get(responseSet).TypeInfo.Name;
 
             foreach (var response in responseSet.GetResponses())
             {
                 string responseCode = Enum.TryParse<HttpStatusCode>(response.Key, out var statusCode)
-                    ? _httpResponseCodeNameProvider.GetName(statusCode)
+                    ? httpResponseCodeNameProvider.GetName(statusCode)
                     : response.Key;
 
-                TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(response).TypeInfo.Name;
+                TypeSyntax typeName = context.TypeGeneratorRegistry.Get(response).TypeInfo.Name;
 
                 yield return MethodDeclaration(typeName, nameFormatter.Format("As-" + responseCode))
                     .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
@@ -82,7 +76,7 @@ namespace Yardarm.Enrichment.Responses
                             BinaryExpression(SyntaxKind.AsExpression,
                                 IdentifierName("response"),
                                 typeName),
-                            ThrowExpression(ObjectCreationExpression(_responsesNamespace.StatusCodeMismatchException)
+                            ThrowExpression(ObjectCreationExpression(responsesNamespace.StatusCodeMismatchException)
                                 .AddArgumentListArguments(
                                     Argument(IdentifierName("response")),
                                     Argument(TypeOfExpression(typeName)))))))

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 
 namespace Yardarm.Spec
 {
@@ -57,6 +58,14 @@ namespace Yardarm.Spec
         public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(this OpenApiDocument document) =>
             document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
                 .Concat(document.Paths.CreateRoot().GetOperations().GetAllSchemas())
+                .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
+                .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
+            this OpenApiDocument document,
+            IOperationNameProvider operationNameProvider) =>
+            document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
+                .Concat(document.Paths.CreateRoot().GetOperations().WhereOperationHasName(operationNameProvider).GetAllSchemas())
                 .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
 
@@ -147,6 +156,11 @@ namespace Yardarm.Spec
             this ILocatedOpenApiElement<OpenApiPathItem> path) =>
             path.Element.Operations
                 .Select(operation => path.CreateChild(operation.Value, operation.Key.ToString()));
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> WhereOperationHasName(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations, IOperationNameProvider operationNameProvider) =>
+            operations
+                .Where(operation => !string.IsNullOrEmpty(operationNameProvider.GetOperationName(operation)));
 
         #endregion
 

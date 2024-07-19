@@ -5,28 +5,25 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment.Responses;
+using Yardarm.Generation.Operation;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    public class ResponseSetTypeGenerator : TypeGeneratorBase<OpenApiResponses>
+    public class ResponseSetTypeGenerator(
+        ILocatedOpenApiElement<OpenApiResponses> element,
+        GenerationContext context,
+        IResponsesNamespace responsesNamespace,
+        IOperationNameProvider operationNameProvider)
+        : TypeGeneratorBase<OpenApiResponses>(element, context, null)
     {
         protected OpenApiResponses ResponseSet => Element.Element;
-        protected OpenApiOperation Operation { get; }
-        protected IResponsesNamespace ResponsesNamespace { get; }
-
-        public ResponseSetTypeGenerator(ILocatedOpenApiElement<OpenApiResponses> element, GenerationContext context,
-            IResponsesNamespace responsesNamespace)
-            : base(element, context, null)
-        {
-            ArgumentNullException.ThrowIfNull(responsesNamespace);
-
-            ResponsesNamespace = responsesNamespace;
-
-            Operation = element.Parent?.Element as OpenApiOperation ?? throw new ArgumentException("Parent must be an OpenApiOperation", nameof(element));
-        }
+        private ILocatedOpenApiElement<OpenApiOperation> LocatedOperation { get; } = element.Parent as ILocatedOpenApiElement<OpenApiOperation>
+            ?? throw new ArgumentException("Parent must be an OpenApiOperation", nameof(element));
+        protected OpenApiOperation Operation => LocatedOperation.Element;
+        protected IResponsesNamespace ResponsesNamespace { get; } = responsesNamespace;
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
@@ -64,6 +61,7 @@ namespace Yardarm.Generation.Response
             yield return declaration;
         }
 
-        private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Operation.OperationId + "Response");
+        private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface)
+            .Format(operationNameProvider.GetOperationName(LocatedOperation) + "Response");
     }
 }

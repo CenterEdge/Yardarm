@@ -3,24 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {
-    public class ResponseGenerator : ISyntaxTreeGenerator
+    public class ResponseGenerator(
+        OpenApiDocument document,
+        ITypeGeneratorRegistry<OpenApiResponse> responseGeneratorRegistry,
+        IOperationNameProvider operationNameProvider)
+        : ISyntaxTreeGenerator
     {
-        private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiResponse> _responseGeneratorRegistry;
-
-        public ResponseGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiResponse> responseGeneratorRegistry)
-        {
-            ArgumentNullException.ThrowIfNull(document);
-            ArgumentNullException.ThrowIfNull(responseGeneratorRegistry);
-
-            _document = document;
-            _responseGeneratorRegistry = responseGeneratorRegistry;
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetResponses()
@@ -32,14 +25,15 @@ namespace Yardarm.Generation.Response
         }
 
         private IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
-            _document.Components.Responses
+            document.Components.Responses
                 .Select(p => p.Value.CreateRoot(p.Key))
-                .Concat(_document.Paths.ToLocatedElements()
+                .Concat(document.Paths.ToLocatedElements()
                     .GetOperations()
+                    .WhereOperationHasName(operationNameProvider)
                     .GetResponseSets()
                     .GetResponses());
 
         protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponse> response) =>
-            _responseGeneratorRegistry.Get(response).GenerateSyntaxTree();
+            responseGeneratorRegistry.Get(response).GenerateSyntaxTree();
     }
 }

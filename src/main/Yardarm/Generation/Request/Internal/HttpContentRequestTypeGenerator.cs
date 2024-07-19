@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -14,28 +16,26 @@ namespace Yardarm.Generation.Request.Internal
     /// <summary>
     /// Delivers an inherited request class which handles raw HttpContent
     /// </summary>
-    internal class HttpContentRequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
+    internal class HttpContentRequestTypeGenerator(
+        ILocatedOpenApiElement<OpenApiOperation> element,
+        GenerationContext context,
+        RequestTypeGenerator parent,
+        MethodDeclarationSyntax buildContentMethod,
+        IOperationNameProvider operationNameProvider)
+        : TypeGeneratorBase<OpenApiOperation>(element, context, parent)
     {
-        private readonly MethodDeclarationSyntax _buildContentMethod;
-
         private RequestTypeGenerator RequestTypeGenerator => (RequestTypeGenerator)Parent!;
-
-        public HttpContentRequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> element, GenerationContext context,
-            RequestTypeGenerator parent, MethodDeclarationSyntax buildContentMethod)
-            : base(element, context, parent)
-        {
-            ArgumentNullException.ThrowIfNull(buildContentMethod);
-
-            _buildContentMethod = buildContentMethod;
-        }
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(RequestTypeGenerator.Element);
 
+            string? operationName = operationNameProvider.GetOperationName(RequestTypeGenerator.Element);
+            Debug.Assert(operationName is not null);
+
             TypeSyntax name = QualifiedName(ns,
-                IdentifierName(formatter.Format($"{RequestTypeGenerator.Element.Element.OperationId}-HttpContent-Request")));
+                IdentifierName(formatter.Format($"{operationName}-HttpContent-Request")));
 
             return new YardarmTypeInfo(name);
         }
@@ -53,17 +53,17 @@ namespace Yardarm.Generation.Request.Internal
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
-            var buildContentMethod = _buildContentMethod
+            var method = buildContentMethod
                 .WithModifiers(TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)))
                 .WithExpressionBody(ArrowExpressionClause(
                     IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)))
                 .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
 
-            declaration = declaration.AddMembers(new MemberDeclarationSyntax[]
-            {
+            declaration = declaration.AddMembers(
+            [
                 CreateBodyPropertyDeclaration(),
-                buildContentMethod
-            });
+                method
+            ]);
 
             yield return declaration;
         }

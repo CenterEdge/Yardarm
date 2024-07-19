@@ -3,29 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Serialization;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.MediaType
 {
-    public class MediaTypeGenerator : ISyntaxTreeGenerator
+    public class MediaTypeGenerator(
+        OpenApiDocument document,
+        ITypeGeneratorRegistry<OpenApiMediaType> mediaTypeGeneratorRegistry,
+        ISerializerSelector serializerSelector,
+        IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
     {
-        private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiMediaType> _mediaTypeGeneratorRegistry;
-        private readonly ISerializerSelector _serializerSelector;
-
-        public MediaTypeGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiMediaType> mediaTypeGeneratorRegistry,
-            ISerializerSelector serializerSelector)
-        {
-            ArgumentNullException.ThrowIfNull(document);
-            ArgumentNullException.ThrowIfNull(mediaTypeGeneratorRegistry);
-            ArgumentNullException.ThrowIfNull(serializerSelector);
-
-            _document = document;
-            _mediaTypeGeneratorRegistry = mediaTypeGeneratorRegistry;
-            _serializerSelector = serializerSelector;
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetMediaTypes()
@@ -41,7 +30,7 @@ namespace Yardarm.Generation.MediaType
             foreach (var requestBody in GetRequestBodies())
             {
                 var mediaTypes = requestBody.GetMediaTypes()
-                    .Select(mediaType => (mediaType, descriptor: _serializerSelector.Select(mediaType)))
+                    .Select(mediaType => (mediaType, descriptor: serializerSelector.Select(mediaType)))
                     .Where(p => p.descriptor is not null)
                     .Select(p => (p.mediaType, descriptor: p.descriptor.GetValueOrDefault()));
 
@@ -64,11 +53,12 @@ namespace Yardarm.Generation.MediaType
         }
 
         private IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
-            _document.Paths.ToLocatedElements()
+            document.Paths.ToLocatedElements()
                 .GetOperations()
+                .WhereOperationHasName(operationNameProvider)
                 .GetRequestBodies();
 
         protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
-            _mediaTypeGeneratorRegistry.Get(mediaType).GenerateSyntaxTree();
+            mediaTypeGeneratorRegistry.Get(mediaType).GenerateSyntaxTree();
     }
 }

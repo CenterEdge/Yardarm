@@ -4,34 +4,25 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
+using Yardarm.Generation.Operation;
 using Yardarm.Spec;
 
 namespace Yardarm.SystemTextJson.Internal
 {
-    internal class DiscriminatorConverterGenerator : ISyntaxTreeGenerator
+    internal class DiscriminatorConverterGenerator(
+        OpenApiDocument document,
+        ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> converterTypeGeneratorRegistry,
+        IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
     {
-        private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> _converterTypeGeneratorRegistry;
-
-        public DiscriminatorConverterGenerator(OpenApiDocument document,
-            ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> converterTypeGeneratorRegistry)
-        {
-            ArgumentNullException.ThrowIfNull(document);
-            ArgumentNullException.ThrowIfNull(converterTypeGeneratorRegistry);
-
-            _document = document;
-            _converterTypeGeneratorRegistry = converterTypeGeneratorRegistry;
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
-            var schemas = _document
-                .GetAllSchemas()
+            var schemas = document
+                .GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider)
                 .Where(schema => SchemaHelper.IsPolymorphic(schema.Element));
 
             foreach (var schema in schemas)
             {
-                var converterGenerator = _converterTypeGeneratorRegistry.Get(schema);
+                var converterGenerator = converterTypeGeneratorRegistry.Get(schema);
 
                 var syntaxTree = converterGenerator.GenerateSyntaxTree();
                 if (syntaxTree != null)

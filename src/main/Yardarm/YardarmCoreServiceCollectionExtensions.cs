@@ -84,6 +84,7 @@ namespace Yardarm
             services.AddSingleton<IResponseMethodGenerator, BodyConstructorMethodGenerator>();
             services.AddSingleton<IResponseMethodGenerator, NoBodyConstructorMethodGenerator>();
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
+            services.TryAddSingleton<IOperationNameProvider, DefaultOperationNameProvider>();
             services.TryAddSingleton<IMediaTypeSelector, PriorityMediaTypeSelector>();
 
             // Need to be able to specifically inject this one as well

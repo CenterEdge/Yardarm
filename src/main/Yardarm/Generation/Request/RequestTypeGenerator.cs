@@ -6,9 +6,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Request.Internal;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Serialization;
 using Yardarm.Spec;
+using Yardarm.Spec.Path;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
@@ -90,11 +92,15 @@ namespace Yardarm.Generation.Request
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateParameterProperties(string className)
         {
+            var foundParameters = new HashSet<string>(StringComparer.Ordinal);
+
             foreach (var parameter in Element.GetParameters())
             {
+                foundParameters.Add(parameter.Key);
+
                 var schema = parameter.GetSchemaOrDefault();
 
-                yield return CreatePropertyDeclaration(parameter, schema, className);
+                yield return CreatePropertyDeclaration(parameter, schema, GetPropertyName(parameter.Key, className));
 
                 if (parameter.Element.Reference == null && schema.Element.Reference == null)
                 {
@@ -104,30 +110,94 @@ namespace Yardarm.Generation.Request
                     }
                 }
             }
+
+            if (Element.Parent is ILocatedOpenApiElement<OpenApiPathItem> pathItemElement)
+            {
+                // Generate properties for route parameters not explicitly defined in the parameters list.
+                // Assume they are required strings with a default value of "".
+
+                foreach (PathSegment routeParameter in PathParser.Parse(pathItemElement.Key))
+                {
+                    if (routeParameter.Type != PathSegmentType.Parameter || foundParameters.Contains(routeParameter.Value))
+                    {
+                        continue;
+                    }
+
+                    string propertyName = GetPropertyName(routeParameter.Value, className);
+
+                    yield return PropertyDeclaration(
+                        attributeLists: default,
+                        modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
+                        type: PredefinedType(Token(SyntaxKind.StringKeyword)),
+                        explicitInterfaceSpecifier: null,
+                        identifier: Identifier(propertyName),
+                        accessorList: AccessorList(List([
+                            AccessorDeclaration(
+                                SyntaxKind.GetAccessorDeclaration,
+                                attributeLists: default,
+                                modifiers: default,
+                                keyword: Token(SyntaxKind.GetKeyword),
+                                body: null,
+                                expressionBody: null,
+                                semicolonToken: Token(SyntaxKind.SemicolonToken)),
+                            AccessorDeclaration(
+                                SyntaxKind.SetAccessorDeclaration,
+                                attributeLists: default,
+                                modifiers: default,
+                                keyword: Token(SyntaxKind.SetKeyword),
+                                body: null,
+                                expressionBody: null,
+                                semicolonToken: Token(SyntaxKind.SemicolonToken))
+                        ])),
+                        expressionBody: null,
+                        initializer: EqualsValueClause(SyntaxHelpers.StringLiteral("")),
+                        semicolonToken: Token(SyntaxKind.SemicolonToken));
+                }
+            }
         }
 
         protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<OpenApiParameter> parameter,
-            ILocatedOpenApiElement<OpenApiSchema> schema, string className)
+            ILocatedOpenApiElement<OpenApiSchema> schema, string propertyName)
         {
-            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameter.Key);
+            TypeSyntax typeName = Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name;
+
+            return PropertyDeclaration(
+                attributeLists: default,
+                modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
+                type: typeName,
+                explicitInterfaceSpecifier: null,
+                identifier: Identifier(propertyName),
+                accessorList: AccessorList(List([
+                    AccessorDeclaration(
+                        SyntaxKind.GetAccessorDeclaration,
+                        attributeLists: default,
+                        modifiers: default,
+                        keyword: Token(SyntaxKind.GetKeyword),
+                        body: null,
+                        expressionBody: null,
+                        semicolonToken: Token(SyntaxKind.SemicolonToken)),
+                    AccessorDeclaration(
+                        SyntaxKind.SetAccessorDeclaration,
+                        attributeLists: default,
+                        modifiers: default,
+                        keyword: Token(SyntaxKind.SetKeyword),
+                        body: null,
+                        expressionBody: null,
+                        semicolonToken: Token(SyntaxKind.SemicolonToken))
+                ])))
+                .AddElementAnnotation(parameter, Context.ElementRegistry);
+        }
+
+        private string GetPropertyName(string parameterName, string className)
+        {
+            string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(parameterName);
 
             if (propertyName == className)
             {
                 propertyName += "Value";
             }
 
-            var typeName = Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name;
-
-            var propertyDeclaration = PropertyDeclaration(typeName, propertyName)
-                .AddElementAnnotation(parameter, Context.ElementRegistry)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
-
-            return propertyDeclaration;
+            return propertyName;
         }
     }
 }

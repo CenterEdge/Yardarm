@@ -77,7 +77,9 @@ namespace Yardarm.Generation.Request
             }
 
             var propertyNameFormatter = NameFormatterSelector.GetFormatter(NameKind.Property);
-            foreach (var headerParameter in operation.Element.Parameters.Where(p => p.In == ParameterLocation.Header))
+            foreach (var headerParameter in operation.GetAllParameters()
+                .Where(p => p.Element.In == ParameterLocation.Header)
+                .Select(p => p.Element))
             {
                 string propertyName = propertyNameFormatter.Format(headerParameter.Name);
 

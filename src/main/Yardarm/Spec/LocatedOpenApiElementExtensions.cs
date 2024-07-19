@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.Operation;
@@ -57,7 +58,7 @@ namespace Yardarm.Spec
 
         public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(this OpenApiDocument document) =>
             document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
-                .Concat(document.Paths.CreateRoot().GetOperations().GetAllSchemas())
+                .Concat(document.Paths.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
 
@@ -65,9 +66,29 @@ namespace Yardarm.Spec
             this OpenApiDocument document,
             IOperationNameProvider operationNameProvider) =>
             document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
-                .Concat(document.Paths.CreateRoot().GetOperations().WhereOperationHasName(operationNameProvider).GetAllSchemas())
+                .Concat(document.Paths.CreateRoot().GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider))
                 .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems) =>
+            pathItems.SelectMany(GetAllSchemas);
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+            this ILocatedOpenApiElement<OpenApiPathItem> pathItem) =>
+            pathItem.GetParameters().SelectMany(p => p.GetSchemaOrDefault().GetAllSchemas())
+                .Concat(pathItem.GetOperations().GetAllSchemas());
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems,
+            IOperationNameProvider operationNameProvider) =>
+            pathItems.SelectMany(p => p.GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider));
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
+            this ILocatedOpenApiElement<OpenApiPathItem> pathItem,
+            IOperationNameProvider operationNameProvider) =>
+            pathItem.GetParameters().SelectMany(p => p.GetSchemaOrDefault().GetAllSchemas())
+                .Concat(pathItem.GetOperations().WhereOperationHasName(operationNameProvider).GetAllSchemas());
 
         public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
             this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
@@ -174,6 +195,45 @@ namespace Yardarm.Spec
             this ILocatedOpenApiElement<OpenApiOperation> operation) =>
             operation.Element.Parameters
                 .Select(p => operation.CreateChild(p, p.Name));
+
+        /// <summary>
+        /// Gets all operation parameters including parameters defined on the path, if applicable.
+        /// Duplicates are treated as overrides and the operation parameter is returned.
+        /// </summary>
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetAllParameters(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
+            operations.SelectMany(GetAllParameters);
+
+        /// <summary>
+        /// Gets all operation parameters including parameters defined on the path, if applicable.
+        /// Duplicates are treated as overrides and the operation parameter is returned.
+        /// </summary>
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetAllParameters(
+            this ILocatedOpenApiElement<OpenApiOperation> operation)
+        {
+            var parameters = operation.GetParameters();
+
+            if (operation.Parent is ILocatedOpenApiElement<OpenApiPathItem> { Element.Parameters.Count: > 0 } pathItem)
+            {
+                // Note that DistinctBy returns the first encountered match, so the fact that operation
+                // parameters are first means they will be returned in favor of path parameters
+                parameters = parameters
+                    .Concat(pathItem.GetParameters())
+                    .DistinctBy(p => p.Key, StringComparer.Ordinal);
+            }
+
+            return parameters;
+        }
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters(
+            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems) =>
+            pathItems.SelectMany(GetParameters);
+
+        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters(
+            this ILocatedOpenApiElement<OpenApiPathItem> pathItem) =>
+            pathItem.Element.Parameters?
+                .Select(p => pathItem.CreateChild(p, p.Name))
+            ?? Enumerable.Empty<ILocatedOpenApiElement<OpenApiParameter>>();
 
         #endregion
 

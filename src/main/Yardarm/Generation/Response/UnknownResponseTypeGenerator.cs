@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -11,22 +13,16 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    internal class UnknownResponseTypeGenerator : TypeGeneratorBase<OpenApiUnknownResponse>
+    internal class UnknownResponseTypeGenerator(
+        ILocatedOpenApiElement<OpenApiUnknownResponse> responseElement,
+        GenerationContext context,
+        ISerializationNamespace serializationNamespace,
+        IResponsesNamespace responsesNamespace,
+        IOperationNameProvider operationNameProvider) :
+        TypeGeneratorBase<OpenApiUnknownResponse>(responseElement, context, null)
     {
-        protected IResponsesNamespace ResponsesNamespace { get; }
-        protected ISerializationNamespace SerializationNamespace { get; }
-
-        public UnknownResponseTypeGenerator(ILocatedOpenApiElement<OpenApiUnknownResponse> responseElement, GenerationContext context,
-            ISerializationNamespace serializationNamespace,
-            IResponsesNamespace responsesNamespace)
-            : base(responseElement, context, null)
-        {
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
-            ArgumentNullException.ThrowIfNull(responsesNamespace);
-
-            SerializationNamespace = serializationNamespace;
-            ResponsesNamespace = responsesNamespace;
-        }
+        protected IResponsesNamespace ResponsesNamespace { get; } = responsesNamespace;
+        protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
@@ -67,10 +63,13 @@ namespace Yardarm.Generation.Response
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
-            OpenApiOperation operation =
-                Element.Parents().OfType<LocatedOpenApiElement<OpenApiOperation>>().First().Element;
+            ILocatedOpenApiElement<OpenApiOperation> operation =
+                Element.Parents().OfType<ILocatedOpenApiElement<OpenApiOperation>>().First();
 
-            return formatter.Format($"{operation.OperationId}UnknownResponse");
+            string? operationName = operationNameProvider.GetOperationName(operation);
+            Debug.Assert(operationName is not null);
+
+            return formatter.Format($"{operationName}UnknownResponse");
         }
     }
 }

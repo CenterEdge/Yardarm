@@ -1,29 +1,18 @@
 ﻿using System;
-using Yardarm.Names;
+using Microsoft.Extensions.DependencyInjection;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {
-    public class UnknownResponseTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiUnknownResponse>
+    public class UnknownResponseTypeGeneratorFactory(IServiceProvider serviceProvider) : ITypeGeneratorFactory<OpenApiUnknownResponse>
     {
-        private readonly GenerationContext _context;
-        private readonly IResponsesNamespace _responsesNamespace;
-        private readonly ISerializationNamespace _serializationNamespace;
-
-        public UnknownResponseTypeGeneratorFactory(GenerationContext context,
-            IResponsesNamespace responsesNamespace,
-            ISerializationNamespace serializationNamespace)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            ArgumentNullException.ThrowIfNull(responsesNamespace);
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
-
-            _context = context;
-            _responsesNamespace = responsesNamespace;
-            _serializationNamespace = serializationNamespace;
-        }
+        private static readonly ObjectFactory<UnknownResponseTypeGenerator> Factory =
+            ActivatorUtilities.CreateFactory<UnknownResponseTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiUnknownResponse>)
+            ]);
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiUnknownResponse> element, ITypeGenerator? parent) =>
-            new UnknownResponseTypeGenerator(element, _context, _serializationNamespace, _responsesNamespace);
+            Factory(serviceProvider, [element]);
     }
 }

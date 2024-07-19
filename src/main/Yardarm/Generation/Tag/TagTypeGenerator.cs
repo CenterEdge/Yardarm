@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -15,8 +16,8 @@ namespace Yardarm.Generation.Tag
         private readonly IApiNamespace _apiNamespace;
 
         public TagTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
-            IApiNamespace apiNamespace)
-            : base(tagElement, context)
+            IApiNamespace apiNamespace, IOperationNameProvider operationNameProvider)
+            : base(tagElement, context, operationNameProvider)
         {
             ArgumentNullException.ThrowIfNull(apiNamespace);
 

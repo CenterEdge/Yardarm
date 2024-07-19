@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Operation;
 using Yardarm.Generation.Request.Internal;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -15,40 +17,34 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
 {
-    public class RequestTypeGenerator : TypeGeneratorBase<OpenApiOperation>
+    public class RequestTypeGenerator(
+        ILocatedOpenApiElement<OpenApiOperation> operationElement,
+        GenerationContext context,
+        IMediaTypeSelector mediaTypeSelector,
+        IEnumerable<IRequestMemberGenerator> memberGenerators,
+        IRequestsNamespace requestsNamespace,
+        ISerializerSelector serializerSelector,
+        IOperationNameProvider operationNameProvider)
+        : TypeGeneratorBase<OpenApiOperation>(operationElement, context, null)
     {
-        protected IMediaTypeSelector MediaTypeSelector { get; }
-        protected IList<IRequestMemberGenerator> MemberGenerators { get; }
-        protected ISerializerSelector SerializerSelector { get; }
+        protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
+        protected IEnumerable<IRequestMemberGenerator> MemberGenerators { get; } = memberGenerators;
+        protected ISerializerSelector SerializerSelector { get; } = serializerSelector;
 
-        protected IRequestsNamespace RequestsNamespace { get; }
+        protected IRequestsNamespace RequestsNamespace { get; } = requestsNamespace;
 
         protected OpenApiOperation Operation => Element.Element;
-
-        public RequestTypeGenerator(ILocatedOpenApiElement<OpenApiOperation> operationElement,
-            GenerationContext context, IMediaTypeSelector mediaTypeSelector,
-            IList<IRequestMemberGenerator> memberGenerators,
-            IRequestsNamespace requestsNamespace, ISerializerSelector serializerSelector)
-            : base(operationElement, context, null)
-        {
-            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
-            ArgumentNullException.ThrowIfNull(memberGenerators);
-            ArgumentNullException.ThrowIfNull(requestsNamespace);
-            ArgumentNullException.ThrowIfNull(serializerSelector);
-
-            MediaTypeSelector = mediaTypeSelector;
-            MemberGenerators = memberGenerators;
-            RequestsNamespace = requestsNamespace;
-            SerializerSelector = serializerSelector;
-        }
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
+            string? operationName = operationNameProvider.GetOperationName(Element);
+            Debug.Assert(operationName is not null);
+
             return new YardarmTypeInfo(QualifiedName(ns,
-                IdentifierName(formatter.Format(Operation.OperationId + "Request"))));
+                IdentifierName(formatter.Format(operationName + "Request"))));
         }
 
         public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
@@ -81,7 +77,7 @@ namespace Yardarm.Generation.Request
                     .First(p => p.Identifier.Text == BuildContentMethodGenerator.BuildContentMethodName);
 
                 var httpContentGenerator =
-                    new HttpContentRequestTypeGenerator(Element, Context, this, buildContentMethod);
+                    new HttpContentRequestTypeGenerator(Element, Context, this, buildContentMethod, operationNameProvider);
 
                 foreach (var otherMember in httpContentGenerator.Generate())
                 {

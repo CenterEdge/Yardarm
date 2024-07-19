@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -10,14 +11,13 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Tag
 {
-    public abstract class TagTypeGeneratorBase : TypeGeneratorBase<OpenApiTag>
+    public abstract class TagTypeGeneratorBase(
+        ILocatedOpenApiElement<OpenApiTag> tagElement,
+        GenerationContext context,
+        IOperationNameProvider operationNameProvider)
+        : TypeGeneratorBase<OpenApiTag>(tagElement, context, null)
     {
         protected OpenApiTag Tag => Element.Element;
-
-        protected TagTypeGeneratorBase(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context)
-            : base(tagElement, context, null)
-        {
-        }
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
             ILocatedOpenApiElement<OpenApiOperation> operation)
@@ -26,8 +26,11 @@ namespace Yardarm.Generation.Tag
             TypeSyntax responseType = WellKnownTypes.System.Threading.Tasks.TaskT.Name(
                 Context.TypeGeneratorRegistry.Get(operation.GetResponseSet()).TypeInfo.Name);
 
+            string? operationName = operationNameProvider.GetOperationName(operation);
+            Debug.Assert(operationName is not null);
+
             string methodName = Context.NameFormatterSelector.GetFormatter(NameKind.AsyncMethod)
-                .Format(operation.Element.OperationId);
+                .Format(operationName);
 
             var methodDeclaration = MethodDeclaration(responseType, methodName)
                 .AddElementAnnotation(operation, Context.ElementRegistry)
@@ -42,6 +45,7 @@ namespace Yardarm.Generation.Tag
         protected IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
             Context.Document.Paths.ToLocatedElements()
                 .GetOperations()
+                .WhereOperationHasName(operationNameProvider)
                 .Where(p => p.Element.Tags.Any(q => q.Name == Tag.Name));
     }
 }

@@ -10,31 +10,20 @@ using Yardarm.Spec;
 using Yardarm.Generation;
 using Yardarm.Generation.Tag;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using Yardarm.Generation.Operation;
 
 namespace Yardarm.MicrosoftExtensionsHttp.Internal
 {
     /// <summary>
     /// Adds statements to register all APIs to the "AddAllApisInternal" method.
     /// </summary>
-    internal class ApiBuilderExtensionsEnricher : IResourceFileEnricher
+    internal class ApiBuilderExtensionsEnricher(
+        OpenApiDocument document,
+        ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
+        ITypeGeneratorRegistry<OpenApiTag, TagImplementationCategory> tagImplementationGeneratorRegistry,
+        IOperationNameProvider operationNameProvider)
+        : IResourceFileEnricher
     {
-        private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiTag> _tagGeneratorRegistry;
-        private readonly ITypeGeneratorRegistry<OpenApiTag, TagImplementationCategory> _tagImplementationGeneratorRegistry;
-
-        public ApiBuilderExtensionsEnricher(OpenApiDocument document,
-            ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
-            ITypeGeneratorRegistry<OpenApiTag, TagImplementationCategory> tagImplementationGeneratorRegistry)
-        {
-            ArgumentNullException.ThrowIfNull(document);
-            ArgumentNullException.ThrowIfNull(tagGeneratorRegistry);
-            ArgumentNullException.ThrowIfNull(tagImplementationGeneratorRegistry);
-
-            _document = document;
-            _tagGeneratorRegistry = tagGeneratorRegistry;
-            _tagImplementationGeneratorRegistry = tagImplementationGeneratorRegistry;
-        }
-
         public bool ShouldEnrich(string resourceName) =>
             resourceName == "Yardarm.MicrosoftExtensionsHttp.Client.ApiBuilderExtensions.cs";
 
@@ -52,15 +41,16 @@ namespace Yardarm.MicrosoftExtensionsHttp.Internal
 
         private IEnumerable<StatementSyntax> GenerateApiStatements()
         {
-            var tags = _document.Paths.ToLocatedElements()
+            var tags = document.Paths.ToLocatedElements()
                 .GetOperations()
+                .WhereOperationHasName(operationNameProvider)
                 .GetTags()
                 .Distinct(TagComparer.Instance);
 
             foreach (var tag in tags)
             {
-                TypeSyntax interfaceName = _tagGeneratorRegistry.Get(tag).TypeInfo.Name;
-                TypeSyntax implementationName = _tagImplementationGeneratorRegistry.Get(tag).TypeInfo.Name;
+                TypeSyntax interfaceName = tagGeneratorRegistry.Get(tag).TypeInfo.Name;
+                TypeSyntax implementationName = tagImplementationGeneratorRegistry.Get(tag).TypeInfo.Name;
 
                 yield return ExpressionStatement(
                     InvocationExpression(

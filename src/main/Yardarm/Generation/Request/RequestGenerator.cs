@@ -3,24 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.OpenApi.Models;
+using Yardarm.Generation.Operation;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Request
 {
-    public class RequestGenerator : ISyntaxTreeGenerator
+    public class RequestGenerator(
+        OpenApiDocument document,
+        ITypeGeneratorRegistry<OpenApiOperation> operationTypeGeneratorRegistry,
+        IOperationNameProvider operationNameProvider)
+        : ISyntaxTreeGenerator
     {
-        private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiOperation> _operationTypeGeneratorRegistry;
-
-        public RequestGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiOperation> operationTypeGeneratorRegistry)
-        {
-            ArgumentNullException.ThrowIfNull(document);
-            ArgumentNullException.ThrowIfNull(operationTypeGeneratorRegistry);
-
-            _document = document;
-            _operationTypeGeneratorRegistry = operationTypeGeneratorRegistry;
-        }
-
         public IEnumerable<SyntaxTree> Generate()
         {
             foreach (var syntaxTree in GetOperations()
@@ -32,10 +25,11 @@ namespace Yardarm.Generation.Request
         }
 
         private IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
-            _document.Paths.ToLocatedElements()
-                .GetOperations();
+            document.Paths.ToLocatedElements()
+                .GetOperations()
+                .WhereOperationHasName(operationNameProvider);
 
         protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiOperation> operation) =>
-            _operationTypeGeneratorRegistry.Get(operation).GenerateSyntaxTree();
+            operationTypeGeneratorRegistry.Get(operation).GenerateSyntaxTree();
     }
 }

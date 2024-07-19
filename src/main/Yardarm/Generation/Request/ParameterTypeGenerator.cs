@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
 using Yardarm.Names;
@@ -15,33 +16,49 @@ namespace Yardarm.Generation.Request
         {
         }
 
-        protected override YardarmTypeInfo GetTypeInfo() => throw new NotImplementedException();
-
-        public override IEnumerable<MemberDeclarationSyntax> Generate() =>
-            Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();
-
-        /// <summary>
-        /// Namespace if the parameter is in components.
-        /// </summary>
-        protected override NameSyntax GetNamespace() => Context.NamespaceProvider.GetNamespace(Element);
-
-        public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
+        protected override YardarmTypeInfo GetTypeInfo()
         {
-            QualifiedNameSyntax? name = Parent?.GetChildName(Element, nameKind);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
+            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(nameKind);
+            return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(formatter.Format(Element.Key))));
+        }
 
-            if (name == null)
+        public override IEnumerable<MemberDeclarationSyntax> Generate()
+        {
+            string className = ((QualifiedNameSyntax)TypeInfo.Name).Right.Identifier.ValueText;
+
+            var schema = Element.GetSchemaOrDefault();
+            if (schema.IsReference())
             {
-                // At the components root, use the parameters namespace. In this case, use the key on the components
-                // dictionary and not the parameter name, since multiple component parameters may have the same name.
-                return QualifiedName(
-                    GetNamespace(),
-                    IdentifierName(formatter.Format(Element.Key)));
-
+                // References don't generate members
+                return [];
             }
 
-            return name;
+            var members = Context.TypeGeneratorRegistry.Get(schema).Generate().ToArray();
+            if (members.Length == 0)
+            {
+                // If there are no nested schemas we don't need the parent parameter class either
+                return [];
+            }
+
+            ClassDeclarationSyntax declaration = ClassDeclaration(
+                attributeLists: default,
+                modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier(className),
+                typeParameterList: default,
+                baseList: default,
+                constraintClauses: default,
+                members: List(members))
+                .AddElementAnnotation(Element, Context.ElementRegistry)
+                .AddGeneratorAnnotation(this);
+
+            return [declaration];
         }
+
+        public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
+            NameKind nameKind) =>
+            QualifiedName((NameSyntax)TypeInfo.Name, IdentifierName(
+                Context.NameFormatterSelector.GetFormatter(nameKind).Format(child.Key + "-Model")));
     }
 }

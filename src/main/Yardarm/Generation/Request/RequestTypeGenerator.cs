@@ -90,7 +90,7 @@ namespace Yardarm.Generation.Request
         {
             var foundParameters = new HashSet<string>(StringComparer.Ordinal);
 
-            foreach (var parameter in Element.GetParameters())
+            foreach (var parameter in Element.GetAllParameters())
             {
                 foundParameters.Add(parameter.Key);
 

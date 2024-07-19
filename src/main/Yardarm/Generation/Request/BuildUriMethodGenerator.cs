@@ -54,11 +54,14 @@ namespace Yardarm.Generation.Request
 
             var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parent!;
 
+            var allParameters = operation.GetAllParameters()
+                .Select(p => p.Element)
+                .ToDictionary(p => p.Name, p => p);
+
             ExpressionSyntax pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(
                 pathSegment =>
                 {
-                    OpenApiParameter? parameter = operation.Element.Parameters.FirstOrDefault(
-                        p => p.Name == pathSegment.Value);
+                    allParameters.TryGetValue(pathSegment.Value, out var parameter);
 
                     if (parameter?.Schema?.Type == "array")
                     {
@@ -89,7 +92,7 @@ namespace Yardarm.Generation.Request
                     }
                 });
 
-            OpenApiParameter[] queryParameters = operation.Element.Parameters
+            OpenApiParameter[] queryParameters = allParameters.Values
                 .Where(p => (p.In ?? ParameterLocation.Query) == ParameterLocation.Query)
                 .ToArray();
 

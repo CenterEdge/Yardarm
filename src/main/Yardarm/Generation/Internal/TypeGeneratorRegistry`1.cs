@@ -40,7 +40,7 @@ namespace Yardarm.Generation.Internal
 
         private ITypeGenerator CreateTypeGenerator(ILocatedOpenApiElement<TElement> element)
         {
-            if (LocatedElementEqualityComparer<TElement>.GetIsReferenceEqualDefault() &&
+            if (LocatedElementEqualityComparer<TElement>.IsReferenceEqualDefault &&
                 element.Element is IOpenApiReferenceable referenceable && referenceable.Reference != null)
             {
                 // When making the new type generator with the factory for a reference, we must ensure

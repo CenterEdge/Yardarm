@@ -13,7 +13,7 @@ namespace Yardarm.Spec
         /// </summary>
         public bool IsReferenceEqual { get; }
 
-        public LocatedElementEqualityComparer() : this(GetIsReferenceEqualDefault())
+        public LocatedElementEqualityComparer() : this(IsReferenceEqualDefault)
         {
         }
 
@@ -78,9 +78,10 @@ namespace Yardarm.Spec
             }
         }
 
-        // For OpenApiResponse, treat the element in the components section as unequal to an element
-        // referencing it in an operation, allowing us to define a separate class for each case.
-        public static bool GetIsReferenceEqualDefault() =>
-            typeof(T) != typeof(OpenApiResponse);
+        // For OpenApiResponse and OpenApiRequestBody, treat the element in the components section
+        // as unequal to an element referencing it in an operation, allowing us to define a separate
+        // class for each case.
+        public static bool IsReferenceEqualDefault { get; } =
+            typeof(T) != typeof(OpenApiResponse) && typeof(T) != typeof(OpenApiRequestBody);
     }
 }

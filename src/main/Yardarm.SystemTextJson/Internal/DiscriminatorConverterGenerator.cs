@@ -17,7 +17,7 @@ namespace Yardarm.SystemTextJson.Internal
         public IEnumerable<SyntaxTree> Generate()
         {
             var schemas = document
-                .GetAllSchemas(operationNameProvider)
+                .GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider)
                 .Where(schema => SchemaHelper.IsPolymorphic(schema.Element));
 
             foreach (var schema in schemas)

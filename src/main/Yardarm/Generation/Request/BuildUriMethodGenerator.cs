@@ -60,25 +60,19 @@ namespace Yardarm.Generation.Request
                     OpenApiParameter? parameter = operation.Element.Parameters.FirstOrDefault(
                         p => p.Name == pathSegment.Value);
 
-                    if (parameter == null)
-                    {
-                        throw new InvalidOperationException(
-                            $"Missing path parameter '{pathSegment.Value}' in operation '{operation.Element.OperationId}'.");
-                    }
-
-                    if (parameter.Schema?.Type == "array")
+                    if (parameter?.Schema?.Type == "array")
                     {
                         return InvocationExpression(
                             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                 SerializationNamespace.PathSegmentSerializer,
                                 IdentifierName("SerializeList")),
-                            ArgumentList(SeparatedList(new[] {
+                            ArgumentList(SeparatedList([
                                 Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
                                 Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
                                 Argument(GetStyleExpression(parameter)),
                                 Argument(GetExplodeExpression(parameter)),
                                 Argument(SyntaxHelpers.StringLiteral(parameter.Schema?.Format))
-                            })));
+                            ])));
                     }
                     else
                     {
@@ -86,12 +80,12 @@ namespace Yardarm.Generation.Request
                             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                                 SerializationNamespace.PathSegmentSerializer,
                                 IdentifierName("Serialize")),
-                            ArgumentList(SeparatedList(new[] {
+                            ArgumentList(SeparatedList([
                                 Argument(SyntaxHelpers.StringLiteral(pathSegment.Value)),
                                 Argument(IdentifierName(propertyNameFormatter.Format(pathSegment.Value))),
                                 Argument(GetStyleExpression(parameter)),
-                                Argument(SyntaxHelpers.StringLiteral(parameter.Schema?.Format)
-                            )})));
+                                Argument(SyntaxHelpers.StringLiteral(parameter?.Schema?.Format))
+                            ])));
                     }
                 });
 
@@ -167,10 +161,10 @@ namespace Yardarm.Generation.Request
                     requestInstance,
                     IdentifierName(BuildUriMethodName)));
 
-        protected ExpressionSyntax GetStyleExpression(OpenApiParameter parameter) =>
+        protected ExpressionSyntax GetStyleExpression(OpenApiParameter? parameter) =>
             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                 SerializationNamespace.PathSegmentStyle,
-                (parameter.Style ?? ParameterStyle.Simple) switch
+                parameter?.Style switch
                 {
                     ParameterStyle.Label => IdentifierName("Label"),
                     ParameterStyle.Matrix => IdentifierName("Matrix"),

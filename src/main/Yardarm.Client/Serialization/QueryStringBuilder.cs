@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 // ReSharper disable once CheckNamespace
@@ -115,5 +116,27 @@ namespace RootNamespace.Serialization
             allowReserved
                 ? LiteralSerializer.Instance.Serialize(value, format)
                 : Uri.EscapeDataString(LiteralSerializer.Instance.Serialize(value, format));
+
+        [return: NotNullIfNotNull(nameof(uri))]
+        public static Uri? AppendQueryParameter(Uri? uri, string name, string value)
+        {
+            if (uri is null)
+            {
+                return null;
+            }
+
+            var builder = new UriBuilder(uri);
+
+            if (builder.Query.Length > 0)
+            {
+                builder.Query = $"{builder.Query}&{Uri.EscapeDataString(name)}={Uri.EscapeDataString(value)}";
+            }
+            else
+            {
+                builder.Query = $"?{Uri.EscapeDataString(name)}={Uri.EscapeDataString(value)}";
+            }
+
+            return builder.Uri;
+        }
     }
 }

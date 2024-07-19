@@ -1,28 +1,46 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Yardarm.Names;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Authentication
 {
-    public class SecuritySchemeTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiSecurityScheme>
+    public class SecuritySchemeTypeGeneratorFactory(IServiceProvider serviceProvider) : ITypeGeneratorFactory<OpenApiSecurityScheme>
     {
-        private readonly GenerationContext _context;
-        private readonly IAuthenticationNamespace _authenticationNamespace;
-        private readonly ILogger<NoopSecuritySchemeTypeGenerator> _logger;
+        private static ObjectFactory<ApiKeyHeaderSecuritySchemeTypeGenerator>? _apiKeyHeaderFactory;
+        private static ObjectFactory<ApiKeyHeaderSecuritySchemeTypeGenerator> ApiKeyHeaderFactory => _apiKeyHeaderFactory ??=
+            ActivatorUtilities.CreateFactory<ApiKeyHeaderSecuritySchemeTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+            ]);
 
-        public SecuritySchemeTypeGeneratorFactory(GenerationContext context, IAuthenticationNamespace authenticationNamespace,
-            ILogger<NoopSecuritySchemeTypeGenerator> logger)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            ArgumentNullException.ThrowIfNull(authenticationNamespace);
-            ArgumentNullException.ThrowIfNull(logger);
+        private static ObjectFactory<ApiKeyQuerySecuritySchemeTypeGenerator>? _apiKeyQueryFactory;
+        private static ObjectFactory<ApiKeyQuerySecuritySchemeTypeGenerator> ApiKeyQueryFactory => _apiKeyQueryFactory ??=
+            ActivatorUtilities.CreateFactory<ApiKeyQuerySecuritySchemeTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+            ]);
 
-            _context = context;
-            _authenticationNamespace = authenticationNamespace;
-            _logger = logger;
-        }
+        private static ObjectFactory<BasicSecuritySchemeTypeGenerator>? _basicFactory;
+        private static ObjectFactory<BasicSecuritySchemeTypeGenerator> BasicFactory => _basicFactory ??=
+            ActivatorUtilities.CreateFactory<BasicSecuritySchemeTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+            ]);
+
+        private static ObjectFactory<BearerSecuritySchemeTypeGenerator>? _bearerFactory;
+        private static ObjectFactory<BearerSecuritySchemeTypeGenerator> BearerFactory => _bearerFactory ??=
+            ActivatorUtilities.CreateFactory<BearerSecuritySchemeTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+            ]);
+
+        private static ObjectFactory<NoopSecuritySchemeTypeGenerator>? _noopFactory;
+        private static ObjectFactory<NoopSecuritySchemeTypeGenerator> NoopFactory => _noopFactory ??=
+            ActivatorUtilities.CreateFactory<NoopSecuritySchemeTypeGenerator>(
+            [
+                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+            ]);
 
         public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSecurityScheme> element, ITypeGenerator? parent)
         {
@@ -30,16 +48,17 @@ namespace Yardarm.Generation.Authentication
             {
                 SecuritySchemeType.Http => element.Element.Scheme switch
                 {
-                    "bearer" => new BearerSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace),
-                    "basic" => new BasicSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace),
-                    _ => new NoopSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace, _logger)
+                    "bearer" => BearerFactory(serviceProvider, [element]),
+                    "basic" => BasicFactory(serviceProvider, [element]),
+                    _ => NoopFactory(serviceProvider, [element])
                 },
                 SecuritySchemeType.ApiKey => element.Element.In switch
                 {
-                    ParameterLocation.Header => new ApiKeyHeaderSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace),
-                    _ => new NoopSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace, _logger)
+                    ParameterLocation.Header => ApiKeyHeaderFactory(serviceProvider, [element]),
+                    ParameterLocation.Query => ApiKeyQueryFactory(serviceProvider, [element]),
+                    _ => NoopFactory(serviceProvider, [element])
                 },
-                _ => new NoopSecuritySchemeTypeGenerator(element, _context, _authenticationNamespace, _logger)
+                _ => NoopFactory(serviceProvider, [element])
             };
         }
     }

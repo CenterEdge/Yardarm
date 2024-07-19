@@ -7,6 +7,8 @@ namespace Yardarm.Client.UnitTests.Serialization
 {
     public class QueryStringBuilderTests
     {
+        #region ToString
+
         [Fact]
         public void ToString_NoParameters_ReturnsUri()
         {
@@ -312,5 +314,59 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             result.Should().Be("base/uri?name=2020-01-02%202021-03-04");
         }
+
+        #endregion
+
+        #region AppendQueryParameter
+
+        [Fact]
+        public void AppendQueryParameter_NullUri_ReturnsNull()
+        {
+            // Act
+
+            var result = QueryStringBuilder.AppendQueryParameter(null, "name", "value");
+
+            // Assert
+
+            result.Should().BeNull();
+        }
+
+        [Fact]
+        public void AppendQueryParameter_UriWithoutQuery_AppendsWithQuestionMark()
+        {
+            // Act
+
+            var result = QueryStringBuilder.AppendQueryParameter(new Uri("http://localhost"), "name", "value");
+
+            // Assert
+
+            result.Query.Should().Be("?name=value");
+        }
+
+        [Fact]
+        public void AppendQueryParameter_UriWithQuery_AppendsWithAmpersand()
+        {
+            // Act
+
+            var result = QueryStringBuilder.AppendQueryParameter(new Uri("http://localhost?foo=bar"), "name", "value");
+
+            // Assert
+
+            result.Query.Should().Be("?foo=bar&name=value");
+        }
+
+        [Fact]
+        public void AppendQueryParameter_SpecialCharacters_AppendsWithEscaping()
+        {
+            // Act
+
+            var result = QueryStringBuilder.AppendQueryParameter(new Uri("http://localhost"), "my name", "foo bar");
+
+            // Assert
+
+            result.Query.Should().Be("?my%20name=foo%20bar");
+        }
+
+        #endregion
     }
 }

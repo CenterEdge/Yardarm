@@ -113,7 +113,7 @@ namespace Yardarm.SystemTextJson
                     hasEmittedDynamicTypes = true;
 
                     yield return (SystemTextJsonTypes.JsonElement, "JsonElement");
-                    yield return (SystemTextJsonTypes.Nodes.JsonObjectName, "JsonObject");
+                    yield return (SystemTextJsonTypes.Nodes.JsonNodeName, "JsonNode");
                 }
 
                 if (alreadyEmitted.Contains(modelNameString))

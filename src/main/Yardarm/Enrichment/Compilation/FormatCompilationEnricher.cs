@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -75,7 +76,8 @@ namespace Yardarm.Enrichment.Compilation
                 .Where(static p => p.FilePath != "" && p.HasCompilationUnitRoot);
 
             // Process formatting in parallel, this gives a slight perf boost
-            object lockObj = new();
+
+            var toReplace = new ConcurrentDictionary<SyntaxTree, SyntaxTree>();
             await Parallel.ForEachAsync(treesToBeFormatted, cancellationToken,
                 async (syntaxTree, localCt) =>
                 {
@@ -83,22 +85,25 @@ namespace Yardarm.Enrichment.Compilation
 
                     Document document = project.AddDocument(Guid.NewGuid().ToString(), root);
 
-                    document = await Formatter.FormatAsync(document, solution.Options, cancellationToken);
+                    document = await Formatter.FormatAsync(document, solution.Options, localCt);
 
                     SyntaxNode? newRoot = await document.GetSyntaxRootAsync(localCt);
 
                     if (newRoot is not null && newRoot != root)
                     {
-                        lock (lockObj)
-                        {
-                            target = target.ReplaceSyntaxTree(syntaxTree,
-                                syntaxTree.WithRootAndOptions(newRoot, syntaxTree.Options));
-                        }
+                        _ = toReplace.TryAdd(syntaxTree,
+                            syntaxTree.WithRootAndOptions(newRoot, syntaxTree.Options));
                     }
                 });
 
-            stopwatch.Stop();
+            if (toReplace.Count > 0)
+            {
+                target = target
+                    .RemoveSyntaxTrees(toReplace.Keys)
+                    .AddSyntaxTrees(toReplace.Values);
+            }
 
+            stopwatch.Stop();
             _logger.LogInformation("Sources formatted for embedding in {elapsed}ms", stopwatch.ElapsedMilliseconds);
 
             return target;

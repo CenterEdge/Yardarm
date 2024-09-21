@@ -77,7 +77,8 @@ namespace Yardarm.Enrichment.Compilation
 
             // Process formatting in parallel, this gives a slight perf boost
 
-            var toReplace = new ConcurrentDictionary<SyntaxTree, SyntaxTree>();
+            var toRemove = new ConcurrentBag<SyntaxTree>();
+            var toAdd = new ConcurrentBag<SyntaxTree>();
             await Parallel.ForEachAsync(treesToBeFormatted, cancellationToken,
                 async (syntaxTree, localCt) =>
                 {
@@ -91,16 +92,16 @@ namespace Yardarm.Enrichment.Compilation
 
                     if (newRoot is not null && newRoot != root)
                     {
-                        _ = toReplace.TryAdd(syntaxTree,
-                            syntaxTree.WithRootAndOptions(newRoot, syntaxTree.Options));
+                        toRemove.Add(syntaxTree);
+                        toAdd.Add(syntaxTree.WithRootAndOptions(newRoot, syntaxTree.Options));
                     }
                 });
 
-            if (toReplace.Count > 0)
+            if (!toRemove.IsEmpty)
             {
                 target = target
-                    .RemoveSyntaxTrees(toReplace.Keys)
-                    .AddSyntaxTrees(toReplace.Values);
+                    .RemoveSyntaxTrees(toRemove)
+                    .AddSyntaxTrees(toAdd);
             }
 
             stopwatch.Stop();

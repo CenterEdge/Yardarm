@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,6 +20,10 @@ namespace Yardarm.Enrichment.Compilation
         private readonly IOpenApiElementRegistry _elementRegistry;
         private readonly IList<IOpenApiSyntaxNodeEnricher> _enrichers;
 
+        // Pool these for reuse by each enricher
+        private readonly ConcurrentBag<SyntaxTree> _toRemove = [];
+        private readonly ConcurrentBag<SyntaxTree> _toAdd = [];
+
         public Type[] ExecuteAfter { get; } =
         {
             typeof(DefaultTypeSerializersEnricher)
@@ -36,8 +41,7 @@ namespace Yardarm.Enrichment.Compilation
 
         public ValueTask<CSharpCompilation> EnrichAsync(CSharpCompilation target,
             CancellationToken cancellationToken = default) =>
-            new ValueTask<CSharpCompilation>(
-                _enrichers.Sort().Aggregate(target, Enrich));
+            new(_enrichers.Sort().Aggregate(target, Enrich));
 
         private CSharpCompilation Enrich(CSharpCompilation compilation, IOpenApiSyntaxNodeEnricher enricher)
         {
@@ -62,14 +66,30 @@ namespace Yardarm.Enrichment.Compilation
             where TSyntaxNode : SyntaxNode
             where TElement : IOpenApiElement
         {
-            foreach (var syntaxTree in compilation.SyntaxTrees)
+            // Execute enrichment on syntax trees in parallel to allow the use of multiple CPU cores
+            // This means that the CSharpCompilation passed to the enricher for each syntax tree is
+            // the same instance and won't include mutations on any other syntax tree. However, each
+            // enricher is still run in sequence and will include mutations made by other enrichers.
+            Parallel.ForEach(compilation.SyntaxTrees, syntaxTree =>
             {
                 SyntaxTree newSyntaxTree = Enrich(syntaxTree, compilation, enricher);
                 if (syntaxTree != newSyntaxTree)
                 {
-                    compilation = compilation.ReplaceSyntaxTree(syntaxTree, newSyntaxTree);
+                    _toRemove.Add(syntaxTree);
+                    _toAdd.Add(newSyntaxTree);
                 }
+            });
+
+            if (!_toRemove.IsEmpty)
+            {
+                compilation = compilation
+                    .RemoveSyntaxTrees(_toRemove)
+                    .AddSyntaxTrees(_toAdd);
             }
+
+            // Clear for the next enricher
+            _toRemove.Clear();
+            _toAdd.Clear();
 
             return compilation;
         }

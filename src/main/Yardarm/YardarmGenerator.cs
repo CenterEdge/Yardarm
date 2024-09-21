@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,12 +12,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
-using Yardarm.Internal;
 using Yardarm.Packaging;
 using Yardarm.Packaging.Internal;
 
@@ -28,14 +28,15 @@ namespace Yardarm
     /// </summary>
     public class YardarmGenerator : YardarmProcessor
     {
-        private readonly OpenApiDocument _document;
+        private readonly ILogger<YardarmGenerator> _logger;
 
+        /// <summary>
+        /// Generator creates an assembly from an OpenApiDocument.
+        /// </summary>
         public YardarmGenerator(OpenApiDocument document, YardarmGenerationSettings settings)
             : base(settings, settings.BuildServiceProvider(document))
         {
-            ArgumentNullException.ThrowIfNull(document);
-
-            _document = document;
+            _logger = ServiceProvider.GetRequiredService<ILogger<YardarmGenerator>>();
         }
 
         public async Task<YardarmGenerationResult> EmitAsync(CancellationToken cancellationToken = default)
@@ -152,35 +153,41 @@ namespace Yardarm
                     pdbStream: pdbOutput,
                     xmlDocumentationStream: xmlDocumentationOutput,
                     metadataPEStream: referenceAssemblyOutput,
-                    embeddedTexts: await GetEmbeddedTextsAsync(compilation, cancellationToken)
-                        .ToListAsync(cancellationToken),
+                    embeddedTexts: await GetEmbeddedTextsAsync(compilation, cancellationToken),
                     options: new EmitOptions()
                         .WithDebugInformationFormat(DebugInformationFormat.PortablePdb)
                         .WithHighEntropyVirtualAddressSpace(true)
-                        .WithIncludePrivateMembers(false)),
+                        .WithIncludePrivateMembers(false),
+                    cancellationToken: cancellationToken),
                 additionalDiagnostics);
         }
 
-        private async IAsyncEnumerable<EmbeddedText> GetEmbeddedTextsAsync(
-            CSharpCompilation compilation, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        private async ValueTask<IEnumerable<EmbeddedText>> GetEmbeddedTextsAsync(
+            CSharpCompilation compilation, CancellationToken cancellationToken = default)
         {
             if (!Settings.EmbedAllSources)
             {
-                yield break;
+                return [];
             }
 
-            foreach (var syntaxTree in compilation.SyntaxTrees
-                         .Where(static p => p.FilePath != "")
-                         .Cast<CSharpSyntaxTree>())
-            {
-                var content = (await syntaxTree.GetRootAsync(cancellationToken))
-                    .GetText(Encoding.UTF8, SourceHashAlgorithm.Sha1);
+            var syntaxTrees = compilation.SyntaxTrees
+                .Where(static p => p.FilePath != "")
+                .Cast<CSharpSyntaxTree>();
 
-                if (content.CanBeEmbedded)
+            ConcurrentBag<EmbeddedText> result = [];
+            await Parallel.ForEachAsync(syntaxTrees, cancellationToken,
+                async (syntaxTree, localCt) =>
                 {
-                    yield return EmbeddedText.FromSource(syntaxTree.FilePath, content);
-                }
-            }
+                    var content = (await syntaxTree.GetRootAsync(localCt))
+                        .GetText(Encoding.UTF8, SourceHashAlgorithm.Sha1);
+
+                    if (content.CanBeEmbedded)
+                    {
+                        result.Add(EmbeddedText.FromSource(syntaxTree.FilePath, content));
+                    }
+                });
+
+            return result;
         }
 
         private void PackNuGet(List<YardarmCompilationResult> results)

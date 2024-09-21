@@ -5,6 +5,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
 
+    <!--
+      Since we are highly parallelized and doing a lot of SyntaxNode heap allocations, for multicore
+      machines we can get fewer GC pauses by using server GC. This is a good default for this project.
+    -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

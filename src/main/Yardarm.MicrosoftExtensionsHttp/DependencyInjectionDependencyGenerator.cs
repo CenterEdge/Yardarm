@@ -16,7 +16,7 @@ namespace Yardarm.MicrosoftExtensionsHttp
                 {
                     Name = "Microsoft.Extensions.Http",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("6.0.0")
+                    VersionRange = VersionRange.Parse("8.0.1")
                 }
             };
         }

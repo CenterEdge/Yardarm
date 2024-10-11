@@ -26,7 +26,7 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Act
 
-            var result = EnricherSorter.Default.Sort(new IEnricher[] { }).ToList();
+            var result = EnricherSorter.Default.Sort<IEnricher>([]).ToList();
 
             // Assert
 
@@ -77,7 +77,7 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteAfter = new[] {typeof(Enricher3)}};
+            var enricher1 = new Enricher1 {ExecuteAfter = [typeof(Enricher3)]};
             var enricher2 = new Enricher2();
             var enricher3 = new Enricher3();
 
@@ -102,7 +102,7 @@ namespace Yardarm.UnitTests.Enrichment.Internal
 
             var enricher1 = new Enricher1();
             var enricher2 = new Enricher2();
-            var enricher3 = new Enricher3 {ExecuteAfter = new[] {typeof(Enricher1)}};
+            var enricher3 = new Enricher3 {ExecuteAfter = [typeof(Enricher1)]};
 
             // Act
 
@@ -124,7 +124,7 @@ namespace Yardarm.UnitTests.Enrichment.Internal
             // Arrange
 
             var enricher1 = new Enricher1();
-            var enricher2 = new Enricher2 {ExecuteAfter = new[] {typeof(Enricher1), typeof(Enricher3)}};
+            var enricher2 = new Enricher2 {ExecuteAfter = [typeof(Enricher1), typeof(Enricher3)]};
             var enricher3 = new Enricher3();
 
             // Act
@@ -145,8 +145,8 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteAfter = new[] {typeof(Enricher2)}};
-            var enricher2 = new Enricher2 {ExecuteAfter = new[] {typeof(Enricher3)}};
+            var enricher1 = new Enricher1 {ExecuteAfter = [typeof(Enricher2)]};
+            var enricher2 = new Enricher2 {ExecuteAfter = [typeof(Enricher3)]};
             var enricher3 = new Enricher3();
 
             // Act
@@ -167,8 +167,8 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteAfter = new[] {typeof(Enricher2)}};
-            var enricher2 = new Enricher2 {ExecuteAfter = new[] {typeof(Enricher1)}};
+            var enricher1 = new Enricher1 {ExecuteAfter = [typeof(Enricher2)]};
+            var enricher2 = new Enricher2 {ExecuteAfter = [typeof(Enricher1)]};
             var enricher3 = new Enricher3();
 
             // Act/Assert
@@ -189,7 +189,7 @@ namespace Yardarm.UnitTests.Enrichment.Internal
 
             var enricher1 = new Enricher1();
             var enricher2 = new Enricher2();
-            var enricher3 = new Enricher3 {ExecuteBefore = new[] {typeof(Enricher1)}};
+            var enricher3 = new Enricher3 {ExecuteBefore = [typeof(Enricher1)]};
 
             // Act
 
@@ -210,7 +210,7 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteBefore = new[] {typeof(Enricher3)}};
+            var enricher1 = new Enricher1 {ExecuteBefore = [typeof(Enricher3)]};
             var enricher2 = new Enricher2();
             var enricher3 = new Enricher3();
 
@@ -233,9 +233,9 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteBefore = new[] {typeof(Enricher2)}};
+            var enricher1 = new Enricher1 {ExecuteBefore = [typeof(Enricher2)]};
             var enricher2 = new Enricher2();
-            var enricher3 = new Enricher3 {ExecuteBefore = new[] {typeof(Enricher2)}};
+            var enricher3 = new Enricher3 {ExecuteBefore = [typeof(Enricher2)]};
 
             // Act
 
@@ -256,8 +256,8 @@ namespace Yardarm.UnitTests.Enrichment.Internal
             // Arrange
 
             var enricher1 = new Enricher1();
-            var enricher2 = new Enricher2 {ExecuteBefore = new[] {typeof(Enricher1)}};
-            var enricher3 = new Enricher3 {ExecuteBefore = new[] {typeof(Enricher1)}};
+            var enricher2 = new Enricher2 {ExecuteBefore = [typeof(Enricher1)]};
+            var enricher3 = new Enricher3 {ExecuteBefore = [typeof(Enricher1)]};
 
             // Act
 
@@ -277,8 +277,8 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteBefore = new[] {typeof(Enricher2)}};
-            var enricher2 = new Enricher2 {ExecuteBefore = new[] {typeof(Enricher1)}};
+            var enricher1 = new Enricher1 {ExecuteBefore = [typeof(Enricher2)]};
+            var enricher2 = new Enricher2 {ExecuteBefore = [typeof(Enricher1)]};
             var enricher3 = new Enricher3();
 
             // Act/Assert
@@ -297,8 +297,8 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteBefore = new[] {typeof(Enricher2)}};
-            var enricher2 = new Enricher2 {ExecuteAfter = new[] {typeof(Enricher3)}};
+            var enricher1 = new Enricher1 {ExecuteBefore = [typeof(Enricher2)]};
+            var enricher2 = new Enricher2 {ExecuteAfter = [typeof(Enricher3)]};
             var enricher3 = new Enricher3();
 
             // Act
@@ -319,9 +319,9 @@ namespace Yardarm.UnitTests.Enrichment.Internal
         {
             // Arrange
 
-            var enricher1 = new Enricher1 {ExecuteAfter = new[] {typeof(Enricher2)}};
+            var enricher1 = new Enricher1 {ExecuteAfter = [typeof(Enricher2)]};
             var enricher2 = new Enricher2();
-            var enricher3 = new Enricher3 {ExecuteBefore = new[] {typeof(Enricher2)}};
+            var enricher3 = new Enricher3 {ExecuteBefore = [typeof(Enricher2)]};
 
             // Act
 

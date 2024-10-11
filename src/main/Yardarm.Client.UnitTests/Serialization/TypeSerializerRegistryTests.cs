@@ -22,7 +22,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            registry.Add<DefaultConstructorSerializer>(new[] {"text/plain"});
+            registry.Add<DefaultConstructorSerializer>(["text/plain"]);
 
             // Assert
 
@@ -38,7 +38,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            registry.Add<RegistryConstructorSerializer>(new[] {"text/plain"});
+            registry.Add<RegistryConstructorSerializer>(["text/plain"]);
 
             // Assert
 
@@ -59,7 +59,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            registry.Add<RegistryConstructorSerializer>(null, new[] { typeof(Stream) });
+            registry.Add<RegistryConstructorSerializer>(null, [typeof(Stream)]);
 
             // Assert
 
@@ -76,7 +76,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            registry.Add<RegistryConstructorSerializer>(null, new[] { typeof(Stream) });
+            registry.Add<RegistryConstructorSerializer>(null, [typeof(Stream)]);
 
             // Assert
 
@@ -93,7 +93,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            registry.Add<RegistryConstructorSerializer>(null, new[] { typeof(Stream) });
+            registry.Add<RegistryConstructorSerializer>(null, [typeof(Stream)]);
 
             // Assert
 

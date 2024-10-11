@@ -20,7 +20,7 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
 
             var converterFactory = new JsonNamedStringEnumConverter<TestEnum>();
 
-            var converter = (JsonConverter<TestEnum>) converterFactory.CreateConverter(typeof(TestEnum), JsonSerializerOptions.Default);
+            var converter = (JsonConverter<TestEnum>)converterFactory.CreateConverter(typeof(TestEnum), JsonSerializerOptions.Default);
 
             using var stream = new MemoryStream();
             var writer = new Utf8JsonWriter(stream);
@@ -45,7 +45,7 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
 
             var converterFactory = new JsonNamedStringEnumConverter<TestEnum>();
 
-            var converter = (JsonConverter<TestEnum>) converterFactory.CreateConverter(typeof(TestEnum), JsonSerializerOptions.Default);
+            var converter = (JsonConverter<TestEnum>)converterFactory.CreateConverter(typeof(TestEnum), JsonSerializerOptions.Default);
 
             var buffer = Encoding.UTF8.GetBytes(expected);
             var reader = new Utf8JsonReader(buffer);
@@ -60,11 +60,12 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
             Assert.Equal(value, result);
         }
 
-        public static IEnumerable<object[]> TestCases()
-        {
-            yield return [TestEnum.None, "\"None\""];
-            yield return [TestEnum.CamelCase, "\"camelCase\""];
-        }
+        public static TheoryData<TestEnum, string> TestCases() =>
+            new()
+            {
+                { TestEnum.None, "\"None\"" },
+                { TestEnum.CamelCase, "\"camelCase\"" }
+            };
 
         public enum TestEnum
         {

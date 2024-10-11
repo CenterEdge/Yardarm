@@ -71,6 +71,13 @@ namespace Yardarm.Packaging
                             result.TargetFramework));
                     }
 
+                    if (_settings.EmbedSymbols && result.PdbOutput is not null)
+                    {
+                        files.Add(new StreamPackageFile(result.PdbOutput,
+                            $"lib/{result.TargetFramework.GetShortFolderName()}/{_settings.AssemblyName}.pdb",
+                            result.TargetFramework));
+                    }
+
                     return files;
                 }));
 

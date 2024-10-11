@@ -45,6 +45,12 @@ namespace Yardarm
         /// </summary>
         public bool EmbedAllSources { get; set; }
 
+        /// <summary>
+        /// If true, embed symbols in the <see cref="NuGetOutput"/>. Useful when uploading to NuGet
+        /// servers that don't support snupkg such as GitHub Packages.
+        /// </summary>
+        public bool EmbedSymbols { get; set; }
+
         public Stream DllOutput
         {
             get => _dllOutput ??= new MemoryStream();

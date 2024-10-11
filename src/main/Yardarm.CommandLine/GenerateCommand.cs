@@ -270,8 +270,9 @@ namespace Yardarm.CommandLine
                     var nupkgStream = new IntermediateStream(_options.OutputPackageFile);
                     streams.Add(nupkgStream);
                     settings.NuGetOutput = nupkgStream.Stream;
+                    settings.EmbedSymbols = _options.EmbedSymbols;
 
-                    if (!_options.NoSymbolsPackageFile && !string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
+                    if (!_options.NoSymbolsPackageFile && !_options.EmbedSymbols && !string.IsNullOrEmpty(_options.OutputSymbolsPackageFile))
                     {
                         var snupkgStream = new IntermediateStream(_options.OutputSymbolsPackageFile);
                         streams.Add(snupkgStream);

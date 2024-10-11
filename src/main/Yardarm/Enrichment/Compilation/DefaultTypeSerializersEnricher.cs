@@ -50,7 +50,8 @@ namespace Yardarm.Enrichment.Compilation
 
                     rootNode = rootNode.ReplaceNode(methodDeclaration, newMethodDeclaration);
 
-                    target = target.ReplaceSyntaxTree(syntaxTree,
+                    // Break once we've found what we're looking for
+                    return target.ReplaceSyntaxTree(syntaxTree,
                         syntaxTree.WithRootAndOptions(rootNode, syntaxTree.Options));
                 }
             }

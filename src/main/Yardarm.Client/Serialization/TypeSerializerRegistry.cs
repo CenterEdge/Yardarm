@@ -98,10 +98,23 @@ namespace RootNamespace.Serialization
             return this;
         }
 
-        public static ITypeSerializerRegistry CreateDefaultRegistry() =>
+        /// <summary>
+        /// Returns a new <see cref="ITypeSerializerRegistry"/> with the basic serializers registered such as
+        /// "text/plain", "multipart/form-data", and "application/octet-stream". Does not include any schema-based
+        /// serializers such as JSON or XML.
+        /// </summary>
+        /// <returns>A new <see cref="ITypeSerializerRegistry"/>.</returns>
+        public static ITypeSerializerRegistry CreateBasicRegistry() =>
             new TypeSerializerRegistry()
                 .Add<PlainTextSerializer>(PlainTextSerializer.SupportedMediaTypes)
                 .Add<MultipartFormDataSerializer>(MultipartFormDataSerializer.SupportedMediaTypes)
                 .Add<BinaryStreamSerializer>(BinaryStreamSerializer.SupportedMediaTypes, BinaryStreamSerializer.SupportedSchemaTypes);
+
+        /// <summary>
+        /// Returns a new <see cref="ITypeSerializerRegistry"/> with the all default serializers registered.
+        /// </summary>
+        /// <returns>A new <see cref="ITypeSerializerRegistry"/>.</returns>
+        public static ITypeSerializerRegistry CreateDefaultRegistry() =>
+            CreateBasicRegistry();
     }
 }

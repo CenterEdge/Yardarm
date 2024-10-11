@@ -54,7 +54,7 @@ jobs:
       run: dotnet build --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-restore
     - name: Test
       working-directory: ./src/main
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true
+      run: dotnet test --configuration Release --no-build --verbosity normal --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
     - name: Build SDK
       working-directory: ./src/sdk
       run: dotnet build --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-restore Yardarm.Sdk.sln

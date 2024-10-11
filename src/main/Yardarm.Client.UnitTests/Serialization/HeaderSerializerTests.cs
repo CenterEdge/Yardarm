@@ -161,7 +161,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             string result = HeaderSerializer.Instance.DeserializePrimitive<string>(
-                new [] {"test"});
+                ["test"]);
 
             // Assert
 
@@ -174,7 +174,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             string result = HeaderSerializer.Instance.DeserializePrimitive<string>(
-                new [] {"test", "value"});
+                ["test", "value"]);
 
             // Assert
 
@@ -187,7 +187,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             int result = HeaderSerializer.Instance.DeserializePrimitive<int>(
-                new [] {"105"});
+                ["105"]);
 
             // Assert
 
@@ -200,7 +200,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             long result = HeaderSerializer.Instance.DeserializePrimitive<long>(
-                new [] {"105"});
+                ["105"]);
 
             // Assert
 
@@ -213,7 +213,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             float result = HeaderSerializer.Instance.DeserializePrimitive<float>(
-                new [] {"1.05"});
+                ["1.05"]);
 
             // Assert
 
@@ -226,7 +226,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             double result = HeaderSerializer.Instance.DeserializePrimitive<double>(
-                new [] {"1.05"});
+                ["1.05"]);
 
             // Assert
 
@@ -239,7 +239,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             bool result = HeaderSerializer.Instance.DeserializePrimitive<bool>(
-                new [] {"true"});
+                ["true"]);
 
             // Assert
 
@@ -252,7 +252,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             bool result = HeaderSerializer.Instance.DeserializePrimitive<bool>(
-                new[] {"false"});
+                ["false"]);
 
             // Assert
 
@@ -265,7 +265,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             var result = HeaderSerializer.Instance.DeserializePrimitive<DateTime>(
-                new[] {"2020-01-02"}, "date");
+                ["2020-01-02"], "date");
 
             // Assert
 
@@ -278,7 +278,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act/Assert
 
             var action = () => HeaderSerializer.Instance.DeserializePrimitive<DateTime>(
-                new[] {"2020-01-02T03:04:05-04:00"}, "date");
+                ["2020-01-02T03:04:05-04:00"], "date");
             action.Should().Throw<FormatException>();
         }
 
@@ -290,7 +290,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             var result = HeaderSerializer.Instance.DeserializePrimitive<DateTimeOffset>(
-                new[] {"2020-01-02T03:04:05-04:00"}, format);
+                ["2020-01-02T03:04:05-04:00"], format);
 
             // Assert
 
@@ -307,7 +307,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             List<string> result = HeaderSerializer.Instance.DeserializeList<string>(
-                new[] { "abc", "def", "ghi" });
+                ["abc", "def", "ghi"]);
 
             // Assert
 
@@ -320,11 +320,11 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             List<int> result = HeaderSerializer.Instance.DeserializeList<int>(
-                new[] { "1", "3", "5" });
+                ["1", "3", "5"]);
 
             // Assert
 
-            result.Should().BeEquivalentTo(new[] { 1, 3, 5 });
+            result.Should().BeEquivalentTo([1, 3, 5]);
         }
 
         #endregion

@@ -10,7 +10,7 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
 {
     public class JsonDateConverterTests
     {
-        private static readonly UTF8Encoding NoBom = new(false);
+        private static readonly UTF8Encoding s_noBom = new(false);
 
         [Fact]
         public void Write_DateTime_WritesOnlyDate()
@@ -42,7 +42,7 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
 
             var converter = new JsonDateConverter();
 
-            var reader = new Utf8JsonReader(NoBom.GetBytes(value));
+            var reader = new Utf8JsonReader(s_noBom.GetBytes(value));
             reader.Read();
 
             // Act
@@ -68,7 +68,7 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
 
             var action = () =>
             {
-                var reader = new Utf8JsonReader(NoBom.GetBytes(value));
+                var reader = new Utf8JsonReader(s_noBom.GetBytes(value));
                 reader.Read();
 
                 return converter.Read(ref reader, typeof(DateTime), new JsonSerializerOptions());
@@ -91,7 +91,7 @@ namespace Yardarm.SystemTextJson.UnitTests.Client
 
             var action = () =>
             {
-                var reader = new Utf8JsonReader(NoBom.GetBytes(value));
+                var reader = new Utf8JsonReader(s_noBom.GetBytes(value));
                 reader.Read();
 
                 return converter.Read(ref reader, typeof(DateTime), new JsonSerializerOptions());

@@ -168,7 +168,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new[] { "value1", "value2" }, true, ",", false);
+            builder.AppendList("name", ["value1", "value2"], true, ",", false);
 
             // Act
 
@@ -202,7 +202,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new[] { "value1", "value2 " }, true, ",", true);
+            builder.AppendList("name", ["value1", "value2 "], true, ",", true);
 
             // Act
 
@@ -219,7 +219,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new[] { "value1", "value2 " }, true, ",", false);
+            builder.AppendList("name", ["value1", "value2 "], true, ",", false);
 
             // Act
 
@@ -253,7 +253,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new[] { "value1", "value2" }, false, "%20", false);
+            builder.AppendList("name", ["value1", "value2"], false, "%20", false);
 
             // Act
 
@@ -270,7 +270,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new[] { "value1", "value2 " }, false, "%20", true);
+            builder.AppendList("name", ["value1", "value2 "], false, "%20", true);
 
             // Act
 
@@ -287,7 +287,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Arrange
 
             var builder = new QueryStringBuilder("base/uri");
-            builder.AppendList("name", new[] { "value1", "value2 " }, false, "%20", false);
+            builder.AppendList("name", ["value1", "value2 "], false, "%20", false);
 
             // Act
 

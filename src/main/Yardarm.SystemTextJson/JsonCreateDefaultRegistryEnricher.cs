@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Enrichment;
@@ -24,7 +25,7 @@ namespace Yardarm.SystemTextJson
             // Instead create a new instance directly using the default constructor and add it.
             InvocationExpression(
                 MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    target,
+                    target.WithTrailingTrivia(TriviaList(CarriageReturnLineFeed, Whitespace("                "))),
                     IdentifierName("Add")),
                 ArgumentList(SeparatedList(new[]
                 {

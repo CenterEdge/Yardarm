@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Enrichment;
@@ -18,14 +19,15 @@ namespace Yardarm.NewtonsoftJson
         }
 
         public ExpressionSyntax Enrich(ExpressionSyntax target) =>
-            InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    target,
+            InvocationExpression(
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    target.WithTrailingTrivia(TriviaList(CarriageReturnLineFeed, Whitespace("                "))),
                     GenericName(
                         Identifier("Add"),
-                        TypeArgumentList(SingletonSeparatedList<TypeSyntax>(_jsonSerializationNamespace.JsonTypeSerializer)))))
-                .AddArgumentListArguments(
+                        TypeArgumentList(SingletonSeparatedList<TypeSyntax>(_jsonSerializationNamespace.JsonTypeSerializer)))),
+                ArgumentList(SingletonSeparatedList(
                     Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         _jsonSerializationNamespace.JsonTypeSerializer,
-                        IdentifierName("SupportedMediaTypes"))));
+                        IdentifierName("SupportedMediaTypes"))))));
     }
 }

@@ -21,7 +21,7 @@ namespace Yardarm.SystemTextJson
                     {
                         Name = "System.Text.Json",
                         TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("8.0.4")
+                        VersionRange = VersionRange.Parse("8.0.5")
                     }
                 };
 
@@ -31,7 +31,7 @@ namespace Yardarm.SystemTextJson
                     {
                         Name = "System.Net.Http.Json",
                         TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("8.0.0")
+                        VersionRange = VersionRange.Parse("8.0.1")
                     }
                 };
             }

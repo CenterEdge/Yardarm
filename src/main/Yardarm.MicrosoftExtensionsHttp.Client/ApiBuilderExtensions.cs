@@ -95,6 +95,47 @@ namespace RootNamespace
         }
 
         /// <summary>
+        /// Add an API with its concrete implementation to the <see cref="IApiBuilder"/> and the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TClient">The API interface.</typeparam>
+        /// <typeparam name="TImplementation">The concrete API implementation.</typeparam>
+        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="configureClient">An action to configure the <see cref="HttpClient"/> used by the API.</param>
+        /// <returns>The <see cref="IApiBuilder"/>.</returns>
+        /// <remarks>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type.
+        /// </para>
+        /// </remarks>
+        public static IApiBuilder AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+            this IApiBuilder builder,
+            string name,
+            Action<IHttpClientBuilder>? configureClient = null)
+            where TClient : class, IApi
+            where TImplementation : class, TClient
+        {
+            ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(name);
+
+            if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
+            {
+                ThrowRegistrationError(typeof(TClient));
+            }
+
+            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>(name);
+
+            // Register common configuration before any custom per-API configuration
+            AddCommonConfiguration(clientBuilder);
+
+            configureClient?.Invoke(clientBuilder);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Add an API by name with its concrete implementation to the <see cref="IApiBuilder"/> and the <see cref="IServiceCollection"/>.
         /// </summary>
         /// <typeparam name="TClient">The concrete API implementation.</typeparam>
@@ -132,18 +173,20 @@ namespace RootNamespace
             Action<Type, IHttpClientBuilder>? configureClient,
             bool skipIfAlreadyRegistered)
         {
-            // This area will be dynamically enriched with calls to builder.AddApi<X, Y>(configureClient, skipIfAlreadyRegistered);
+            // This area will be dynamically enriched with calls to builder.AddApi<X, Y>(configureClient, name, skipIfAlreadyRegistered);
         }
 
         // Internal implementation used by AddAllApisInternal
         private static void AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
             this IApiBuilder builder,
             Action<Type, IHttpClientBuilder>? configureClient,
+            string name,
             bool skipIfAlreadyRegistered)
             where TClient : class, IApi
             where TImplementation : class, TClient
         {
             ThrowHelper.ThrowIfNull(builder);
+            ThrowHelper.ThrowIfNull(name);
 
             if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
             {
@@ -154,7 +197,7 @@ namespace RootNamespace
                 return;
             }
 
-            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>();
+            var clientBuilder = builder.Services.AddHttpClient<TClient, TImplementation>(name);
 
             // Register common configuration before any customer per-API configuration
             AddCommonConfiguration(clientBuilder);

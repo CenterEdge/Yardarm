@@ -66,6 +66,7 @@ namespace Yardarm.MicrosoftExtensionsHttp.Internal
                         ArgumentList(SeparatedList(new[]
                         {
                             Argument(IdentifierName("configureClient")),
+                            Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(interfaceName.ToString()))),
                             Argument(IdentifierName("skipIfAlreadyRegistered"))
                         }))),
                     Token(SyntaxKind.SemicolonToken))

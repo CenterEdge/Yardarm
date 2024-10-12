@@ -17,17 +17,17 @@ COPY ["src/*.props", "src/*.targets", "src/*.snk", "./"]
 RUN dotnet restore ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet pack -c Release -p:VERSION=${VERSION} ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet publish --no-restore -c Release -r linux-x64 -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0
+FROM mcr.microsoft.com/dotnet/runtime:8.0
 ARG VERSION
 WORKDIR /app
 
+COPY --from=build /publish/ ./
 RUN groupadd -g 1000 -r yardarm && useradd --no-log-init -u 1000 -r -g yardarm yardarm && \
     mkdir -p /home/yardarm && \
-    chown yardarm:yardarm /home/yardarm
-ENV HOME=/home/yardarm PATH=/home/yardarm/.dotnet/tools:${PATH}
-USER yardarm
-
-COPY --from=build /app/main/Yardarm.CommandLine/bin/Release/Yardarm.CommandLine.*.nupkg ./
-RUN dotnet tool install --global --add-source /app --version ${VERSION} Yardarm.CommandLine
+    chown yardarm:yardarm /home/yardarm && \
+    ln -s /app/Yardarm.CommandLine /app/yardarm
+ENV HOME=/home/yardarm PATH=/app:${PATH}
+USER 1000
+CMD ["yardarm"]

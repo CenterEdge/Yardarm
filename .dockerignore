@@ -1,4 +1,6 @@
-src/.vs
-src/*/bin
-src/*/obj
+**/.vs
+**/bin
+**/obj
+**/artifacts
+**/*.user
 .github

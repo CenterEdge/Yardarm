@@ -8,33 +8,90 @@ on:
     - release-*
 
 jobs:
-  build:
-
+  version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v1
+        with:
+          versionSpec: "5.12.0"
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v1
+        with:
+          useConfigFile: true
+          configFilePath: "GitVersion.yml"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: version
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        # 6.0 needed for GitVersion
-        dotnet-version: |
-          6.0.x
-          8.0.x
+        dotnet-version: 8.0.x
 
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v1
+    - uses: actions/cache@v4
       with:
-        versionSpec: "5.12.0"
-    - name: Determine Version
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v1
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    - name: Install dependencies
+      working-directory: ./src/main
+      run: dotnet restore
+
+    - name: Build
+      working-directory: ./src/main
+      run: dotnet build --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-restore
+    - name: Test
+      working-directory: ./src/main
+      run: dotnet test --configuration Release --no-build --verbosity normal --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+    - name: Test Generate
+      run: ./scripts/generate.sh
+
+    - name: Pack
+      working-directory: ./src/main
+      run: dotnet pack --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-build
+      # Note: SDK is packed by build above, doesn't need to be packed here
+    - name: Push to NuGet.org
+      if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
+      working-directory: ./src
+      run: |
+        dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Push to GitHub Packages
+      if: ${{ startsWith(github.ref, 'refs/pull/') || startsWith(github.ref, 'refs/tags/release/') }}
+      working-directory: ./src
+      run: |
+        dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/CenterEdge/index.json --skip-duplicate
+
+  build-sdk:
+    # SDK must be built on Windows to support building ReadyToRun images for multiple platforms
+    runs-on: windows-latest
+    needs: version
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
       with:
-        useConfigFile: true
-        configFilePath: "GitVersion.yml"
+        dotnet-version: 8.0.x
 
     - uses: actions/cache@v4
       with:
@@ -49,22 +106,13 @@ jobs:
       working-directory: ./src/sdk
       run: dotnet restore Yardarm.Sdk.sln
 
-    - name: Build
-      working-directory: ./src/main
-      run: dotnet build --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-restore
-    - name: Test
-      working-directory: ./src/main
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
     - name: Build SDK
       working-directory: ./src/sdk
-      run: dotnet build --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-restore Yardarm.Sdk.sln
+      run: dotnet build --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-restore Yardarm.Sdk.sln
     - name: Test Generate
-      run: ./scripts/generate.sh
+      run: ./scripts/generate-sdk.sh
 
-    - name: Pack
-      working-directory: ./src/main
-      run: dotnet pack --configuration Release -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2  }} --no-build
-      # Note: SDK is packed by build above, doesn't need to be packed here
+    # Note: SDK is packed by build above, doesn't need to be packed here
     - name: Push to NuGet.org
       if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
       working-directory: ./src
@@ -77,44 +125,23 @@ jobs:
         dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/CenterEdge/index.json --skip-duplicate
 
   docker:
-
     runs-on: ubuntu-latest
-
-    needs: build
+    needs: version
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        # 6.0 needed for GitVersion
-        dotnet-version: |
-          6.0.x
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v1
-      with:
-        versionSpec: "5.12.0"
-    - name: Determine Version
-      id: gitversion
-      uses: gittools/actions/gitversion/execute@v1
-      with:
-        useConfigFile: true
-        configFilePath: "GitVersion.yml"
-
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v4
+      uses: docker/metadata-action@v5
       with:
         images: ghcr.io/centeredge/yardarm
         tags: |
           type=ref,event=branch
           type=ref,event=pr
-          type=semver,pattern={{version}},value=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+          type=semver,pattern={{version}},value=${{ needs.version.outputs.version }}
           type=sha
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -125,10 +152,10 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - uses: docker/build-push-action@v5
+    - uses: docker/build-push-action@v6
       with:
-        context: .
-        build-args: VERSION=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+        platforms: linux/amd64,linux/arm64
+        build-args: VERSION=${{ needs.version.outputs.version }}
         push: ${{ startsWith(github.ref, 'refs/tags/release/') }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

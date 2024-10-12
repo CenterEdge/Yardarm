@@ -73,6 +73,9 @@ namespace Yardarm.CommandLine
         [Option("no-snupkg", HelpText = "Suppress output of .snupkg symbols package file", SetName = "nuget")]
         public bool NoSymbolsPackageFile { get; set; }
 
+        [Option("embed-symbols", HelpText = "Embed symbols in the primary nupkg. Useful for NuGet servers that don't support snupkg such as GitHub Packages. Implies \"--no-snupkg\".", SetName = "nuget")]
+        public bool EmbedSymbols { get; set; }
+
         [Option("repository-type", Default="git", HelpText = "Type of repository for NuGet packaging")]
         public string RepositoryType { get; set; }
 

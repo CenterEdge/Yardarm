@@ -1,8 +1,15 @@
 ARG VERSION=0.1.0-local
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# --platform=$BUILDPLATFORM ensures that the build runs on the actual CPU platform of the builder, without emulation
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION
+ARG TARGETARCH
 WORKDIR /app
+
+# Place a properly formatted RID in /tmp/arch
+RUN arch=$TARGETARCH \
+    && if [ "$TARGETARCH" = "amd64" ]; then arch="x64"; fi \
+    && echo "linux-$arch" > /tmp/arch
 
 COPY src/main/Yardarm/*.csproj ./main/Yardarm/
 COPY src/main/Yardarm.Client/*.csproj ./main/Yardarm.Client/
@@ -14,11 +21,12 @@ COPY src/main/Yardarm.NewtonsoftJson.Client/*.csproj ./main/Yardarm.NewtonsoftJs
 COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/
 COPY src/main/Yardarm.SystemTextJson.Client/*.csproj ./main/Yardarm.SystemTextJson.Client/
 COPY ["src/*.props", "src/*.targets", "src/*.snk", "./"]
-RUN dotnet restore ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet restore -r $(cat /tmp/arch) ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet publish --no-restore -c Release -r linux-x64 -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
+# No --platform here so we get the base image for the target platform
 FROM mcr.microsoft.com/dotnet/runtime:8.0
 ARG VERSION
 WORKDIR /app

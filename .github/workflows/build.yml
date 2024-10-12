@@ -22,7 +22,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
-          cache: true
 
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v1
@@ -46,8 +45,13 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-        cache: true
 
+    - uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
     - name: Install dependencies
       working-directory: ./src/main
       run: dotnet restore
@@ -88,8 +92,13 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-        cache: true
 
+    - uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
     - name: Install dependencies
       working-directory: ./src/main
       run: dotnet restore

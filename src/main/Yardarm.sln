@@ -29,12 +29,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensions
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.Benchmarks", "Yardarm.Benchmarks\Yardarm.Benchmarks.csproj", "{A92143CD-F939-445D-B408-7493E36BB662}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.NodaTime", "Yardarm.NodaTime\Yardarm.NodaTime.csproj", "{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0F27CDEF-318E-4305-AE2B-AA44C670E7C2}"
 	ProjectSection(SolutionItems) = preProject
 		..\Directory.Build.props = ..\Directory.Build.props
 		..\Directory.Build.targets = ..\Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.NodaTime.Client", "Yardarm.NodaTime.Client\Yardarm.NodaTime.Client.csproj", "{86C00C4C-763D-47B1-AB0B-7737A5AC084D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yardarm.NodaTime.UnitTests", "Yardarm.NodaTime.UnitTests\Yardarm.NodaTime.UnitTests.csproj", "{B1B2E5BD-3849-4BD1-BA98-40D4F271AD10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +100,18 @@ Global
 		{A92143CD-F939-445D-B408-7493E36BB662}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A92143CD-F939-445D-B408-7493E36BB662}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A92143CD-F939-445D-B408-7493E36BB662}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86C00C4C-763D-47B1-AB0B-7737A5AC084D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86C00C4C-763D-47B1-AB0B-7737A5AC084D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86C00C4C-763D-47B1-AB0B-7737A5AC084D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86C00C4C-763D-47B1-AB0B-7737A5AC084D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1B2E5BD-3849-4BD1-BA98-40D4F271AD10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1B2E5BD-3849-4BD1-BA98-40D4F271AD10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1B2E5BD-3849-4BD1-BA98-40D4F271AD10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1B2E5BD-3849-4BD1-BA98-40D4F271AD10}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

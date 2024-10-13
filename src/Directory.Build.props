@@ -8,5 +8,7 @@
     <PackageProjectUrl>https://github.com/CenterEdge/Yardarm</PackageProjectUrl>
 
     <LangVersion>12</LangVersion>
+
+    <UseArtifactsOutput>true</UseArtifactsOutput>
   </PropertyGroup>
 </Project>

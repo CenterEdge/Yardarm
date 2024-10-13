@@ -31,4 +31,8 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
   </ItemGroup>
+
+  <ItemGroup>
+    <GlobalPackageReference Include="Microsoft.Build.CopyOnWrite" Version="1.0.322" />
+  </ItemGroup>
 </Project>

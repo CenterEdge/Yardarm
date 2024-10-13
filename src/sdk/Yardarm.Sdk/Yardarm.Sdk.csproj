@@ -21,9 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.3.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.3.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>

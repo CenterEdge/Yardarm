@@ -3,7 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
+    <PublishReadyToRun>true</PublishReadyToRun>
 
     <!--
       If .NET 8 isn't installed, allow the command line tool to run on newer frameworks.
@@ -39,6 +40,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Yardarm.MicrosoftExtensionsHttp\Yardarm.MicrosoftExtensionsHttp.csproj" />
     <ProjectReference Include="..\Yardarm.NewtonsoftJson\Yardarm.NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\Yardarm.NodaTime\Yardarm.NodaTime.csproj" />
     <ProjectReference Include="..\Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj" />
     <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
   </ItemGroup>

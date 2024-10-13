@@ -4,6 +4,11 @@ namespace Yardarm
 {
     public abstract class YardarmExtension
     {
+        /// <summary>
+        /// Extension name.
+        /// </summary>
+        public virtual string Name => GetType().Name;
+
         public abstract IServiceCollection ConfigureServices(IServiceCollection services);
 
         /// <summary>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+
+    <Nullable>enable</Nullable>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Description>Extension for Yardarm to generate SDKs that use NodaTime for date/time schemas.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
+    <ProjectReference Include="..\Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Collect cs files from Yardarm.NodaTime.Client as resources so we can compile them into generated SDKs -->
+    <EmbeddedResource Include="../Yardarm.NodaTime.Client/**/*.cs" Exclude="../Yardarm.NodaTime.Client/bin/**;../Yardarm.NodaTime.Client/obj/**">
+      <Visible>False</Visible>
+      <LogicalName>$([System.String]::Copy('%(RelativeDir)').Substring(3).Replace('/', '.').Replace('\', '.'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensionsHttp.Client", "Yardarm.MicrosoftExtensionsHttp.Client\Yardarm.MicrosoftExtensionsHttp.Client.csproj", "{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.NodaTime", "Yardarm.NodaTime\Yardarm.NodaTime.csproj", "{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0BD89F3-3363-4990-8F89-EDC4BC88FCCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

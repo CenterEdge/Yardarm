@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -45,6 +46,7 @@ namespace Yardarm
             try
             {
                 var context = ServiceProvider.GetRequiredService<GenerationContext>();
+                var stopwatch = new Stopwatch();
 
                 await PerformRestoreAsync(context, Settings.NoRestore, cancellationToken);
 
@@ -52,6 +54,8 @@ namespace Yardarm
 
                 if (Settings.TargetFrameworkMonikers.Length == 1)
                 {
+                    stopwatch.Restart();
+
                     var targetFramework = NuGetFramework.Parse(Settings.TargetFrameworkMonikers[0]);
 
                     // Perform the compilation
@@ -63,6 +67,9 @@ namespace Yardarm
                     compilationResults.Add(new(targetFramework, emitResult,
                         Settings.DllOutput, Settings.PdbOutput, Settings.XmlDocumentationOutput, Settings.ReferenceAssemblyOutput,
                         additionalDiagnostics));
+
+                    stopwatch.Stop();
+                    _logger.LogInformation("{framework} Compilation completed in {elapsed}ms", targetFramework.GetShortFolderName(), stopwatch.ElapsedMilliseconds);
                 }
                 else
                 {
@@ -74,6 +81,8 @@ namespace Yardarm
 
                     foreach (var targetFramework in Settings.TargetFrameworkMonikers.Select(NuGetFramework.Parse))
                     {
+                        stopwatch.Restart();
+
                         var dllOutput = new MemoryStream();
                         toDispose.Add(dllOutput);
                         var pdbOutput = new MemoryStream();
@@ -92,6 +101,9 @@ namespace Yardarm
                         compilationResults.Add(new(targetFramework, emitResult,
                             dllOutput, pdbOutput, xmlDocumentationOutput, referenceAssemblyOutput,
                             additionalDiagnostics));
+
+                        stopwatch.Stop();
+                        _logger.LogInformation("{framework} Compilation completed in {elapsed}ms", targetFramework.GetShortFolderName(), stopwatch.ElapsedMilliseconds);
                     }
                 }
 
@@ -99,7 +111,12 @@ namespace Yardarm
                 {
                     if (Settings.NuGetOutput != null)
                     {
+                        stopwatch.Restart();
+
                         PackNuGet(compilationResults);
+
+                        stopwatch.Stop();
+                        _logger.LogInformation("NuGet pack completed in {elapsed}ms", stopwatch.ElapsedMilliseconds);
                     }
                 }
 
@@ -130,9 +147,15 @@ namespace Yardarm
             var compilation = CSharpCompilation.Create(Settings.AssemblyName)
                 .WithOptions(options);
 
+            var stopwatch = Stopwatch.StartNew();
+
             // Run all enrichers against the compilation
             var enrichers = context.GenerationServices.GetRequiredService<IEnumerable<ICompilationEnricher>>();
             compilation = await compilation.EnrichAsync(enrichers, cancellationToken);
+
+            stopwatch.Stop();
+            _logger.LogInformation("{framework} initial code generation completed in {elapsed}ms", targetFramework.GetShortFolderName(), stopwatch.ElapsedMilliseconds);
+            stopwatch.Restart();
 
             ImmutableArray<Diagnostic> additionalDiagnostics;
             using (var sourceGeneratorLoadContext = new SourceGeneratorLoadContext(context.NuGetRestoreInfo!.Providers))
@@ -148,6 +171,9 @@ namespace Yardarm
                     out additionalDiagnostics,
                     cancellationToken);
             }
+
+            stopwatch.Stop();
+            _logger.LogInformation("{framework} additional source generators completed in {elapsed}ms", targetFramework.GetShortFolderName(), stopwatch.ElapsedMilliseconds);
 
             return (compilation.Emit(dllOutput,
                     pdbStream: pdbOutput,

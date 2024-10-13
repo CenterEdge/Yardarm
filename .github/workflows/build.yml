@@ -71,12 +71,12 @@ jobs:
       # Note: SDK is packed by build above, doesn't need to be packed here
     - name: Push to NuGet.org
       if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
-      working-directory: ./src
+      working-directory: ./src/artifacts/package
       run: |
         dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
     - name: Push to GitHub Packages
       if: ${{ startsWith(github.ref, 'refs/pull/') || startsWith(github.ref, 'refs/tags/release/') }}
-      working-directory: ./src
+      working-directory: ./src/artifacts/package
       run: |
         dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/CenterEdge/index.json --skip-duplicate
 
@@ -115,12 +115,12 @@ jobs:
     # Note: SDK is packed by build above, doesn't need to be packed here
     - name: Push to NuGet.org
       if: ${{ startsWith(github.ref, 'refs/tags/release/') }}
-      working-directory: ./src
+      working-directory: ./src/artifacts/package
       run: |
         dotnet nuget push **/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
     - name: Push to GitHub Packages
       if: ${{ startsWith(github.ref, 'refs/pull/') || startsWith(github.ref, 'refs/tags/release/') }}
-      working-directory: ./src
+      working-directory: ./src/artifacts/package
       run: |
         dotnet nuget push **/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/CenterEdge/index.json --skip-duplicate
 

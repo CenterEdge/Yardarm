@@ -6,10 +6,12 @@
     <KeyFile>..\..\Yardarm.snk</KeyFile>
 
     <!-- Override these for local testing, get directly from build output -->
-    <YardarmToolPath Condition=" $([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\..\main\Yardarm.CommandLine\bin\$(Configuration)\net8.0\linux-x64\</YardarmToolPath>
-    <YardarmToolPath Condition=" !$([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\..\main\Yardarm.CommandLine\bin\$(Configuration)\net8.0\win-x64\</YardarmToolPath>
-    <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\Yardarm.Sdk\bin\$(Configuration)\</YardarmTaskBasePath>
-    <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\Yardarm.Sdk\bin\$(Configuration)\</YardarmTaskBasePath>
+    <YardarmToolPath Condition=" $([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.CommandLine\$(Configuration.ToLower())_linux-x64\</YardarmToolPath>
+    <YardarmToolPath Condition=" !$([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.CommandLine\$(Configuration.ToLower())_win-x64\</YardarmToolPath>
+
+    <!-- Below uses a trailing underscore instead of a slash due to the artifacts directory layout -->
+    <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())_</YardarmTaskBasePath>
+    <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())_</YardarmTaskBasePath>
 
     <JsonMode>Newtonsoft.Json</JsonMode>
   </PropertyGroup>

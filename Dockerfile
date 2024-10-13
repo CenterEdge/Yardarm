@@ -20,7 +20,8 @@ COPY src/main/Yardarm.NewtonsoftJson/*.csproj ./main/Yardarm.NewtonsoftJson/
 COPY src/main/Yardarm.NewtonsoftJson.Client/*.csproj ./main/Yardarm.NewtonsoftJson.Client/
 COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/
 COPY src/main/Yardarm.SystemTextJson.Client/*.csproj ./main/Yardarm.SystemTextJson.Client/
-COPY ["src/*.props", "src/*.targets", "src/*.snk", "./"]
+COPY ["src/*.props", "src/*.targets", "src/*.snk", "src/nuget.config", "./"]
+COPY ["src/main/*.props", "src/main/*.targets", "./main/"]
 RUN dotnet restore -r $(cat /tmp/arch) ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./

@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
@@ -24,6 +27,18 @@ namespace RootNamespace.Serialization
                     $";{name}={LiteralSerializer.JoinList(explode ? $";{name}=" : ",", values, format)}",
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
+
+#if NET6_0_OR_GREATER
+
+        public static string Build(PathSegmentInterpolatedStringHandler handler) =>
+            handler.ToStringAndClear();
+
+#pragma warning disable IDE0060 // Remove unused parameter
+        public static string Build(Span<char> initialBuffer, [InterpolatedStringHandlerArgument(nameof(initialBuffer))] PathSegmentInterpolatedStringHandler handler) =>
+            handler.ToStringAndClear();
+#pragma warning restore IDE0060 // Remove unused parameter
+
+#endif
 
         private static string SerializeSimple<T>(T value, string? format = null)
         {

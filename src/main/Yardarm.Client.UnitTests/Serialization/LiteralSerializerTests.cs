@@ -192,6 +192,522 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
+        #region TrySerialize Success
+
+        [Fact]
+        public void TrySerialize_String_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize("test", default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("test");
+        }
+
+        [Fact]
+        public void TrySerialize_Integer_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(105, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("105");
+        }
+
+        [Fact]
+        public void TrySerialize_Long_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(105L, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("105");
+        }
+
+        [Fact]
+        public void TrySerialize_Float_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(1.05f, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("1.05");
+        }
+
+        [Fact]
+        public void TrySerialize_Double_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(1.05, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("1.05");
+        }
+
+        [Fact]
+        public void TrySerialize_True_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(true, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("true");
+        }
+
+        [Fact]
+        public void TrySerialize_False_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(false, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("false");
+        }
+
+        [Fact]
+        public void TrySerialize_DateTime_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(new DateTime(2020, 1, 2, 3, 4, 5),
+                default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("2020-01-02T03:04:05.0000000");
+        }
+
+        [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void TrySerialize_Date_ReturnsString(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(new DateTime(2020, 1, 2, 3, 4, 5),
+                format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("2020-01-02");
+        }
+
+        [Fact]
+        public void TrySerialize_DateTimeOffset_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
+                default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("2020-01-02T03:04:05.0000000-04:00");
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void TrySerialize_TimeSpan_ReturnsString(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new TimeSpan(0, 3, 4, 5), format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("03:04:05");
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void TrySerialize_TimeSpanMillis_ReturnsString(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new TimeSpan(0, 3, 4, 5, 123), format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("03:04:05.1230000");
+        }
+
+        [Fact]
+        public void TrySerialize_Guid_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Arrange
+
+            var guid = Guid.NewGuid();
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(guid, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be(guid.ToString());
+        }
+
+        [Fact]
+        public void TrySerialize_Enum_ReturnsString()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(StringComparison.Ordinal, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("Ordinal");
+        }
+
+        #endregion
+
+        #region TrySerialize Failure
+
+        [Fact]
+        public void TrySerialize_String_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[3];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize("test", default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_Integer_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[2];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(105, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_Long_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[2];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(105L, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_Float_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[3];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(1.05f, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_Double_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[3];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(1.05, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_True_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[3];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(true, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_False_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[4];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(false, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_DateTime_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[9];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(new DateTime(2020, 1, 2, 3, 4, 5),
+                default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void TrySerialize_Date_Fails(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[9];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(new DateTime(2020, 1, 2, 3, 4, 5),
+                format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_DateTimeOffset_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[9];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)),
+                default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void TrySerialize_TimeSpan_Fails(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[7];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new TimeSpan(0, 3, 4, 5), format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        [InlineData("date-span")]
+        public void TrySerialize_TimeSpanMillis_Fails(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[7];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new TimeSpan(0, 3, 4, 5, 123), format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_Guid_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[35];
+
+            // Arrange
+
+            var guid = Guid.NewGuid();
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(guid, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        [Fact]
+        public void TrySerialize_Enum_Fails()
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[6];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(StringComparison.Ordinal, default, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeFalse();
+            charsWritten.Should().Be(0);
+        }
+
+        #endregion
+
         #region Deserialize
 
         [Fact]

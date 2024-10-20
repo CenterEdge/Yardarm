@@ -29,10 +29,10 @@ namespace Yardarm.Spec.Path
 
         public override int GetHashCode() => HashCode.Combine(Value, (int) Type);
 
-        public InterpolatedStringContentSyntax ToInterpolatedStringContentSyntax(Func<PathSegment, ExpressionSyntax> parameterInterpreter) =>
+        public InterpolatedStringContentSyntax ToInterpolatedStringContentSyntax(Func<PathSegment, InterpolationSyntax> parameterInterpreter) =>
             Type == PathSegmentType.Text
-                ? (InterpolatedStringContentSyntax) InterpolatedStringText(
+                ? InterpolatedStringText(
                     Token(TriviaList(), SyntaxKind.InterpolatedStringTextToken, Value, Value, TriviaList()))
-                : Interpolation(parameterInterpreter.Invoke(this));
+                : parameterInterpreter.Invoke(this);
     }
 }

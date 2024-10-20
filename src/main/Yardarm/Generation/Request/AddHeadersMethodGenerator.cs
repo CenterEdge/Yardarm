@@ -89,7 +89,7 @@ namespace Yardarm.Generation.Request
                     valueExpression = InvocationExpression(
                         MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
-                            SerializationNamespace.HeaderSerializerInstance,
+                            SerializationNamespace.HeaderSerializer,
                             IdentifierName("SerializeList")),
                         ArgumentList(SeparatedList(new[]
                         {
@@ -102,7 +102,7 @@ namespace Yardarm.Generation.Request
                     valueExpression = InvocationExpression(
                         MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
-                            SerializationNamespace.HeaderSerializerInstance,
+                            SerializationNamespace.HeaderSerializer,
                             IdentifierName("SerializePrimitive")),
                         ArgumentList(SeparatedList(new []
                         {

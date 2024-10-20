@@ -84,7 +84,7 @@ namespace Yardarm.Enrichment.Responses
                 if (schemaElement is {Element.Type: "array"})
                 {
                     deserializeExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            _serializationNamespace.HeaderSerializerInstance,
+                            _serializationNamespace.HeaderSerializer,
                             GenericName("DeserializeList")
                                 .AddTypeArgumentListArguments(typeName)),
                         ArgumentList(SeparatedList(new []
@@ -96,7 +96,7 @@ namespace Yardarm.Enrichment.Responses
                 else
                 {
                     deserializeExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            _serializationNamespace.HeaderSerializerInstance,
+                            _serializationNamespace.HeaderSerializer,
                             GenericName("DeserializePrimitive")
                                 .AddTypeArgumentListArguments(typeName)),
                         ArgumentList(SeparatedList(new [] {

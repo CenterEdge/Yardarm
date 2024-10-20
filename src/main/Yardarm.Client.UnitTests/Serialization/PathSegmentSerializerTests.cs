@@ -278,7 +278,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Assert
 
-            result.Should().Be(".abc,def,ghi");
+            result.Should().Be(".abc.def.ghi");
         }
 
         [Fact]

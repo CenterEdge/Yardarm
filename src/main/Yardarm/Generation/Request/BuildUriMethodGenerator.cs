@@ -174,7 +174,7 @@ namespace Yardarm.Generation.Request
                 pathExpression = InvocationExpression(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                         SerializationNamespace.PathSegmentSerializer,
-                        IdentifierName("Serialize")),
+                        IdentifierName("Build")),
                     ArgumentList(SeparatedList([
                         Argument(IdentifierName("initialBuffer")),
                         Argument(pathExpression)

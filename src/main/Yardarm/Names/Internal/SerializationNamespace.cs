@@ -9,7 +9,6 @@ namespace Yardarm.Names.Internal
     internal class SerializationNamespace : ISerializationNamespace
     {
         public NameSyntax HeaderSerializer { get; }
-        public ExpressionSyntax HeaderSerializerInstance { get; }
         public NameSyntax Name { get; }
         public NameSyntax ISerializationData { get; }
         public NameSyntax ITypeSerializer { get; }
@@ -31,10 +30,6 @@ namespace Yardarm.Names.Internal
             HeaderSerializer = QualifiedName(
                 Name,
                 IdentifierName("HeaderSerializer"));
-
-            HeaderSerializerInstance = MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                HeaderSerializer,
-                IdentifierName("Instance"));
 
             ISerializationData = QualifiedName(
                 Name,

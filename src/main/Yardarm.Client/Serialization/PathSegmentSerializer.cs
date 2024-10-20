@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
 {
-    internal class PathSegmentSerializer
+    internal static class PathSegmentSerializer
     {
         public static string Serialize<T>(string name, T value, PathSegmentStyle style = PathSegmentStyle.Simple, string? format = null) =>
             style switch
@@ -20,10 +18,10 @@ namespace RootNamespace.Serialization
         public static string SerializeList<T>(string name, IEnumerable<T> values, PathSegmentStyle style = PathSegmentStyle.Simple, bool explode = false, string? format = null) =>
             style switch
             {
-                PathSegmentStyle.Simple => LiteralSerializer.Instance.JoinList(",", values,  format),
-                PathSegmentStyle.Label => "." + LiteralSerializer.Instance.JoinList(explode ? "." : ",", values, format),
+                PathSegmentStyle.Simple => LiteralSerializer.JoinList(",", values,  format),
+                PathSegmentStyle.Label => "." + LiteralSerializer.JoinList(".", values, format),
                 PathSegmentStyle.Matrix =>
-                    $";{name}={LiteralSerializer.Instance.JoinList(explode ? $";{name}=" : ",", values, format)}",
+                    $";{name}={LiteralSerializer.JoinList(explode ? $";{name}=" : ",", values, format)}",
                 _ => throw new InvalidEnumArgumentException(nameof(style), (int)style, typeof(PathSegmentStyle))
             };
 
@@ -40,7 +38,7 @@ namespace RootNamespace.Serialization
                 return str;
             }
 
-            return LiteralSerializer.Instance.Serialize(value, format);
+            return LiteralSerializer.Serialize(value, format);
         }
 
         private static string SerializeLabel<T>(T value, string? format)
@@ -56,7 +54,7 @@ namespace RootNamespace.Serialization
                 return "." + str;
             }
 
-            return "." + LiteralSerializer.Instance.Serialize(value, format);
+            return "." + LiteralSerializer.Serialize(value, format);
         }
 
         private static string SerializeMatrix<T>(string name, T value, string? format)
@@ -72,7 +70,7 @@ namespace RootNamespace.Serialization
                 return $";{name}={str}";
             }
 
-            return $";{name}={LiteralSerializer.Instance.Serialize(value, format)}";
+            return $";{name}={LiteralSerializer.Serialize(value, format)}";
         }
     }
 }

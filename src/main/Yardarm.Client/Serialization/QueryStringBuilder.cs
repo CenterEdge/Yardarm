@@ -114,8 +114,8 @@ namespace RootNamespace.Serialization
 
         private static string EscapeValue<T>(T value, bool allowReserved, string? format) =>
             allowReserved
-                ? LiteralSerializer.Instance.Serialize(value, format)
-                : Uri.EscapeDataString(LiteralSerializer.Instance.Serialize(value, format));
+                ? LiteralSerializer.Serialize(value, format)
+                : Uri.EscapeDataString(LiteralSerializer.Serialize(value, format));
 
         [return: NotNullIfNotNull(nameof(uri))]
         public static Uri? AppendQueryParameter(Uri? uri, string name, string value)

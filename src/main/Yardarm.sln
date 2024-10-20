@@ -27,6 +27,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensions
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yardarm.MicrosoftExtensionsHttp.Client", "Yardarm.MicrosoftExtensionsHttp.Client\Yardarm.MicrosoftExtensionsHttp.Client.csproj", "{AB9CA15B-AE6E-421B-9662-E6264B4EA1CA}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0F27CDEF-318E-4305-AE2B-AA44C670E7C2}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

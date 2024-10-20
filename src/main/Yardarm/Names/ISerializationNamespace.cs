@@ -6,7 +6,6 @@ namespace Yardarm.Names
     public interface ISerializationNamespace : IKnownNamespace
     {
         NameSyntax HeaderSerializer { get; }
-        ExpressionSyntax HeaderSerializerInstance { get; }
         NameSyntax ISerializationData { get; }
         NameSyntax ITypeSerializer { get; }
         NameSyntax ITypeSerializerRegistry { get; }

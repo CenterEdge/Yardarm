@@ -14,7 +14,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize("test");
+            string result = LiteralSerializer.Serialize("test");
 
             // Assert
 
@@ -26,7 +26,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(105);
+            string result = LiteralSerializer.Serialize(105);
 
             // Assert
 
@@ -38,7 +38,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(105L);
+            string result = LiteralSerializer.Serialize(105L);
 
             // Assert
 
@@ -50,7 +50,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(1.05f);
+            string result = LiteralSerializer.Serialize(1.05f);
 
             // Assert
 
@@ -62,7 +62,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(1.05);
+            string result = LiteralSerializer.Serialize(1.05);
 
             // Assert
 
@@ -74,7 +74,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(true);
+            string result = LiteralSerializer.Serialize(true);
 
             // Assert
 
@@ -86,7 +86,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(false);
+            string result = LiteralSerializer.Serialize(false);
 
             // Assert
 
@@ -98,7 +98,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(new DateTime(2020, 1, 2, 3, 4, 5));
+            string result = LiteralSerializer.Serialize(new DateTime(2020, 1, 2, 3, 4, 5));
 
             // Assert
 
@@ -112,7 +112,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(new DateTime(2020, 1, 2, 3, 4, 5), format);
+            string result = LiteralSerializer.Serialize(new DateTime(2020, 1, 2, 3, 4, 5), format);
 
             // Assert
 
@@ -124,7 +124,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(
+            string result = LiteralSerializer.Serialize(
                 new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.FromHours(-4)));
 
             // Assert
@@ -139,7 +139,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(
+            string result = LiteralSerializer.Serialize(
                 new TimeSpan(0, 3, 4, 5), format);
 
             // Assert
@@ -154,7 +154,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(
+            string result = LiteralSerializer.Serialize(
                 new TimeSpan(0, 3, 4, 5, 123), format);
 
             // Assert
@@ -171,7 +171,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(guid);
+            string result = LiteralSerializer.Serialize(guid);
 
             // Assert
 
@@ -183,7 +183,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Serialize(StringComparison.Ordinal);
+            string result = LiteralSerializer.Serialize(StringComparison.Ordinal);
 
             // Assert
 
@@ -199,7 +199,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            string result = LiteralSerializer.Instance.Deserialize<string>("test");
+            string result = LiteralSerializer.Deserialize<string>("test");
 
             // Assert
 
@@ -211,7 +211,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            int result = LiteralSerializer.Instance.Deserialize<int>("105");
+            int result = LiteralSerializer.Deserialize<int>("105");
 
             // Assert
 
@@ -223,7 +223,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            long result = LiteralSerializer.Instance.Deserialize<long>("105");
+            long result = LiteralSerializer.Deserialize<long>("105");
 
             // Assert
 
@@ -235,7 +235,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            float result = LiteralSerializer.Instance.Deserialize<float>("1.05");
+            float result = LiteralSerializer.Deserialize<float>("1.05");
 
             // Assert
 
@@ -247,7 +247,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            double result = LiteralSerializer.Instance.Deserialize<double>("1.05");
+            double result = LiteralSerializer.Deserialize<double>("1.05");
 
             // Assert
 
@@ -259,7 +259,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            bool result = LiteralSerializer.Instance.Deserialize<bool>("true");
+            bool result = LiteralSerializer.Deserialize<bool>("true");
 
             // Assert
 
@@ -271,7 +271,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            bool result = LiteralSerializer.Instance.Deserialize<bool>("false");
+            bool result = LiteralSerializer.Deserialize<bool>("false");
 
             // Assert
 
@@ -285,7 +285,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<DateTime>("2020-01-02", format);
+            var result = LiteralSerializer.Deserialize<DateTime>("2020-01-02", format);
 
             // Assert
 
@@ -299,7 +299,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02", format);
+            var result = LiteralSerializer.Deserialize<TimeSpan>("13:01:02", format);
 
             // Assert
 
@@ -313,7 +313,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<TimeSpan>("13:01:02.234000", format);
+            var result = LiteralSerializer.Deserialize<TimeSpan>("13:01:02.234000", format);
 
             // Assert
 
@@ -325,7 +325,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act/Assert
 
-            var action = () => LiteralSerializer.Instance.Deserialize<DateTime>(
+            var action = () => LiteralSerializer.Deserialize<DateTime>(
                 "2020-01-02T03:04:05-04:00", "date");
             action.Should().Throw<FormatException>();
         }
@@ -337,7 +337,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            var result = LiteralSerializer.Instance.Deserialize<DateTimeOffset>(
+            var result = LiteralSerializer.Deserialize<DateTimeOffset>(
                 "2020-01-02T03:04:05-04:00", format);
 
             // Assert
@@ -353,7 +353,7 @@ namespace Yardarm.Client.UnitTests.Serialization
             const string guid = "00000001-0002-0003-0004-000000000005";
             // Act
 
-            Guid result = LiteralSerializer.Instance.Deserialize<Guid>(guid);
+            Guid result = LiteralSerializer.Deserialize<Guid>(guid);
 
             // Assert
 
@@ -365,7 +365,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            StringComparison result = LiteralSerializer.Instance.Deserialize<StringComparison>("Ordinal");
+            StringComparison result = LiteralSerializer.Deserialize<StringComparison>("Ordinal");
 
             // Assert
 
@@ -381,7 +381,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Act
 
-            var result = LiteralSerializer.Instance.JoinList(",",
+            var result = LiteralSerializer.JoinList(",",
                 new[] {new DateTime(2020, 1, 2), new DateTime(2021, 2, 3)},
                 "date");
 

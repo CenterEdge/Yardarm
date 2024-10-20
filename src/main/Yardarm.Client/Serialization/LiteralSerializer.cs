@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization
 {
-    public class LiteralSerializer
+    public static class LiteralSerializer
     {
-        public static LiteralSerializer Instance { get; } = new();
-
-        public string Serialize<T>(T value, string? format = null)
+        public static string Serialize<T>(T value, string? format = null)
         {
             if (value is null)
             {
@@ -51,17 +47,23 @@ namespace RootNamespace.Serialization
                 var timeSpan = (TimeSpan)(object)value;
                 return timeSpan.ToString("c");
             }
-
-            if (value is IFormattable formattable)
+            if (typeof(T) == typeof(Guid) || typeof(T) == typeof(Guid?))
             {
-                return formattable.ToString(null, CultureInfo.InvariantCulture);
+                // Optimization for GUIDs, avoids loading CultureInfo.InvariantCulture which has no effect on GUID formatting
+                var guid = (Guid)(object)value;
+                return guid.ToString();
+            }
+
+            if (value is IFormattable)
+            {
+                return ((IFormattable)value).ToString(null, CultureInfo.InvariantCulture); // constrained call avoiding boxing for value types
             }
 
             return value.ToString() ?? "";
         }
 
         [return: NotNullIfNotNull(nameof(value))]
-        public T Deserialize<T>(string? value, string? format = null)
+        public static T Deserialize<T>(string? value, string? format = null)
         {
             if (value is null)
             {
@@ -169,11 +171,11 @@ namespace RootNamespace.Serialization
             return default!; // unreachable
         }
 
-        public string JoinList<T>(string separator, IEnumerable<T> list, string? format = null) =>
+        public static string JoinList<T>(string separator, IEnumerable<T> list, string? format = null) =>
             string.Join(separator, list
                 .Select(p => Serialize(p, format)));
 
-        public List<T> DeserializeList<T>(IEnumerable<string> values, string? format = null) =>
+        public static List<T> DeserializeList<T>(IEnumerable<string> values, string? format = null) =>
             new List<T>(values.Select(p => Deserialize<T>(p, format)));
     }
 }

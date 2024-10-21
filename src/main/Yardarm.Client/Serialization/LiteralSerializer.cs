@@ -62,6 +62,87 @@ namespace RootNamespace.Serialization
             return value.ToString() ?? "";
         }
 
+#if NET6_0_OR_GREATER
+
+        public static bool TrySerialize<T>(T value, ReadOnlySpan<char> format, Span<char> destination, out int charsWritten)
+        {
+            if (value is null)
+            {
+                goto failed;
+            }
+
+            // These if expressions are elided by JIT for value types to be only the specific branch
+            if (typeof(T) == typeof(bool) || typeof(T) == typeof(bool?))
+            {
+                var boolString = (bool)(object)value ? "true" : "false";
+                if (boolString.TryCopyTo(destination))
+                {
+                    charsWritten = boolString.Length;
+                    return true;
+                }
+
+                goto failed;
+            }
+            if (typeof(T) == typeof(DateTime) || typeof(T) == typeof(DateTime?))
+            {
+                var dateTime = (DateTime)(object)value;
+
+                return format switch
+                {
+                    "date" or "full-date" => dateTime.TryFormat(destination, out charsWritten, format: "yyyy-MM-dd"),
+                    _ => dateTime.TryFormat(destination, out charsWritten, format: "O")
+                };
+            }
+            if (typeof(T) == typeof(DateTimeOffset) || typeof(T) == typeof(DateTimeOffset?))
+            {
+                var dateTime = (DateTimeOffset)(object)value;
+
+                return format switch
+                {
+                    "date" or "full-date" => dateTime.TryFormat(destination, out charsWritten, format: "yyyy-MM-dd"),
+                    _ => dateTime.TryFormat(destination, out charsWritten, format: "O")
+                };
+            }
+            if (typeof(T) == typeof(TimeSpan) || typeof(T) == typeof(TimeSpan?))
+            {
+                var timeSpan = (TimeSpan)(object)value;
+                return timeSpan.TryFormat(destination, out charsWritten, format: "c");
+            }
+            if (typeof(T) == typeof(Guid) || typeof(T) == typeof(Guid?))
+            {
+                // Optimization for GUIDs, avoids loading CultureInfo.InvariantCulture which has no effect on GUID formatting
+                var guid = (Guid)(object)value;
+                return guid.TryFormat(destination, out charsWritten);
+            }
+
+            string strValue;
+            if (value is IFormattable)
+            {
+                if (value is ISpanFormattable)
+                {
+                    return ((ISpanFormattable)value).TryFormat(destination, out charsWritten, format: default, provider: CultureInfo.InvariantCulture); // constrained call avoiding boxing for value types
+                }
+
+                strValue = ((IFormattable)value).ToString(format: null, CultureInfo.InvariantCulture); // constrained call avoiding boxing for value types
+            }
+            else
+            {
+                strValue = value.ToString() ?? "";
+            }
+
+            if (strValue.TryCopyTo(destination))
+            {
+                charsWritten = strValue.Length;
+                return true;
+            }
+
+        failed:
+            charsWritten = 0;
+            return false;
+        }
+
+#endif
+
         [return: NotNullIfNotNull(nameof(value))]
         public static T Deserialize<T>(string? value, string? format = null)
         {

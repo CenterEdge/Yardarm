@@ -438,5 +438,391 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         #endregion
+
+        #region Build
+
+        [Fact]
+        public void Build_Simple_ExpectedResult()
+        {
+            // Arrange
+
+            var id = 5;
+            var str = "test";
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id}/{str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/5/test");
+        }
+
+        [Fact]
+        public void Build_SimpleWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            var dateTime = new DateTime(2020, 1, 2);
+            var str = "test";
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime:date}/{str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/2020-01-02/test");
+        }
+
+        [Fact]
+        public void Build_Label_ExpectedResult()
+        {
+            // Arrange
+
+            var id = 5;
+            var str = "test";
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,1}/{str,1}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/.5/.test");
+        }
+
+        [Fact]
+        public void Build_LabelWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            var dateTime = new DateTime(2020, 1, 2);
+            var str = "test";
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,1:date}/{str,1}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/.2020-01-02/.test");
+        }
+
+        [Fact]
+        public void Build_Matrix_ExpectedResult()
+        {
+            // Arrange
+
+            var id = 5;
+            var str = "test";
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,4:id}/{str,5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;id=5/;str=test");
+        }
+
+        [Fact]
+        public void Build_MatrixWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            var dateTime = new DateTime(2020, 1, 2);
+            var str = "test";
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,4:dtdate}/{str,5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;dt=2020-01-02/;str=test");
+        }
+
+        #endregion
+
+        #region Build List
+
+        [Fact]
+        public void Build_SimpleList_ExpectedResult()
+        {
+            // Arrange
+
+            List<int> id = [5, 6];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id}/{str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/5,6/test,foo");
+        }
+
+        [Fact]
+        public void Build_SimpleListWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            List<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime:date}/{str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/2020-01-02,2020-01-03/test,foo");
+        }
+
+        [Fact]
+        public void Build_LabelList_ExpectedResult()
+        {
+            // Arrange
+
+            List<int> id = [5, 6];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,1}/{str,1}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/.5.6/.test.foo");
+        }
+
+        [Fact]
+        public void Build_LabelListWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            List<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,1:date}/{str,1}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/.2020-01-02.2020-01-03/.test.foo");
+        }
+
+        [Fact]
+        public void Build_MatrixList_ExpectedResult()
+        {
+            // Arrange
+
+            List<int> id = [5, 6];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,4:id}/{str,5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;id=5,6/;str=test,foo");
+        }
+
+        [Fact]
+        public void Build_MatrixListWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            List<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,4:dtdate}/{str,5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;dt=2020-01-02,2020-01-03/;str=test,foo");
+        }
+
+        [Fact]
+        public void Build_MatrixListExploded_ExpectedResult()
+        {
+            // Arrange
+
+            List<int> id = [5, 6];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,-4:id}/{str,-5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;id=5;id=6/;str=test;str=foo");
+        }
+
+        [Fact]
+        public void Build_MatrixListExplodedWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            List<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            List<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,-4:dtdate}/{str,-5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;dt=2020-01-02;dt=2020-01-03/;str=test;str=foo");
+        }
+
+        #endregion
+
+        #region Build IEnumerable<T>
+
+        [Fact]
+        public void Build_SimpleIEnumerable_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<int> id = [5, 6];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id}/{str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/5,6/test,foo");
+        }
+
+        [Fact]
+        public void Build_SimpleIEnumerableWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime:date}/{str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/2020-01-02,2020-01-03/test,foo");
+        }
+
+        [Fact]
+        public void Build_LabelIEnumerable_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<int> id = [5, 6];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,1}/{str,1}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/.5.6/.test.foo");
+        }
+
+        [Fact]
+        public void Build_LabelIEnumerableWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,1:date}/{str,1}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/.2020-01-02.2020-01-03/.test.foo");
+        }
+
+        [Fact]
+        public void Build_MatrixIEnumerable_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<int> id = [5, 6];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,4:id}/{str,5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;id=5,6/;str=test,foo");
+        }
+
+        [Fact]
+        public void Build_MatrixIEnumerableWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,4:dtdate}/{str,5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;dt=2020-01-02,2020-01-03/;str=test,foo");
+        }
+
+        [Fact]
+        public void Build_MatrixIEnumerableExploded_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<int> id = [5, 6];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{id,-4:id}/{str,-5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;id=5;id=6/;str=test;str=foo");
+        }
+
+        [Fact]
+        public void Build_MatrixIEnumerableExplodedWithFormat_ExpectedResult()
+        {
+            // Arrange
+
+            IEnumerable<DateTime> dateTime = [new DateTime(2020, 1, 2), new DateTime(2020, 1, 3)];
+            IEnumerable<string> str = ["test", "foo"];
+
+            // Act
+
+            var result = PathSegmentSerializer.Build($"/api/widget/{dateTime,-4:dtdate}/{str,-5:str}");
+
+            // Assert
+
+            result.Should().Be("/api/widget/;dt=2020-01-02;dt=2020-01-03/;str=test;str=foo");
+        }
+
+        #endregion
     }
 }

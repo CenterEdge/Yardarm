@@ -1,6 +1,6 @@
 ﻿using System;
 using FluentAssertions;
-using RootNamespace.Serialization;
+using RootNamespace.Serialization.Literals;
 using Xunit;
 
 namespace Yardarm.Client.UnitTests.Serialization
@@ -882,6 +882,18 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Act
 
             StringComparison result = LiteralSerializer.Deserialize<StringComparison>("Ordinal");
+
+            // Assert
+
+            result.Should().Be(StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Deserialize_NullableEnum_ReturnsValue()
+        {
+            // Act
+
+            StringComparison? result = LiteralSerializer.Deserialize<StringComparison?>("Ordinal");
 
             // Assert
 

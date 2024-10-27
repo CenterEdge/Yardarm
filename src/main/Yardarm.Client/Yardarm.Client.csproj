@@ -20,6 +20,10 @@
     <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <PackageReference Include="System.Collections.Immutable" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="**/*.netstandard.cs" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
     <Compile Remove="**/*.netcoreapp.cs" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />

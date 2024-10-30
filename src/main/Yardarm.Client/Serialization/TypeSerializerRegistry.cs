@@ -14,22 +14,22 @@ namespace RootNamespace.Serialization
         {
             get
             {
-                if (s_instance is not null)
+                var instance = s_instance;
+                if (instance is not null)
                 {
-                    return s_instance;
+                    return instance;
                 }
 
                 // In case two threads are getting Instance for the first time at the same time,
                 // use CompareExchange. One of the threads will not set the value, discarding the
                 // CreateDefaultRegistry result, and both calls will get the same value.
-                Interlocked.CompareExchange(ref s_instance, CreateDefaultRegistry(), null);
-                return s_instance;
+                return Interlocked.CompareExchange(ref s_instance, CreateDefaultRegistry(), null) ?? s_instance;
             }
             set
             {
                 ThrowHelper.ThrowIfNull(value);
 
-                s_instance = value;
+                Volatile.Write(ref s_instance, value);
             }
         }
 

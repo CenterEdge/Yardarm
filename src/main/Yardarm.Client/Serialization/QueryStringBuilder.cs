@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using RootNamespace.Serialization.Literals;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization

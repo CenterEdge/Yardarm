@@ -52,9 +52,32 @@ namespace Yardarm.Packaging.Internal
                 {
                     LibraryRange = new LibraryRange
                     {
+                        Name = "System.Collections.Immutable",
+                        TypeConstraint = LibraryDependencyTarget.Package,
+                        VersionRange = VersionRange.Parse("8.0.0")
+                    }
+                };
+
+                yield return new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange
+                    {
                         Name = "Microsoft.CSharp",
                         TypeConstraint = LibraryDependencyTarget.Package,
                         VersionRange = VersionRange.Parse("4.7.0")
+                    }
+                };
+            }
+            else if (targetFramework.Version.Major < 8)
+            {
+                // .NET < 8 also requires System.Collections.Immutable for FrozenDictionary
+                yield return new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange
+                    {
+                        Name = "System.Collections.Immutable",
+                        TypeConstraint = LibraryDependencyTarget.Package,
+                        VersionRange = VersionRange.Parse("8.0.0")
                     }
                 };
             }

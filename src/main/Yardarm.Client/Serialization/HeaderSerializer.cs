@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RootNamespace.Serialization.Literals;
 using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace

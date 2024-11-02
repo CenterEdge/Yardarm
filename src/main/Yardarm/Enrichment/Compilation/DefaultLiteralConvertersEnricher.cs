@@ -1,23 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Yardarm.Enrichment.Compilation;
 
-public class DefaultTypeSerializersEnricher(
-    IEnumerable<ICreateDefaultRegistryEnricher> createDefaultRegistryEnrichers) :
-    IResourceFileEnricher
+public class DefaultLiteralConvertersEnricher(
+    IEnumerable<IDefaultLiteralConverterEnricher> createDefaultRegistryEnrichers)
+    : IResourceFileEnricher
 {
     public bool ShouldEnrich(string resourceName) =>
-        resourceName == "Yardarm.Client.Serialization.TypeSerializerRegistry.cs";
+        resourceName == "Yardarm.Client.Serialization.Literals.LiteralConverterRegistry.cs";
 
     public CompilationUnitSyntax Enrich(CompilationUnitSyntax target, ResourceFileEnrichmentContext context)
     {
         ClassDeclarationSyntax? classDeclaration = target
             .DescendantNodes()
             .OfType<ClassDeclarationSyntax>()
-            .FirstOrDefault(p => p.Identifier.ValueText == "TypeSerializerRegistry");
+            .FirstOrDefault(p => p.Identifier.ValueText == "LiteralConverterRegistry");
 
         MethodDeclarationSyntax? methodDeclaration = classDeclaration?
             .ChildNodes()

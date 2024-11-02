@@ -25,6 +25,10 @@ namespace Yardarm.Enrichment
             where T : class, ICreateDefaultRegistryEnricher =>
             services.AddTransient<ICreateDefaultRegistryEnricher, T>();
 
+        public static IServiceCollection AddDefaultLiteralConverterEnricher<T>(this IServiceCollection services)
+            where T : class, IDefaultLiteralConverterEnricher =>
+            services.AddTransient<IDefaultLiteralConverterEnricher, T>();
+
         public static IServiceCollection AddOpenApiSyntaxNodeEnricher<T>(this IServiceCollection services)
             where T : class, IOpenApiSyntaxNodeEnricher =>
             services.AddTransient<IOpenApiSyntaxNodeEnricher, T>();

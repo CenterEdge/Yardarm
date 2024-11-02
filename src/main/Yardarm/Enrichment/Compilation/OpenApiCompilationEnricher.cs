@@ -25,9 +25,9 @@ namespace Yardarm.Enrichment.Compilation
         private readonly ConcurrentBag<SyntaxTree> _toAdd = [];
 
         public Type[] ExecuteAfter { get; } =
-        {
-            typeof(DefaultTypeSerializersEnricher)
-        };
+        [
+            typeof(ResourceFileCompilationEnricher),
+        ];
 
         public OpenApiCompilationEnricher(IOpenApiElementRegistry elementRegistry,
             IEnumerable<IOpenApiSyntaxNodeEnricher> enrichers)

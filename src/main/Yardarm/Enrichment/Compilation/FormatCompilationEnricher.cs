@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.Extensions.Logging;
-using Yardarm.Generation;
 
 namespace Yardarm.Enrichment.Compilation
 {
@@ -27,13 +26,12 @@ namespace Yardarm.Enrichment.Compilation
         private readonly ILogger<FormatCompilationEnricher> _logger;
 
         public Type[] ExecuteAfter { get; } =
-        {
+        [
             typeof(VersionAssemblyInfoEnricher),
             typeof(SyntaxTreeCompilationEnricher),
-            typeof(DefaultTypeSerializersEnricher),
             typeof(OpenApiCompilationEnricher),
             typeof(ResourceFileCompilationEnricher)
-        };
+        ];
 
         public FormatCompilationEnricher(YardarmGenerationSettings settings,
             ILogger<FormatCompilationEnricher> logger)

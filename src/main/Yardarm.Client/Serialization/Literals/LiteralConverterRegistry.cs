@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -107,10 +108,11 @@ public sealed class LiteralConverterRegistry
     /// <param name="converter">Converter for the type.</param>
     /// <param name="registerNullable">If true, automatically register a converter for <see cref="Nullable{T}"/> as well.</param>
     /// <returns>The <see cref="LiteralConverterRegistry"/> for chaining.</returns>
-    public LiteralConverterRegistry AddValueType<T>(LiteralConverter<T> converter, bool registerNullable = true)
+    public LiteralConverterRegistry Add<T>(LiteralConverter<T> converter, bool registerNullable = true)
         where T : struct
     {
         ThrowHelper.ThrowIfNull(converter);
+        Debug.Assert(typeof(T).IsValueType);
 
         _converters[typeof(T)] = converter;
 
@@ -132,9 +134,11 @@ public sealed class LiteralConverterRegistry
     /// <typeparam name="T">Type to register.</typeparam>
     /// <param name="converter">Converter for the type.</param>
     /// <returns>The <see cref="LiteralConverterRegistry"/> for chaining.</returns>
-    public LiteralConverterRegistry AddReferenceType<T>(LiteralConverter<T> converter)
+    public LiteralConverterRegistry Add<T>(LiteralConverter<T?> converter)
+        where T : class?
     {
         ThrowHelper.ThrowIfNull(converter);
+        Debug.Assert(!typeof(T).IsValueType);
 
         _converters[typeof(T)] = converter;
 
@@ -148,22 +152,22 @@ public sealed class LiteralConverterRegistry
     /// <returns>A new <see cref="LiteralConverterRegistry"/>.</returns>
     public static LiteralConverterRegistry CreateDefaultRegistry() =>
         new LiteralConverterRegistry()
-            .AddValueType(new BooleanLiteralConverter())
-            .AddValueType(new DateTimeLiteralConverter())
-            .AddValueType(new DateTimeOffsetLiteralConverter())
-            .AddValueType(new TimeSpanLiteralConverter())
-            .AddValueType(new GuidLiteralConverter())
-            .AddValueType(new ByteLiteralConverter())
-            .AddValueType(new SByteLiteralConverter())
-            .AddValueType(new Int16LiteralConverter())
-            .AddValueType(new UInt16LiteralConverter())
-            .AddValueType(new Int32LiteralConverter())
-            .AddValueType(new UInt32LiteralConverter())
-            .AddValueType(new Int64LiteralConverter())
-            .AddValueType(new UInt64LiteralConverter())
-            .AddValueType(new FloatLiteralConverter())
-            .AddValueType(new DoubleLiteralConverter())
-            .AddValueType(new DecimalLiteralConverter())
-            .AddReferenceType(new StringLiteralConverter())
-            .AddReferenceType(new UriLiteralConverter());
+            .Add(new BooleanLiteralConverter())
+            .Add(new DateTimeLiteralConverter())
+            .Add(new DateTimeOffsetLiteralConverter())
+            .Add(new TimeSpanLiteralConverter())
+            .Add(new GuidLiteralConverter())
+            .Add(new ByteLiteralConverter())
+            .Add(new SByteLiteralConverter())
+            .Add(new Int16LiteralConverter())
+            .Add(new UInt16LiteralConverter())
+            .Add(new Int32LiteralConverter())
+            .Add(new UInt32LiteralConverter())
+            .Add(new Int64LiteralConverter())
+            .Add(new UInt64LiteralConverter())
+            .Add(new FloatLiteralConverter())
+            .Add(new DoubleLiteralConverter())
+            .Add(new DecimalLiteralConverter())
+            .Add(new StringLiteralConverter())
+            .Add(new UriLiteralConverter());
 }

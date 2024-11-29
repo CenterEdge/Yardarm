@@ -63,52 +63,68 @@ namespace Yardarm
                     GetNetCoreAppPreprocessorSymbols(targetFramework.Version),
                 { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: >= 5 } =>
                     GetNetPreprocessorSymbols(targetFramework.Version),
-                _ => Enumerable.Empty<string>()
+                _ => []
             });
+
+        private static readonly Version[] s_dotNetStandardVersions =
+        [
+            new(2, 0),
+            new(2, 1),
+        ];
 
         private static IEnumerable<string> GetNetStandardPreprocessorSymbols(Version frameworkVersion)
         {
-            var result = new List<string> { "NETSTANDARD", $"NETSTANDARD{frameworkVersion.Major}_{frameworkVersion.Minor}" };
+            yield return "NETSTANDARD";
+            yield return $"NETSTANDARD{frameworkVersion.Major}_{frameworkVersion.Minor}";
 
-            foreach (var version in new Version[] { new(2, 0), new(2, 1) }
-                         .Where(p => p <= frameworkVersion))
+            foreach (var version in s_dotNetStandardVersions.Where(p => p <= frameworkVersion))
             {
-                result.Add($"NETSTANDARD{version.Major}_{version.Minor}_OR_GREATER");
+                yield return $"NETSTANDARD{version.Major}_{version.Minor}_OR_GREATER";
             }
-
-            return result;
         }
+
+        private static readonly Version[] s_dotNetCoreVersions =
+        [
+            new(2, 0),
+            new(2, 1),
+            new(3, 0),
+            new(3, 1),
+        ];
 
         private static IEnumerable<string> GetNetCoreAppPreprocessorSymbols(Version frameworkVersion)
         {
-            var result = new List<string>
-            {
-                "NETCOREAPP", $"NETCOREAPP{frameworkVersion.Major}_{frameworkVersion.Minor}"
-            };
+            yield return "NETCOREAPP";
+            yield return $"NETCOREAPP{frameworkVersion.Major}_{frameworkVersion.Minor}";
 
-            foreach (var version in new Version[] { new(2, 0), new(2, 1), new(3, 0), new(3, 1) }
-                         .Where(p => p <= frameworkVersion))
+            foreach (var version in s_dotNetCoreVersions.Where(p => p <= frameworkVersion))
             {
-                result.Add($"NETCOREAPP{version.Major}_{version.Minor}_OR_GREATER");
+                yield return $"NETCOREAPP{version.Major}_{version.Minor}_OR_GREATER";
             }
-
-            return result;
         }
+
+        private static readonly Version[] s_dotNetVersions =
+        [
+            new(5, 0),
+            new(6, 0),
+            new(7, 0),
+            new(8, 0),
+            new(9, 0),
+        ];
 
         private static IEnumerable<string> GetNetPreprocessorSymbols(Version frameworkVersion)
         {
-            var result = new List<string> { $"NET{frameworkVersion.Major}_{frameworkVersion.Minor}" };
+            yield return $"NET{frameworkVersion.Major}_{frameworkVersion.Minor}";
 
-            foreach (var version in new Version[] { new(5, 0), new(6, 0), new(7, 0), new(8, 0) }
-                         .Where(p => p <= frameworkVersion))
+            foreach (var version in s_dotNetVersions.Where(p => p <= frameworkVersion))
             {
-                result.Add($"NET{version.Major}_{version.Minor}_OR_GREATER");
+                yield return $"NET{version.Major}_{version.Minor}_OR_GREATER";
             }
 
             // Also include all .NET Core 3.1 symbols except NETCOREAPP3_1
-            result.AddRange(GetNetCoreAppPreprocessorSymbols(new Version(3, 1)).Except(new[] { "NETCOREAPP3_1" }));
-
-            return result;
+            foreach (string symbol in GetNetCoreAppPreprocessorSymbols(new Version(3, 1)).Except(["NETCOREAPP3_1"]))
+            {
+                yield return symbol;
+            }
         }
     }
 }

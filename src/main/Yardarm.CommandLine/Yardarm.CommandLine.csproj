@@ -1,9 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+
+    <!--
+      If .NET 8 isn't installed, allow the command line tool to run on newer frameworks.
+      This may not always work, but provides better compatibility. This option still prefers
+      to use the .NET 8 runtime as specified in TargetFramework above, and only uses a newer
+      runtime if .NET 8 isn't available.
+    -->
+    <RollForward>Major</RollForward>
 
     <!--
       Since we are highly parallelized and doing a lot of SyntaxNode heap allocations, for multicore

@@ -10,5 +10,11 @@
     <LangVersion>12</LangVersion>
 
     <UseArtifactsOutput>true</UseArtifactsOutput>
+
+    <!--
+      The .Client projects still target .NET 6 to ensure compatibility when generating .NET 6 targets,
+      despite the fact that .NET 6 is out of support. Support will be dropped from Yardarm at a later date.
+    -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 </Project>

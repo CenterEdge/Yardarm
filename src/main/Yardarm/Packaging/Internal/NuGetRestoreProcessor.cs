@@ -19,6 +19,8 @@ namespace Yardarm.Packaging.Internal
 {
     internal class NuGetRestoreProcessor
     {
+        private static readonly RestoreCommandProvidersCache s_restoreCommandProvidersCache = new();
+
         private readonly PackageSpec _packageSpec;
         private readonly YardarmGenerationSettings _settings;
         private readonly ILogger<NuGetReferenceGenerator> _logger;
@@ -79,13 +81,12 @@ namespace Yardarm.Packaging.Internal
 
                 var logger = new NuGetLogger(_logger);
 
-                var dependencyProviders = RestoreCommandProviders.Create(
+                var dependencyProviders = s_restoreCommandProvidersCache.GetOrCreate(
                     SettingsUtility.GetGlobalPackagesFolder(settings),
-                    Enumerable.Empty<string>(),
-                    SettingsUtility.GetEnabledSources(settings).Select(source =>
-                        Repository.Factory.GetCoreV3(source)),
+                    [],
+                    [..SettingsUtility.GetEnabledSources(settings).Select(source =>
+                        Repository.Factory.GetCoreV3(source))],
                     cacheContext,
-                    new LocalPackageFileCache(),
                     logger);
 
                 if (!readLockFileOnly)

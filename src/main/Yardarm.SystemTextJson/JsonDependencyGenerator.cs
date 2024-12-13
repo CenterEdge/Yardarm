@@ -11,30 +11,27 @@ namespace Yardarm.SystemTextJson
     {
         public IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework)
         {
-            if (targetFramework.Framework != NuGetFrameworkConstants.NetCoreApp || targetFramework.Version < new Version(8, 0))
+            // Add System.Text.Json even if we're targeting .NET 8 to ensure we get bug fixes, especially for the source generator
+
+            yield return new LibraryDependency
             {
-                // Only add System.Text.Json if we're not already targeting .NET 8
-
-                yield return new LibraryDependency
+                LibraryRange = new LibraryRange
                 {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Text.Json",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("8.0.5")
-                    }
-                };
+                    Name = "System.Text.Json",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("8.0.5")
+                }
+            };
 
-                yield return new LibraryDependency
+            yield return new LibraryDependency
+            {
+                LibraryRange = new LibraryRange
                 {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Net.Http.Json",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("8.0.1")
-                    }
-                };
-            }
+                    Name = "System.Net.Http.Json",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("8.0.1")
+                }
+            };
         }
     }
 }

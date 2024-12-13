@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -11,30 +10,28 @@ namespace Yardarm.SystemTextJson
     {
         public IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework)
         {
-            if (targetFramework.Framework != NuGetFrameworkConstants.NetCoreApp || targetFramework.Version < new Version(9, 0))
+            // Add System.Text.Json even if we're targeting .NET 9 to ensure we get bug fixes, especially for the source generator.
+            // This doesn't apply at the moment using 9.0.0, but it's a good practice to follow so we don't forget if we upgrade.
+
+            yield return new LibraryDependency
             {
-                // Only add System.Text.Json if we're not already targeting .NET 8
-
-                yield return new LibraryDependency
+                LibraryRange = new LibraryRange
                 {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Text.Json",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("9.0.0")
-                    }
-                };
+                    Name = "System.Text.Json",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("9.0.0")
+                }
+            };
 
-                yield return new LibraryDependency
+            yield return new LibraryDependency
+            {
+                LibraryRange = new LibraryRange
                 {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Net.Http.Json",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("9.0.0")
-                    }
-                };
-            }
+                    Name = "System.Net.Http.Json",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("9.0.0")
+                }
+            };
         }
     }
 }

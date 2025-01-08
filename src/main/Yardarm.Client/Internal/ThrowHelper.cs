@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -18,7 +19,10 @@ namespace Yardarm.Client.Internal
         /// <summary>Throws an <see cref="ArgumentNullException"/> if <paramref name="argument"/> is null.</summary>
         /// <param name="argument">The reference type argument to validate as non-null.</param>
         /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
-        public static void ThrowIfNull([NotNull] object? argument, [CallerArgumentExpression(nameof(argument))]  string? paramName = null)
+#if NET6_0_OR_GREATER
+        [StackTraceHidden]
+#endif
+        public static void ThrowIfNull([NotNull] object? argument, [CallerArgumentExpression(nameof(argument))] string? paramName = null)
         {
 #if NET6_0_OR_GREATER
             // Forward to the common implementation

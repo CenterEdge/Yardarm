@@ -10,6 +10,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageVersion Include="Microsoft.OpenApi" Version="1.6.22" />
     <PackageVersion Include="Microsoft.OpenApi.Readers" Version="1.6.22" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />

@@ -30,6 +30,7 @@ namespace Yardarm
     {
         public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, OpenApiDocument? document)
         {
+            services.AddOptions();
             services.AddDefaultEnrichers();
 
             if (settings.ReferencedAssemblies is null || settings.ReferencedAssemblies.Count == 0)
@@ -138,6 +139,8 @@ namespace Yardarm
             }
 
             services.TryAddSingleton<IOpenApiElementRegistry, OpenApiElementRegistry>();
+
+            services.ConfigureOptions<StringSchemaOptionsConfigurator>();
 
             return services;
         }

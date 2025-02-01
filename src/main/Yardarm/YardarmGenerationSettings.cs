@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using Yardarm.Packaging;
 
@@ -97,8 +98,7 @@ namespace Yardarm
         /// </summary>
         public bool NoRestore { get; set; }
 
-        public ImmutableArray<string> TargetFrameworkMonikers { get; set; } =
-            new[] {"netstandard2.0"}.ToImmutableArray();
+        public ImmutableArray<string> TargetFrameworkMonikers { get; set; } = ["netstandard2.0"];
 
         public Stream? NuGetOutput { get; set; }
 
@@ -115,7 +115,7 @@ namespace Yardarm
         /// <summary>
         /// Properties to alter the behavior of the generation process.
         /// </summary>
-        public Dictionary<string, string> Properties { get; } = [];
+        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)

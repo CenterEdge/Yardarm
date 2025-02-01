@@ -2,7 +2,7 @@
     "profiles": {
         "Generate": {
             "commandName": "Project",
-            "commandLineArgs": "generate --no-restore -n Test.Yardarm -x Yardarm.SystemTextJson.dll Yardarm.MicrosoftExtensionsHttp.dll -f net8.0 --embed -o output/ --intermediate-dir output/obj -v 1.0.0 -i mashtub.json"
+            "commandLineArgs": "generate --no-restore -n Test.Yardarm -x Yardarm.SystemTextJson.dll Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false -f net8.0 --embed -o output/ --intermediate-dir output/obj -v 1.0.0 -i mashtub.json"
         },
         "Restore": {
             "commandName": "Project",

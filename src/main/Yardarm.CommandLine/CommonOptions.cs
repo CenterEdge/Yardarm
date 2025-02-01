@@ -20,5 +20,8 @@ namespace Yardarm.CommandLine
 
         [Option("intermediate-dir", HelpText = "Intermediate output directory")]
         public string IntermediateOutputPath { get; set; }
+
+        [Option('p', "property", Separator = ';', HelpText = "List of property values, separated by semi-colons, in NAME=VALUE format")]
+        public IEnumerable<string> Properties { get; set; }
     }
 }

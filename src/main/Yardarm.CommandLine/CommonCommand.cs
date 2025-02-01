@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
-using NuGet.Packaging.Core;
 
 namespace Yardarm.CommandLine
 {
@@ -63,6 +57,20 @@ namespace Yardarm.CommandLine
             if (targetFrameworks.Length > 0)
             {
                 settings.TargetFrameworkMonikers = targetFrameworks.ToImmutableArray();
+            }
+        }
+
+        protected void ApplyProperties(YardarmGenerationSettings settings)
+        {
+            foreach (string property in _options.Properties)
+            {
+                string[] parts = property.Split('=', 2);
+                if (parts.Length != 2)
+                {
+                    throw new ArgumentException($"Invalid property '{property}'. Properties must be in the format 'NAME=VALUE'.");
+                }
+
+                settings.Properties[parts[0]] = parts[1];
             }
         }
     }

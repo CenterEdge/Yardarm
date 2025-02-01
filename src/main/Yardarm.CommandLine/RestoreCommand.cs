@@ -37,6 +37,8 @@ namespace Yardarm.CommandLine
 
                 ApplyNuGetSettings(settings);
 
+                ApplyProperties(settings);
+
                 settings
                     .AddLogging(builder =>
                     {

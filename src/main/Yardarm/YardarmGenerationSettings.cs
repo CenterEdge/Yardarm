@@ -112,6 +112,11 @@ namespace Yardarm
         /// </summary>
         public List<string>? ReferencedAssemblies { get; set; }
 
+        /// <summary>
+        /// Properties to alter the behavior of the generation process.
+        /// </summary>
+        public Dictionary<string, string> Properties { get; } = [];
+
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithDeterministic(true)

@@ -62,6 +62,8 @@ namespace Yardarm.CommandLine
 
             ApplyNuGetSettings(settings);
 
+            ApplyProperties(settings);
+
             List<IntermediateStream> streams = await ApplyFileStreamsAsync(settings);
             try
             {

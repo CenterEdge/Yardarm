@@ -1,5 +1,5 @@
 <Project>
-  <PropertyGroup Condition=" '$(IsPackable)' != 'false' Or $(MSBuildProjectFile) == 'Yardarm.UnitTests.csproj' ">
+  <PropertyGroup Condition=" ('$(IsPackable)' != 'false' And '$(IsClientProject)' != 'true') Or $(MSBuildProjectFile) == 'Yardarm.UnitTests.csproj' ">
     <!-- We must do this in targets, not props, so that we have the values set in the csproj file for the condition -->
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Yardarm.snk</AssemblyOriginatorKeyFile>
@@ -22,4 +22,39 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <!-- .Client projects -->
+
+  <PropertyGroup Condition=" '$(IsClientProject)' == 'true' ">
+    <RootNamespace>RootNamespace</RootNamespace>
+    <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(IsClientProject)' == 'true' And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <Compile Remove="**/*.netstandard.cs"  />
+    <None Include="**/*.netstandard.cs"  />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsClientProject)' == 'true' And !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <Compile Remove="**/*.net6.0.cs" />
+    <Compile Remove="**/*.netcoreapp.cs" />
+    <None Include="**/*.net6.0.cs" />
+    <None Include="**/*.netcoreapp.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsClientProject)' == 'true' And !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">
+    <Compile Remove="**/*.net7.0.cs" />
+    <None Include="**/*.net7.0.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsClientProject)' == 'true' And !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <Compile Remove="**/*.net8.0.cs" />
+    <None Include="**/*.net8.0.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsClientProject)' == 'true' And !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+    <Compile Remove="**/*.net9.0.cs" />
+    <None Include="**/*.net9.0.cs" />
+  </ItemGroup>
+
 </Project>

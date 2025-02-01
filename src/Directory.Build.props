@@ -16,5 +16,7 @@
       despite the fact that .NET 6 is out of support. Support will be dropped from Yardarm at a later date.
     -->
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+
+    <IsClientProject Condition=" '$(IsClientProject)' == '' And $(MSBuildProjectName.EndsWith('.Client'))">true</IsClientProject>
   </PropertyGroup>
 </Project>

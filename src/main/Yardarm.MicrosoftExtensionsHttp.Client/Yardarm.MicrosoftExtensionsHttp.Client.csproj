@@ -2,11 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0;net8.0</TargetFrameworks>
-    <RootNamespace>RootNamespace</RootNamespace>
     <OutputType>Library</OutputType>
 
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -20,11 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Yardarm.Client\Yardarm.Client.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="**/*.netstandard.cs" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
-    <Compile Remove="**/*.netcoreapp.cs" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
   </ItemGroup>
 
 </Project>

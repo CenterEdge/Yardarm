@@ -119,6 +119,20 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be("2020-01-02");
         }
 
+        [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void Serialize_DateOnly_ReturnsString(string format)
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize(new DateOnly(2020, 1, 2), format);
+
+            // Assert
+
+            result.Should().Be("2020-01-02");
+        }
+
         [Fact]
         public void Serialize_DateTimeOffset_ReturnsString()
         {
@@ -156,6 +170,34 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             string result = LiteralSerializer.Serialize(
                 new TimeSpan(0, 3, 4, 5, 123), format);
+
+            // Assert
+
+            result.Should().Be("03:04:05.1230000");
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void Serialize_TimeOnly_ReturnsString(string format)
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize(
+                new TimeOnly(3, 4, 5), format);
+
+            // Assert
+
+            result.Should().Be("03:04:05");
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void Serialize_TimeOnlyMillis_ReturnsString(string format)
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize(
+                new TimeOnly(3, 4, 5, 123), format);
 
             // Assert
 
@@ -351,6 +393,26 @@ namespace Yardarm.Client.UnitTests.Serialization
             buffer[..charsWritten].ToString().Should().Be("2020-01-02");
         }
 
+        [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void TrySerialize_DateOnly_ReturnsString(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(new DateOnly(2020, 1, 2),
+                format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("2020-01-02");
+        }
+
         [Fact]
         public void TrySerialize_DateTimeOffset_ReturnsString()
         {
@@ -403,6 +465,44 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             bool result = LiteralSerializer.TrySerialize(
                 new TimeSpan(0, 3, 4, 5, 123), format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("03:04:05.1230000");
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void TrySerialize_TimeOnly_ReturnsString(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new TimeOnly(3, 4, 5), format, buffer, out var charsWritten);
+
+            // Assert
+
+            result.Should().BeTrue();
+            buffer[..charsWritten].ToString().Should().Be("03:04:05");
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void TrySerialize_TimeOnlyMillis_ReturnsString(string format)
+        {
+            // Arrange
+
+            Span<char> buffer = stackalloc char[256];
+
+            // Act
+
+            bool result = LiteralSerializer.TrySerialize(
+                new TimeOnly(3, 4, 5, 123), format, buffer, out var charsWritten);
 
             // Assert
 
@@ -809,6 +909,20 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Theory]
+        [InlineData("date")]
+        [InlineData("full-date")]
+        public void Deserialize_DateOnly_ReturnsString(string format)
+        {
+            // Act
+
+            var result = LiteralSerializer.Deserialize<DateOnly>("2020-01-02", format);
+
+            // Assert
+
+            result.Should().Be(new DateOnly(year: 2020, 01, 02));
+        }
+
+        [Theory]
         [InlineData("partial-time")]
         [InlineData("date-span")]
         public void Deserialize_TimeSpan_ReturnsString(string format)
@@ -834,6 +948,54 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be(new TimeSpan(0, 13, 1, 2, 234));
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void Deserialize_TimeOnly_ReturnsString(string format)
+        {
+            // Act
+
+            var result = LiteralSerializer.Deserialize<TimeOnly>("13:01:02", format);
+
+            // Assert
+
+            result.Should().Be(new TimeOnly(13, 1, 2));
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void Deserialize_TimeOnlyWithMillis_ReturnsString(string format)
+        {
+            // Act
+
+            var result = LiteralSerializer.Deserialize<TimeOnly>("13:01:02.234000", format);
+
+            // Assert
+
+            result.Should().Be(new TimeOnly(13, 1, 2, 234));
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void Deserialize_TimeOnlyWithDays_ThrowsFormatException(string format)
+        {
+            // Act/Assert
+
+            Action act = () => LiteralSerializer.Deserialize<TimeOnly>("2.13:01:02.234000", format);
+
+            act.Should().Throw<FormatException>();
+        }
+
+        [Theory]
+        [InlineData("partial-time")]
+        public void Deserialize_TimeOnlyWithNegative_ThrowsFormatException(string format)
+        {
+            // Act/Assert
+
+            Action act = () => LiteralSerializer.Deserialize<TimeOnly>("-13:01:02.234000", format);
+
+            act.Should().Throw<FormatException>();
         }
 
         [Fact]

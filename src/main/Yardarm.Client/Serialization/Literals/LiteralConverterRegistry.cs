@@ -169,5 +169,10 @@ public sealed class LiteralConverterRegistry
             .Add(new DoubleLiteralConverter())
             .Add(new DecimalLiteralConverter())
             .Add(new StringLiteralConverter())
-            .Add(new UriLiteralConverter());
+            .Add(new UriLiteralConverter())
+#if NET6_0_OR_GREATER
+            .Add(new DateOnlyLiteralConverter())
+            .Add(new TimeOnlyLiteralConverter())
+#endif
+            ;
 }

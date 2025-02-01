@@ -63,7 +63,7 @@ namespace Yardarm.Generation.Schema
             Element.Element.Format switch
             {
                 "date" or "full-date" => Context.Options.LegacyDateTimeHandling ? DateTime : DateOnly,
-                "partial-time" or "time" => Context.Options.LegacyDateTimeHandling ? TimeSpan : TimeOnly,
+                "partial-time" => Context.Options.LegacyDateTimeHandling ? TimeSpan : TimeOnly,
                 "date-span" => TimeSpan,
                 "date-time" => DateTimeOffset,
                 "uuid" => Guid,

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NuGet.Frameworks;
 using Yardarm.Generation;
+using Yardarm.Internal;
 using Yardarm.Names;
 using Yardarm.Packaging;
 using Yardarm.Spec;
@@ -43,6 +45,9 @@ namespace Yardarm
         public IReadOnlySet<string> PreprocessorSymbols =>
             _preprocessorSymbols ??= GetPreprocessorSymbols(CurrentTargetFramework);
 
+        private readonly IOptions<GenerationOptions> _options;
+        internal GenerationOptions Options => _options.Value;
+
         public GenerationContext(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
@@ -52,6 +57,7 @@ namespace Yardarm
                 new Lazy<INameFormatterSelector>(serviceProvider.GetRequiredService<INameFormatterSelector>);
             _typeGeneratorRegistry =
                 new Lazy<ITypeGeneratorRegistry>(serviceProvider.GetRequiredService<ITypeGeneratorRegistry>);
+            _options = serviceProvider.GetRequiredService<IOptions<GenerationOptions>>();
         }
 
         private static HashSet<string> GetPreprocessorSymbols(NuGetFramework targetFramework) =>

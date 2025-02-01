@@ -20,6 +20,10 @@ namespace Yardarm.Generation.Schema
         private static YardarmTypeInfo String => s_string ??= new YardarmTypeInfo(
             PredefinedType(Token(SyntaxKind.StringKeyword)), isGenerated: false);
 
+        private static YardarmTypeInfo? s_dateOnly;
+        private static YardarmTypeInfo DateOnly => s_dateOnly ??= new YardarmTypeInfo(
+            QualifiedName(IdentifierName("System"), IdentifierName("DateOnly")), isGenerated: false);
+
         private static YardarmTypeInfo? s_dateTime;
         private static YardarmTypeInfo DateTime => s_dateTime ??= new YardarmTypeInfo(
             QualifiedName(IdentifierName("System"), IdentifierName("DateTime")), isGenerated: false);
@@ -27,6 +31,10 @@ namespace Yardarm.Generation.Schema
         private static YardarmTypeInfo? s_dateTimeOffset;
         private static YardarmTypeInfo DateTimeOffset => s_dateTimeOffset ??= new YardarmTypeInfo(
             QualifiedName(IdentifierName("System"), IdentifierName("DateTimeOffset")), isGenerated: false);
+
+        private static YardarmTypeInfo? s_timeOnly;
+        private static YardarmTypeInfo TimeOnly => s_timeOnly ??= new YardarmTypeInfo(
+            QualifiedName(IdentifierName("System"), IdentifierName("TimeOnly")), isGenerated: false);
 
         private static YardarmTypeInfo? s_timeSpan;
         private static YardarmTypeInfo TimeSpan => s_timeSpan ??= new YardarmTypeInfo(
@@ -54,8 +62,9 @@ namespace Yardarm.Generation.Schema
         protected override YardarmTypeInfo GetTypeInfo() =>
             Element.Element.Format switch
             {
-                "date" or "full-date" => DateTime,
-                "partial-time" or "date-span" => TimeSpan,
+                "date" or "full-date" => Context.Options.LegacyDateTimeHandling ? DateTime : DateOnly,
+                "partial-time" or "time" => Context.Options.LegacyDateTimeHandling ? TimeSpan : TimeOnly,
+                "date-span" => TimeSpan,
                 "date-time" => DateTimeOffset,
                 "uuid" => Guid,
                 "uri" => Uri,

@@ -1,8 +1,6 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-namespace Yardarm.Enrichment
+﻿namespace Yardarm.Enrichment
 {
-    public interface ICreateDefaultRegistryEnricher : IEnricher<ExpressionSyntax>
+    public interface ICreateDefaultRegistryEnricher : IRegistrationEnricher
     {
     }
 }

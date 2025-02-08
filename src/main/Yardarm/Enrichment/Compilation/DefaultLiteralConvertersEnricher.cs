@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Yardarm.Enrichment.Compilation;
 
 public class DefaultLiteralConvertersEnricher(
-    IEnumerable<IDefaultLiteralConverterEnricher> createDefaultRegistryEnrichers)
+    [FromKeyedServices(DefaultLiteralConvertersEnricher.RegistrationEnricherKey)] IEnumerable<IRegistrationEnricher> createDefaultRegistryEnrichers)
     : IResourceFileEnricher
 {
+    public const string RegistrationEnricherKey = "DefaultLiteralConverters";
+
     public bool ShouldEnrich(string resourceName) =>
         resourceName == "Yardarm.Client.Serialization.Literals.LiteralConverterRegistry.cs";
 

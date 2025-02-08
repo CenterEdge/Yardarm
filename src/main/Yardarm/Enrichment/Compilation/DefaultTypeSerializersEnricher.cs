@@ -2,13 +2,16 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Yardarm.Enrichment.Compilation;
 
 public class DefaultTypeSerializersEnricher(
-    IEnumerable<ICreateDefaultRegistryEnricher> createDefaultRegistryEnrichers) :
+    [FromKeyedServices(DefaultTypeSerializersEnricher.RegistrationEnricherKey)] IEnumerable<IRegistrationEnricher> createDefaultRegistryEnrichers) :
     IResourceFileEnricher
 {
+    public const string RegistrationEnricherKey = "DefaultTypeSerializers";
+
     public bool ShouldEnrich(string resourceName) =>
         resourceName == "Yardarm.Client.Serialization.TypeSerializerRegistry.cs";
 

@@ -183,6 +183,7 @@ public sealed class LiteralConverterRegistry
     public static LiteralConverterRegistry CreateDefaultRegistry()
     {
         LiteralConverterRegistry registry = CreateBasicRegistry();
+        // Enrichment point
         return registry;
     }
 }

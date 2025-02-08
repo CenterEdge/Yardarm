@@ -117,6 +117,7 @@ namespace RootNamespace.Serialization
         public static ITypeSerializerRegistry CreateDefaultRegistry()
         {
             ITypeSerializerRegistry registry = CreateBasicRegistry();
+            // Enrichment point
             return registry;
         }
     }

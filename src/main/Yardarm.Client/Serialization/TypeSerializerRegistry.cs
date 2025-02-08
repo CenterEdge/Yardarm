@@ -114,7 +114,10 @@ namespace RootNamespace.Serialization
         /// Returns a new <see cref="ITypeSerializerRegistry"/> with the all default serializers registered.
         /// </summary>
         /// <returns>A new <see cref="ITypeSerializerRegistry"/>.</returns>
-        public static ITypeSerializerRegistry CreateDefaultRegistry() =>
-            CreateBasicRegistry();
+        public static ITypeSerializerRegistry CreateDefaultRegistry()
+        {
+            ITypeSerializerRegistry registry = CreateBasicRegistry();
+            return registry;
+        }
     }
 }

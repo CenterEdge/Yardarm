@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Enrichment;
@@ -7,7 +6,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonCreateDefaultRegistryEnricher : ICreateDefaultRegistryEnricher
+    public class JsonCreateDefaultRegistryEnricher : ReturnValueRegistrationEnricher, ICreateDefaultRegistryEnricher
     {
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
 
@@ -18,10 +17,10 @@ namespace Yardarm.NewtonsoftJson
             _jsonSerializationNamespace = jsonSerializationNamespace;
         }
 
-        public ExpressionSyntax Enrich(ExpressionSyntax target) =>
+        protected override ExpressionSyntax EnrichReturnValue(ExpressionSyntax expression) =>
             InvocationExpression(
                 MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    target.WithTrailingTrivia(TriviaList(CarriageReturnLineFeed, Whitespace("                "))),
+                    expression,
                     GenericName(
                         Identifier("Add"),
                         TypeArgumentList(SingletonSeparatedList<TypeSyntax>(_jsonSerializationNamespace.JsonTypeSerializer)))),

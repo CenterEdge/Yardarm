@@ -1,4 +1,4 @@
-﻿namespace Yardarm.Enrichment;
+﻿namespace Yardarm.Enrichment.Registration;
 
 /// <summary>
 /// Enriches the body of the CreateDefaultRegistry method in the LiteralConverterRegistry class.

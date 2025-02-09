@@ -1,4 +1,4 @@
-﻿namespace Yardarm.Enrichment
+﻿namespace Yardarm.Enrichment.Registration
 {
     public interface ICreateDefaultRegistryEnricher : IRegistrationEnricher
     {

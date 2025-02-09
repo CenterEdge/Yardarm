@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Yardarm.Enrichment.Authentication;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Enrichment.Packaging;
+using Yardarm.Enrichment.Registration;
 using Yardarm.Enrichment.Requests;
 using Yardarm.Enrichment.Responses;
 using Yardarm.Enrichment.Schema;

@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.Enrichment;
+namespace Yardarm.Enrichment.Registration;
 
 /// <summary>
 /// Common implementation for an <see cref="IRegistrationEnricher"> that modifies the return value of a method.

@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
+using Yardarm.Enrichment.Registration;
 
 namespace Yardarm.Enrichment.Compilation;
 

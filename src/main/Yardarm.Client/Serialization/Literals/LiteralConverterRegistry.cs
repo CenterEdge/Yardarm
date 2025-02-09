@@ -147,10 +147,10 @@ public sealed class LiteralConverterRegistry
     }
 
     /// <summary>
-    /// Returns a new <see cref="LiteralConverterRegistry"/> with the all default converters registered.
+    /// Returns a new <see cref="LiteralConverterRegistry"/> with the built-in converters registered.
     /// </summary>
     /// <returns>A new <see cref="LiteralConverterRegistry"/>.</returns>
-    public static LiteralConverterRegistry CreateDefaultRegistry() =>
+    public static LiteralConverterRegistry CreateBasicRegistry() =>
         new LiteralConverterRegistry()
             .Add(new BooleanLiteralConverter())
             .Add(new DateTimeLiteralConverter())
@@ -175,4 +175,15 @@ public sealed class LiteralConverterRegistry
             .Add(new TimeOnlyLiteralConverter())
 #endif
             ;
+
+    /// <summary>
+    /// Returns a new <see cref="LiteralConverterRegistry"/> with the all default converters registered.
+    /// </summary>
+    /// <returns>A new <see cref="LiteralConverterRegistry"/>.</returns>
+    public static LiteralConverterRegistry CreateDefaultRegistry()
+    {
+        LiteralConverterRegistry registry = CreateBasicRegistry();
+        // Enrichment point
+        return registry;
+    }
 }

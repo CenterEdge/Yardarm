@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Registration;
@@ -6,27 +7,20 @@ namespace Yardarm.Enrichment.Registration;
 /// <summary>
 /// Common implementation for an <see cref="IRegistrationEnricher"> that modifies the return value of a method.
 /// </summary>
-public abstract class ReturnValueRegistrationEnricher : IRegistrationEnricher
+public abstract class ReturnValueRegistrationEnricher : StatementInsertingRegistrationEnricher
 {
-    public BlockSyntax Enrich(BlockSyntax target)
+    protected override sealed IEnumerable<StatementSyntax> GenerateStatements(ExpressionSyntax? returnExpression)
     {
-        int returnStatementIndex = target.Statements.LastIndexOf(p => p is ReturnStatementSyntax);
-        if (returnStatementIndex < 0)
-        {
-            return target;
-        }
-
-        ExpressionSyntax? returnExpression = ((ReturnStatementSyntax)target.Statements[returnStatementIndex]).Expression;
         if (returnExpression is not IdentifierNameSyntax identifier)
         {
-            return target;
+            return [];
         }
 
         ExpressionSyntax newReturnValue = EnrichReturnValue(identifier);
         if (newReturnValue == returnExpression)
         {
             // Was not changed
-            return target;
+            return [];
         }
 
         ExpressionStatementSyntax statement = ExpressionStatement(AssignmentExpression(
@@ -34,8 +28,7 @@ public abstract class ReturnValueRegistrationEnricher : IRegistrationEnricher
             identifier,
             newReturnValue));
 
-        return target.WithStatements(
-            target.Statements.Insert(returnStatementIndex, statement));
+        return [statement];
     }
 
     protected abstract ExpressionSyntax EnrichReturnValue(ExpressionSyntax expression);

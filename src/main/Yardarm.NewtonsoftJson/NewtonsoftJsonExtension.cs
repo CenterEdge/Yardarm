@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment;
+using Yardarm.Enrichment.Compilation;
 using Yardarm.Generation;
 using Yardarm.NewtonsoftJson.Internal;
 using Yardarm.Packaging;
@@ -15,6 +16,7 @@ namespace Yardarm.NewtonsoftJson
         {
             services
                 .AddCreateDefaultRegistryEnricher<JsonCreateDefaultRegistryEnricher>()
+                .AddResourceFileEnricher<JsonSerializerSettingsEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonAdditionalPropertiesEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()

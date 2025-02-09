@@ -9,27 +9,22 @@ using Newtonsoft.Json;
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization.Json
 {
-    public class JsonTypeSerializer : ITypeSerializer
+    public class JsonTypeSerializer(JsonSerializerSettings settings) : ITypeSerializer
     {
         private static readonly UTF8Encoding s_utf8NoBomEncoding = new(false);
 
-        public static string[] SupportedMediaTypes => new []
-        {
+        public static string[] SupportedMediaTypes =>
+        [
             "application/json",
             "text/json",
             "application/json-patch+json"
-        };
+        ];
 
-        private readonly JsonSerializer _serializer;
+        private readonly JsonSerializer _serializer = JsonSerializer.Create(settings);
 
         public JsonTypeSerializer()
-            : this(new JsonSerializerSettings())
+            : this(CreateDefaultSettings())
         {
-        }
-
-        public JsonTypeSerializer(JsonSerializerSettings settings)
-        {
-            _serializer = JsonSerializer.Create(settings);
         }
 
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
@@ -76,6 +71,13 @@ namespace RootNamespace.Serialization.Json
             using var reader = new JsonTextReader(new StringReader(str));
 
             return _serializer.Deserialize<T>(reader)!;
+        }
+
+        private static JsonSerializerSettings CreateDefaultSettings()
+        {
+            var settings = new JsonSerializerSettings();
+            // Enrichment point
+            return settings;
         }
     }
 }

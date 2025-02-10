@@ -74,7 +74,7 @@ namespace RootNamespace.Serialization.Literals
 #endif
 
         [return: NotNullIfNotNull(nameof(value))]
-        public static T Deserialize<T>(string? value, string? format = null)
+        public static T? Deserialize<T>(string? value, string? format = null)
         {
             if (LiteralConverterRegistry.Instance.TryGet(out LiteralConverter<T>? converter))
             {
@@ -83,7 +83,7 @@ namespace RootNamespace.Serialization.Literals
 
             if (value is null)
             {
-                return default!;
+                return default;
             }
 
             // Fallback logic to cover enums, which generally aren't explicitly registered

@@ -19,7 +19,7 @@ public abstract class LiteralConverter<T> : LiteralConverter
     /// <param name="format">Format from the OpenAPI specification.</param>
     /// <returns>Value parsed from the string.</returns>
     [return: NotNullIfNotNull(nameof(value))]
-    public abstract T Read(string? value, string? format);
+    public abstract T? Read(string? value, string? format);
 
     /// <summary>
     /// Write a value to a string.

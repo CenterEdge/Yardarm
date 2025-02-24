@@ -1,43 +1,33 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
-using Yardarm.Generation.Schema;
 using Yardarm.Spec;
 
-namespace Yardarm.Generation.Internal
+namespace Yardarm.Generation.Internal;
+
+internal class TypeGeneratorRegistry(IServiceProvider serviceProvider) : ITypeGeneratorRegistry
 {
-    internal class TypeGeneratorRegistry : ITypeGeneratorRegistry
+    private static MethodInfo? s_getTypedMethod;
+
+    public ITypeGenerator Get(ILocatedOpenApiElement element, string? generatorCategory = null)
     {
-        private static MethodInfo? s_getTypedMethod;
+        ArgumentNullException.ThrowIfNull(element);
 
-        private readonly IServiceProvider _serviceProvider;
+        var getTypedMethod = s_getTypedMethod ??=
+            ((Func<ILocatedOpenApiElement<OpenApiSchema>, string?, ITypeGenerator>)Get).GetMethodInfo()
+            .GetGenericMethodDefinition();
 
-        public TypeGeneratorRegistry(IServiceProvider serviceProvider)
-        {
-            ArgumentNullException.ThrowIfNull(serviceProvider);
+        return (ITypeGenerator)getTypedMethod.MakeGenericMethod(element.ElementType)
+            .Invoke(this, [element, generatorCategory])!;
+    }
 
-            _serviceProvider = serviceProvider;
-        }
+    public ITypeGenerator Get<T>(ILocatedOpenApiElement<T> element, string? generatorCategory = null)
+        where T : IOpenApiElement
+    {
+        ITypeGeneratorRegistry<T> registry = serviceProvider.GetRequiredKeyedService<ITypeGeneratorRegistry<T>>(generatorCategory);
 
-        public ITypeGenerator Get(ILocatedOpenApiElement element, Type generatorCategory)
-        {
-            ArgumentNullException.ThrowIfNull(element);
-
-            var getTypedMethod = s_getTypedMethod ??=
-                ((Func<ILocatedOpenApiElement<OpenApiSchema>, ITypeGenerator>)Get<OpenApiSchema, SchemaGenerator>).GetMethodInfo()
-                .GetGenericMethodDefinition();
-
-            return (ITypeGenerator)getTypedMethod.MakeGenericMethod(element.ElementType, generatorCategory)
-                .Invoke(this, new object[] {element})!;
-        }
-
-        public ITypeGenerator Get<T, TGeneratorCategory>(ILocatedOpenApiElement<T> element)
-            where T : IOpenApiElement
-        {
-            return _serviceProvider.GetRequiredService<ITypeGeneratorRegistry<T, TGeneratorCategory>>().Get(element);
-        }
+        return registry.Get(element);
     }
 }

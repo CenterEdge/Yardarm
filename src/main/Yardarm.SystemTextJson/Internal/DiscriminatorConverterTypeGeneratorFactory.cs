@@ -6,7 +6,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.SystemTextJson.Internal
 {
-    internal class DiscriminatorConverterTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiSchema, SystemTextJsonGeneratorCategory>
+    internal class DiscriminatorConverterTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiSchema>
     {
         private readonly GenerationContext _context;
         private readonly IJsonSerializationNamespace _jsonSerializationNamespace;

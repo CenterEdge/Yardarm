@@ -1,18 +1,12 @@
-﻿using System;
-using Microsoft.OpenApi.Interfaces;
+﻿using Microsoft.OpenApi.Interfaces;
 using Yardarm.Spec;
 
-namespace Yardarm.Generation
+namespace Yardarm.Generation;
+
+public interface ITypeGeneratorRegistry
 {
-    public interface ITypeGeneratorRegistry
-    {
-        ITypeGenerator Get(ILocatedOpenApiElement element, Type generatorCategory);
+    ITypeGenerator Get(ILocatedOpenApiElement element, string? generatorCategory = null);
 
-        public ITypeGenerator Get<T>(ILocatedOpenApiElement<T> element)
-            where T : IOpenApiElement =>
-            Get<T, PrimaryGeneratorCategory>(element);
-
-        ITypeGenerator Get<T, TGeneratorCategory>(ILocatedOpenApiElement<T> element)
-            where T : IOpenApiElement;
-    }
+    ITypeGenerator Get<T>(ILocatedOpenApiElement<T> element, string? generatorCategory = null)
+        where T : IOpenApiElement;
 }

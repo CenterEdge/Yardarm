@@ -11,6 +11,7 @@ using Yardarm.Generation;
 using Yardarm.Generation.Tag;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Yardarm.Generation.Operation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Yardarm.MicrosoftExtensionsHttp.Internal
 {
@@ -20,7 +21,7 @@ namespace Yardarm.MicrosoftExtensionsHttp.Internal
     internal class ApiBuilderExtensionsEnricher(
         OpenApiDocument document,
         ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
-        ITypeGeneratorRegistry<OpenApiTag, TagImplementationCategory> tagImplementationGeneratorRegistry,
+        [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiTag> tagImplementationGeneratorRegistry,
         IOperationNameProvider operationNameProvider)
         : IResourceFileEnricher
     {

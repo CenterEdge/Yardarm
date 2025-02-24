@@ -5,7 +5,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation.Tag
 {
-    public class TagImplementationTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiTag, TagImplementationCategory>
+    public class TagImplementationTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiTag>
     {
         private readonly IServiceProvider _serviceProvider;
 

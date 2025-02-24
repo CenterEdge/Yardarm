@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.Operation;
 using Yardarm.Spec;
@@ -11,8 +12,7 @@ namespace Yardarm.Generation.Tag
     public class TagGenerator(
         OpenApiDocument document,
         ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
-        ITypeGeneratorRegistry<OpenApiTag,
-        TagImplementationCategory> tagImplementationGeneratorRegistry,
+        [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiTag> tagImplementationGeneratorRegistry,
         IOperationNameProvider operationNameProvider)
         : ISyntaxTreeGenerator
     {

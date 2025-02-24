@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation;
 using Yardarm.Generation.Operation;
@@ -11,7 +11,7 @@ namespace Yardarm.SystemTextJson.Internal
 {
     internal class DiscriminatorConverterGenerator(
         OpenApiDocument document,
-        ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> converterTypeGeneratorRegistry,
+        [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiSchema> converterTypeGeneratorRegistry,
         IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
     {
         public IEnumerable<SyntaxTree> Generate()

@@ -58,23 +58,19 @@ namespace Yardarm
                 .AddTransient<IDependencyGenerator, StandardDependencyGenerator>();
 
             services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
-            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<,>), typeof(TypeGeneratorRegistry<,>), ServiceLifetime.Singleton));
-            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorRegistry<>),
-                typeof(PrimaryGeneratorCategory.TypeGeneratorRegistryWrapper<>), ServiceLifetime.Singleton));
+            services.TryAddTypeGeneratorRegistry(generatorCategory: null);
 
-            services.TryAdd(new ServiceDescriptor(typeof(ITypeGeneratorFactory<,>),
-                typeof(NoopTypeGeneratorFactory<,>), ServiceLifetime.Singleton));
-            services.TryAddTypeGeneratorFactory<OpenApiHeader, HeaderTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiMediaType, MediaTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiSchema, DefaultSchemaGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiSecurityScheme, SecuritySchemeTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiResponse, ResponseTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiResponses, ResponseSetTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiOperation, RequestTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiParameter, ParameterTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiTag, TagTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiTag, TagImplementationCategory, TagImplementationTypeGeneratorFactory>();
-            services.TryAddTypeGeneratorFactory<OpenApiUnknownResponse, UnknownResponseTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiHeader, HeaderTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiMediaType, MediaTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiSchema, DefaultSchemaGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiSecurityScheme, SecuritySchemeTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiResponse, ResponseTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiResponses, ResponseSetTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiOperation, RequestTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiParameter, ParameterTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiTag, TagTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<OpenApiTag, TagImplementationTypeGeneratorFactory>(TagImplementationTypeGenerator.GeneratorCategory);
+            services.AddTypeGeneratorFactory<OpenApiUnknownResponse, UnknownResponseTypeGeneratorFactory>();
 
             services.AddSingleton<IRequestMemberGenerator, AddHeadersMethodGenerator>();
             services.AddSingleton<IRequestMemberGenerator, BuildContentMethodGenerator>();
@@ -163,14 +159,33 @@ namespace Yardarm
             return services.AddSingleton(descriptorFactory);
         }
 
+        public static IServiceCollection AddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services)
+            where TElement : IOpenApiElement
+            where TGenerator : class, ITypeGeneratorFactory<TElement> =>
+            services.AddTypeGeneratorFactory<TElement, TGenerator>(generatorCategory: null);
+
+        public static IServiceCollection AddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services, string? generatorCategory)
+            where TElement : IOpenApiElement
+            where TGenerator : class, ITypeGeneratorFactory<TElement>
+        {
+            if (generatorCategory is not null)
+            {
+                // Ensure the keyed generator registry has been added. Default is added centrally for performance.
+                services.TryAddTypeGeneratorRegistry(generatorCategory);
+            }
+
+            return services.AddKeyedSingleton<ITypeGeneratorFactory<TElement>, TGenerator>(generatorCategory);
+        }
+
+        [Obsolete("Use AddTypeGeneratorFactory instead, type generators now support multi registration.")]
         public static void TryAddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services)
             where TElement : IOpenApiElement
-            where TGenerator : class, ITypeGeneratorFactory<TElement, PrimaryGeneratorCategory> =>
-            services.TryAddTypeGeneratorFactory<TElement, PrimaryGeneratorCategory, TGenerator>();
+            where TGenerator : class, ITypeGeneratorFactory<TElement> =>
+            services.TryAddSingleton<ITypeGeneratorFactory<TElement>, TGenerator>();
 
-        public static void TryAddTypeGeneratorFactory<TElement, TGeneratorCategory, TGenerator>(this IServiceCollection services)
-            where TElement : IOpenApiElement
-            where TGenerator : class, ITypeGeneratorFactory<TElement, TGeneratorCategory> =>
-            services.TryAddSingleton<ITypeGeneratorFactory<TElement, TGeneratorCategory>, TGenerator>();
+        private static void TryAddTypeGeneratorRegistry(this IServiceCollection services, string? generatorCategory)
+        {
+            services.TryAdd(ServiceDescriptor.KeyedSingleton(typeof(ITypeGeneratorRegistry<>), generatorCategory, typeof(TypeGeneratorRegistry<>)));
+        }
     }
 }

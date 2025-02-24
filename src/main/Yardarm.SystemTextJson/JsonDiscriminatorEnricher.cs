@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
@@ -15,10 +16,10 @@ namespace Yardarm.SystemTextJson
         IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
     {
         protected GenerationContext GenerationContext { get; }
-        protected ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> TypeGeneratorRegistry { get; }
+        protected ITypeGeneratorRegistry<OpenApiSchema> TypeGeneratorRegistry { get; }
 
         public JsonDiscriminatorEnricher(GenerationContext generationContext,
-            ITypeGeneratorRegistry<OpenApiSchema, SystemTextJsonGeneratorCategory> typeGeneratorRegistry)
+            [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry)
         {
             ArgumentNullException.ThrowIfNull(generationContext);
             ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);

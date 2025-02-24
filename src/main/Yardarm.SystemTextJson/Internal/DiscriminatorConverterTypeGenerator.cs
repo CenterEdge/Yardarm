@@ -16,6 +16,8 @@ namespace Yardarm.SystemTextJson.Internal
 {
     internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSchema>
     {
+        public const string GeneratorCategory = "DiscriminatorConverter";
+
         private const string TrimJustification =
             "This is trim and AOT safe so long as the options came from a JsonSerializerContext because JsonDerivedType was used to include the descendants we're referencing.";
 

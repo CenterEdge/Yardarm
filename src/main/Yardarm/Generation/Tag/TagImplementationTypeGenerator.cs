@@ -15,6 +15,8 @@ namespace Yardarm.Generation.Tag
 {
     public class TagImplementationTypeGenerator : TagTypeGeneratorBase
     {
+        public const string GeneratorCategory = "TagImplementation";
+
         public const string HttpClientFieldName = "_httpClient";
         public const string TypeSerializerRegistryFieldName = "_typeSerializerRegistry";
         public const string AuthenticatorsFieldName = "_authenticators";

@@ -31,7 +31,7 @@ namespace Yardarm.SystemTextJson
                 .AddSingleton<ISyntaxTreeGenerator, DiscriminatorConverterGenerator>()
                 .AddSingleton<ISyntaxTreeGenerator, JsonSerializerContextGenerator>()
                 .AddSingleton<ICompilationEnricher, JsonSerializableEnricher>()
-                .TryAddTypeGeneratorFactory<OpenApiSchema, SystemTextJsonGeneratorCategory, DiscriminatorConverterTypeGeneratorFactory>();
+                .AddTypeGeneratorFactory<OpenApiSchema, DiscriminatorConverterTypeGeneratorFactory>(DiscriminatorConverterTypeGenerator.GeneratorCategory);
 
             services
                 .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();

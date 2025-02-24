@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -7,29 +6,23 @@ using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
 using Yardarm.Spec;
 
-namespace Yardarm.Generation
+namespace Yardarm.Generation;
+
+internal class NoopTypeGenerator<T>(ITypeGenerator? parent) : ITypeGenerator
+    where T : IOpenApiElement
 {
-    public class NoopTypeGenerator<T> : ITypeGenerator
-        where T : IOpenApiElement
-    {
-        public ITypeGenerator? Parent { get; }
+    public ITypeGenerator? Parent { get; } = parent;
 
-        public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
-            SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword)),
-            NameKind.Struct,
-            isGenerated: false);
+    public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
+        SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword)),
+        NameKind.Struct,
+        isGenerated: false);
 
-        public NoopTypeGenerator(ITypeGenerator? parent)
-        {
-            Parent = parent;
-        }
+    public SyntaxTree? GenerateSyntaxTree() => null;
 
-        public SyntaxTree? GenerateSyntaxTree() => null;
+    public IEnumerable<MemberDeclarationSyntax> Generate() => [];
 
-        public IEnumerable<MemberDeclarationSyntax> Generate() => Enumerable.Empty<MemberDeclarationSyntax>();
-
-        public QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
-            where TChild : IOpenApiElement =>
-            Parent?.GetChildName(child, nameKind);
-    }
+    public QualifiedNameSyntax? GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
+        where TChild : IOpenApiElement =>
+        Parent?.GetChildName(child, nameKind);
 }

@@ -39,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Yardarm.MicrosoftExtensionsHttp\Yardarm.MicrosoftExtensionsHttp.csproj" />
     <ProjectReference Include="..\Yardarm.NewtonsoftJson\Yardarm.NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\Yardarm.NodaTime\Yardarm.NodaTime.csproj" />
     <ProjectReference Include="..\Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj" />
     <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
   </ItemGroup>

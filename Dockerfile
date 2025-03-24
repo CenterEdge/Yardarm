@@ -18,6 +18,8 @@ COPY src/main/Yardarm.MicrosoftExtensionsHttp/*.csproj ./main/Yardarm.MicrosoftE
 COPY src/main/Yardarm.MicrosoftExtensionsHttp.Client/*.csproj ./main/Yardarm.MicrosoftExtensionsHttp.Client/
 COPY src/main/Yardarm.NewtonsoftJson/*.csproj ./main/Yardarm.NewtonsoftJson/
 COPY src/main/Yardarm.NewtonsoftJson.Client/*.csproj ./main/Yardarm.NewtonsoftJson.Client/
+COPY src/main/Yardarm.NodaTime/*.csproj ./main/Yardarm.NodaTime/
+COPY src/main/Yardarm.NodaTime.Client/*.csproj ./main/Yardarm.NodaTime.Client/
 COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/
 COPY src/main/Yardarm.SystemTextJson.Client/*.csproj ./main/Yardarm.SystemTextJson.Client/
 COPY ["src/*.props", "src/*.targets", "src/*.snk", "src/nuget.config", "./"]

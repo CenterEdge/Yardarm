@@ -21,12 +21,10 @@ internal class HttpMethodPropertyGenerator : IRequestMemberGenerator
                 WellKnownTypes.System.Net.Http.HttpMethod.Name,
                 explicitInterfaceSpecifier: null,
                 Identifier(MethodPropertyName),
-                AccessorList(SingletonList(
-                    AccessorDeclaration(
-                        SyntaxKind.GetAccessorDeclaration,
-                        attributeLists: default,
-                        modifiers: default,
-                        ArrowExpressionClause(GetRequestMethod(operation))))))
+                accessorList: null,
+                ArrowExpressionClause(GetRequestMethod(operation)),
+                initializer: null,
+                Token(SyntaxKind.SemicolonToken))
         ];
 
     private static ExpressionSyntax GetRequestMethod(ILocatedOpenApiElement<OpenApiOperation> operation) =>

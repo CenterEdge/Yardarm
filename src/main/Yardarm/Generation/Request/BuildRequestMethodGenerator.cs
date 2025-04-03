@@ -58,13 +58,14 @@ public class BuildRequestMethodGenerator(
                 constraintClauses: default,
                 body: null,
                 expressionBody: ArrowExpressionClause(InvocationExpression(
-                IdentifierName(BuildRequestMethodName),
-                ArgumentList(SingletonSeparatedList(
-                    Argument(ObjectCreationExpression(
-                        requestsNamespace.BuildRequestContext,
-                        ArgumentList(SingletonSeparatedList(
-                            Argument(IdentifierName(TypeSerializerRegistryParameterName)))),
-                        initializer: null)))))))
+                    IdentifierName(BuildRequestMethodName),
+                    ArgumentList(SingletonSeparatedList(
+                        Argument(ObjectCreationExpression(
+                            requestsNamespace.BuildRequestContext,
+                            ArgumentList(SingletonSeparatedList(
+                                Argument(IdentifierName(TypeSerializerRegistryParameterName)))),
+                            initializer: null)))))),
+                Token(SyntaxKind.SemicolonToken))
         ];
     }
 

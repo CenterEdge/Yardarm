@@ -253,16 +253,23 @@ public class BuildUriMethodGenerator(
 
             yield return ReturnStatement(ObjectCreationExpression(
                 WellKnownTypes.System.Uri.Name,
-                ArgumentList(SingletonSeparatedList(
+                ArgumentList(SeparatedList(
+                [
                     Argument(InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        IdentifierName(queryStringBuilderVariableName), IdentifierName("ToString")))))),
+                        IdentifierName(queryStringBuilderVariableName), IdentifierName("ToString")))),
+                    Argument(WellKnownTypes.System.UriKind.RelativeOrAbsolute),
+                ])),
                 initializer: null));
         }
         else
         {
             yield return ReturnStatement(ObjectCreationExpression(
                 WellKnownTypes.System.Uri.Name,
-                ArgumentList(SingletonSeparatedList(Argument(pathExpression))),
+                ArgumentList(SeparatedList(
+                [
+                    Argument(pathExpression),
+                    Argument(WellKnownTypes.System.UriKind.RelativeOrAbsolute),
+                ])),
                 initializer: null));
         }
     }

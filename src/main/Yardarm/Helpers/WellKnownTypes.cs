@@ -331,6 +331,18 @@ namespace Yardarm.Helpers
                     System.Name,
                     IdentifierName("Uri"));
             }
+
+            public static class UriKind
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("UriKind"));
+
+                public static ExpressionSyntax RelativeOrAbsolute { get; } =
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                        Name,
+                        IdentifierName("RelativeOrAbsolute"));
+            }
         }
     }
 }

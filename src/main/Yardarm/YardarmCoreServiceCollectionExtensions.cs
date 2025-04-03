@@ -76,6 +76,7 @@ namespace Yardarm
             services.AddSingleton<IRequestMemberGenerator, BuildContentMethodGenerator>();
             services.AddSingleton<IRequestMemberGenerator, BuildRequestMethodGenerator>();
             services.AddSingleton<IRequestMemberGenerator, BuildUriMethodGenerator>();
+            services.AddSingleton<IRequestMemberGenerator, HttpMethodPropertyGenerator>();
             services.AddSingleton<IRequestMemberGenerator, SerializationDataPropertyGenerator>();
             services.AddSingleton<IResponseMethodGenerator, GetBodyMethodGenerator>();
             services.AddSingleton<IResponseMethodGenerator, BodyConstructorMethodGenerator>();

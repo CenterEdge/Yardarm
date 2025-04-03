@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -8,93 +7,73 @@ using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.Generation.Request
+namespace Yardarm.Generation.Request;
+
+/// <summary>
+/// Creates a legacy BuildRequest method for backward compatibility. This exists on each
+/// request rather than on the inherited OperationRequest class so that it remains binary
+/// compatible.
+/// </summary>
+public class BuildRequestMethodGenerator(
+    ISerializationNamespace serializationNamespace,
+    IRequestsNamespace requestsNamespace)
+    : IRequestMemberGenerator
 {
-    public class BuildRequestMethodGenerator : IRequestMemberGenerator
+    public const string BuildRequestMethodName = "BuildRequest";
+    protected const string RequestMessageVariableName = "requestMessage";
+
+    private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
+
+    protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
+
+    public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
     {
-        public const string BuildRequestMethodName = "BuildRequest";
-        protected const string RequestMessageVariableName = "requestMessage";
-
-        private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
-
-        protected ISerializationNamespace SerializationNamespace { get; }
-
-        public BuildRequestMethodGenerator(ISerializationNamespace serializationNamespace)
+        if (mediaType is not null)
         {
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
-
-            SerializationNamespace = serializationNamespace;
+            // Only generate for the main request, not media types
+            return [];
         }
 
-        public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        return
+        [
             MethodDeclaration(
-                    WellKnownTypes.System.Net.Http.HttpRequestMessage.Name,
-                    BuildRequestMethodName)
-                .AddParameterListParameters(
-                    Parameter(Identifier(TypeSerializerRegistryParameterName))
-                        .WithType(SerializationNamespace.ITypeSerializerRegistry));
-
-        public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
-        {
-            if (mediaType is not null)
-            {
-                // Only generate for the main request, not media types
-                yield break;
-            }
-
-            yield return GenerateHeader(operation)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .WithBody(Block(GenerateStatements(operation)));
-        }
-
-        protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            ILocatedOpenApiElement<OpenApiOperation> operation)
-        {
-            yield return GenerateRequestMessageVariable(operation);
-
-            yield return ExpressionStatement(AddHeadersMethodGenerator.InvokeAddHeaders(
-                ThisExpression(),
-                IdentifierName(RequestMessageVariableName)));
-
-            yield return ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
-                SyntaxHelpers.MemberAccess(RequestMessageVariableName, "Content"),
-                BuildContentMethodGenerator.InvokeBuildContent(
-                    ThisExpression(),
-                    IdentifierName(TypeSerializerRegistryParameterName))));
-
-            yield return ReturnStatement(IdentifierName(RequestMessageVariableName));
-        }
-
-        protected virtual StatementSyntax GenerateRequestMessageVariable(
-            ILocatedOpenApiElement<OpenApiOperation> operation) =>
-            MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
-                ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpRequestMessage.Name)
-                    .AddArgumentListArguments(
-                        Argument(GetRequestMethod(operation)),
-                        Argument(BuildUriMethodGenerator.InvokeBuildUri(ThisExpression()))));
-
-        protected virtual ExpressionSyntax GetRequestMethod(ILocatedOpenApiElement<OpenApiOperation> operation) =>
-            operation.Key switch
-            {
-                "Delete" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Delete")),
-                "Get" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Get")),
-                "Head" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Head")),
-                "Options" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Options")),
-                "Post" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Post")),
-                "Put" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Put")),
-                "Trace" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Trace")),
-                _ => ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpMethod.Name).AddArgumentListArguments(
-                    Argument(SyntaxHelpers.StringLiteral(operation.Key.ToUpperInvariant())))
-            };
-
-        public static InvocationExpressionSyntax InvokeBuildRequest(ExpressionSyntax requestInstance,
-            ExpressionSyntax typeSerializerRegistry) =>
-            InvocationExpression(
-                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        requestInstance,
-                        IdentifierName(BuildRequestMethodName)))
-                .AddArgumentListArguments(
-                    Argument(typeSerializerRegistry));
+                SingletonList(AttributeList(SingletonSeparatedList(
+                    Attribute(
+                        WellKnownTypes.System.ObsoleteAttribute.Name,
+                        AttributeArgumentList(SingletonSeparatedList(
+                            AttributeArgument(SyntaxHelpers.StringLiteral("Use the overload that accepts a BuildRequestContext.")))))))),
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                WellKnownTypes.System.Net.Http.HttpRequestMessage.Name,
+                explicitInterfaceSpecifier: null,
+                Identifier(BuildRequestMethodName),
+                typeParameterList: default,
+                ParameterList(SingletonSeparatedList(
+                    Parameter(
+                        attributeLists: default,
+                        modifiers: default,
+                        SerializationNamespace.ITypeSerializerRegistry,
+                        Identifier(TypeSerializerRegistryParameterName),
+                        @default: null))),
+                constraintClauses: default,
+                body: null,
+                expressionBody: ArrowExpressionClause(InvocationExpression(
+                IdentifierName(BuildRequestMethodName),
+                ArgumentList(SingletonSeparatedList(
+                    Argument(ObjectCreationExpression(
+                        requestsNamespace.BuildRequestContext,
+                        ArgumentList(SingletonSeparatedList(
+                            Argument(IdentifierName(TypeSerializerRegistryParameterName)))),
+                        initializer: null)))))))
+        ];
     }
+
+    public static InvocationExpressionSyntax InvokeBuildRequest(ExpressionSyntax requestInstance,
+        ExpressionSyntax buildRequestContext) =>
+        InvocationExpression(
+            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                requestInstance,
+                IdentifierName(BuildRequestMethodName)),
+            ArgumentList(SingletonSeparatedList(
+                Argument(buildRequestContext))));
 }

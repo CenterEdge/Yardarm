@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
@@ -9,91 +8,85 @@ using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.Generation.Request
+namespace Yardarm.Generation.Request;
+
+public class BuildContentMethodGenerator(
+    IRequestsNamespace requestsNamespace,
+    ISerializationNamespace serializationNamespace,
+    IMediaTypeSelector mediaTypeSelector)
+    : IBuildContentMethodGenerator
 {
-    public class BuildContentMethodGenerator : IBuildContentMethodGenerator
+    public const string BuildContentMethodName = "BuildContent";
+
+    private const string ContextParameterName = "context";
+
+    protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
+    protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
+
+    public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
+        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
     {
-        public const string BuildContentMethodName = "BuildContent";
-
-        private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
-
-        protected ISerializationNamespace SerializationNamespace { get; }
-        protected IMediaTypeSelector MediaTypeSelector { get; }
-
-        public BuildContentMethodGenerator(ISerializationNamespace serializationNamespace,
-            IMediaTypeSelector mediaTypeSelector)
+        if (mediaType == null)
         {
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
-            ArgumentNullException.ThrowIfNull(mediaTypeSelector);
-
-            SerializationNamespace = serializationNamespace;
-            MediaTypeSelector = mediaTypeSelector;
+            // In the base request class which has no body
+            return [];
         }
 
-        public MethodDeclarationSyntax GenerateHeader(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        return
+        [
             MethodDeclaration(
-                    NullableType(WellKnownTypes.System.Net.Http.HttpContent.Name),
-                    BuildContentMethodName)
-                .AddParameterListParameters(
-                    Parameter(Identifier(TypeSerializerRegistryParameterName))
-                        .WithType(SerializationNamespace.ITypeSerializerRegistry));
-
-        public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
-        {
-            MethodDeclarationSyntax methodDeclaration = GenerateHeader(operation);
-
-            if (mediaType == null)
-            {
-                // In the base request class which has no body
-                methodDeclaration = methodDeclaration
-                    .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.VirtualKeyword))
-                    .WithExpressionBody(ArrowExpressionClause(
-                        LiteralExpression(SyntaxKind.NullLiteralExpression)))
-                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
-            }
-            else
-            {
-                // In an inherited request class which adds a body
-                methodDeclaration = methodDeclaration
-                    .AddModifiers(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword))
-                    .WithBody(Block(GenerateStatements(operation, mediaType)));
-            }
-
-            yield return methodDeclaration;
-        }
-
-        protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<OpenApiMediaType> mediaType)
-        {
-            ExpressionSyntax serializationDataExpression =
-                SerializationDataPropertyGenerator.GetSerializationData();
-
-            var createContentExpression =
-                InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                        SerializationNamespace.TypeSerializerRegistryExtensions,
-                        IdentifierName("Serialize")))
-                    .AddArgumentListArguments(
-                        Argument(IdentifierName(TypeSerializerRegistryParameterName)),
-                        Argument(IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)),
-                        Argument(SyntaxHelpers.StringLiteral(mediaType.Key)),
-                        Argument(serializationDataExpression));
-
-            yield return ReturnStatement(ConditionalExpression(
-                IsPatternExpression(
-                    IdentifierName(RequestMediaTypeGenerator.BodyPropertyName),
-                    ConstantPattern(LiteralExpression(SyntaxKind.NullLiteralExpression))),
-                LiteralExpression(SyntaxKind.NullLiteralExpression),
-                createContentExpression));
-        }
-
-        public static InvocationExpressionSyntax InvokeBuildContent(ExpressionSyntax requestInstance,
-            ExpressionSyntax typeSerializerRegistry) =>
-            InvocationExpression(
-                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    requestInstance,
-                    IdentifierName(BuildContentMethodName)))
-                .AddArgumentListArguments(
-                    Argument(typeSerializerRegistry));
+                attributeLists: default,
+                TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)),
+                NullableType(WellKnownTypes.System.Net.Http.HttpContent.Name),
+                explicitInterfaceSpecifier: null,
+                Identifier(BuildContentMethodName),
+                typeParameterList: default,
+                ParameterList(SingletonSeparatedList(
+                    Parameter(
+                        attributeLists: default,
+                        modifiers: default,
+                        requestsNamespace.BuildRequestContext,
+                        Identifier(ContextParameterName),
+                        @default: null))),
+                constraintClauses: default,
+                Block(GenerateStatements(operation, mediaType)),
+                expressionBody: null)
+        ];
     }
+
+    protected virtual IEnumerable<StatementSyntax> GenerateStatements(
+        ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<OpenApiMediaType> mediaType)
+    {
+        ExpressionSyntax serializationDataExpression =
+            SerializationDataPropertyGenerator.GetSerializationData();
+
+        var createContentExpression =
+            InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    SerializationNamespace.TypeSerializerRegistryExtensions,
+                    IdentifierName("Serialize")))
+                .AddArgumentListArguments(
+                    Argument(MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        IdentifierName(ContextParameterName),
+                        IdentifierName("TypeSerializerRegistry"))),
+                    Argument(IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)),
+                    Argument(SyntaxHelpers.StringLiteral(mediaType.Key)),
+                    Argument(serializationDataExpression));
+
+        yield return ReturnStatement(ConditionalExpression(
+            IsPatternExpression(
+                IdentifierName(RequestMediaTypeGenerator.BodyPropertyName),
+                ConstantPattern(LiteralExpression(SyntaxKind.NullLiteralExpression))),
+            LiteralExpression(SyntaxKind.NullLiteralExpression),
+            createContentExpression));
+    }
+
+    public static InvocationExpressionSyntax InvokeBuildContent(ExpressionSyntax requestInstance,
+        ExpressionSyntax contextInstance) =>
+        InvocationExpression(
+            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                requestInstance,
+                IdentifierName(BuildContentMethodName)))
+            .AddArgumentListArguments(
+                Argument(contextInstance));
 }

@@ -154,10 +154,17 @@ public class BuildUriMethodGenerator(
             .Select(p => p.Element)
             .ToDictionary(p => p.Name, p => p);
 
+        PathSegment[] parsedPath = PathParser.Parse(path.Key);
+
         ExpressionSyntax pathExpression;
-        if (Context.CurrentTargetFramework.Version.Major >= 6)
+        if (parsedPath is [] or [{ Type: PathSegmentType.Text }])
         {
-            pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(
+            // No path parameters, just return the path
+            pathExpression = SyntaxHelpers.StringLiteral(path.Key);
+        }
+        else if (Context.CurrentTargetFramework.Version.Major >= 6)
+        {
+            pathExpression = parsedPath.ToInterpolatedStringExpression(
                 CreateModernParameterInterpolationBuilder(allParameters, propertyNameFormatter));
 
             // Yield a 256 character stackalloc for an initial buffer
@@ -190,7 +197,7 @@ public class BuildUriMethodGenerator(
         }
         else
         {
-            pathExpression = PathParser.Parse(path.Key).ToInterpolatedStringExpression(
+            pathExpression = parsedPath.ToInterpolatedStringExpression(
                 CreateLegacyParameterInterpolationBuilder(allParameters, propertyNameFormatter));
         }
 

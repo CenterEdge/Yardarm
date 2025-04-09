@@ -28,6 +28,7 @@
   <PropertyGroup Condition=" '$(IsClientProject)' == 'true' ">
     <RootNamespace>RootNamespace</RootNamespace>
     <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsClientProject)' == 'true' And $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">

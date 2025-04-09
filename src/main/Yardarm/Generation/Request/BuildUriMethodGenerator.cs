@@ -159,8 +159,8 @@ public class BuildUriMethodGenerator(
         ExpressionSyntax pathExpression;
         if (parsedPath is [] or [{ Type: PathSegmentType.Text }])
         {
-            // No path parameters, just return the path
-            pathExpression = SyntaxHelpers.StringLiteral(path.Key);
+            // No path parameters, just return the path, but use the parsed value that trims the leading slash
+            pathExpression = SyntaxHelpers.StringLiteral(parsedPath.Length > 0 ? parsedPath[0].Value : "");
         }
         else if (Context.CurrentTargetFramework.Version.Major >= 6)
         {

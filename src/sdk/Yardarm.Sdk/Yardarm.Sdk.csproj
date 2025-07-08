@@ -66,7 +66,7 @@
     <!--
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False" Targets="Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False;PublishReadyToRun=true" Targets="Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
     </MSBuild>
   </Target>
 

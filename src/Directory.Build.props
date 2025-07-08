@@ -17,9 +17,6 @@
     -->
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 
-    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
-    <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
-
     <IsClientProject Condition=" '$(IsClientProject)' == '' And $(MSBuildProjectName.EndsWith('.Client'))">true</IsClientProject>
   </PropertyGroup>
 </Project>

@@ -105,6 +105,7 @@
       AssemblyName="$(AssemblyName)"
       RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
+      AdditionalProperties="$(YardarmProperties)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))"
     >
@@ -152,6 +153,7 @@
       TargetFramework="$(TargetFramework)"
       Version="$(Version)"
       SpecFile="@(OpenApiSpec)"
+      AdditionalProperties="$(YardarmProperties)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
       EmbedAllSources="$(EmbedAllSources)"

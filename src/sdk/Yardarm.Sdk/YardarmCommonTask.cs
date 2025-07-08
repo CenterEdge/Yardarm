@@ -18,6 +18,8 @@ namespace Yardarm.Build.Tasks
 
         public string? BaseIntermediateOutputPath { get; set; }
 
+        public string? AdditionalProperties { get; set; }
+
         public ITaskItem[]? Extensions { get; set; }
 
         protected override bool ValidateParameters()
@@ -54,6 +56,12 @@ namespace Yardarm.Build.Tasks
             {
                 builder.Append(" --intermediate-dir ");
                 builder.AppendQuoted(BaseIntermediateOutputPath);
+            }
+
+            if (!string.IsNullOrEmpty(AdditionalProperties))
+            {
+                builder.Append(" -p ");
+                builder.AppendQuoted(AdditionalProperties);
             }
 
             if (Extensions is {Length: > 0})

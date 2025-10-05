@@ -5,6 +5,10 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Yardarm.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$(MSBuildProjectFile.Contains('UnitTests'))">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
   <ItemGroup Condition="$(MSBuildProjectFile.Contains('UnitTests'))">
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="GitHubActionsTestLogger">
@@ -12,7 +16,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

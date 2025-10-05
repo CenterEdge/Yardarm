@@ -33,7 +33,7 @@ namespace Yardarm.Packaging.Internal
                         {
                             Name = "System.Threading.Tasks.Extensions",
                             TypeConstraint = LibraryDependencyTarget.Package,
-                            VersionRange = VersionRange.Parse("4.6.0")
+                            VersionRange = VersionRange.Parse("4.6.3")
                         }
                     };
                 }

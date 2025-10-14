@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.gitversion.outputs.semVer }}
-      fullVersion: ${{ steps.gitversion.outputs.fullSemVer }}
 
     steps:
       - uses: actions/checkout@v5
@@ -69,7 +68,7 @@ jobs:
 
     - name: Pack
       working-directory: ./src/main
-      run: dotnet pack --configuration Release -p:Version=${{ needs.version.outputs.fullVersion }}
+      run: dotnet pack --configuration Release -p:Version=${{ needs.version.outputs.version }}
       # Note: SDK is packed by build above, doesn't need to be packed here
     - name: Push to NuGet.org
       if: ${{ startsWith(github.ref, 'refs/tags/release/') }}

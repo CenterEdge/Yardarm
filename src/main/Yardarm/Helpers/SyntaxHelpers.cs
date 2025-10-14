@@ -53,15 +53,18 @@ namespace Yardarm.Helpers
             }
         }
 
-        /// <summary>
-        /// Makes the type of a <see cref="TypeSyntax"/> nullable, if it isn't already.
-        /// </summary>
         /// <param name="type">The <see cref="TypeSyntax"/> to update.</param>
-        /// <returns>The mutated type, or the original if no mutation was required.</returns>
-        public static TypeSyntax MakeNullable(this TypeSyntax type) =>
-            type is NullableTypeSyntax
-                ? type // Already nullable
-                : NullableType(type);
+        extension(TypeSyntax type)
+        {
+            /// <summary>
+            /// Makes the type of a <see cref="TypeSyntax"/> nullable, if it isn't already.
+            /// </summary>
+            /// <returns>The mutated type, or the original if no mutation was required.</returns>
+            public TypeSyntax MakeNullable() =>
+                type is NullableTypeSyntax
+                    ? type // Already nullable
+                    : NullableType(type);
+        }
 
         public static ExpressionSyntax MemberAccess(params string[] identifierNames) =>
             MemberAccess(IdentifierName(identifierNames[0]), identifierNames.Skip(1));

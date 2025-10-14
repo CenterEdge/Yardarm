@@ -96,7 +96,7 @@ namespace Yardarm.SystemTextJson
 
             foreach (var type in _schemaGeneratorRegistry.GetAll().OfType<TypeGeneratorBase<OpenApiSchema>>())
             {
-                if (!type.Element.IsJsonSchema())
+                if (!type.Element.IsJsonSchema)
                 {
                     continue;
                 }

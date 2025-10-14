@@ -2,29 +2,29 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Yardarm.Generation
+namespace Yardarm.Generation;
+
+public static class GeneratorSyntaxNodeExtensions
 {
-    public static class GeneratorSyntaxNodeExtensions
+    public const string GeneratorAnnotationName = "YardarmGenerator";
+
+    extension<TSyntaxNode>(TSyntaxNode node)
+        where TSyntaxNode : SyntaxNode
     {
-        public const string GeneratorAnnotationName = "YardarmGenerator";
-
-        public static TSyntaxNode AddGeneratorAnnotation<TSyntaxNode>(this TSyntaxNode node,
-            TypeGeneratorBase generator)
-            where TSyntaxNode : SyntaxNode =>
+        public TSyntaxNode AddGeneratorAnnotation(TypeGeneratorBase generator) =>
             node.AddGeneratorAnnotation(generator.GetType());
 
-        public static TSyntaxNode AddGeneratorAnnotation<TSyntaxNode>(this TSyntaxNode node,
-            ISyntaxTreeGenerator generator)
-            where TSyntaxNode : SyntaxNode =>
+        public TSyntaxNode AddGeneratorAnnotation(ISyntaxTreeGenerator generator) =>
             node.AddGeneratorAnnotation(generator.GetType());
 
-        public static TSyntaxNode AddGeneratorAnnotation<TSyntaxNode>(this TSyntaxNode node,
-            Type generatorType)
-            where TSyntaxNode : SyntaxNode =>
+        public TSyntaxNode AddGeneratorAnnotation(Type generatorType) =>
             node.WithAdditionalAnnotations(
                 new SyntaxAnnotation(GeneratorAnnotationName, generatorType.FullName));
+    }
 
-        public static Type? GetGeneratorAnnotation(this SyntaxNode node)
+    extension(SyntaxNode node)
+    {
+        public Type? GetGeneratorAnnotation()
         {
             string? typeName = node.GetAnnotations(GeneratorAnnotationName).FirstOrDefault()?.Data;
             if (typeName == null)

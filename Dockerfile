@@ -1,7 +1,7 @@
 ARG VERSION=0.1.0-local
 
 # --platform=$BUILDPLATFORM ensures that the build runs on the actual CPU platform of the builder, without emulation
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG VERSION
 ARG TARGETARCH
 WORKDIR /app

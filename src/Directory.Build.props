@@ -7,7 +7,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/CenterEdge/Yardarm</PackageProjectUrl>
 
-    <LangVersion>12</LangVersion>
+    <LangVersion>14</LangVersion>
 
     <UseArtifactsOutput>true</UseArtifactsOutput>
 

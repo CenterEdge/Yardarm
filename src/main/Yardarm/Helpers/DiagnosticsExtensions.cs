@@ -1,19 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Interfaces;
 using Yardarm.Generation;
 using Yardarm.Spec;
 
-namespace Yardarm.Helpers
+namespace Yardarm.Helpers;
+
+public static class DiagnosticsExtensions
 {
-    public static class DiagnosticsExtensions
+    extension(Diagnostic diagnostic)
     {
-        public static string? GetSource(this Diagnostic diagnostic, IOpenApiElementRegistry elementRegistry)
+        public string? GetSource(IOpenApiElementRegistry elementRegistry)
         {
             ArgumentNullException.ThrowIfNull(diagnostic);
             ArgumentNullException.ThrowIfNull(elementRegistry);
@@ -30,7 +29,7 @@ namespace Yardarm.Helpers
                    ?? compilationUnit.GetElementAnnotations(elementRegistry).FirstOrDefault()?.ToString();
         }
 
-        public static string GetMessageWithSource(this Diagnostic diagnostic, IOpenApiElementRegistry elementRegistry)
+        public string GetMessageWithSource(IOpenApiElementRegistry elementRegistry)
         {
             string? source = diagnostic.GetSource(elementRegistry);
 

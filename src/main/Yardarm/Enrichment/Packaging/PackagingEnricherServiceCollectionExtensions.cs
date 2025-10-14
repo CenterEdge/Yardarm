@@ -1,18 +1,20 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Yardarm.Enrichment.Packaging
+namespace Yardarm.Enrichment.Packaging;
+
+public static class PackagingEnricherServiceCollectionExtensions
 {
-    public static class PackagingEnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultPackagingEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultPackagingEnrichers() =>
             services
                 .AddPackageSpecEnricher<DependencyPackageSpecEnricher>();
 
-        public static IServiceCollection AddNuGetPackageEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddNuGetPackageEnricher<T>()
             where T : class, INuGetPackageEnricher =>
             services.AddTransient<INuGetPackageEnricher, T>();
 
-        public static IServiceCollection AddPackageSpecEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddPackageSpecEnricher<T>()
             where T : class, IPackageSpecEnricher =>
             services.AddTransient<IPackageSpecEnricher, T>();
     }

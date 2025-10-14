@@ -4,26 +4,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using Yardarm.Enrichment.Internal;
 
-namespace Yardarm.Enrichment
-{
-    public static class EnrichmentExtensions
-    {
-        public static IEnumerable<T> Sort<T>(this IEnumerable<T> enrichers)
-            where T : IEnricher =>
-            EnricherSorter.Default.Sort(enrichers);
+namespace Yardarm.Enrichment;
 
-        public static TTarget Enrich<TTarget>(this TTarget target, IEnumerable<IEnricher<TTarget>> enrichers) =>
+public static class EnrichmentExtensions
+{
+    extension<T>(IEnumerable<T> enrichers)
+        where T : IEnricher
+    {
+        public IEnumerable<T> Sort() =>
+            EnricherSorter.Default.Sort(enrichers);
+    }
+
+    extension<TTarget>(TTarget target)
+    {
+        public TTarget Enrich(IEnumerable<IEnricher<TTarget>> enrichers) =>
             enrichers
                 .Sort()
                 .Aggregate(target, (p, enricher) => enricher.Enrich(p));
 
-        public static TTarget Enrich<TTarget, TContext>(this TTarget target, IEnumerable<IEnricher<TTarget, TContext>> enrichers, TContext context) =>
+        public TTarget Enrich<TContext>(IEnumerable<IEnricher<TTarget, TContext>> enrichers, TContext context) =>
             enrichers
                 .Sort()
                 .Aggregate(target, (p, enricher) => enricher.Enrich(p, context));
 
-        public static ValueTask<TTarget> EnrichAsync<TTarget>(this TTarget target,
-            IEnumerable<IAsyncEnricher<TTarget>> enrichers,
+        public ValueTask<TTarget> EnrichAsync(IEnumerable<IAsyncEnricher<TTarget>> enrichers,
             CancellationToken cancellationToken = default) =>
             enrichers
                 .Sort()
@@ -31,8 +35,7 @@ namespace Yardarm.Enrichment
                 .AggregateAwaitWithCancellationAsync(target, (p, enricher, ct) => enricher.EnrichAsync(p, ct),
                     cancellationToken);
 
-        public static ValueTask<TTarget> EnrichAsync<TTarget, TContext>(this TTarget target,
-            IEnumerable<IAsyncEnricher<TTarget, TContext>> enrichers,
+        public ValueTask<TTarget> EnrichAsync<TContext>(IEnumerable<IAsyncEnricher<TTarget, TContext>> enrichers,
             TContext context, CancellationToken cancellationToken = default) =>
             enrichers
                 .Sort()

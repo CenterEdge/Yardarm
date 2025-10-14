@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Response
                 yield break;
             }
 
-            if (!response.IsRoot())
+            if (!response.IsRoot)
             {
                 // Construct from status code and headers without body
                 yield return ConstructorDeclaration(

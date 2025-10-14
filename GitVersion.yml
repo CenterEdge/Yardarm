@@ -1,15 +1,1 @@
-mode: ContinuousDelivery
-branches:
-  pull-request:
-    mode: ContinuousDeployment
-    tag: ci-pr-
-    track-merge-target: true
-  tags:
-    regex: tags/(?<tag>.+)
-    tag: ''
-    source-branches:
-      - main
-ignore:
-  sha: []
-merge-message-formats: {}
-tag-prefix: "release/"
+workflow: GitHubFlow/v1

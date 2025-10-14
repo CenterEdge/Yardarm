@@ -6,23 +6,25 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 
-namespace Yardarm.Internal
+namespace Yardarm.Internal;
+
+internal static class YardarmMemoryExtensions
 {
-    internal static class YardarmMemoryExtensions
+    /// <param name="source">Source buffer to search and copy.</param>
+    extension<T>(ReadOnlySpan<T> source)
+        where T : IEquatable<T>?
     {
         /// <summary>
         /// Copies the contents of the source to a new buffer, replacing all occurrences of oldValue with newValue,
         /// if there is at least one instance of oldValue found.
         /// </summary>
         /// <typeparam name="T">Type of element.</typeparam>
-        /// <param name="source">Source buffer to search and copy.</param>
         /// <param name="oldValue">Value to replace in the source buffer.</param>
         /// <param name="newValue">Value to place in locations where <paramref name="oldValue"/> is found.</param>
         /// <param name="result">Buffer backed by the <see cref="ArrayPool{T}"/> if replacements were made.</param>
         /// <returns>True if a copy with replacements was placed in <paramref name="result"/>.</returns>
-        public static bool TryCopyWithReplace<T>(this ReadOnlySpan<T> source, ReadOnlySpan<T> oldValue,
+        public bool TryCopyWithReplace(ReadOnlySpan<T> oldValue,
             ReadOnlySpan<T> newValue, out ArrayPoolBuffer<T> result)
-            where T : IEquatable<T>?
         {
             var replacementIndices = new ValueListBuilder<int>(stackalloc int[32]);
 

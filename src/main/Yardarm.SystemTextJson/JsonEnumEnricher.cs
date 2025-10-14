@@ -13,7 +13,7 @@ namespace Yardarm.SystemTextJson
     {
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Type == "string" && context.LocatedElement.IsJsonSchema()
+            context.Element.Type == "string" && context.LocatedElement.IsJsonSchema
                 ? EnrichEnum(target)
                 : target;
 

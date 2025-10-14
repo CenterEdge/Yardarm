@@ -16,7 +16,7 @@ namespace Yardarm.SystemTextJson
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiSchema> context)
         {
-            if (!context.LocatedElement.IsJsonSchema())
+            if (!context.LocatedElement.IsJsonSchema)
             {
                 // Don't enrich non-JSON schemas
                 return target;

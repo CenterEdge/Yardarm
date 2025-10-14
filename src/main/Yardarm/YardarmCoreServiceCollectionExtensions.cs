@@ -24,11 +24,13 @@ using Yardarm.Serialization;
 using Yardarm.Spec;
 using Yardarm.Spec.Internal;
 
-namespace Yardarm
+namespace Yardarm;
+
+public static class YardarmCoreServiceCollectionExtensions
 {
-    public static class YardarmCoreServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddYardarm(this IServiceCollection services, YardarmGenerationSettings settings, OpenApiDocument? document)
+        public IServiceCollection AddYardarm(YardarmGenerationSettings settings, OpenApiDocument? document)
         {
             services.AddOptions();
             services.AddDefaultEnrichers();
@@ -142,8 +144,7 @@ namespace Yardarm
             return services;
         }
 
-        public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
-            SerializerDescriptor descriptor)
+        public IServiceCollection AddSerializerDescriptor(SerializerDescriptor descriptor)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(descriptor);
@@ -151,8 +152,7 @@ namespace Yardarm
             return services.AddSingleton(descriptor);
         }
 
-        public static IServiceCollection AddSerializerDescriptor(this IServiceCollection services,
-            Func<IServiceProvider, SerializerDescriptor> descriptorFactory)
+        public IServiceCollection AddSerializerDescriptor(Func<IServiceProvider, SerializerDescriptor> descriptorFactory)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(descriptorFactory);
@@ -160,12 +160,12 @@ namespace Yardarm
             return services.AddSingleton(descriptorFactory);
         }
 
-        public static IServiceCollection AddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services)
+        public IServiceCollection AddTypeGeneratorFactory<TElement, TGenerator>()
             where TElement : IOpenApiElement
             where TGenerator : class, ITypeGeneratorFactory<TElement> =>
             services.AddTypeGeneratorFactory<TElement, TGenerator>(generatorCategory: null);
 
-        public static IServiceCollection AddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services, string? generatorCategory)
+        public IServiceCollection AddTypeGeneratorFactory<TElement, TGenerator>(string? generatorCategory)
             where TElement : IOpenApiElement
             where TGenerator : class, ITypeGeneratorFactory<TElement>
         {
@@ -179,12 +179,12 @@ namespace Yardarm
         }
 
         [Obsolete("Use AddTypeGeneratorFactory instead, type generators now support multi registration.")]
-        public static void TryAddTypeGeneratorFactory<TElement, TGenerator>(this IServiceCollection services)
+        public void TryAddTypeGeneratorFactory<TElement, TGenerator>()
             where TElement : IOpenApiElement
             where TGenerator : class, ITypeGeneratorFactory<TElement> =>
             services.TryAddSingleton<ITypeGeneratorFactory<TElement>, TGenerator>();
 
-        private static void TryAddTypeGeneratorRegistry(this IServiceCollection services, string? generatorCategory)
+        private void TryAddTypeGeneratorRegistry(string? generatorCategory)
         {
             services.TryAdd(ServiceDescriptor.KeyedSingleton(typeof(ITypeGeneratorRegistry<>), generatorCategory, typeof(TypeGeneratorRegistry<>)));
         }

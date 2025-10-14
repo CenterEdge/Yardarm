@@ -9,11 +9,13 @@ using Yardarm.Enrichment.Responses;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Enrichment.Tags;
 
-namespace Yardarm.Enrichment
+namespace Yardarm.Enrichment;
+
+public static class EnricherServiceCollectionExtensions
 {
-    public static class EnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultEnrichers() =>
             services
                 .AddDefaultCompilationEnrichers()
                 .AddDefaultPackagingEnrichers()
@@ -23,7 +25,7 @@ namespace Yardarm.Enrichment
                 .AddDefaultResponseEnrichers()
                 .AddDefaultTagEnrichers();
 
-        public static IServiceCollection AddRegistrationEnricher<T>(this IServiceCollection services, string registrationType)
+        public IServiceCollection AddRegistrationEnricher<T>(string registrationType)
             where T : class, IRegistrationEnricher
         {
             ArgumentNullException.ThrowIfNull(services);
@@ -32,15 +34,15 @@ namespace Yardarm.Enrichment
             return services.AddKeyedTransient<IRegistrationEnricher, T>(registrationType);
         }
 
-        public static IServiceCollection AddCreateDefaultRegistryEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddCreateDefaultRegistryEnricher<T>()
             where T : class, ICreateDefaultRegistryEnricher =>
             services.AddRegistrationEnricher<T>(DefaultTypeSerializersEnricher.RegistrationEnricherKey);
 
-        public static IServiceCollection AddDefaultLiteralConverterEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddDefaultLiteralConverterEnricher<T>()
             where T : class, IDefaultLiteralConverterEnricher =>
             services.AddRegistrationEnricher<T>(DefaultLiteralConvertersEnricher.RegistrationEnricherKey);
 
-        public static IServiceCollection AddOpenApiSyntaxNodeEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddOpenApiSyntaxNodeEnricher<T>()
             where T : class, IOpenApiSyntaxNodeEnricher =>
             services.AddTransient<IOpenApiSyntaxNodeEnricher, T>();
     }

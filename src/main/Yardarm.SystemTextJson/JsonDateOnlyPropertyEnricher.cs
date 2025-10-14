@@ -33,7 +33,7 @@ namespace Yardarm.SystemTextJson
                 return syntax;
             }
 
-            if (!context.LocatedElement.IsJsonSchema())
+            if (!context.LocatedElement.IsJsonSchema)
             {
                 // Don't enrich non-JSON schemas
                 return syntax;

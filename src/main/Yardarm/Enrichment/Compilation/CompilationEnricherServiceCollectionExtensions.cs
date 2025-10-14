@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Yardarm.Enrichment.Compilation
+namespace Yardarm.Enrichment.Compilation;
+
+public static class CompilationEnricherServiceCollectionExtensions
 {
-    public static class CompilationEnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultCompilationEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultCompilationEnrichers() =>
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
@@ -17,15 +19,15 @@ namespace Yardarm.Enrichment.Compilation
                 .AddResourceFileEnricher<DefaultTypeSerializersEnricher>()
                 .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>();
 
-        public static IServiceCollection AddAssemblyInfoEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddAssemblyInfoEnricher<T>()
             where T : class, IAssemblyInfoEnricher =>
             services.AddTransient<IAssemblyInfoEnricher, T>();
 
-        public static IServiceCollection AddCompilationEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddCompilationEnricher<T>()
             where T : class, ICompilationEnricher =>
             services.AddTransient<ICompilationEnricher, T>();
 
-        public static IServiceCollection AddResourceFileEnricher<T>(this IServiceCollection services)
+        public IServiceCollection AddResourceFileEnricher<T>()
             where T : class, IResourceFileEnricher =>
             services.AddTransient<IResourceFileEnricher, T>();
     }

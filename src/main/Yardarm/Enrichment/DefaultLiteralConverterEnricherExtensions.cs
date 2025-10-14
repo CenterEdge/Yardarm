@@ -7,10 +7,13 @@ namespace Yardarm.Enrichment;
 
 public static class DefaultLiteralConverterEnricherExtensions
 {
-    public static ExpressionSyntax AddLiteralConverter(this ExpressionSyntax currentExpression, ExpressionSyntax literalConverter) =>
-        InvocationExpression(
-            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                currentExpression.WithTrailingTrivia(TriviaList(CarriageReturnLineFeed, Whitespace("    "))),
-                IdentifierName("Add")),
-            ArgumentList(SingletonSeparatedList(Argument(literalConverter))));
+    extension(ExpressionSyntax currentExpression)
+    {
+        public ExpressionSyntax AddLiteralConverter(ExpressionSyntax literalConverter) =>
+            InvocationExpression(
+                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                    currentExpression.WithTrailingTrivia(TriviaList(CarriageReturnLineFeed, Whitespace("    "))),
+                    IdentifierName("Add")),
+                ArgumentList(SingletonSeparatedList(Argument(literalConverter))));
+    }
 }

@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Response
                 yield break;
             }
 
-            if (response.IsRoot())
+            if (response.IsRoot)
             {
                 // this is a component which will be inherited from, it should receive the status code on the constructor
 

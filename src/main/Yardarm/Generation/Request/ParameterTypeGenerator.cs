@@ -29,7 +29,7 @@ namespace Yardarm.Generation.Request
             string className = ((QualifiedNameSyntax)TypeInfo.Name).Right.Identifier.ValueText;
 
             var schema = Element.GetSchemaOrDefault();
-            if (schema.IsReference())
+            if (schema.IsReference)
             {
                 // References don't generate members
                 return [];

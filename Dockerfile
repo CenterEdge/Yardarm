@@ -30,7 +30,7 @@ COPY ./src ./
 RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 # No --platform here so we get the base image for the target platform
-FROM mcr.microsoft.com/dotnet/runtime:10.0
+FROM mcr.microsoft.com/dotnet/runtime:8.0
 ARG VERSION
 WORKDIR /app
 

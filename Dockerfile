@@ -1,7 +1,7 @@
 ARG VERSION=0.1.0-local
 
 # --platform=$BUILDPLATFORM ensures that the build runs on the actual CPU platform of the builder, without emulation
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG VERSION
 ARG TARGETARCH
 WORKDIR /app
@@ -30,7 +30,7 @@ COPY ./src ./
 RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 # No --platform here so we get the base image for the target platform
-FROM mcr.microsoft.com/dotnet/runtime:8.0
+FROM mcr.microsoft.com/dotnet/runtime:10.0
 ARG VERSION
 WORKDIR /app
 

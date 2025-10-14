@@ -24,10 +24,10 @@ COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/
 COPY src/main/Yardarm.SystemTextJson.Client/*.csproj ./main/Yardarm.SystemTextJson.Client/
 COPY ["src/*.props", "src/*.targets", "src/*.snk", "src/nuget.config", "./"]
 COPY ["src/main/*.props", "src/main/*.targets", "./main/"]
-RUN dotnet restore /p:RuntimeIdentifiers=$(cat /tmp/arch) -r $(cat /tmp/arch) -p:PublishReadyToRun=true ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet restore -r $(cat /tmp/arch) -p:PublishReadyToRun=true ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet publish --no-restore -c Release /p:RuntimeIdentifiers=$(cat /tmp/arch) -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 # No --platform here so we get the base image for the target platform
 FROM mcr.microsoft.com/dotnet/runtime:8.0

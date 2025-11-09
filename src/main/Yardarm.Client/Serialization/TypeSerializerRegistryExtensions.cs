@@ -7,12 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace.Serialization
+namespace RootNamespace.Serialization;
+
+public static class TypeSerializerRegistryExtensions
 {
-    public static class TypeSerializerRegistryExtensions
+    extension(ITypeSerializerRegistry typeSerializerRegistry)
     {
-        public static ITypeSerializerRegistry Add(this ITypeSerializerRegistry typeSerializerRegistry,
-            IEnumerable<string> mediaTypes, ITypeSerializer typeSerializer)
+        public ITypeSerializerRegistry Add(IEnumerable<string> mediaTypes, ITypeSerializer typeSerializer)
         {
             foreach (string mediaType in mediaTypes)
             {
@@ -22,8 +23,7 @@ namespace RootNamespace.Serialization
             return typeSerializerRegistry;
         }
 
-        public static ITypeSerializerRegistry Add(this ITypeSerializerRegistry typeSerializerRegistry,
-            IEnumerable<Type> schemaTypes, ITypeSerializer typeSerializer)
+        public ITypeSerializerRegistry Add(IEnumerable<Type> schemaTypes, ITypeSerializer typeSerializer)
         {
             foreach (Type schemaType in schemaTypes)
             {
@@ -33,25 +33,24 @@ namespace RootNamespace.Serialization
             return typeSerializerRegistry;
         }
 
-        public static ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
-            this ITypeSerializerRegistry typeSerializerRegistry, IEnumerable<string> mediaTypes)
+        public ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+            IEnumerable<string> mediaTypes)
             where T : ITypeSerializer =>
             typeSerializerRegistry.Add<T>(mediaTypes, null);
 
-        public static ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
-            this ITypeSerializerRegistry typeSerializerRegistry, IEnumerable<Type> schemaTypes)
+        public ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+            IEnumerable<Type> schemaTypes)
             where T : ITypeSerializer =>
             typeSerializerRegistry.Add<T>(null, schemaTypes);
 
-        internal static ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
-            this ITypeSerializerRegistry typeSerializerRegistry,
+        internal ITypeSerializerRegistry Add<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
             IEnumerable<string>? mediaTypes = null,
             IEnumerable<Type>? schemaTypes = null)
             where T : ITypeSerializer
         {
-            ConstructorInfo? constructor = typeof(T).GetConstructor(new[] {typeof(ITypeSerializerRegistry)});
+            ConstructorInfo? constructor = typeof(T).GetConstructor([typeof(ITypeSerializerRegistry)]);
 
-            ITypeSerializer serializer = (ITypeSerializer?)constructor?.Invoke(new object[] {typeSerializerRegistry}) ??
+            ITypeSerializer serializer = (ITypeSerializer?)constructor?.Invoke([typeSerializerRegistry]) ??
                                          Activator.CreateInstance<T>();
 
             if (mediaTypes is not null)
@@ -68,12 +67,10 @@ namespace RootNamespace.Serialization
         }
 
         // Retained for backward compatibility of the public API surface in the generated SDK
-        public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            HttpContent content, ISerializationData? serializationData) =>
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData) =>
             typeSerializerRegistry.DeserializeAsync<T>(content, serializationData, default);
 
-        public static ValueTask<T> DeserializeAsync<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            HttpContent content, ISerializationData? serializationData = null,
+        public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
             // ReSharper disable once MethodOverloadWithOptionalParameter
             CancellationToken cancellationToken = default)
         {
@@ -91,8 +88,7 @@ namespace RootNamespace.Serialization
             return typeSerializer.DeserializeAsync<T>(content, serializationData, cancellationToken);
         }
 
-        public static HttpContent Serialize<T>(this ITypeSerializerRegistry typeSerializerRegistry,
-            T value, string mediaType, ISerializationData? serializationData = null)
+        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
         {
             if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
             {

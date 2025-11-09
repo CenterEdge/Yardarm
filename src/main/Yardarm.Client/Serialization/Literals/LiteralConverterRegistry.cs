@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using RootNamespace.Serialization.Literals.Converters;
-using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization.Literals;
 
@@ -18,16 +17,15 @@ namespace RootNamespace.Serialization.Literals;
 /// </remarks>
 public sealed class LiteralConverterRegistry
 {
-    private static LiteralConverterRegistry? s_instance;
-
     /// <summary>
     /// Singleton instance of the registry.
     /// </summary>
+    [field: MaybeNull]
     public static LiteralConverterRegistry Instance
     {
         get
         {
-            var instance = s_instance;
+            var instance = field;
             if (instance is not null)
             {
                 return instance;
@@ -36,33 +34,33 @@ public sealed class LiteralConverterRegistry
             // In case two threads are getting Instance for the first time at the same time,
             // use CompareExchange. One of the threads will not set the value, discarding the
             // CreateDefaultRegistry result, and both calls will get the same value.
-            return Interlocked.CompareExchange(ref s_instance, CreateDefaultRegistry(), null) ?? s_instance;
+            return Interlocked.CompareExchange(ref field, CreateDefaultRegistry(), null) ?? field;
         }
         set
         {
-            ThrowHelper.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value);
 
-            Volatile.Write(ref s_instance, value);
+            Volatile.Write(ref field!, value);
         }
     }
 
-    private readonly Dictionary<Type, LiteralConverter> _converters = new();
+    private readonly Dictionary<Type, LiteralConverter> _converters = [];
 
     // A LiteralConverterRegistry is generally initialized once and then read many times, so using a FrozenDictionary
     // for reads becomes worthwhile for the slightly faster read performance.
-    private FrozenDictionary<Type, LiteralConverter>? _frozenConverters;
+    private FrozenDictionary<Type, LiteralConverter>? _frozonConverters;
     private FrozenDictionary<Type, LiteralConverter> FrozenConverters
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            FrozenDictionary<Type, LiteralConverter>? converters = _frozenConverters;
+            FrozenDictionary<Type, LiteralConverter>? converters = _frozonConverters;
             if (converters is not null)
             {
                 return converters;
             }
 
-            return Interlocked.CompareExchange(ref _frozenConverters, _converters.ToFrozenDictionary(), null) ?? _frozenConverters;
+            return Interlocked.CompareExchange(ref _frozonConverters, _converters.ToFrozenDictionary(), null) ?? _frozonConverters;
         }
     }
 
@@ -111,7 +109,7 @@ public sealed class LiteralConverterRegistry
     public LiteralConverterRegistry Add<T>(LiteralConverter<T> converter, bool registerNullable = true)
         where T : struct
     {
-        ThrowHelper.ThrowIfNull(converter);
+        ArgumentNullException.ThrowIfNull(converter);
         Debug.Assert(typeof(T).IsValueType);
 
         _converters[typeof(T)] = converter;
@@ -124,7 +122,7 @@ public sealed class LiteralConverterRegistry
             _converters[typeof(T?)] = nullableConverter;
         }
 
-        _frozenConverters = null; // Clear the frozen dictionary to force a rebuild
+        _frozonConverters = null; // Clear the frozen dictionary to force a rebuild
         return this;
     }
 
@@ -137,12 +135,12 @@ public sealed class LiteralConverterRegistry
     public LiteralConverterRegistry Add<T>(LiteralConverter<T?> converter)
         where T : class?
     {
-        ThrowHelper.ThrowIfNull(converter);
+        ArgumentNullException.ThrowIfNull(converter);
         Debug.Assert(!typeof(T).IsValueType);
 
         _converters[typeof(T)] = converter;
 
-        _frozenConverters = null; // Clear the frozen dictionary to force a rebuild
+        _frozonConverters = null; // Clear the frozen dictionary to force a rebuild
         return this;
     }
 

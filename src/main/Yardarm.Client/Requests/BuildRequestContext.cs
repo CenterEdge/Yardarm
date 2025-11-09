@@ -1,5 +1,5 @@
-﻿using RootNamespace.Serialization;
-using Yardarm.Client.Internal;
+﻿using System;
+using RootNamespace.Serialization;
 
 namespace RootNamespace.Requests;
 
@@ -9,7 +9,7 @@ public sealed class BuildRequestContext
 
     public BuildRequestContext(ITypeSerializerRegistry typeSerializerRegistry)
     {
-        ThrowHelper.ThrowIfNull(typeSerializerRegistry);
+        ArgumentNullException.ThrowIfNull(typeSerializerRegistry);
 
         TypeSerializerRegistry = typeSerializerRegistry;
     }

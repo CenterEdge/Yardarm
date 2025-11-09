@@ -5,19 +5,16 @@ using System.Threading.Tasks;
 using RootNamespace.Serialization;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace.Responses
-{
-    public abstract class UnknownResponse : OperationResponse
-    {
-        protected UnknownResponse(HttpResponseMessage message, ITypeSerializerRegistry typeSerializerRegistry)
-            : base(message, typeSerializerRegistry)
-        {
-        }
+namespace RootNamespace.Responses;
 
-        [return: MaybeNull]
-        public ValueTask<T> GetBodyAsync<T>(CancellationToken cancellationToken = default) =>
-            Message.Content != null
-                ? TypeSerializerRegistry.DeserializeAsync<T>(Message.Content, cancellationToken: cancellationToken)
-                : new ValueTask<T>(default(T)!);
-    }
+public abstract class UnknownResponse(
+    HttpResponseMessage message,
+    ITypeSerializerRegistry typeSerializerRegistry)
+    : OperationResponse(message, typeSerializerRegistry)
+{
+    [return: MaybeNull]
+    public ValueTask<T> GetBodyAsync<T>(CancellationToken cancellationToken = default) =>
+        Message.Content != null
+            ? TypeSerializerRegistry.DeserializeAsync<T>(Message.Content, cancellationToken: cancellationToken)
+            : new ValueTask<T>(default(T)!);
 }

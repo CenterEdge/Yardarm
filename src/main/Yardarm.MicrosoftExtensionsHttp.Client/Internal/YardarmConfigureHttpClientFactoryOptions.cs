@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Http;
+﻿using System;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
-using Yardarm.Client.Internal;
 
 namespace RootNamespace.Internal
 {
@@ -12,8 +12,8 @@ namespace RootNamespace.Internal
 
         public YardarmConfigureHttpClientFactoryOptions(string name, IOptions<ApiFactoryOptions> apiFactoryOptions)
         {
-            ThrowHelper.ThrowIfNull(name, nameof(name));
-            ThrowHelper.ThrowIfNull(apiFactoryOptions);
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
+            ArgumentNullException.ThrowIfNull(apiFactoryOptions);
 
             Name = name;
             _apiFactoryOptions = apiFactoryOptions;
@@ -23,7 +23,7 @@ namespace RootNamespace.Internal
 
         public void Configure(string? name, HttpClientFactoryOptions options)
         {
-            ThrowHelper.ThrowIfNull(options, nameof(options));
+            ArgumentNullException.ThrowIfNull(options, nameof(options));
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (name == null || name == Name)

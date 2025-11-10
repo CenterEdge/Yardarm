@@ -48,19 +48,19 @@ public sealed class LiteralConverterRegistry
 
     // A LiteralConverterRegistry is generally initialized once and then read many times, so using a FrozenDictionary
     // for reads becomes worthwhile for the slightly faster read performance.
-    private FrozenDictionary<Type, LiteralConverter>? _frozonConverters;
+    private FrozenDictionary<Type, LiteralConverter>? _frozenConverters;
     private FrozenDictionary<Type, LiteralConverter> FrozenConverters
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            FrozenDictionary<Type, LiteralConverter>? converters = _frozonConverters;
+            FrozenDictionary<Type, LiteralConverter>? converters = _frozenConverters;
             if (converters is not null)
             {
                 return converters;
             }
 
-            return Interlocked.CompareExchange(ref _frozonConverters, _converters.ToFrozenDictionary(), null) ?? _frozonConverters;
+            return Interlocked.CompareExchange(ref _frozenConverters, _converters.ToFrozenDictionary(), null) ?? _frozenConverters;
         }
     }
 
@@ -122,7 +122,7 @@ public sealed class LiteralConverterRegistry
             _converters[typeof(T?)] = nullableConverter;
         }
 
-        _frozonConverters = null; // Clear the frozen dictionary to force a rebuild
+        _frozenConverters = null; // Clear the frozen dictionary to force a rebuild
         return this;
     }
 
@@ -140,7 +140,7 @@ public sealed class LiteralConverterRegistry
 
         _converters[typeof(T)] = converter;
 
-        _frozonConverters = null; // Clear the frozen dictionary to force a rebuild
+        _frozenConverters = null; // Clear the frozen dictionary to force a rebuild
         return this;
     }
 

@@ -1,29 +1,25 @@
 ﻿using System;
-using Yardarm.Client.Internal;
 
-namespace RootNamespace.Authentication
+namespace RootNamespace.Authentication;
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class SecuritySchemeSetAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class SecuritySchemeSetAttribute : Attribute
+    public Type[] SecuritySchemes
     {
-        private Type[] _securitySchemes;
-
-        public Type[] SecuritySchemes
+        get => field;
+        set
         {
-            get => _securitySchemes;
-            set
-            {
-                ThrowHelper.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value);
 
-                _securitySchemes = value;
-            }
+            field = value;
         }
+    }
 
-        public SecuritySchemeSetAttribute(params Type[] types)
-        {
-            ThrowHelper.ThrowIfNull(types);
+    public SecuritySchemeSetAttribute(params Type[] types)
+    {
+        ArgumentNullException.ThrowIfNull(types);
 
-            _securitySchemes = types;
-        }
+        SecuritySchemes = types;
     }
 }

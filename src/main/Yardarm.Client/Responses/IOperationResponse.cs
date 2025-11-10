@@ -3,14 +3,13 @@ using System.Net;
 using System.Net.Http;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace.Responses
+namespace RootNamespace.Responses;
+
+public interface IOperationResponse : IDisposable
 {
-    public interface IOperationResponse : IDisposable
-    {
-        HttpResponseMessage Message { get; }
+    HttpResponseMessage Message { get; }
 
-        HttpStatusCode StatusCode { get; }
+    HttpStatusCode StatusCode { get; }
 
-        bool IsSuccessStatusCode { get; }
-    }
+    bool IsSuccessStatusCode { get; }
 }

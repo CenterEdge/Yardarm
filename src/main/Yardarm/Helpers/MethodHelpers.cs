@@ -39,7 +39,10 @@ namespace Yardarm.Helpers
         public static StatementSyntax ThrowIfArgumentNull(string parameterName, NuGetFramework? targetFramework = null)
         {
             return ExpressionStatement(InvocationExpression(
-                WellKnownTypes.Yardarm.Client.Internal.ThrowHelper.ThrowIfNull,
+                MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    WellKnownTypes.System.ArgumentNullException.Name,
+                    IdentifierName("ThrowIfNull")),
                 ArgumentList(SingletonSeparatedList(Argument(IdentifierName(parameterName))))));
         }
     }

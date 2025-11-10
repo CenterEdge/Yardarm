@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
-using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization.Json
@@ -39,7 +38,7 @@ namespace RootNamespace.Serialization.Json
         [RequiresDynamicCode(SerializationDynamicCodeMessage)]
         public JsonTypeSerializer(JsonSerializerOptions options)
         {
-            ThrowHelper.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(options);
 
             options.MakeReadOnly(true);
             _options = options;
@@ -47,7 +46,7 @@ namespace RootNamespace.Serialization.Json
 
         public JsonTypeSerializer(JsonSerializerContext context)
         {
-            ThrowHelper.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(context);
 
             _options = context.Options;
         }

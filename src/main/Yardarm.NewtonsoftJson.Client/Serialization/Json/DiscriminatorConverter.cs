@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization.Json
@@ -24,9 +23,9 @@ namespace RootNamespace.Serialization.Json
 
         public DiscriminatorConverter(string propertyName, Type interfaceType, IEnumerable<KeyValuePair<string, Type>> mappings)
         {
-            ThrowHelper.ThrowIfNull(propertyName);
-            ThrowHelper.ThrowIfNull(interfaceType);
-            ThrowHelper.ThrowIfNull(mappings);
+            ArgumentNullException.ThrowIfNull(propertyName);
+            ArgumentNullException.ThrowIfNull(interfaceType);
+            ArgumentNullException.ThrowIfNull(mappings);
 
             _propertyName = propertyName;
             _interfaceType = interfaceType;

@@ -31,11 +31,6 @@ namespace Yardarm.Helpers
                         public static NameSyntax Name { get; } = QualifiedName(
                             Internal.Name,
                             IdentifierName("ThrowHelper"));
-
-                        public static MemberAccessExpressionSyntax ThrowIfNull { get; } = MemberAccessExpression(
-                            SyntaxKind.SimpleMemberAccessExpression,
-                            Name,
-                            IdentifierName("ThrowIfNull"));
                     }
 
                 }

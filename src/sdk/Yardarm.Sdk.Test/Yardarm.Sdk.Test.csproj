@@ -2,7 +2,7 @@
   <Import Project="../Yardarm.Sdk/Sdk/Sdk.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <KeyFile>..\..\Yardarm.snk</KeyFile>
 
     <!-- Override these for local testing, get directly from build output -->

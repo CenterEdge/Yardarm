@@ -10,28 +10,33 @@ namespace Yardarm.SystemTextJson
     {
         public IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework)
         {
-            // Add System.Text.Json even if we're targeting .NET 9 to ensure we get bug fixes, especially for the source generator.
-            // This doesn't apply at the moment using 9.0.0, but it's a good practice to follow so we don't forget if we upgrade.
-
-            yield return new LibraryDependency
+            if (targetFramework.Version.Major < 9)
             {
-                LibraryRange = new LibraryRange
+                // Upgrade System.Text.Json to at least 9.0 if we're targeting downlevel frameworks
+                yield return new LibraryDependency
                 {
-                    Name = "System.Text.Json",
-                    TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("9.0.0")
-                }
-            };
+                    LibraryRange = new LibraryRange
+                    {
+                        Name = "System.Text.Json",
+                        TypeConstraint = LibraryDependencyTarget.Package,
+                        VersionRange = VersionRange.Parse("9.0.0")
+                    }
+                };
+            }
 
-            yield return new LibraryDependency
+            if (targetFramework.Version.Major < 10)
             {
-                LibraryRange = new LibraryRange
+                // System.Net.Http.Json is in-box in .NET 10 and later
+                yield return new LibraryDependency
                 {
-                    Name = "System.Net.Http.Json",
-                    TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("9.0.0")
-                }
-            };
+                    LibraryRange = new LibraryRange
+                    {
+                        Name = "System.Net.Http.Json",
+                        TypeConstraint = LibraryDependencyTarget.Package,
+                        VersionRange = VersionRange.Parse("9.0.0")
+                    }
+                };
+            }
         }
     }
 }

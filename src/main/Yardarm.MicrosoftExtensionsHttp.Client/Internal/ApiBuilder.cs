@@ -1,22 +1,16 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace RootNamespace.Internal
-{
-    /// <summary>
-    /// Default implementation of <see cref="IApiBuilder"/>.
-    /// </summary>
-    internal class ApiBuilder : IApiBuilder
-    {
-        /// <inheritdoc />
-        public IServiceCollection Services { get; set; }
+namespace RootNamespace.Internal;
 
-        /// <summary>
-        /// Create a new ApiBuilder.
-        /// </summary>
-        /// <param name="services">The application service collection.</param>
-        public ApiBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
-    }
+/// <summary>
+/// Default implementation of <see cref="IApiBuilder"/>.
+/// </summary>
+/// <remarks>
+/// Create a new ApiBuilder.
+/// </remarks>
+/// <param name="services">The application service collection.</param>
+internal class ApiBuilder(IServiceCollection services) : IApiBuilder
+{
+    /// <inheritdoc />
+    public IServiceCollection Services { get; set; } = services;
 }

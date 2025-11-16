@@ -4,19 +4,21 @@ using Microsoft.Extensions.Options;
 using RootNamespace.Internal;
 using RootNamespace.Serialization;
 
-namespace RootNamespace
+namespace RootNamespace;
+
+/// <summary>
+/// API extensions for <see cref="IServiceCollection"/>.
+/// </summary>
+public static class ApiServiceCollectionExtensions
 {
-    /// <summary>
-    /// API extensions for <see cref="IServiceCollection"/>.
-    /// </summary>
-    public static class ApiServiceCollectionExtensions
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    extension(IServiceCollection services)
     {
         /// <summary>
         /// Add and configure APIs to the <see cref="IServiceCollection"/>.
         /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>An <see cref="IApiBuilder"/> to add and configure specific APIs.</returns>
-        public static IApiBuilder AddApis(this IServiceCollection services)
+        public IApiBuilder AddApis()
         {
             services.TryAddSingleton(static serviceProvider =>
             {

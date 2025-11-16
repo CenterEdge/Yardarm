@@ -111,6 +111,28 @@ public class NodaPatternConverterTests
         result.Should().Be("03:04:05.123-04:00");
     }
 
+    public static TheoryData<Period, string> Periods() => new()
+    {
+        { Period.FromMinutes(15), "PT15M" },
+        { Period.FromDays(5), "P5D" },
+        { Period.FromDays(5) + Period.FromMinutes(15), "P5DT15M" }
+    };
+
+    [Theory]
+    [MemberData(nameof(Periods))]
+    public void Serialize_Period_ReturnsString(Period period, string expectedValue)
+    {
+        // Act
+
+        string result = NodaLiteralConverters.PeriodConverter.Write(
+            period,
+            "duration");
+
+        // Assert
+
+        result.Should().Be(expectedValue);
+    }
+
     #endregion
 
     #region Deserialize
@@ -173,6 +195,21 @@ public class NodaPatternConverterTests
         // Assert
 
         result.Should().Be(new LocalTime(13, 1, 2, 234));
+    }
+
+    [Theory]
+    [MemberData(nameof(Periods))]
+    public void Deserialize_Period_ReturnsPeriod(Period period, string input)
+    {
+        // Act
+
+        Period result = NodaLiteralConverters.PeriodConverter.Read(
+            input,
+            "duration");
+
+        // Assert
+
+        result.Should().Be(period);
     }
 
     #endregion

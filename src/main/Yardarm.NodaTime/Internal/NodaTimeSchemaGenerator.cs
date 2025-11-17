@@ -27,20 +27,16 @@ internal sealed class NodaTimeSchemaGenerator(
         "full-time"
     }.ToFrozenSet();
 
-    private static YardarmTypeInfo? s_localDate;
-    private static YardarmTypeInfo LocalDate => s_localDate ??= new YardarmTypeInfo(
+    private static YardarmTypeInfo LocalDate => field ??= new YardarmTypeInfo(
         NodaTimeTypes.LocalDate, isGenerated: false);
 
-    private static YardarmTypeInfo? s_localTime;
-    private static YardarmTypeInfo LocalTime => s_localTime ??= new YardarmTypeInfo(
+    private static YardarmTypeInfo LocalTime => field ??= new YardarmTypeInfo(
         NodaTimeTypes.LocalTime, isGenerated: false);
 
-    private static YardarmTypeInfo? s_offsetDateTime;
-    private static YardarmTypeInfo OffsetDateTime => s_offsetDateTime ??= new YardarmTypeInfo(
+    private static YardarmTypeInfo OffsetDateTime => field ??= new YardarmTypeInfo(
         NodaTimeTypes.OffsetDateTime, isGenerated: false);
 
-    private static YardarmTypeInfo? s_offsetTime;
-    private static YardarmTypeInfo OffsetTime => s_offsetTime ??= new YardarmTypeInfo(
+    private static YardarmTypeInfo OffsetTime => field ??= new YardarmTypeInfo(
         NodaTimeTypes.OffsetTime, isGenerated: false);
 
     protected override YardarmTypeInfo GetTypeInfo()

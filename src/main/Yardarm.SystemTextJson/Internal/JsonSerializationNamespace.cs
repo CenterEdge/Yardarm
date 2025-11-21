@@ -4,47 +4,46 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.SystemTextJson.Internal
+namespace Yardarm.SystemTextJson.Internal;
+
+internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationNamespace
 {
-    internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationNamespace
+    public NameSyntax Name { get; }
+    public NameSyntax JsonDateConverter { get; }
+    public NameSyntax JsonTypeSerializer { get; }
+    public NameSyntax JsonHelpers { get; }
+
+    public JsonSerializationNamespace(ISerializationNamespace serializationNamespace)
     {
-        public NameSyntax Name { get; }
-        public NameSyntax JsonDateConverter { get; }
-        public NameSyntax JsonTypeSerializer { get; }
-        public NameSyntax JsonHelpers { get; }
+        ArgumentNullException.ThrowIfNull(serializationNamespace);
 
-        public JsonSerializationNamespace(ISerializationNamespace serializationNamespace)
-        {
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
+        Name = QualifiedName(
+            serializationNamespace.Name,
+            IdentifierName("Json"));
 
-            Name = QualifiedName(
-                serializationNamespace.Name,
-                IdentifierName("Json"));
+        JsonDateConverter = QualifiedName(
+            Name,
+            IdentifierName("JsonDateConverter"));
 
-            JsonDateConverter = QualifiedName(
-                Name,
-                IdentifierName("JsonDateConverter"));
+        JsonTypeSerializer = QualifiedName(
+            Name,
+            IdentifierName("JsonTypeSerializer"));
 
-            JsonTypeSerializer = QualifiedName(
-                Name,
-                IdentifierName("JsonTypeSerializer"));
-
-            JsonHelpers = QualifiedName(
-                Name,
-                IdentifierName("JsonHelpers"));
-        }
-
-        public InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName) =>
-            InvocationExpression(
-                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                    JsonHelpers,
-                    IdentifierName("GetDiscriminator")),
-                ArgumentList(SeparatedList<ArgumentSyntax>(new[] {
-                    Argument(null, Token(SyntaxKind.RefKeyword), reader),
-                    Argument(utf8PropertyName) })));
-
-        public TypeSyntax JsonNamedStringEnumConverterName(TypeSyntax enumType) =>
-            QualifiedName(Name, GenericName(Identifier("JsonNamedStringEnumConverter"),
-                TypeArgumentList(SingletonSeparatedList(enumType))));
+        JsonHelpers = QualifiedName(
+            Name,
+            IdentifierName("JsonHelpers"));
     }
+
+    public InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName) =>
+        InvocationExpression(
+            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                JsonHelpers,
+                IdentifierName("GetDiscriminator")),
+            ArgumentList(SeparatedList<ArgumentSyntax>([
+                Argument(null, Token(SyntaxKind.RefKeyword), reader),
+                Argument(utf8PropertyName) ])));
+
+    public TypeSyntax JsonNamedStringEnumConverterName(TypeSyntax enumType) =>
+        QualifiedName(Name, GenericName(Identifier("JsonNamedStringEnumConverter"),
+            TypeArgumentList(SingletonSeparatedList(enumType))));
 }

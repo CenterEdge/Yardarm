@@ -7,15 +7,14 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace RootNamespace.Serialization.Json
+namespace RootNamespace.Serialization.Json;
+
+[JsonSerializable(typeof(FakeModel))]
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+public partial class ModelSerializerContext : JsonSerializerContext
 {
-    [JsonSerializable(typeof(FakeModel))]
-    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
-    public partial class ModelSerializerContext : JsonSerializerContext
-    {
 
-    }
-
-    public class FakeModel { }
 }
+
+public class FakeModel { }
 #endif

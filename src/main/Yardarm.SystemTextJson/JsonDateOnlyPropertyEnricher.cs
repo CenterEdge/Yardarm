@@ -9,79 +9,78 @@ using Yardarm.SystemTextJson.Helpers;
 using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.SystemTextJson
+namespace Yardarm.SystemTextJson;
+
+public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
 {
-    public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    private readonly IOpenApiElementRegistry _elementRegistry;
+    private readonly IJsonSerializationNamespace _serializationNamespace;
+
+    public JsonDateOnlyPropertyEnricher(IOpenApiElementRegistry elementRegistry, IJsonSerializationNamespace serializationNamespace)
     {
-        private readonly IOpenApiElementRegistry _elementRegistry;
-        private readonly IJsonSerializationNamespace _serializationNamespace;
+        ArgumentNullException.ThrowIfNull(elementRegistry);
+        ArgumentNullException.ThrowIfNull(serializationNamespace);
 
-        public JsonDateOnlyPropertyEnricher(IOpenApiElementRegistry elementRegistry, IJsonSerializationNamespace serializationNamespace)
+        _elementRegistry = elementRegistry;
+        _serializationNamespace = serializationNamespace;
+    }
+
+    public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+    {
+        if (context.Element.Type != "string" || context.Element.Format is not "date" and not "full-date")
         {
-            ArgumentNullException.ThrowIfNull(elementRegistry);
-            ArgumentNullException.ThrowIfNull(serializationNamespace);
-
-            _elementRegistry = elementRegistry;
-            _serializationNamespace = serializationNamespace;
+            // Only applies to date-only strings
+            return syntax;
         }
 
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+        if (!context.LocatedElement.IsJsonSchema)
         {
-            if (context.Element.Type != "string" || context.Element.Format is not "date" and not "full-date")
-            {
-                // Only applies to date-only strings
-                return syntax;
-            }
-
-            if (!context.LocatedElement.IsJsonSchema)
-            {
-                // Don't enrich non-JSON schemas
-                return syntax;
-            }
-
-            if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(_elementRegistry) is null)
-            {
-                // We don't need to apply this to properties of request classes, only schemas
-                return syntax;
-            }
-
-            var model = context.Compilation.GetSemanticModel(context.SyntaxTree);
-            TypeInfo typeInfo = model.GetTypeInfo(syntax.Type);
-            if (!IsDateTime(typeInfo.Type as INamedTypeSymbol))
-            {
-                // Don't apply if some other process has changed the type to something other than System.DateTime
-                return syntax;
-            }
-
-            return AddJsonConverterAttribute(syntax);
+            // Don't enrich non-JSON schemas
+            return syntax;
         }
 
-        private PropertyDeclarationSyntax AddJsonConverterAttribute(PropertyDeclarationSyntax syntax) =>
-            syntax
-                .AddAttributeLists(AttributeList(SingletonSeparatedList(
-                    Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
-                        AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
-                            TypeOfExpression(_serializationNamespace.JsonDateConverter))))))))
-                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
-
-        private static bool IsDateTime(INamedTypeSymbol? type)
+        if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(_elementRegistry) is null)
         {
-            if (type is null)
+            // We don't need to apply this to properties of request classes, only schemas
+            return syntax;
+        }
+
+        var model = context.Compilation.GetSemanticModel(context.SyntaxTree);
+        TypeInfo typeInfo = model.GetTypeInfo(syntax.Type);
+        if (!IsDateTime(typeInfo.Type as INamedTypeSymbol))
+        {
+            // Don't apply if some other process has changed the type to something other than System.DateTime
+            return syntax;
+        }
+
+        return AddJsonConverterAttribute(syntax);
+    }
+
+    private PropertyDeclarationSyntax AddJsonConverterAttribute(PropertyDeclarationSyntax syntax) =>
+        syntax
+            .AddAttributeLists(AttributeList(SingletonSeparatedList(
+                Attribute(SystemTextJsonTypes.Serialization.JsonConverterAttributeName,
+                    AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
+                        TypeOfExpression(_serializationNamespace.JsonDateConverter))))))))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
+
+    private static bool IsDateTime(INamedTypeSymbol? type)
+    {
+        if (type is null)
+        {
+            return false;
+        }
+
+        if (type.IsGenericType && type.ContainingNamespace.Name == "System" && type.Name == "Nullable")
+        {
+            if (type.TypeArguments.Length == 0)
             {
                 return false;
             }
 
-            if (type.IsGenericType && type.ContainingNamespace.Name == "System" && type.Name == "Nullable")
-            {
-                if (type.TypeArguments.Length == 0)
-                {
-                    return false;
-                }
-
-                return IsDateTime(type.TypeArguments[0] as INamedTypeSymbol);
-            }
-
-            return !type.IsGenericType && type.ContainingNamespace.Name == "System" && type.Name == "DateTime";
+            return IsDateTime(type.TypeArguments[0] as INamedTypeSymbol);
         }
+
+        return !type.IsGenericType && type.ContainingNamespace.Name == "System" && type.Name == "DateTime";
     }
 }

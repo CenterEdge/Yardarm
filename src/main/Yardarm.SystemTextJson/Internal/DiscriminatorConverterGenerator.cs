@@ -7,28 +7,27 @@ using Yardarm.Generation;
 using Yardarm.Generation.Operation;
 using Yardarm.Spec;
 
-namespace Yardarm.SystemTextJson.Internal
+namespace Yardarm.SystemTextJson.Internal;
+
+internal class DiscriminatorConverterGenerator(
+    OpenApiDocument document,
+    [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiSchema> converterTypeGeneratorRegistry,
+    IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
 {
-    internal class DiscriminatorConverterGenerator(
-        OpenApiDocument document,
-        [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiSchema> converterTypeGeneratorRegistry,
-        IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
+    public IEnumerable<SyntaxTree> Generate()
     {
-        public IEnumerable<SyntaxTree> Generate()
+        var schemas = document
+            .GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider)
+            .Where(schema => SchemaHelper.IsPolymorphic(schema.Element));
+
+        foreach (var schema in schemas)
         {
-            var schemas = document
-                .GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider)
-                .Where(schema => SchemaHelper.IsPolymorphic(schema.Element));
+            var converterGenerator = converterTypeGeneratorRegistry.Get(schema);
 
-            foreach (var schema in schemas)
+            var syntaxTree = converterGenerator.GenerateSyntaxTree();
+            if (syntaxTree != null)
             {
-                var converterGenerator = converterTypeGeneratorRegistry.Get(schema);
-
-                var syntaxTree = converterGenerator.GenerateSyntaxTree();
-                if (syntaxTree != null)
-                {
-                    yield return syntaxTree;
-                }
+                yield return syntaxTree;
             }
         }
     }

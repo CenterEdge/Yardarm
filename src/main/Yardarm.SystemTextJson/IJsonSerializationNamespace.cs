@@ -1,15 +1,14 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Yardarm.SystemTextJson
+namespace Yardarm.SystemTextJson;
+
+public interface IJsonSerializationNamespace
 {
-    public interface IJsonSerializationNamespace
-    {
-        NameSyntax Name { get; }
-        NameSyntax JsonDateConverter { get; }
-        NameSyntax JsonTypeSerializer { get; }
+    NameSyntax Name { get; }
+    NameSyntax JsonDateConverter { get; }
+    NameSyntax JsonTypeSerializer { get; }
 
-        InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName);
+    InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName);
 
-        TypeSyntax JsonNamedStringEnumConverterName(TypeSyntax enumType);
-    }
+    TypeSyntax JsonNamedStringEnumConverterName(TypeSyntax enumType);
 }

@@ -67,7 +67,7 @@ internal static class SchemaHelper
         GetMappings(context, element)
             .Select(p => (p.Key, context.TypeGeneratorRegistry.Get(p.Schema).TypeInfo.Name))
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            .Where(p => p.Item2 != null);
+            .Where(p => p.Name != null);
 
     /// <summary>
     /// Collects the list of value to schema mappings defined for the type, choosing from the

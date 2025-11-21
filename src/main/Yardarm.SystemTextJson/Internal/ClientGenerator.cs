@@ -1,15 +1,10 @@
 ﻿using Yardarm.Generation;
 using Yardarm.Names;
 
-namespace Yardarm.SystemTextJson.Internal
-{
-    internal class ClientGenerator : ResourceSyntaxTreeGenerator
-    {
-        protected override string ResourcePrefix => "Yardarm.SystemTextJson.Client.";
+namespace Yardarm.SystemTextJson.Internal;
 
-        public ClientGenerator(GenerationContext generationContext,IRootNamespace rootNamespace)
-            : base(generationContext, rootNamespace)
-        {
-        }
-    }
+internal class ClientGenerator(GenerationContext generationContext, IRootNamespace rootNamespace)
+    : ResourceSyntaxTreeGenerator(generationContext, rootNamespace)
+{
+    protected override string ResourcePrefix => "Yardarm.SystemTextJson.Client.";
 }

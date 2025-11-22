@@ -89,7 +89,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
         string className = classNameAndNamespace.Right.Identifier.Text;
 
         var schemaType = Context.TypeGeneratorRegistry.Get(Element).TypeInfo.Name;
-        var baseType = SystemTextJsonTypes.Serialization.JsonConverterName(schemaType);
+        var baseType = _jsonSerializationNamespace.JsonDiscriminatedObjectConverterName(schemaType);
 
         var declaration = ClassDeclaration(
                 default,
@@ -98,12 +98,12 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
                 null,
                 BaseList(SingletonSeparatedList<BaseTypeSyntax>(SimpleBaseType(baseType))),
                 default,
-                [.. GenerateMethods(schemaType)]);
+                [.. GenerateMethods(className, schemaType)]);
 
         yield return declaration;
     }
 
-    private IEnumerable<MemberDeclarationSyntax> GenerateMethods(TypeSyntax schemaType)
+    private IEnumerable<MemberDeclarationSyntax> GenerateMethods(string className, TypeSyntax schemaType)
     {
         if (!string.IsNullOrEmpty(Element.Element.Discriminator?.PropertyName))
         {
@@ -111,6 +111,28 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
         }
 
         yield return GenerateCanConvert(schemaType);
+
+        if (Context.Settings.Properties.TryGetValue("UnknownDiscriminatorHandling", out string? unknownDiscriminatorHandling)
+            && !string.Equals(unknownDiscriminatorHandling, "ThrowException", StringComparison.OrdinalIgnoreCase))
+        {
+            // Set UnknownDiscriminatorHandling in the constructor
+
+            yield return ConstructorDeclaration(
+                attributeLists: default,
+                TokenList(Token(SyntaxKind.PublicKeyword)),
+                Identifier(className),
+                ParameterList(),
+                initializer: null,
+                Block(
+                    ExpressionStatement(AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        IdentifierName("UnknownDiscriminatorHandling"),
+                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                            _jsonSerializationNamespace.UnknownDiscriminatorHandling,
+                            IdentifierName(unknownDiscriminatorHandling))))
+                ));
+        }
+
         yield return GenerateRead(schemaType);
         yield return GenerateWrite(schemaType);
     }
@@ -169,26 +191,30 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
 
         if (!string.IsNullOrEmpty(Element.Element.Discriminator?.PropertyName))
         {
-            var mappings = SchemaHelper.GetDiscriminatorMappings(Context, Element)
-                .Select(mapping =>
-                    SwitchExpressionArm(
-                        ConstantPattern(LiteralExpression(SyntaxKind.StringLiteralExpression,
-                            Literal(mapping.key))),
-                        PostfixUnaryExpression(SyntaxKind.SuppressNullableWarningExpression, InvocationExpression(
-                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                                SystemTextJsonTypes.JsonSerializer,
-                                GenericName(Identifier("Deserialize"),
-                                    TypeArgumentList(SingletonSeparatedList(mapping.typeName)))),
-                            ArgumentList(SeparatedList(
-                            [
-                                Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
-                                Argument(IdentifierName("options"))
-                            ]))))))
-                .Concat(
-                [
-                    SwitchExpressionArm(DiscardPattern(),
-                        ThrowExpression(ObjectCreationExpression(SystemTextJsonTypes.JsonException)))
-                ]);
+            IEnumerable<SwitchExpressionArmSyntax> mappings =
+            [
+                ..SchemaHelper.GetDiscriminatorMappings(Context, Element)
+                    .Select(mapping =>
+                        SwitchExpressionArm(
+                            ConstantPattern(LiteralExpression(SyntaxKind.StringLiteralExpression,
+                                Literal(mapping.key))),
+                            PostfixUnaryExpression(SyntaxKind.SuppressNullableWarningExpression, InvocationExpression(
+                                MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                    SystemTextJsonTypes.JsonSerializer,
+                                    GenericName(Identifier("Deserialize"),
+                                        TypeArgumentList(SingletonSeparatedList(mapping.typeName)))),
+                                ArgumentList(SeparatedList(
+                                [
+                                    Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
+                                    Argument(IdentifierName("options"))
+                                ])))))),
+                SwitchExpressionArm(DiscardPattern(),
+                    InvocationExpression(IdentifierName("HandleUnknownDiscriminator"),
+                    ArgumentList(SeparatedList([
+                        Argument(nameColon: null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
+                        Argument(IdentifierName("discriminator")),
+                    ]))))
+            ];
 
             body = Block(default,
             [
@@ -200,8 +226,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
                             EqualsValueClause(_jsonSerializationNamespace.GetDiscriminator(
                                 IdentifierName("reader"),
                                 IdentifierName("PropertyName"))))))),
-                ReturnStatement(SwitchExpression(IdentifierName("discriminator"), SeparatedList(mappings)))
-,
+                ReturnStatement(SwitchExpression(IdentifierName("discriminator"), SeparatedList(mappings))),
             ]);
         }
         else
@@ -217,7 +242,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
         return MethodDeclaration(
             s_suppressTrimAndAotWarnings,
             TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.OverrideKeyword)),
-            schemaType,
+            SyntaxHelpers.MakeNullable(schemaType),
             default,
             Identifier("Read"),
             default,

@@ -29,7 +29,7 @@ public abstract class IncludedFile
     /// <summary>
     /// Returns the source text of the included file.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The source text of the included file.</returns>
     public abstract SourceText GetSourceText();
 
     /// <summary>

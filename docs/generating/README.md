@@ -83,6 +83,16 @@ To improve build speed of SDK consumers, a reference assembly is created when:
 See [Reference Assemblies](https://docs.microsoft.com/en-us/dotnet/standard/assembly/reference-assemblies) for more
 information.
 
+## Including Additional C# files
+
+To include additional C# files in the generated SDK project, use the `--include` command line
+option. Multiple files may be listed with this option. The files will be included in the generated project
+and compiled alongside the generated code. They are also embedded in the PDB if `--embed` is used.
+
+```sh
+yardarm generate -i my-spec.yaml -n MySpec -v 1.0.0 -o output/directory/ --include file1.cs file2.cs
+```
+
 ## A note on System.Text.Json support
 
 When using System.Text.Json, it is recommended that you target net6.0 at a minimum. Multi-targeting and including

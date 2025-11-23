@@ -8,9 +8,10 @@ namespace Yardarm.Generation;
 public static class SyntaxNodeExtensions
 {
     private const string ResourceNameKey = "ResourceName";
+    private const string IncludedFileNameKey = "IncludedFileName";
     private const string SpecialMemberKey = "SpecialMember";
 
-    /// <param name="node">Compilation unit to annotate.</param>
+    /// <param name="node">Compilation unit.</param>
     extension(CompilationUnitSyntax node)
     {
         /// <summary>
@@ -25,10 +26,25 @@ public static class SyntaxNodeExtensions
         /// <summary>
         /// Gets the resource file name that was the source of a <see cref="CompilationUnitSyntax"/>, if any.
         /// </summary>
-        /// <param name="node">Compilation unit to check.</param>
         /// <returns>The resource name or null.</returns>
         public string? GetResourceNameAnnotation() =>
             node.GetAnnotations(ResourceNameKey).FirstOrDefault()?.Data;
+
+        /// <summary>
+        /// Annotates a <see cref="CompilationUnitSyntax"/> as derived from a specific included file name.
+        /// </summary>
+        /// <param name="resourceName">File name which was the source of the compilation unit.</param>
+        /// <returns>Modified compilation unit.</returns>
+        public CompilationUnitSyntax AddIncludedFileNameAnnotation(string resourceName) =>
+            node.WithAdditionalAnnotations(
+                new SyntaxAnnotation(IncludedFileNameKey, resourceName));
+
+        /// <summary>
+        /// Gets the included file name that was the source of a <see cref="CompilationUnitSyntax"/>, if any.
+        /// </summary>
+        /// <returns>The file name or null.</returns>
+        public string? GetIncludedFileNameAnnotation() =>
+            node.GetAnnotations(IncludedFileNameKey).FirstOrDefault()?.Data;
     }
 
     /// <param name="node">Syntax node to check.</param>

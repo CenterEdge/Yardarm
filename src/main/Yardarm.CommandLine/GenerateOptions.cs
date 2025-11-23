@@ -34,6 +34,9 @@ namespace Yardarm.CommandLine
         [Option("nowarn", HelpText = "Warnings to suppress", Default = "CS1701,CS1702")]
         public string NoWarn { get; set; }
 
+        [Option("include", HelpText = "Additional C# files to include in the compilation")]
+        public IEnumerable<string> IncludedFiles { get; set; }
+
         #region DLL
 
         [Option('o', "output", HelpText = "Output directory or .dll file. Indicate a directory with a trailing slash.", SetName = "dll")]

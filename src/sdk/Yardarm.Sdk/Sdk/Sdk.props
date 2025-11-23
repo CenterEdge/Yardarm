@@ -33,8 +33,7 @@
     <IncludeSymbols Condition=" '$(IncludeSymbols)' == '' ">true</IncludeSymbols>
     <SymbolPackageFormat Condition=" '$(SymbolPackageFormat)' == '' ">snupkg</SymbolPackageFormat>
 
-    <!-- Disable default Compile, EmbeddedResource, and Content items for Yardarm projects -->
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Disable default EmbeddedResource, and Content items for Yardarm projects -->
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
 
@@ -51,6 +50,7 @@
 
     <!-- Don't generate assembly info -->
     <GenerateAssemblyInfo Condition="'$(GenerateAssemblyInfo)' == ''">false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute Condition="'$(GenerateTargetFrameworkAttribute)' == ''">false</GenerateTargetFrameworkAttribute>
 
     <!-- Generate a documentation file by default -->
     <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' ">true</GenerateDocumentationFile>

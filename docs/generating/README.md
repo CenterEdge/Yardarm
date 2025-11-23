@@ -71,7 +71,7 @@ Properties to configure behaviors may be passed using the `-p` command line swit
   This is the default when targeting .NET Standard 2.0, but may be desired when targeting more modern runtimes.
 - `DefaultHttpVersion` - Set to `1.1`, `2.0`, or `3.0` to change the default HTTP version used by generated clients. Defaults to the
   runtime default (currently `1.1`).
-- `DefaultHttpVersionPolicy` - Set to `RequestVersionOrLower`, `RequestVersionOrHigher`, `RequestVersionExact` to change the default
+- `DefaultHttpVersionPolicy` - Set to `RequestVersionOrLower`, `RequestVersionOrHigher`, or `RequestVersionExact` to change the default
   HTTP version policy used by generated clients. Defaults to the runtime default (currently `RequestVersionOrLower`) and is ignored on
   downlevel runtimes that do not support this feature.
 

@@ -21,7 +21,7 @@ public class DefaultHttpVersionEnricher(GenerationContext generationContext) : I
             generationContext.CurrentTargetFramework.Version.Major >= 5)
         {
             VariableDeclaratorSyntax? declarator = target
-                .DescendantNodes(p => p is not (PropertyDeclarationSyntax or MethodDeclarationSyntax)) // Don't decend into methods, etc, when searching
+                .DescendantNodes(p => p is not (PropertyDeclarationSyntax or MethodDeclarationSyntax)) // Don't descend into methods, etc, when searching
                 .OfType<VariableDeclaratorSyntax>()
                 .FirstOrDefault(p => p.Identifier.Text == "s_defaultHttpVersion");
 
@@ -41,7 +41,7 @@ public class DefaultHttpVersionEnricher(GenerationContext generationContext) : I
             generationContext.CurrentTargetFramework.Version.Major >= 5)
         {
             VariableDeclaratorSyntax? declarator = target
-                .DescendantNodes(p => p is not (PropertyDeclarationSyntax or MethodDeclarationSyntax)) // Don't decend into methods, etc, when searching
+                .DescendantNodes(p => p is not (PropertyDeclarationSyntax or MethodDeclarationSyntax)) // Don't descend into methods, etc, when searching
                 .OfType<VariableDeclaratorSyntax>()
                 .FirstOrDefault(p => p.Identifier.Text == "s_defaultHttpVersionPolicy");
 

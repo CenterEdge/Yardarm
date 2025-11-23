@@ -26,6 +26,7 @@ public static class DiagnosticsExtensions
             CompilationUnitSyntax compilationUnit = syntaxTree.GetCompilationUnitRoot();
 
             return compilationUnit.GetResourceNameAnnotation()
+                   ?? compilationUnit.GetIncludedFileNameAnnotation()
                    ?? compilationUnit.GetElementAnnotations(elementRegistry).FirstOrDefault()?.ToString();
         }
 

@@ -16,6 +16,7 @@ internal sealed class DefaultLiteralConverterEnricher : ReturnValueRegistrationE
             .AddLiteralConverter(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, nodaLiteralConverters, IdentifierName("LocalDateConverter")))
             .AddLiteralConverter(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, nodaLiteralConverters, IdentifierName("LocalTimeConverter")))
             .AddLiteralConverter(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, nodaLiteralConverters, IdentifierName("OffsetDateTimeConverter")))
-            .AddLiteralConverter(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, nodaLiteralConverters, IdentifierName("OffsetTimeConverter")));
+            .AddLiteralConverter(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, nodaLiteralConverters, IdentifierName("OffsetTimeConverter")))
+            .AddLiteralConverter(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, nodaLiteralConverters, IdentifierName("PeriodConverter")));
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.Extensions.Logging;
+using Yardarm.Generation;
 
 namespace Yardarm.Enrichment.Compilation
 {
@@ -69,9 +70,10 @@ namespace Yardarm.Enrichment.Compilation
 
             // Exclude files with no path (won't be embedded)
             // We still format resource files, which are typically already formatted, because they may have
-            // been mutated by other enrichers.
+            // been mutated by other enrichers. We skip included files, they should retain their original format.
             IEnumerable<SyntaxTree> treesToBeFormatted = target.SyntaxTrees
-                .Where(static p => p.FilePath != "" && p.HasCompilationUnitRoot);
+                .Where(static p => p.FilePath != "" && p.HasCompilationUnitRoot &&
+                    string.IsNullOrEmpty(p.GetCompilationUnitRoot().GetIncludedFileNameAnnotation()));
 
             // Process formatting in parallel, this gives a slight perf boost
 

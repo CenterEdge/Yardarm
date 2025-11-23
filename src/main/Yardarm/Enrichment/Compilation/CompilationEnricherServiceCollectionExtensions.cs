@@ -19,7 +19,8 @@ public static class CompilationEnricherServiceCollectionExtensions
                 .AddCompilationEnricher<FormatCompilationEnricher>()
                 .AddTransient<ISyntaxTreeGenerator, IncludedFilesGenerator>()
                 .AddResourceFileEnricher<DefaultTypeSerializersEnricher>()
-                .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>();
+                .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>()
+                .AddResourceFileEnricher<DefaultHttpVersionEnricher>();
 
         public IServiceCollection AddAssemblyInfoEnricher<T>()
             where T : class, IAssemblyInfoEnricher =>

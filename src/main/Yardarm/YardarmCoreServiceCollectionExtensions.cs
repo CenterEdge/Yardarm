@@ -16,6 +16,7 @@ using Yardarm.Generation.Request;
 using Yardarm.Generation.Response;
 using Yardarm.Generation.Schema;
 using Yardarm.Generation.Tag;
+using Yardarm.Internal;
 using Yardarm.Names;
 using Yardarm.Names.Internal;
 using Yardarm.Packaging;
@@ -140,6 +141,18 @@ public static class YardarmCoreServiceCollectionExtensions
             services.TryAddSingleton<IOpenApiElementRegistry, OpenApiElementRegistry>();
 
             services.ConfigureOptions<StringSchemaOptionsConfigurator>();
+            services.Configure<GenerationOptions>(options =>
+            {
+                if (settings.Properties.TryGetValue("DefaultHttpVersion", out string? version))
+                {
+                    options.DefaultHttpVersion = version;
+                }
+
+                if (settings.Properties.TryGetValue("DefaultHttpVersionPolicy", out string? versionPolicy))
+                {
+                    options.DefaultHttpVersionPolicy = versionPolicy;
+                }
+            });
 
             return services;
         }

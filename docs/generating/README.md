@@ -56,6 +56,25 @@ yardarm generate -i my-spec.json -n MySpec -v 1.0.0 -f net6.0 netstandard2.0 --n
 # Related files will be output beside that file.
 ```
 
+## Built-in Extensions
+
+- `Yardarm.NewtonsoftJson` - Newtonsoft.Json based JSON serialization and deserialization
+- `Yardarm.SystemTextJson` - System.Text.Json based JSON serialization and deserialization
+- `Yardarm.MicrosoftExtensionsHttp` - Adds methods for registering Yardarm APIs as HTTP client factories with Microsoft.Extensions.Http dependency injection
+- `Yardarm.NodaTime` - Substitutes NodaTime types, where applicable, for various date and time types
+
+## Properties
+
+Properties to configure behaviors may be passed using the `-p` command line switch in `key=value` format.
+
+- `LegacyDateTimeHandling=true` - Uses `System.DateTime` and `System.TimeSpan` rather than `System.DateOnly` and `System.TimeOnly`.
+  This is the default when targeting .NET Standard 2.0, but may be desired when targeting more modern runtimes.
+- `DefaultHttpVersion` - Set to `1.1`, `2.0`, or `3.0` to change the default HTTP version used by generated clients. Defaults to the
+  runtime default (currently `1.1`).
+- `DefaultHttpVersionPolicy` - Set to `RequestVersionOrLower`, `RequestVersionOrHigher`, or `RequestVersionExact` to change the default
+  HTTP version policy used by generated clients. Defaults to the runtime default (currently `RequestVersionOrLower`) and is ignored on
+  downlevel runtimes that do not support this feature.
+
 ## Source Code
 
 Source code for the generated SDKs is created dynamically, in-memory and is never persisted

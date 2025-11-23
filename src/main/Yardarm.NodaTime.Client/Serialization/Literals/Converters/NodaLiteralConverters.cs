@@ -34,6 +34,12 @@ internal static class NodaLiteralConverters
     public static LiteralConverter<OffsetTime> OffsetTimeConverter => field ??=
         new NodaPatternLiteralConverter<OffsetTime>(OffsetTimePattern.Rfc3339);
 
+    /// <summary>
+    /// Converter for periods.
+    /// </summary>
+    public static LiteralConverter<Period?> PeriodConverter => field ??=
+        new NodaRefTypePatternLiteralConverter<Period>(PeriodPattern.Roundtrip);
+
     private static Action<T> CreateIsoValidator<T>(Func<T, CalendarSystem> calendarProjection) => value =>
     {
         CalendarSystem calendar = calendarProjection(value);

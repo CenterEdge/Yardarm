@@ -17,7 +17,8 @@ public static class CompilationEnricherServiceCollectionExtensions
                 .AddCompilationEnricher<OpenApiCompilationEnricher>()
                 .AddCompilationEnricher<FormatCompilationEnricher>()
                 .AddResourceFileEnricher<DefaultTypeSerializersEnricher>()
-                .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>();
+                .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>()
+                .AddResourceFileEnricher<DefaultHttpVersionEnricher>();
 
         public IServiceCollection AddAssemblyInfoEnricher<T>()
             where T : class, IAssemblyInfoEnricher =>

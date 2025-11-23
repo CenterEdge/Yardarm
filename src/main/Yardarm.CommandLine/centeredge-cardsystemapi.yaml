@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  version: 1.0.11
+  version: 1.7.3
   title: CenterEdge Software Card System Integration API
   contact:
     name: Brant Burnett
@@ -8,35 +8,21 @@ info:
   license:
     name: See license agreement
   x-logo:
-    url: >-
-      https://raw.githubusercontent.com/CenterEdge/centeredge-resources/master/logo/centeredge_logo_color.svg
-  description: >
-    This document represents an API to be implemented by a third-party card
-    system to allow integration with CenterEdge Advantage. The CenterEdge
-    Advantage system will make requests to this API and receive responses back.
-
-    This integration is designed to allow the source of truth for key card
-    system data to continue to reside with the card system, such as card
-    numbers, card balances, and transaction history.
-
-    Implementing this API is not the only requirement for an integration with
-    CenterEdge Advantage. Other potential requirements include:
-
-    - CenterEdge support for reading/parsing the card system's magstripes,
-    barcodes, or
+    url: https://raw.githubusercontent.com/CenterEdge/centeredge-resources/master/logo/2022/CenterEdge_Logo_Cmyk.svg
+    backgroundColor: '#FFFFFF'
+    altText: CenterEdge Software
+  description: |
+    This document represents an API to be implemented by a third-party card system to allow integration with CenterEdge Advantage. The CenterEdge Advantage system will make requests to this API and receive responses back.
+    This integration is designed to allow the source of truth for key card system data to continue to reside with the card system, such as card numbers, card balances, and transaction history.
+    Implementing this API is not the only requirement for an integration with CenterEdge Advantage. Other potential requirements include:
+    - CenterEdge support for reading/parsing the card system's magstripes, barcodes, or
       NFC chips
-    - Integration from the card system to CenterEdge APIs to post card sales at
-    kiosks or
+    - Integration from the card system to CenterEdge APIs to post card sales at kiosks or
       from other sales channels
     - Testing and certification of the integration by CenterEdge
-
-    Authentication is managed using the `/login` endpoint, which returns a
-    bearer token. This token is supplied to subsequent requests using the
-    `Authorization` header, i.e. `Authorization: Bearer the-bearer-token`. The
-    token itself is opaque to CenterEdge, but may be something like a JSON Web
-    Token (JWT). It is expected that this token may expire at some point, after
-    which API calls should return a 401 Unauthorized. This will cause CenterEdge
-    to request a new token and try again.
+    Authentication is managed using the `/login` endpoint, which returns a bearer token. This token is supplied to subsequent requests using the `Authorization` header, i.e. `Authorization: Bearer the-bearer-token`. The token itself is opaque to CenterEdge, but may be something like a JSON Web Token (JWT). It is expected that this token may expire at some point, after which API calls should return a 401 Unauthorized. This will cause CenterEdge to request a new token and try again.
+servers:
+  - url: http://example.com/api/v1
 tags:
   - name: Login
     description: APIs related to authentication
@@ -50,22 +36,22 @@ tags:
     description: APIs related to privileges
   - name: Time Play
     description: APIs related to time plays
-servers:
-  - url: 'http://example.com/api/v1'
+  - name: System
+    description: APIs related to system-level operations
 paths:
   /capabilities:
     get:
       tags:
         - Capabilities
       summary: Get interface capabilities
-      description: >
-        Gets the capabilities of the API. This is used by CenterEdge Advantage
-        to make decisions
-
+      description: |
+        Gets the capabilities of the API. This is used by CenterEdge Advantage to make decisions
         about functions to offer on the UI.
       operationId: getCapabilities
       security:
         - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -80,27 +66,20 @@ paths:
       tags:
         - Cards
       summary: Bulk issue cards
-      description: >
-        Bulk issues the same value onto a sequential range of cards. This
-        operation
-
+      description: |
+        Bulk issues the same value onto a list of cards, or a sequential range of cards. This operation
         should be atomic, meaning it either fails or succeeds for all cards.
 
-
-        A list of adjustments is provided in the body. These adjustments will
-        only be add-type
-
-        transactions, never remove. For example, a value and a time play may
-        both be added
-
-        to each card in the range. Note that this may create multiple
-        transactions for each card
-
-        in the card system, depending on how adjustments may or may not be
-        combined in the system.
+        A list of adjustments is provided in the body. These adjustments could be either add-type or
+        remove-type transactions, though add and remove will never be combined in the same request.
+        For example, a value and a time play may both be added to each card in the range. Note that
+        this may create multiple transactions for each card in the card system, depending on how
+        adjustments may or may not be combined in the system.
       operationId: bulkIssueCards
       security:
         - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Returns the new card balances of each card
@@ -115,91 +94,36 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: One of the cards in the request is not empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: cardNotEmpty
+                message: Card '000100010001' Is Not Empty
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                cards:
-                  oneOf:
-                    - type: object
-                      properties:
-                        startingCardNumber:
-                          $ref: '#/components/schemas/CardNumber'
-                        numberOfCards:
-                          type: integer
-                          description: >-
-                            The number of cards to issue, beginning with the
-                            startingCardNumber, inclusive.
-                          minimum: 1
-                      required:
-                        - startingCardNumber
-                        - numberOfCards
-                    - type: object
-                      properties:
-                        cardNumbers:
-                          type: array
-                          description: List of card numbers to issue
-                          minLength: 1
-                          items:
-                            $ref: '#/components/schemas/CardNumber'
-                      required:
-                        - cardNumbers
-                operator:
-                  $ref: '#/components/schemas/Operator'
-                adjustments:
-                  type: array
-                  description: List of adjustments to apply to each card.
-                  minLength: 1
-                  items:
-                    $ref: '#/components/schemas/Adjustment'
-              required:
-                - cards
-                - transactions
-              example:
-                startingCardNumber: 80009100
-                numberOfCards: 100
-                operator:
-                  employeeNumber: 3
-                  employeeName: John Doe
-                  stationNumber: 1
-                  stationName: POS 1
-                adjustments:
-                  - type: addValue
-                    points:
-                      regularPoints: 100
-                  - type: addMinutes
-                    groupId: 1
-                    minutes: 60
-                    startTimePlay: true
-        description: Card transaction to create
+              $ref: '#/components/schemas/BulkIssue'
+        description: Bulk issue request to process
         required: true
-  '/cards/{cardNumber}':
+  /cards/{cardNumber}:
     get:
       tags:
         - Cards
       summary: Get card
-      description: >
-        Gets information about a card, such as its current balance. Returns a
-        404 not found
-
+      description: |
+        Gets information about a card, such as its current balance. Returns a 404 not found
         if the card doesn't exist (has never been sold, or has been wiped).
       operationId: getCard
       security:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
-        - name: X-Primitive
-          in: header
-          schema:
-            type: string
-        - name: X-List
-          in: header
-          schema:
-            type: array
-            items:
-              type: string
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -213,19 +137,16 @@ paths:
       tags:
         - Cards
       summary: Create an empty card
-      description: >
-        Creates an empty card with no balance. This may be used in scenarios
-        where a card is being
-
-        linked to a customer account without a sale, or where some other
-        entitlement is being added
-
+      description: |
+        Creates an empty card with no balance. This may be used in scenarios where a card is being
+        linked to a customer account without a sale, or where some other entitlement is being added
         to the card such as a season pass.
       operationId: createEmptyCard
       security:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -245,7 +166,7 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 code: cardExists
-                description: Card already exists
+                message: Card already exists
       requestBody:
         content:
           application/json:
@@ -254,6 +175,8 @@ paths:
               properties:
                 operator:
                   $ref: '#/components/schemas/Operator'
+                customer:
+                  $ref: '#/components/schemas/CustomerInfo'
               required:
                 - operator
         description: Create an empty card payload
@@ -262,27 +185,46 @@ paths:
       tags:
         - Cards
       summary: Wipe a card
-      description: >
-        Wipes a card, preparing it for reuse. Should remove any balance, time
-        plays, privileges,
-
-        and transaction history. Subsequent requests for this card should return
-        a 404 until a new
-
-        card is issued. If the card doesn't exist, this request should still
-        return success as a 204,
-
+      description: |
+        Wipes a card, preparing it for reuse. Should remove any balance, time plays, privileges,
+        and transaction history. Subsequent requests for this card should return a 404 until a new
+        card is issued. If the card doesn't exist, this request should still return success as a 204,
         since HTTP DELETE requests are idempotent.
+
+        In some implementations, card numbers may be linked together to a primary account. The implementation
+        may choose to unlink the card number rather than wiping the balance from the account. If this is the
+        case, a 200 should be returned instead. The `cardNumber` returned should be the card number of the main account.
+        The `wasUnlinked` boolean should be returned as `true`. This indicates that the balance still exists
+        and any deferred revenue should not be recognized as sales. 204 should still be returned if the card
+        did not exist.
+
+        If wiping is not allowed on a particular card number, the server should return a 405 Method Not Allowed.
       operationId: wipeCard
       security:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - $ref: '#/components/parameters/apiKey'
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardDeleteConfirmation'
         '204':
           description: No Content
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '405':
+          description: The given card number may not be wiped.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: notAllowed
+                message: Not Allowed
       requestBody:
         content:
           application/json:
@@ -295,44 +237,31 @@ paths:
                 - operator
         description: Wipe card payload
         required: true
-  '/cards/{cardNumber}/combine':
+  /cards/{cardNumber}/combine:
     post:
       tags:
         - Cards
       summary: Combine cards
-      description: >
-        Moves balance, time play value, privileges, etc from one card to
-        another.
+      description: |
+        Moves balance, time play value, privileges, etc from one card to another.
 
-
-        The destination card is the number in the path, and it may be a
-        preexisting card that already
-
-        has value, in which case the value from the source card is added to the
-        destination card.
-
+        The destination card is the number in the path, and it may be a preexisting card that already
+        has value, in which case the value from the source card is added to the destination card.
         If the destination card doesn't exist, it should be created.
 
-
-        If a preexisting destination card is not supported at all, this should
-        be indicated to CenterEdge
-
+        If a preexisting destination card is not supported at all, this should be indicated to CenterEdge
         in the capabilities response.
 
-
-        The source card is left active in the system with no remaining balance.
-        It may still be
-
+        The source card is left active in the system with no remaining balance. It may still be
         associated with a customer or have more value added.
 
-
-        This operation should be atomic, meaning that either both cards are
-        updated or neither is changed.
+        This operation should be atomic, meaning that either both cards are updated or neither is changed.
       operationId: combineCards
       security:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Returns the new card balance of the destination card
@@ -359,35 +288,22 @@ paths:
                 - operator
         description: Information about the combine operation
         required: true
-  '/cards/{cardNumber}/pin':
+  /cards/{cardNumber}/pin:
     get:
       tags:
         - Cards
       summary: Validate PIN
-      description: >
-        Validates the PIN number for a given card and/or indicates if the card
-        number has a PIN.
-
-        The latter is used to decide if a PIN prompt should be offered on the UI
-        for a given card number.
-
+      description: |
+        Validates the PIN number for a given card and/or indicates if the card number has a PIN.
+        The latter is used to decide if a PIN prompt should be offered on the UI for a given card number.
 
         | Situation | Response |
-
         | --------- | -------- |
-
         | Card number is not valid | 404 pinNotFound |
-
         | Card number doesn't have a PIN | 404 pinNotFound |
-
-        | Card number has a PIN, but no `validate` on query string | 200
-        isPinValid = false |
-
-        | Card number has a PIN, but `validate` on query string doesn't match |
-        200 isPinValid = false |
-
-        | Card number has a PIN, and `validate` on query string does match | 200
-        isPinValid = true |
+        | Card number has a PIN, but no `validate` on query string | 200 isPinValid = false |
+        | Card number has a PIN, but `validate` on query string doesn't match | 200 isPinValid = false |
+        | Card number has a PIN, and `validate` on query string does match | 200 isPinValid = true |
       operationId: validateCardPin
       security:
         - bearer_auth: []
@@ -400,6 +316,7 @@ paths:
           schema:
             type: string
             example: '123'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -412,9 +329,7 @@ paths:
                     $ref: '#/components/schemas/CardNumber'
                   isPinValid:
                     type: boolean
-                    description: >-
-                      Set to true if the PIN on the query string was correct.
-                      Always false if PIN is not supplied.
+                    description: Set to true if the PIN on the query string was correct. Always false if PIN is not supplied.
                 required:
                   - cardNumber
                   - isPinValid
@@ -428,23 +343,17 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 code: pinNotFound
-                description: PIN Not Found
-  '/cards/{cardNumber}/transactions':
+                message: PIN Not Found
+  /cards/{cardNumber}/transactions:
     get:
       tags:
         - Cards
       summary: Get card transactions
-      description: >
-        Returns a history of transactions on a card, since the last time the
-        card was wiped.
+      description: |
+        Returns a history of transactions on a card, since the last time the card was wiped.
+        It should not include any transactions before the card was wiped or issued originally.
 
-        It should not include any transactions before the card was wiped or
-        issued originally.
-
-
-        This endpoint supports pagination, and transactions should be sorted in
-        *descending*
-
+        This endpoint supports pagination, and transactions should be sorted in *descending*
         order (the most recent transaction first).
       operationId: getCardTransactions
       security:
@@ -453,6 +362,7 @@ paths:
         - $ref: '#/components/parameters/cardNumber'
         - $ref: '#/components/parameters/skip'
         - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -470,15 +380,11 @@ paths:
                   skipped:
                     type: number
                     minimum: 0
-                    description: >-
-                      Number of skipped transactions before the transactions in
-                      the response.
+                    description: Number of skipped transactions before the transactions in the response.
                   totalCount:
                     type: number
                     minimum: 0
-                    description: >-
-                      Total number of transactions on this card. Used to support
-                      pagination, but not required.
+                    description: Total number of transactions on this card. Used to support pagination, but not required.
                 required:
                   - cardNumber
                   - transactions
@@ -491,70 +397,43 @@ paths:
       tags:
         - Cards
       summary: Create a card transaction
-      description: >
-        Creates a card transaction. Should return 400 if the transaction is not
-        allowed, along with
-
+      description: |
+        Creates a card transaction. Should return 400 if the transaction is not allowed, along with
         a useful error code and message.
 
+        If the transaction succeeds, the card should be changed in the appropriate way (i.e. updated balance)
+        and the transaction should be included on subsequent requests for transaction history.
 
-        If the transaction succeeds, the card should be changed in the
-        appropriate way (i.e. updated balance)
+        If the card doesn't exist, it should be created automatically if the transaction is adding value.
+        A 404 response should only be returned if the card doesn't exist when removing value.
 
-        and the transaction should be included on subsequent requests for
-        transaction history.
+        If necessary due to internal implementation details, it is acceptable to create multiple transactions
+        as a result of a single request to create a transaction. For example, if the transaction is adding two
+        different types of points and your internal implementation requires a transaction for each point type.
+        However, the transaction creation should still be atomic, meaning both are created or both fail as a unit.
 
-
-        If the card doesn't exist, it should be created automatically if the
-        transaction is adding value.
-
-        A 404 response should only be returned if the card doesn't exist when
-        removing value.
-
-
-        If necessary due to internal implementation details, it is acceptable to
-        create multiple transactions
-
-        as a result of a single request to create a transaction. For example, if
-        the transaction is adding two
-
-        different types of points and your internal implementation requires a
-        transaction for each point type.
-
-        However, the transaction creation should still be atomic, meaning both
-        are created or both fail as a unit.
-
-
-        Creating a `gamePlay` transaction is only supported if the Capabilities
-        request returns `virtualPlay` as true.
-
+        Creating a `gamePlay` transaction is only supported if the Capabilities request returns `virtualPlay` as true.
         This allows CenterEdge Advantage to emulate a specific game.
 
-
-        When creating `addMinutes` and `removeMinutes` transactions, they may be
-        rejected if not allowed based on current
-
-        time plays on the card. For example, adding minutes to an existing time
-        play but with a different time play group ID
-
-        may not be allowed and result in a 400 response. Adding a time play of a
-        different type the same time play group ID,
-
-        or adding more time plays to a card than allowed, may also result in a
-        400 response. However, `removeMinutes` should
-
-        be allowed if the number of minutes remaining is insufficient (i.e.
-        remove 10 minutes even though only 9 remain).
-
+        When creating `addMinutes` and `removeMinutes` transactions, they may be rejected if not allowed based on current
+        time plays on the card. For example, adding minutes to an existing time play but with a different time play group ID
+        may not be allowed and result in a 400 response. Adding a time play of a different type the same time play group ID,
+        or adding more time plays to a card than allowed, may also result in a 400 response. However, `removeMinutes` should
+        be allowed if the number of minutes remaining is insufficient (i.e. remove 10 minutes even though only 9 remain).
         This allows for timing discrepencies between the systems.
+
+        The `card` property is optional and reflects the new balance of the card after the transaction is applied.
+        Returning this detail can reduce the number of API calls required by the client, but if it is not returned the
+        client can still retrieve the updated card information by making a separate request.
       operationId: createCardTransaction
       security:
         - bearer_auth: []
       parameters:
         - $ref: '#/components/parameters/cardNumber'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '201':
-          description: 'Created, returns the created transaction'
+          description: Created, returns the created transaction
           headers:
             Location:
               description: URI where the transaction was created
@@ -578,6 +457,8 @@ paths:
                     type: number
                     minimum: 1
                     description: Total number of transactions created.
+                  card:
+                    $ref: '#/components/schemas/Card'
                 required:
                   - cardNumber
                   - transactions
@@ -594,7 +475,7 @@ paths:
               $ref: '#/components/schemas/CreateCardTransaction'
         description: Card transaction to create
         required: true
-  '/cards/{cardNumber}/transactions/{transactionId}':
+  /cards/{cardNumber}/transactions/{transactionId}:
     get:
       tags:
         - Cards
@@ -612,6 +493,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/TransactionId'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -628,17 +510,11 @@ paths:
       tags:
         - Capabilities
       summary: Get card number formats
-      description: >
-        Gets a list of all card number formats usable at this facility. This
-        allows CenterEdge
+      description: |
+        Gets a list of all card number formats usable at this facility. This allows CenterEdge
+        to prevalidate that a card is valid for a particular facility earlier in the UI flow.
 
-        to prevalidate that a card is valid for a particular facility earlier in
-        the UI flow.
-
-
-        At least one format must be defined. Note that it is also preferable to
-        avoid a length of 14
-
+        At least one format must be defined. Note that it is also preferable to avoid a length of 14
         characters in the format, as this decreases compatibility.
       operationId: getCardNumberFormats
       security:
@@ -646,6 +522,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/skip'
         - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -661,17 +538,13 @@ paths:
                   skipped:
                     type: number
                     minimum: 0
-                    description: >-
-                      Number of skipped formats before the format in the
-                      response.
+                    description: Number of skipped formats before the format in the response.
                   totalCount:
                     type: number
                     minimum: 0
-                    description: >-
-                      Total number of formats. Used to support pagination, but
-                      not required.
+                    description: Total number of formats. Used to support pagination, but not required.
                 required:
-                  - games
+                  - formats
                   - skipped
                 example:
                   formats:
@@ -690,13 +563,9 @@ paths:
       tags:
         - Games
       summary: Get a list of games
-      description: >
-        Returns a list of games with their unique identifier. This will be used
-        by CenterEdge to populate
-
-        UIs. Possible usages include allowing management to configure where we
-        post sales for plays at specific games,
-
+      description: |
+        Returns a list of games with their unique identifier. This will be used by CenterEdge to populate
+        UIs. Possible usages include allowing management to configure where we post sales for plays at specific games,
         play privilege configuration, or virtual plays.
       operationId: getGames
       security:
@@ -704,6 +573,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/skip'
         - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -716,6 +586,29 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Game'
+                    example:
+                      - id: '12345678'
+                        name: Asteroids
+                        virtualPlayEnabled: true
+                        paused: false
+                        outOfService: false
+                        categories:
+                          - 2
+                      - id: '12345679'
+                        name: Skee-Ball
+                        virtualPlayEnabled: false
+                        paused: true
+                        outOfService: false
+                        categories:
+                          - 1
+                      - id: '12345680'
+                        name: Cruisin' USA
+                        virtualPlayEnabled: true
+                        paused: false
+                        outOfService: true
+                        categories:
+                          - 3
+                          - 100000
                   skipped:
                     type: number
                     minimum: 0
@@ -723,12 +616,152 @@ paths:
                   totalCount:
                     type: number
                     minimum: 0
-                    description: >-
-                      Total number of games. Used to support pagination, but not
-                      required.
+                    description: Total number of games. Used to support pagination, but not required.
                 required:
                   - games
                   - skipped
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags:
+        - Games
+      summary: Update a list of games
+      description: |
+        Updates a list of games based on their ID. The primary usage is to bulk update the paused and out of service status of
+        games, taking them online and offline for play. If the capabilities endpoint indicates that the `games.pause`
+        capability is `true`, this endpoint should be supported and accept "replace" operations on the "/paused" path.
+        Similarly, if the `games.outOfService` capability is `true`, this endpoint should accept "replace" operations on the
+        "/outOfService" path.
+
+        The request body is a map keyed by the game ID. For each game, a JSON Patch operation indicates
+        the changes to apply.
+
+        The update may not be atomic, it is possible for some updates to succeed while others fail. However, updates
+        to any single game should be atomic, accepting all updates or none. For successfully updated games, or games
+        where the update was a no-op, the new state of the game should be returned in the "games" list. For any game
+        that failed to update, an error should be returned in the "errors" map.
+      operationId: patchGames
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/apiKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                games:
+                  type: object
+                  description: |
+                    A map of games to update, keyed by game ID. Each game ID contains a list of JSON Patch operations to apply.
+                    The JSON pointers in each patch are relative to each game object.
+                  additionalProperties:
+                    $ref: '#/components/schemas/JsonPatch'
+                  example:
+                    '12345678':
+                      - op: replace
+                        path: /paused
+                        value: true
+                    '12345679':
+                      - op: replace
+                        path: /outOfService
+                        value: false
+              required:
+                - games
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    description: |
+                      A list of games where the update succeeded that includes the new state. If a request didn't make any change,
+                      for example a request to take a game out of service that was already out of service, it should still be included
+                      in this list.
+                    items:
+                      $ref: '#/components/schemas/Game'
+                    example:
+                      - id: '12345678'
+                        name: Asteroids
+                        virtualPlayEnabled: true
+                        paused: true
+                        outOfService: false
+                        categories:
+                          - 2
+                  errors:
+                    type: object
+                    description: |
+                      A map of errors for each game that failed to update, keyed by game ID.
+                    additionalProperties:
+                      $ref: '#/components/schemas/Error'
+                    example:
+                      '12345679':
+                        code: badRequest
+                        message: Game not found
+                required:
+                  - games
+                  - errors
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /games/{gameId}:
+    get:
+      tags:
+        - Games
+      summary: Get a single game
+      description: |
+        Returns current information about a single game.
+
+        If this endpoint is supported, the capabilities endpoint should indicate that the "games.getSingleGame" capability is true.
+      operationId: getGame
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/gameId'
+        - $ref: '#/components/parameters/apiKey'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /games/{gameId}/performAction:
+    post:
+      tags:
+        - Games
+      summary: Perform a game action
+      description: |
+        RPC-style endpoint to perform an action on a game. Only actions that are returned on the game object are supported.
+        Returns the game object after the action is performed.
+      operationId: performGameAction
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/gameId'
+        - $ref: '#/components/parameters/apiKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GamePerformAction'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /games/transactions:
@@ -736,31 +769,24 @@ paths:
       tags:
         - Games
       summary: Get transactions
-      description: >
-        Returns a history of ALL game play transactions which have taken place
-        since a particular
-
+      description: |
+        Returns a history of ALL game play transactions which have taken place since a particular
         transaction ID (exclusive of that ID).
 
+        This API allows CenterEdge to monitor the card system for game plays and post transactions
+        to our sales reports based on those game plays. CenterEdge will track the most recently posted
+        transaction and reuse that transaction ID in subsequent requests for additional transactions.
 
-        This API allows CenterEdge to monitor the card system for game plays and
-        post transactions
+        When syncing at a new location for the first time, CenterEdge will start with sinceId=0.
 
-        to our sales reports based on those game plays. CenterEdge will track
-        the most recently posted
+        Some systems may have multiple, independent game transaction feeds, each with their own ID numbering.
+        In this case, the `feedName` parameter specifies which feed to return transactions from. The list of
+        feed names is provided by the capabilities endpoint. If no feed name is specified, the
+        `default` feed will be returned.
 
-        transaction and reuse that transaction ID in subsequent requests for
-        additional transactions.
-
-
-        When syncing at a new location for the first time, CenterEdge will start
-        with sinceId=0.
-
-
-        Transactions **must** be returned in ascending order by their
-        transaction ID, or sales data could
-
-        be lost.
+        IDs must be unique within a given feed name, must increase over time, and new transactions must always
+        get a higher ID than any previous transaction. Duplicates between feeds are allowed. Transactions
+        **must** be returned in ascending order by their transaction ID, or sales data could be lost.
       operationId: getGameTransactions
       security:
         - bearer_auth: []
@@ -768,12 +794,20 @@ paths:
         - name: sinceId
           in: query
           required: true
-          description: >-
-            Returns transactions starting immediately after this transaction ID,
-            but not including this ID.
+          description: Returns transactions starting immediately after this transaction ID, but not including this ID.
           schema:
             $ref: '#/components/schemas/TransactionId'
+        - name: feedName
+          in: query
+          required: false
+          description: |
+            Game transaction feed to return. For many systems, this will always be `default`.
+          schema:
+            type: string
+            minLength: 1
+            default: default
         - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -793,20 +827,77 @@ paths:
                   - sinceId
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /games/categories:
+    get:
+      tags:
+        - Games
+      summary: Get game categories
+      description: |
+        Optionally, a card system may support game categories. These are logical groupings of games that
+        are used to group games together. For example, a card system may support a "Redemption" category.
+        Each game may belong to one or more categories.
+
+        These categories may support various UI functions, such as filtering games by category or putting
+        entire categories into or out of service.
+
+        If this endpoint is supported, the capabilities endpoint should indicate that the "games.categories"
+        capability is true.
+      operationId: getGameCategories
+      security:
+        - bearer_auth: []
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GameCategory'
+                  skipped:
+                    type: number
+                    minimum: 0
+                    description: Number of skipped categories before the categories in the response.
+                  totalCount:
+                    type: number
+                    minimum: 0
+                    description: Total number of categories. Used to support pagination, but not required.
+                required:
+                  - categories
+                  - skipped
+                example:
+                  categories:
+                    - id: 1
+                      name: Redemption
+                    - id: 2
+                      name: Non-Redemption
+                    - id: 3
+                      name: Pinball
+                    - id: 100000
+                      name: Merchandiser
+                  skipped: 0
+                  totalCount: 4
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /login:
     post:
       tags:
         - Login
       summary: Login
-      description: >
-        Login and get a new bearer token. This token may expire, after which
-        subsequent requests will
-
-        return a 401. Returning a 401 response is the indication that a new
-        login should be performed
-
+      description: |
+        Login and get a new bearer token. This token may expire, after which subsequent requests will
+        return a 401. Returning a 401 response is the indication that a new login should be performed
         to acquire a new bearer token.
       operationId: login
+      parameters:
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -835,33 +926,22 @@ paths:
               $ref: '#/components/schemas/Login'
         description: Card transaction to create
         required: true
+      security: []
   /privilegeGroups:
     get:
       tags:
         - Privileges
       summary: Get privilege groups
-      description: >
-        If the card system supports privileges, it must return at least one
-        privilege group.
-
+      description: |
+        If the card system supports privileges, it must return at least one privilege group.
         However, a card system may optionally support multiple privilege groups.
 
-
-        Privilege groups are logical groupings that control what games a
-        privilege may activate.
-
-        For many systems, the list returned will include the list of individual
-        games. However, it may also
-
+        Privilege groups are logical groupings that control what games a privilege may activate.
+        For many systems, the list returned will include the list of individual games. However, it may also
         include other groupings of multiple games defined in the card system.
 
-
-        The details of each privilege group's functionality aren't relevant to
-        CenterEdge. We will simply
-
-        allow the operator to choose a group when configuring a privilege
-        product, and will
-
+        The details of each privilege group's functionality aren't relevant to CenterEdge. We will simply
+        allow the operator to choose a group when configuring a privilege product, and will
         supply that group to the card system when a privilege is purchased.
       operationId: getPrivilegeGroups
       security:
@@ -869,6 +949,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/skip'
         - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -884,15 +965,11 @@ paths:
                   skipped:
                     type: number
                     minimum: 0
-                    description: >-
-                      Number of skipped  groups before the groups in the
-                      response.
+                    description: Number of skipped  groups before the groups in the response.
                   totalCount:
                     type: number
                     minimum: 0
-                    description: >-
-                      Total number of groups. Used to support pagination, but
-                      not required.
+                    description: Total number of groups. Used to support pagination, but not required.
                 required:
                   - privilegeGroups
                   - skipped
@@ -913,28 +990,16 @@ paths:
       tags:
         - Time Play
       summary: Get time play groups
-      description: >
-        If the card system supports time play, it must return at least one time
-        play group. However, a
-
+      description: |
+        If the card system supports time play, it must return at least one time play group. However, a
         card system may optionally support multiple time play groups.
 
-
-        Time play groups are logical groupings that control what privileges the
-        time play grants to the
-
-        guest. For example, it could control which games are accessible or
-        implement a particular pricing
-
+        Time play groups are logical groupings that control what privileges the time play grants to the
+        guest. For example, it could control which games are accessible or implement a particular pricing
         model instead of free play.
 
-
-        The details of each time play group's functionality aren't relevant to
-        CenterEdge. We will simply
-
-        allow the operator to choose a time play group when configuring a time
-        play product, and will
-
+        The details of each time play group's functionality aren't relevant to CenterEdge. We will simply
+        allow the operator to choose a time play group when configuring a time play product, and will
         supply that group to the card system when a time play is purchased.
       operationId: getTimePlayGroups
       security:
@@ -942,6 +1007,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/skip'
         - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
       responses:
         '200':
           description: Ok
@@ -957,15 +1023,11 @@ paths:
                   skipped:
                     type: number
                     minimum: 0
-                    description: >-
-                      Number of skipped time play groups before the groups in
-                      the response.
+                    description: Number of skipped time play groups before the groups in the response.
                   totalCount:
                     type: number
                     minimum: 0
-                    description: >-
-                      Total number of time play groups. Used to support
-                      pagination, but not required.
+                    description: Total number of time play groups. Used to support pagination, but not required.
                 required:
                   - timePlayGroups
                   - skipped
@@ -979,11 +1041,135 @@ paths:
                   totalCount: 2
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /system/transactions:
+    get:
+      tags:
+        - System
+      summary: Get system transactions
+      description: |
+        Returns a history of ALL system transactions which have taken place since a particular
+        transaction ID (exclusive of that ID).
+
+        System transactions are special transactions taken by the card system itself but which
+        are not game plays. Examples could be merging the value on two cards together or expiring
+        value on a card.
+
+        System transactions which occur due to an API call from Advantage should **NOT** be included
+        in the `system/transactions` endpoint results. Only transactions which occur due to a process
+        internal to the card system should be included.
+
+        This API allows CenterEdge to monitor the card system for system transactions and adjust our
+        deferred revenue based on these transactions. CenterEdge will track the most recently posted
+        transaction and reuse that transaction ID in subsequent requests for additional transactions.
+
+        When syncing at a new location for the first time, CenterEdge will start with sinceId=0.
+
+        Transactions **must** be returned in ascending order by their transaction ID, or data could
+        be lost.
+
+        **Note:** Older versions of CenterEdge Advantage may not support all system transaction
+        types. Therefore the API supports filtering by transaction type, and older versions of
+        Advantage will only request system transaction types they understand. Failure to respect
+        this option may cause failures deserializing the response and cease processing of all system
+        transactions.
+      operationId: getSystemTransactions
+      security:
+        - bearer_auth: []
+      parameters:
+        - name: sinceId
+          in: query
+          required: true
+          description: Returns transactions starting immediately after this transaction ID, but not including this ID.
+          schema:
+            $ref: '#/components/schemas/TransactionId'
+          example: 123456
+        - name: type
+          in: query
+          required: true
+          style: form
+          explode: true
+          description: |
+            Filter transactions to only those of a specific type. Support for this parameter is important to ensure
+            backward compatibility with future changes to the system transaction types.
+          schema:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              $ref: '#/components/schemas/SystemTransactionType'
+          example:
+            - merge
+            - expiration
+        - $ref: '#/components/parameters/take'
+        - $ref: '#/components/parameters/apiKey'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SystemTransaction'
+                  sinceId:
+                    $ref: '#/components/schemas/TransactionId'
+                required:
+                  - transactions
+                  - sinceId
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 components:
   securitySchemes:
     bearer_auth:
       type: http
       scheme: bearer
+  parameters:
+    apiKey:
+      name: X-Api-Key
+      in: header
+      description: |
+        Optional API key for additional authentication. If used, it will be the same value for all requests
+        from a given location. It is configured per-location in the CenterEdge back office. Be sure to inform
+        CenterEdge if this field will be used so that it can be enabled for your integration.
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+    cardNumber:
+      name: cardNumber
+      in: path
+      description: Unique card number.
+      required: true
+      schema:
+        $ref: '#/components/schemas/CardNumber'
+    skip:
+      name: skip
+      in: query
+      description: Skip this number of records in the result. Used for pagination.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    take:
+      name: take
+      in: query
+      description: Return up to this number of records in the result. Used for pagination.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 100
+    gameId:
+      name: gameId
+      in: path
+      description: Unique game ID.
+      required: true
+      schema:
+        $ref: '#/components/schemas/GameId'
   schemas:
     CapabilitiesPoints:
       type: object
@@ -1004,37 +1190,43 @@ components:
         - removeValue
         - addMinutes
         - removeMinutes
+        - addDateTimeRange
+        - removeDateTimeRange
         - addPrivilege
         - removePrivilege
         - other
+    SystemTransactionType:
+      description: |
+        Type of the system transaction.
+
+        - `merge` indicates two cards have been merged together, leaving the source card as wiped and all value,
+          time plays, and privileges on the destination card.
+        - `expiration` indicates value, time plays, or privileges on a card have expired and been removed. This
+          may also be used for card wipes.
+      type: string
+      enum:
+        - merge
+        - expiration
     Capabilities:
       type: object
       properties:
         systemName:
           type: string
-          description: >-
-            A unique, constant name for your card system. This should be
-            machine-readable.
+          description: A unique, constant name for your card system. This should be machine-readable.
           minLength: 1
           example: SuperCards
         interfaceVersion:
           type: string
-          description: >
-            Your internal version number for this interface. This may be used to
-            support feature limiting
-
-            on the CenterEdge side to work around known bugs in older versions,
-            or feature rollout as new
-
+          description: |
+            Your internal version number for this interface. This may be used to support feature limiting
+            on the CenterEdge side to work around known bugs in older versions, or feature rollout as new
             features are validated as functional.
           minLength: 1
-          pattern: '^\d+(?:\.\d+){0,3}$'
-          example: 1.3
+          pattern: ^\d+(?:\.\d+){0,3}$
+          example: '1.3'
         pointTypes:
           type: object
-          description: >-
-            Types of points supported, a missing property is equivalent to
-            false.
+          description: Types of points supported, a missing property is equivalent to false.
           properties:
             regularPoints:
               $ref: '#/components/schemas/CapabilitiesPoints'
@@ -1049,24 +1241,16 @@ components:
             maximumAdjustmentsPerTransaction:
               type: integer
               minimum: 1
-              description: >
-                The maximum number of adjustments allowed on a single adjustment
-                transaction.
+              description: |
+                The maximum number of adjustments allowed on a single adjustment transaction.
               example: 3
             allowedAdjustmentCombinations:
               type: array
-              description: >
-                List of adjustment combinations allowed together on the same
-                transaction. Each item in the list is
-
-                a list of allowed adjustment types, forming a set. For any given
-                adjustment transactions, all adjustments
-
-                must match a least one set in this list. This restriction only
-                applies to transactions with multiple
-
-                adjusments, it is assumed that all adjustment types may be sent
-                individually.
+              description: |
+                List of adjustment combinations allowed together on the same transaction. Each item in the list is
+                a list of allowed adjustment types, forming a set. For any given adjustment transactions, all adjustments
+                must match a least one set in this list. This restriction only applies to transactions with multiple
+                adjusments, it is assumed that all adjustment types may be sent individually.
               uniqueItems: true
               items:
                 type: array
@@ -1090,10 +1274,8 @@ components:
             maximumTimePlaysPerCard:
               type: integer
               minimum: 1
-              description: >
-                The maximum number of time plays allowed on a single card
-                number. Time plays are still limited
-
+              description: |
+                The maximum number of time plays allowed on a single card number. Time plays are still limited
                 to one time play per time play group.
             minutes:
               type: object
@@ -1103,16 +1285,12 @@ components:
                   type: boolean
                 canAddMinutes:
                   type: boolean
-                  description: >
-                    If true, minutes may be added to an existing time play.
-                    Support for removing minutes is
-
+                  description: |
+                    If true, minutes may be added to an existing time play. Support for removing minutes is
                     required for any system supporting time plays.
                 canExpire:
                   type: boolean
-                  description: >-
-                    If true, a time play may be expired if it isn't started
-                    before an expiration date/time.
+                  description: If true, a time play may be expired if it isn't started before an expiration date/time.
                 startTypes:
                   type: array
                   minLength: 1
@@ -1127,6 +1305,12 @@ components:
               required:
                 - isSupported
                 - startTypes
+            dateTimeRange:
+              type: object
+              description: Time plays which are valid for a specific date/time range.
+              properties:
+                isSupported:
+                  type: boolean
           required:
             - maximumTimePlaysPerCard
         privileges:
@@ -1137,9 +1321,7 @@ components:
               type: boolean
             canExpire:
               type: boolean
-              description: >-
-                If true, a privlege may be expired if it isn't used before an
-                expiration date/time.
+              description: If true, a privilege may be expired if it isn't used before an expiration date/time.
           required:
             - isSupported
         bulkIssue:
@@ -1147,23 +1329,73 @@ components:
           properties:
             range:
               type: boolean
-              description: >-
-                Cards may be bulk issued in a range based on a starting card
-                number.
+              description: Cards may be bulk issued in a range based on a starting card number.
             list:
               type: boolean
               description: Cards may be bulk issued based on a list of card numbers.
+            canUnlinkEmptyCards:
+              type: boolean
+              description: Cards that are empty after adjustments are completed may be unlinked.
+            canRequireNewCards:
+              type: boolean
+              description: Cards that are bulk issued may optionally be required to be new cards using the "requireNewCards" flag on the request.
         cardCombineToExistingCard:
           type: boolean
           description: Cards may be combined with a destination card that already exists.
+        games:
+          type: object
+          properties:
+            pause:
+              type: boolean
+              description: Games may be taken in and out of service via the `paused` property and the PATCH `/games` endpoint.
+              default: false
+            outOfService:
+              type: boolean
+              description: Games may be taken in and out of service via the `outOfService` property and the PATCH `/games` endpoint.
+              default: false
+            categories:
+              type: boolean
+              description: Game categories are made available via the API.
+              default: false
+            getSingleGame:
+              type: boolean
+              description: A single game may be retrieved via the API.
+              default: false
+            transactionFeedNames:
+              type: array
+              minLength: 1
+              items:
+                type: string
+                minLength: 1
+              description: |
+                List of game transaction feed names provided by the card system. This is used to determine which
+                game transaction feeds to use when CenterEdge Advantage polls for game play transactions. Each feed
+                name listed here will be polled independently. See the `/games/transactions` endpoint for more details.
+
+                If this property is excluded from the capabilities, it is assumed that there is only a single game
+                transaction feed and the feed is named `default`.
+              example:
+                - default
+                - creditCard
+              default:
+                - default
+        systemTransactionReporting:
+          type: object
+          properties:
+            isSupported:
+              type: boolean
+              description: If true, system transactions may be polled via the `/system/transactions` endpoint.
+            transactionTypes:
+              type: array
+              items:
+                $ref: '#/components/schemas/SystemTransactionType'
+              description: List of system transaction types supported by the card system which may be returned from the `/system/transactions` endpoint.
         wipeCard:
           type: boolean
           description: The value on a card may be wiped so the card may be reused.
         virtualPlay:
           type: boolean
-          description: >-
-            An API call may be used to emulate a game play, charging a card for
-            that play.
+          description: An API call may be used to emulate a game play, charging a card for that play.
       required:
         - systemName
         - interfaceVersion
@@ -1176,7 +1408,6 @@ components:
           type: string
           description: Error code
           example: null
-          nullable: true
           enum:
             - cardNotFound
             - cardExists
@@ -1184,6 +1415,8 @@ components:
             - badRequest
             - invalidLogin
             - unauthorized
+            - notAllowed
+            - cardNotEmpty
         message:
           type: string
           description: Human-readable error message
@@ -1191,45 +1424,54 @@ components:
       required:
         - code
         - message
-    CardNumber:
-      description: Unique card number
+    BulkIssueType:
+      description: Type of the bulk issue.
       type: string
-      example: '12345678'
-      minLength: 6
-      maxLength: 20
+      enum:
+        - list
+        - range
     Operator:
       type: object
-      description: >
-        Information which may be optionally used to track additional details
-        about the
-
+      description: |
+        Information which may be optionally used to track additional details about the
         CenterEdge Advantage employee and station that performs an operation.
       properties:
         employeeName:
           type: string
+          example: John Doe
         employeeNumber:
           type: integer
+          example: 546
         stationName:
           type: string
+          example: Arcade 1
         stationNumber:
           type: integer
+          example: 51
     AdjustmentBase:
       type: object
-      description: >
-        Abstract base for adjustments. There are several types of transactions
-        defined,
-
+      description: |
+        Abstract base for adjustments. There are several types of transactions defined,
         see the `AdjustmentType` model for details.
       properties:
         type:
           $ref: '#/components/schemas/AdjustmentType'
+        amountPaid:
+          type: number
+          format: decimal
+          minimum: 0
+          description: |
+            Optionally provides the amount paid for this adjustment. For removal adjustments this
+            instead represents the amount refunded. The amount will be in the primary currency used
+            by the facility. Note that this property may be missing for older interface versions or
+            for adjustments not directly related to a sale.
+          example: 20
       required:
         - type
     Points:
       type: object
-      description: >
-        This may contain zero or more different point types. A missing property
-        is the equivalent of 0.
+      description: |
+        This may contain zero or more different point types. A missing property is the equivalent of 0.
       properties:
         regularPoints:
           type: number
@@ -1241,9 +1483,7 @@ components:
           minimum: 0
         redemptionTickets:
           type: number
-          description: >-
-            Redemption tickets won playing games, usable a the redemption
-            counter.
+          description: Redemption tickets won playing games, usable a the redemption counter.
           minimum: 0
     ValueAdjustment:
       description: An adjustment that is changing the point value of a card.
@@ -1275,9 +1515,7 @@ components:
             - groupId
             - minutes
     TimePlayAddMinutesAdjustment:
-      description: >-
-        An adjustment which adds minutes to a time play, creating it if it
-        doesn't exist.
+      description: An adjustment which adds minutes to a time play, creating it if it doesn't exist.
       allOf:
         - $ref: '#/components/schemas/TimePlayMinutesAdjustment'
         - type: object
@@ -1285,35 +1523,54 @@ components:
             expirationDateTime:
               type: string
               format: date-time
-              description: 'If supplied, the date/time when the time play will expire.'
+              description: If supplied, the date/time when the time play will expire.
               writeOnly: true
             startTimePlay:
               type: boolean
-              description: >
-                If true, the clock should be started on the time play. This may
-                be during the sale of a new
-
-                time play, or when adding more minutes to an existing time play.
-                If the time play is already
-
-                started, this should be ignored. It is not required to return
-                this field on queries to get
-
+              description: |
+                If true, the clock should be started on the time play. This may be during the sale of a new
+                time play, or when adding more minutes to an existing time play. If the time play is already
+                started, this should be ignored. It is not required to return this field on queries to get
                 transaction history.
               writeOnly: true
     TimePlayRemoveMinutesAdjustment:
       description: An adjustment which removes minutes from an existing time play.
       allOf:
         - $ref: '#/components/schemas/TimePlayMinutesAdjustment'
+    TimePlayDateTimeRangeAdjustment:
+      type: object
+      description: Abstract base for adjustments adding or removing date/time range time plays.
+      allOf:
+        - $ref: '#/components/schemas/AdjustmentBase'
+        - type: object
+          properties:
+            groupId:
+              $ref: '#/components/schemas/TimePlayGroupId'
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+          required:
+            - groupId
+            - start
+            - end
+    TimePlayAddDateTimeRangeAdjustment:
+      description: An adjustment which adds a date/time range time play.
+      allOf:
+        - $ref: '#/components/schemas/TimePlayDateTimeRangeAdjustment'
+    TimePlayRemoveDateTimeRangeAdjustment:
+      description: An adjustment which removes a date/time range time play.
+      allOf:
+        - $ref: '#/components/schemas/TimePlayDateTimeRangeAdjustment'
     PrivilegeGroupId:
       type: integer
       description: Privilege group identifier
       minimum: 0
     PrivilegeAdjustment:
       type: object
-      description: >-
-        Abstract base class for an adjusment which adds or removes privilege
-        uses.
+      description: Abstract base class for an adjusment which adds or removes privilege uses.
       allOf:
         - $ref: '#/components/schemas/AdjustmentBase'
         - type: object
@@ -1329,9 +1586,7 @@ components:
             - count
     PrivilegeAddAdjustment:
       type: object
-      description: >-
-        An adjusment which adds uses to a privilege, creating it if it doesn't
-        exist.
+      description: An adjusment which adds uses to a privilege, creating it if it doesn't exist.
       allOf:
         - $ref: '#/components/schemas/PrivilegeAdjustment'
         - type: object
@@ -1339,7 +1594,7 @@ components:
             expirationDateTime:
               type: string
               format: date-time
-              description: 'If supplied, the date/time when the privilege will expire.'
+              description: If supplied, the date/time when the privilege will expire.
               writeOnly: true
     PrivilegeRemoveAdjustment:
       description: An adjustment which removes uses from a privilege.
@@ -1350,6 +1605,8 @@ components:
         - $ref: '#/components/schemas/ValueAdjustment'
         - $ref: '#/components/schemas/TimePlayAddMinutesAdjustment'
         - $ref: '#/components/schemas/TimePlayRemoveMinutesAdjustment'
+        - $ref: '#/components/schemas/TimePlayAddDateTimeRangeAdjustment'
+        - $ref: '#/components/schemas/TimePlayRemoveDateTimeRangeAdjustment'
         - $ref: '#/components/schemas/PrivilegeAddAdjustment'
         - $ref: '#/components/schemas/PrivilegeRemoveAdjustment'
       discriminator:
@@ -1359,12 +1616,127 @@ components:
           removeValue: '#/components/schemas/ValueAdjustment'
           addMinutes: '#/components/schemas/TimePlayAddMinutesAdjustment'
           removeMinutes: '#/components/schemas/TimePlayRemoveMinutesAdjustment'
+          addDateTimeRange: '#/components/schemas/TimePlayAddDateTimeRangeAdjustment'
+          removeDateTimeRange: '#/components/schemas/TimePlayRemoveDateTimeRangeAdjustment'
           addPrivilege: '#/components/schemas/PrivilegeAddAdjustment'
           removePrivilege: '#/components/schemas/PrivilegeRemoveAdjustment'
+    BulkIssueRequestBase:
+      type: object
+      description: |
+        Abstract base for creating a new bulk issue request. There are two primary types of bulk issue requests defined, `list` and
+        `range`. See the `BulkIssueType` model for details.
+      properties:
+        type:
+          $ref: '#/components/schemas/BulkIssueType'
+        operator:
+          $ref: '#/components/schemas/Operator'
+        adjustments:
+          type: array
+          description: List of adjustments to apply to each card.
+          minLength: 1
+          items:
+            $ref: '#/components/schemas/Adjustment'
+        requireNewCards:
+          type: boolean
+          description: |
+            If true, the transaction should be rejected with a 409 if any of the cards already exists.
+            Logically, this is equivalent to checking every card number in the list to see if it returns
+            a 404 from the `/cards/:cardNumber` endpoint.
+          default: false
+        unlinkEmptyCards:
+          type: boolean
+          description: |
+            If true, any cards that are empty after adjustments are completed should also be unlinked.
+            Only applies to systems implementing dynamic card numbers and cases where the physical card
+            number is known.
+          default: false
+      required:
+        - type
+        - adjustments
+    CardNumber:
+      description: Unique card number
+      type: string
+      example: '12345678'
+      minLength: 6
+      maxLength: 20
+    BulkIssueByList:
+      type: object
+      description: Bulk issue by list request.
+      allOf:
+        - $ref: '#/components/schemas/BulkIssueRequestBase'
+        - type: object
+      properties:
+        cardNumbers:
+          type: array
+          description: List of card numbers to issue
+          minLength: 1
+          items:
+            $ref: '#/components/schemas/CardNumber'
+      required:
+        - cardNumbers
+      example:
+        cardNumbers:
+          - '10000011'
+          - '10000012'
+        operator:
+          employeeNumber: 3
+          employeeName: John Doe
+          stationNumber: 1
+          stationName: POS 1
+        adjustments:
+          - type: addValue
+            amount:
+              regularPoints: 100
+          - type: addMinutes
+            groupId: 1
+            minutes: 60
+            startTimePlay: true
+    BulkIssueByRange:
+      type: object
+      description: Bulk issue by range request.
+      allOf:
+        - $ref: '#/components/schemas/BulkIssueRequestBase'
+        - type: object
+      properties:
+        startingCardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        numberOfCards:
+          type: integer
+          description: The number of cards to issue, beginning with the startingCardNumber, inclusive.
+          minimum: 1
+      required:
+        - startingCardNumber
+        - numberOfCards
+      example:
+        startingCardNumber: 80009100
+        numberOfCards: 100
+        operator:
+          employeeNumber: 3
+          employeeName: John Doe
+          stationNumber: 1
+          stationName: POS 1
+        adjustments:
+          - type: addValue
+            amount:
+              regularPoints: 100
+          - type: addMinutes
+            groupId: 1
+            minutes: 60
+            startTimePlay: true
+    BulkIssue:
+      oneOf:
+        - $ref: '#/components/schemas/BulkIssueByList'
+        - $ref: '#/components/schemas/BulkIssueByRange'
+      discriminator:
+        propertyName: type
+        mapping:
+          list: '#/components/schemas/BulkIssueByList'
+          range: '#/components/schemas/BulkIssueByRange'
     TimePlayType:
       type: string
       enum:
         - minutes
+        - dateTimeRange
     TimePlayBase:
       type: object
       properties:
@@ -1386,32 +1758,43 @@ components:
           properties:
             started:
               type: boolean
-              description: 'If true, the clock is currently running on the number of minutes'
+              description: If true, the clock is currently running on the number of minutes
             minutesRemaining:
               type: integer
               minimum: 0
           required:
             - started
             - minutesRemaining
+    TimePlayDateTimeRange:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/TimePlayBase'
+        - type: object
+          properties:
+            start:
+              type: string
+              format: date-time
+              description: The date/time the time play starts.
+            end:
+              type: string
+              format: date-time
+              description: The date/time the time play ends.
+          required:
+            - start
+            - end
     TimePlay:
-      description: >
-        Information about the time play currently on a card. The time play may
-        be inactive or active. Inactive
-
-        time plays are typically for a specific number of minutes that weren't
-        started immediately, and will
-
+      description: |
+        Information about the time play currently on a card. The time play may be inactive or active. Inactive
+        time plays are typically for a specific number of minutes that weren't started immediately, and will
         start on first use.
-
-
-        On a Card object, null would indicate the card does not have a time
-        play.
       oneOf:
         - $ref: '#/components/schemas/TimePlayMinutes'
+        - $ref: '#/components/schemas/TimePlayDateTimeRange'
       discriminator:
         propertyName: type
         mapping:
           minutes: '#/components/schemas/TimePlayMinutes'
+          dateTimeRange: '#/components/schemas/TimePlayDateTimeRange'
     Privilege:
       type: object
       properties:
@@ -1431,9 +1814,7 @@ components:
     Card:
       type: object
       description: |
-        Provides information about the current state of a './CardNumber.yaml'
-
-        `timePlay` should be null if the card doesn't have a time play assigned.
+        Provides information about the current state of a card.
       properties:
         cardNumber:
           $ref: '#/components/schemas/CardNumber'
@@ -1446,13 +1827,9 @@ components:
           $ref: '#/components/schemas/Points'
         timePlays:
           type: array
-          description: >
-            List of time plays currently available to the cardholder. There may
-            be only
-
-            one time play per time play group. This list *should not* include
-            any time plays
-
+          description: |
+            List of time plays currently available to the cardholder. There may be only
+            one time play per time play group. This list *should not* include any time plays
             which have expired and are no longer available.
           items:
             $ref: '#/components/schemas/TimePlay'
@@ -1465,6 +1842,51 @@ components:
         - cardNumber
         - issuedAtTime
         - balance
+    CustomerInfo:
+      type: object
+      description: |
+        Information about a customer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 00000001-0001-0002-0003-0000000000000001
+        firstName:
+          type: string
+          maxLength: 40
+          example: John
+        lastName:
+          type: string
+          maxLength: 40
+          example: Doe
+        emailAddress:
+          type: string
+          format: email
+          maxLength: 60
+          example: john.doe@gmail.com
+        phoneNumber:
+          type: string
+          maxLength: 20
+          example: +1 (336) 598-5934
+        birthDate:
+          type: string
+          format: date
+          example: '2022-01-01'
+      required:
+        - id
+        - lastName
+    CardDeleteConfirmation:
+      type: object
+      description: Provides details about a successful card delete
+      properties:
+        cardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        wasUnlinked:
+          type: boolean
+          description: If true, indicates that the balance was not wiped. Instead, the card number was unlinked from the primary account.
+          default: false
+      required:
+        - cardNumber
     TransactionIdReadOnly:
       type: integer
       format: int64
@@ -1472,10 +1894,8 @@ components:
       minimum: 0
       readOnly: true
     TransactionType:
-      description: >
-        Type of the transaction. `adjustment` indicates a change in balance,
-        usually due to things
-
+      description: |
+        Type of the transaction. `adjustment` indicates a change in balance, usually due to things
         like a sale or refund. `gamePlay` indicates that a game was activated.
       type: string
       enum:
@@ -1484,10 +1904,8 @@ components:
         - other
     TransactionBase:
       type: object
-      description: >
-        Abstract base for transactions. There are two primary types of
-        transactions defined, `adjustment` and
-
+      description: |
+        Abstract base for transactions. There are two primary types of transactions defined, `adjustment` and
         `gamePlay`. See the `TransactionType` model for details.
       properties:
         id:
@@ -1497,9 +1915,7 @@ components:
         type:
           $ref: '#/components/schemas/TransactionType'
         transactionTime:
-          description: >-
-            Date and time of the transaction, in ISO 8601 format with accurate
-            time zone information.
+          description: Date and time of the transaction, in ISO 8601 format with accurate time zone information.
           type: string
           format: date-time
           example: '2020-05-01T15:00:00.000-04:00'
@@ -1509,28 +1925,15 @@ components:
         - transactionTime
         - cardNumber
     AdjustmentTransaction:
-      description: >
-        Provides details about a transaction performed against a card. It may
-        contain one or more `adjustments`
+      description: |
+        Provides details about a transaction performed against a card. It may contain one or more `adjustments`
+        which indicates changes that occurred on the card as part of this transaction. Depending on the card
+        system's design, there may be limits on how many adjustments or what adjustments may be combined in a
+        single transaction. These limitations are detailed by the capabilities endpoint.
 
-        which indicates changes that occurred on the card as part of this
-        transaction. Depending on the card
-
-        system's design, there may be limits on how many adjustments or what
-        adjustments may be combined in a
-
-        single transaction. These limitations are detailed by the capabilities
-        endpoint.
-
-
-        If available, information about the CenterEdge Advantage employee and
-        station where a transaction is
-
-        performed is provided in the `operator` property. CenterEdge will supply
-        this when creating a transaction.
-
-        The card system may optionally persist it and return it on subsequent
-        transaction history requests.
+        If available, information about the CenterEdge Advantage employee and station where a transaction is
+        performed is provided in the `operator` property. CenterEdge will supply this when creating a transaction.
+        The card system may optionally persist it and return it on subsequent transaction history requests.
       allOf:
         - $ref: '#/components/schemas/TransactionBase'
         - type: object
@@ -1544,19 +1947,82 @@ components:
               items:
                 $ref: '#/components/schemas/Adjustment'
           required:
-            - actions
+            - adjustments
     GameId:
-      description: 'Unique game identifier, must remain constant over time.'
+      description: Unique game identifier, must remain constant over time.
       type: string
-      example: 12345678
+      example: '12345678'
       minLength: 1
       maxLength: 20
+    PointsWithCash:
+      type: object
+      description: |
+        Extends the Points structure to include cash or credit card payment values. This is used when a game play transaction includes payment
+        directly via credit card, bill validator, or coin mech.
+      allOf:
+        - $ref: '#/components/schemas/Points'
+      properties:
+        cash:
+          type: number
+          description: Cash value (bill or coin) used to pay for a game play.
+          minimum: 0
+        creditCard:
+          type: number
+          description: Credit card payment used to pay for a game play. Transactions where this value is greater than zero must include creditCardDetails.
+          minimum: 0
+    CreditCardDetails:
+      type: object
+      description: |
+        Credit card details. This is used when a game play transaction is paid directly via credit card rather than a game card.
+      nullable: true
+      properties:
+        shortAccountNumber:
+          type: string
+          description: Last four digits of the credit card number.
+          minLength: 0
+          maxLength: 4
+          pattern: ^[0-9]{0,4}$
+          example: '1234'
+        cardType:
+          type: string
+          description: Card brand of the card. Use "Other" if the card type is not one of the listed types.
+          enum:
+            - Visa
+            - MasterCard
+            - AmericanExpress
+            - Discover
+            - JCB
+            - DinersClub
+            - Other
+          example: Visa
+        cardholderName:
+          type: string
+          description: Name of the cardholder as it appears on the card.
+          maxLength: 24
+          nullable: true
+          example: DOE/JOHN
+        approvalCode:
+          type: string
+          minLength: 0
+          maxLength: 10
+          example: '123456'
+      required:
+        - shortAccountNumber
+        - cardType
+        - approvalCode
     GamePlayTransaction:
-      description: >
-        A transaction which indicates the activation of a game with a card. This
-        may also indicate an emulated
-
+      description: |
+        A transaction which indicates the activation of a game with a card. This may also indicate an emulated
         game transactions posted via an endpoint.
+
+        In the case of a game play transaction paid directly via credit card rather than a game card:
+        - "cardNumber" should be "000000" if there is no game card involved. If there is mixed payment with both
+          a game card and credit card, or if tickets were earned and placed on a game card, the cardNumber should
+          be the game card number.
+        - "amount.cash" should contain the amount of cash value paid via credit card. "points" and "bonusPoints" should
+          only be present if a game card was also used and include the portion paid via game card.
+        - "creditCardDetails" should be populated with the credit card details. It is an error to supply a non-zero value
+          in "amount.cash" without supplying "creditCardDetails".
       allOf:
         - $ref: '#/components/schemas/TransactionBase'
         - type: object
@@ -1566,19 +2032,17 @@ components:
             gameDescription:
               type: string
             amount:
-              $ref: '#/components/schemas/Points'
+              $ref: '#/components/schemas/PointsWithCash'
             usedTimePlay:
               type: boolean
-              description: >-
-                True if a time play was used as part of this game play. This
-                would typically mean the transaction has no amount.
+              description: True if a time play was used as part of this game play. This would typically mean the transaction has no amount.
               readOnly: true
             usedPlayPrivilege:
               type: boolean
-              description: >-
-                True if a play privilege was used as part of this game play.
-                This would typically mean the transaction has no amount.
+              description: True if a play privilege was used as part of this game play. This would typically mean the transaction has no amount.
               readOnly: true
+            creditCardDetails:
+              $ref: '#/components/schemas/CreditCardDetails'
           required:
             - gameId
             - gameDescription
@@ -1593,10 +2057,8 @@ components:
           gamePlay: '#/components/schemas/GamePlayTransaction'
     CreateTransactionBase:
       type: object
-      description: >
-        Abstract base for creating a new transaction. There are two primary
-        types of transactions defined, `adjustment` and
-
+      description: |
+        Abstract base for creating a new transaction. There are two primary types of transactions defined, `adjustment` and
         `gamePlay`. See the `TransactionType` model for details.
       properties:
         type:
@@ -1604,34 +2066,28 @@ components:
       required:
         - type
     CreateAdjustmentTransaction:
-      description: >
-        Provides details about a transaction performed against a card. It may
-        contain one or more `adjustments`
+      description: |
+        Provides details about a transaction performed against a card. It may contain one or more `adjustments`
+        which indicates changes that occurred on the card as part of this transaction. Depending on the card
+        system's design, there may be limits on how many adjustments or what adjustments may be combined in a
+        single transaction. These limitations are detailed by the capabilities endpoint.
 
-        which indicates changes that occurred on the card as part of this
-        transaction. Depending on the card
+        If available, information about the CenterEdge Advantage employee and station where a transaction is
+        performed is provided in the `operator` property. CenterEdge will supply this when creating a transaction.
+        The card system may optionally persist it and return it on subsequent transaction history requests.
 
-        system's design, there may be limits on how many adjustments or what
-        adjustments may be combined in a
-
-        single transaction. These limitations are detailed by the capabilities
-        endpoint.
-
-
-        If available, information about the CenterEdge Advantage employee and
-        station where a transaction is
-
-        performed is provided in the `operator` property. CenterEdge will supply
-        this when creating a transaction.
-
-        The card system may optionally persist it and return it on subsequent
-        transaction history requests.
+        If the card is linked to a customer the customer's information will be provided along with the transaction.
+        Note that this information may change over time with subsequent transactions. There is no mechanism to
+        provide   this information outside of a transaction, any changes to customer information will only arrive
+        if their card is used in a transaction. Also, multiple card numbers may be linked to the same customer ID.
       allOf:
         - $ref: '#/components/schemas/CreateTransactionBase'
         - type: object
           properties:
             operator:
               $ref: '#/components/schemas/Operator'
+            customer:
+              $ref: '#/components/schemas/CustomerInfo'
             adjustments:
               type: array
               minLength: 1
@@ -1639,21 +2095,17 @@ components:
               items:
                 $ref: '#/components/schemas/Adjustment'
           required:
-            - actions
+            - adjustments
     CreateGamePlayTransaction:
-      description: >
-        A transaction which indicates the activation of a game with a card. This
-        may also indicate an emulated
-
-        game transactions posted via an endpoint.
+      description: |
+        An emulated game transactions posted via an endpoint. The card system should calculate the
+        amount of the transaction based on the game play and return the transaction to the host system.
       allOf:
         - $ref: '#/components/schemas/CreateTransactionBase'
         - type: object
           properties:
             gameId:
               $ref: '#/components/schemas/GameId'
-            amount:
-              $ref: '#/components/schemas/Points'
           required:
             - gameId
     CreateCardTransaction:
@@ -1695,9 +2147,7 @@ components:
           maxLength: 19
         regex:
           type: string
-          description: >-
-            Regular expression applied to the number, by default requires all
-            numeric
+          description: Regular expression applied to the number, by default requires all numeric
           default: ^\d+$
       required:
         - minLength
@@ -1706,6 +2156,35 @@ components:
         minLength: 8
         maxLength: 8
         prefix: '05'
+    GameCategoryId:
+      type: integer
+      format: int32
+      description: Game category identifier
+      minimum: 0
+    GameActionId:
+      description: Unique action identifier.
+      type: string
+      example: reboot
+      minLength: 1
+      maxLength: 30
+    GameAction:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/GameActionId'
+        name:
+          type: string
+          description: Human-readable game action name.
+          minLength: 1
+        requireManager:
+          type: boolean
+          description: |
+            If true, this action should be restricted to users with manager permissions.
+            If false or missing, this action can be performed by any cashier.
+          default: false
+      required:
+        - id
+        - name
     Game:
       type: object
       properties:
@@ -1714,9 +2193,108 @@ components:
         name:
           type: string
           description: Human-readable name of the game.
+          minLength: 1
         virtualPlayEnabled:
           type: boolean
-          description: 'If true, this game supports virtual plays from CenterEdge.'
+          description: If true, this game supports virtual plays from CenterEdge.
+          default: false
+        paused:
+          type: boolean
+          description: |
+            If true, this game is currently paused and not available for play. This differs from `outOfService` because
+            it's typically used during normal operation (e.g., during a facility open/close) rather than due to malfunction.
+            When opening for the day, CenterEdge may unpause all games but out of service games would remain offline because they
+            are malfunctioning.
+          default: false
+        outOfService:
+          type: boolean
+          description: If true, this game is currently out of service due to malfunction and not available for play.
+          default: false
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/GameCategoryId'
+          description: List of game categories this game belongs to.
+          default: []
+        supportedActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/GameAction'
+          description: |
+            List of actions that can be performed on this game. This list should not include actions
+            to take the game online or offline, this is managed by the PATCH `/games` endpoint
+            and the `paused` and `outOfService` properties.
+          default: []
+          example:
+            - id: reboot
+              name: Reboot Card Reader
+            - id: powerCycle
+              name: Power Cycle Game
+              requireManager: true
+      required:
+        - id
+        - name
+      example:
+        id: '12345678'
+        name: Asteroids
+        virtualPlayEnabled: true
+        outOfService: false
+        categories:
+          - 2
+    JsonPatchOperationType:
+      type: string
+      description: The operation to be performed.
+      enum:
+        - add
+        - remove
+        - replace
+        - move
+        - copy
+        - test
+      example: add
+    JsonPatchOperation:
+      type: object
+      description: A JSON patch operation as defined by RFC 6902.
+      properties:
+        op:
+          $ref: '#/components/schemas/JsonPatchOperationType'
+        path:
+          type: string
+          description: A JSON Pointer to the property or array element being affected.
+          example: /foo/bar
+        value:
+          description: The value to add, replace, or test.
+          example: newValue
+        from:
+          description: A JSON Pointer path pointing to the location to move/copy from.
+          type: string
+      required:
+        - op
+        - path
+    JsonPatch:
+      type: array
+      description: A patch to a JSON document, as defined in RFC 6902.
+      items:
+        $ref: '#/components/schemas/JsonPatchOperation'
+    GamePerformAction:
+      type: object
+      properties:
+        actionId:
+          $ref: '#/components/schemas/GameActionId'
+        operator:
+          $ref: '#/components/schemas/Operator'
+      required:
+        - actionId
+        - operator
+    GameCategory:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/GameCategoryId'
+        name:
+          type: string
+          description: Human-readable game category name
+          minLength: 1
       required:
         - id
         - name
@@ -1730,37 +2308,29 @@ components:
         passwordHash:
           type: string
           minLength: 1
-          description: >
-            The SHA-1 hash of the following concatenated strings (UTF-8):
-            username, password, and requestTimestamp
+          description: |
+            The SHA-1 hash of the following concatenated strings (UTF-8): username, password, and requestTimestamp
+            (exactly as formatted in the request). This hash is then Base64 encoded to make the password hash.
 
-            (exactly as formatted in the request). This hash is then Base64
-            encoded to make the password hash.
-
-
-            For example, if username is `CenterEdge`, password is `MyPassword`,
-            and requestTimestamp is
-
-            `2020-05-26T13:00:05.102Z`, then
-            `CenterEdgeMyPassword2020-05-26T13:00:05.102Z` is UTF-8 encoded,
-
-            SHA-1 hashed, and Base64 encoded to make
-            `GIetRQYzgeq/ChZ2CdH9g9E+8IM=`.
+            For example, if username is `CenterEdge`, password is `MyPassword`, and requestTimestamp is
+            `2020-05-26T13:00:05.102.9896754-00.00`, then `CenterEdgeMyPassword2020-05-26T13:00:05.102.9896754-00.00` is UTF-8 encoded,
+            SHA-1 hashed, and Base64 encoded to make `DA7LKDA5yZcZcbIjfIBh8nIfUi0=`.
+        password:
+          type: string
+          minLength: 1
+          example: SomePasswordWhichShouldBeComplex
+          description: |
+            Optionally, the plaintext password may be provided in the `password` field. This is done on a per-system basis,
+            by request. Please consult with your CenterEdge integration specialist about enabling this option.
         requestTimestamp:
           type: string
           format: date-time
-          description: >
-            The date/time when this login request is being made. This is
-            designed to help prevent
-
-            replay attacks. It is used when validating the passwordHash, and
-            should also be compared
-
-            to the real time within a window (i.e. +/- 5 minutes). If the
-            incoming requestTimestamp is outside
-
-            the window, the login should be declined. The timestamp should be
-            UTC.
+          example: 2020-05-26T13:00:05.102.9896754-00.00
+          description: |
+            The date/time when this login request is being made. This is designed to help prevent
+            replay attacks. It is used when validating the passwordHash, and should also be compared
+            to the real time within a window (i.e. +/- 5 minutes). If the incoming requestTimestamp is outside
+            the window, the login should be declined. The timestamp should be UTC.
       required:
         - username
         - passwordHash
@@ -1787,6 +2357,119 @@ components:
       required:
         - id
         - name
+    SystemTransactionBase:
+      type: object
+      description: |
+        Abstract base for system transactions. System transactions are special transactions taken by the
+        card system itself but which are not game plays. Examples could be merging the value on two cards
+        or expiring value on a card. See the `SystemTransactionType` model for details.
+      properties:
+        id:
+          $ref: '#/components/schemas/TransactionIdReadOnly'
+        type:
+          $ref: '#/components/schemas/SystemTransactionType'
+        transactionTime:
+          description: Date and time of the transaction, in ISO 8601 format with accurate time zone information.
+          type: string
+          format: date-time
+          example: '2020-05-01T15:00:00.000-04:00'
+          readOnly: true
+      required:
+        - id
+        - type
+        - transactionTime
+    SystemTransactionMerge:
+      type: object
+      description: |
+        A system transaction that merges two cards together, leaving the source card as wiped and all value, time plays,
+        and privileges on the destination card.
+
+        Note: Merges which occur due to an API call from Advantage should **NOT** be included in the `system/transactions`
+        endpoint results. Only merges which occur due to a process internal to the card system should be included.
+      allOf:
+        - $ref: '#/components/schemas/SystemTransactionBase'
+      properties:
+        sourceCardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        destinationCardNumber:
+          $ref: '#/components/schemas/CardNumber'
+      required:
+        - sourceCardNumber
+        - destinationCardNumber
+      example:
+        id: 123456
+        type: merge
+        transactionTime: '2020-05-01T15:00:00.000-04:00'
+        sourceCardNumber: '12345678'
+        destinationCardNumber: '87654321'
+    ExpirationAdjustment:
+      description: |
+        Subset of the `Adjustment` type limited to the types of adjustments valid for expiration transactions.
+      oneOf:
+        - $ref: '#/components/schemas/ValueAdjustment'
+        - $ref: '#/components/schemas/TimePlayRemoveMinutesAdjustment'
+        - $ref: '#/components/schemas/TimePlayRemoveDateTimeRangeAdjustment'
+        - $ref: '#/components/schemas/PrivilegeRemoveAdjustment'
+      discriminator:
+        propertyName: type
+        mapping:
+          removeValue: '#/components/schemas/ValueAdjustment'
+          removeMinutes: '#/components/schemas/TimePlayRemoveMinutesAdjustment'
+          removeDateTimeRange: '#/components/schemas/TimePlayRemoveDateTimeRangeAdjustment'
+          removePrivilege: '#/components/schemas/PrivilegeRemoveAdjustment'
+    SystemTransactionExpiration:
+      type: object
+      description: |
+        A system transaction that expires some or all of the value, time plays, or privileges on a card.
+        This transaction type may also be used for card wipes.
+
+        Note: Wipes which occur due to an API call from Advantage should **NOT** be included in the `system/transactions`
+        endpoint results. Only wipes which occur due to a process internal to the card system should be included.
+
+        Note: At this time CenterEdge Advantage is only concerned with the expiration of value. However, support
+        for time plays and privileges provides future-proofing in case of new functionality.
+      allOf:
+        - $ref: '#/components/schemas/SystemTransactionBase'
+      properties:
+        cardNumber:
+          $ref: '#/components/schemas/CardNumber'
+        adjustments:
+          description: |
+            Adjustments to the card which have been made as part of this expiration. This may include removing
+            value, time plays, or privileges.
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ExpirationAdjustment'
+        isWiped:
+          type: boolean
+          default: false
+          description: |
+            If true, the card has been wiped and may be reused. CenterEdge Advantage should unlink the card
+            from any linked customer accounts, etc.
+      required:
+        - cardNumber
+        - adjustments
+      example:
+        id: 123456
+        type: expiration
+        transactionTime: '2020-05-01T15:00:00.000-04:00'
+        cardNumber: '12345678'
+        isWiped: true
+        adjustments:
+          - type: removeValue
+            amount:
+              regularPoints: 10
+              bonusPoints: 5
+    SystemTransaction:
+      oneOf:
+        - $ref: '#/components/schemas/SystemTransactionMerge'
+        - $ref: '#/components/schemas/SystemTransactionExpiration'
+      discriminator:
+        propertyName: type
+        mapping:
+          merge: '#/components/schemas/SystemTransactionMerge'
+          expiration: '#/components/schemas/SystemTransactionExpiration'
   responses:
     Unauthorized:
       description: No authentication token was supplied or the token is invalid
@@ -1807,9 +2490,7 @@ components:
             code: badRequest
             message: Bad Request
     CardNotFound:
-      description: >-
-        Card number does not exist or has not yet been issued. This includes
-        wiped cards.
+      description: Card number does not exist or has not yet been issued. This includes wiped cards.
       content:
         application/json:
           schema:
@@ -1817,28 +2498,3 @@ components:
           example:
             code: cardNotFound
             message: Card Not Found
-  parameters:
-    cardNumber:
-      name: cardNumber
-      in: path
-      description: Unique card number.
-      required: true
-      schema:
-        $ref: '#/components/schemas/CardNumber'
-    skip:
-      name: skip
-      in: query
-      description: Skip this number of records in the result. Used for pagination.
-      schema:
-        type: integer
-        minimum: 0
-        default: 0
-    take:
-      name: take
-      in: query
-      description: Return up to this number of records in the result. Used for pagination.
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 100
-        default: 100

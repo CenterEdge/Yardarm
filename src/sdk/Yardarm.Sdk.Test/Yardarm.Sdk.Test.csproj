@@ -13,7 +13,11 @@
     <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())_</YardarmTaskBasePath>
     <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())_</YardarmTaskBasePath>
 
-    <JsonMode>Newtonsoft.Json</JsonMode>
+    <JsonMode>System.Text.Json</JsonMode>
+    <DateTimeMode>Legacy</DateTimeMode>
+    <DefaultHttpVersion>2.0</DefaultHttpVersion>
+    <DefaultHttpVersionPolicy>RequestVersionOrLower</DefaultHttpVersionPolicy>
+    <UnknownDiscriminatorHandling>ReturnNull</UnknownDiscriminatorHandling>
   </PropertyGroup>
 
   <Import Project="../Yardarm.Sdk/Sdk/Sdk.targets" />

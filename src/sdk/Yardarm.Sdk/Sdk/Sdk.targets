@@ -54,6 +54,7 @@
     <YardarmExtension Include="$(YardarmToolPath)Yardarm.MicrosoftExtensionsHttp.dll" Condition=" '$(DependencyInjectionMode)' == 'Microsoft.Extensions.Http' " />
     <YardarmExtension Include="$(YardarmToolPath)Yardarm.NewtonsoftJson.dll" Condition=" '$(JsonMode)' == 'Newtonsoft.Json' " />
     <YardarmExtension Include="$(YardarmToolPath)Yardarm.SystemTextJson.dll" Condition=" '$(JsonMode)' == 'System.Text.Json' " />
+    <YardarmExtension Include="$(YardarmToolPath)Yardarm.NodaTime.dll" Condition=" '$(DateTimeMode)' == 'NodaTime' " />
   </ItemGroup>
 
   <!--
@@ -91,6 +92,16 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_ResolveYardarmProperties">
+    <PropertyGroup>
+      <_EffectiveYardarmProperties>$(YardarmProperties)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(DateTimeMode)' == 'Legacy' ">$(_EffectiveYardarmProperties);LegacyDateTimeHandling=true</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(UnknownDiscriminatorHandling)' != 'ThrowException' And '$(UnknownDiscriminatorHandling)' != '' ">$(_EffectiveYardarmProperties);UnknownDiscriminatorHandling=$(UnknownDiscriminatorHandling)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersion)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersion=$(DefaultHttpVersion)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersionPolicy)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersionPolicy=$(DefaultHttpVersionPolicy)</_EffectiveYardarmProperties>
+    </PropertyGroup>
+  </Target>
+
   <!--
     Collect PackageReference, PackageDownload, and FrameworkReference items from Yardarm prior to
     executing restore operations.
@@ -98,14 +109,14 @@
   <Target Name="YardarmCollectDependencies"
           Condition=" '$(TargetFramework)' != '' "
           BeforeTargets="CollectPackageReferences;CollectPackageDownloads"
-          DependsOnTargets="CollectYardarmExtensions"
+          DependsOnTargets="CollectYardarmExtensions;_ResolveYardarmProperties"
           Returns="@(PackageReference);@(PackageDownload)">
     <YardarmCollectDependencies
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
       RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
-      AdditionalProperties="$(YardarmProperties)"
+      AdditionalProperties="$(_EffectiveYardarmProperties)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))"
     >
@@ -132,7 +143,8 @@
     <CoreCompileDependsOn>
       $(CoreCompileDependsOn);
       _VerifyOpenApiSpecs;
-      CollectYardarmExtensions
+      CollectYardarmExtensions;
+      _ResolveYardarmProperties
     </CoreCompileDependsOn>
   </PropertyGroup>
   <Target Name="CoreCompile"
@@ -153,7 +165,7 @@
       TargetFramework="$(TargetFramework)"
       Version="$(Version)"
       SpecFile="@(OpenApiSpec)"
-      AdditionalProperties="$(YardarmProperties)"
+      AdditionalProperties="$(_EffectiveYardarmProperties)"
       Extensions="@(YardarmExtension)"
       BaseIntermediateOutputPath="$(BaseIntermediateOutputPath)"
       EmbedAllSources="$(EmbedAllSources)"

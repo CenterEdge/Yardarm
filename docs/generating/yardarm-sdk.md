@@ -22,7 +22,7 @@ Create the below as a `.csproj` file and include a `.yaml` or `.json` OpenAPI sp
 file in the same directory.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
+<Project Sdk="Yardarm.Sdk/0.6.1">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -42,7 +42,7 @@ file in the same directory.
 ## Multi-targeting
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
+<Project Sdk="Yardarm.Sdk/0.6.1">
 
   <PropertyGroup>
     <!-- Note that Yardarm doesn't support net4x targets, except via netstandard2.0 -->
@@ -55,12 +55,12 @@ file in the same directory.
 ## Yardarm Extensions
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
+<Project Sdk="Yardarm.Sdk/0.6.1">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <JsonMode>NewtonsoftJson</JsonMode> <!-- Use Newtonsoft.Json instead of the default System.Text.Json. Set to "None" to disable JSON support. -->
+    <JsonMode>Newtonsoft.Json</JsonMode> <!-- Use Newtonsoft.Json instead of the default System.Text.Json. Set to "None" to disable JSON support. -->
     <DependencyInjectionMode>None</DependencyInjectionMode> <!-- Disable the default Microsoft.Extensions.Http DI extension -->
   </PropertyGroup>
 
@@ -78,7 +78,7 @@ A wide variety of C# project properties are supported as well. These may also be
 i.e. `dotnet build /p:Version=5.6.7`.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
+<Project Sdk="Yardarm.Sdk/0.6.1">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -98,6 +98,26 @@ i.e. `dotnet build /p:Version=5.6.7`.
     <Company>your_company</Company>
     <PackageTags>tag1;tag2</PackageTags>
     <Description>This is a long description</Description>
+
+    <!--
+      ** Properties to control the Yardarm SDK generation behaviors **
+    -->
+
+    <!-- May be "System.Text.Json" (default), "Newtonsoft.Json", or "None" -->
+    <JsonMode>NewtonsoftJson</JsonMode>
+
+    <!-- May be "Microsoft.Extensions.Http" (default) or "None" -->
+    <DependencyInjectionMode>None</DependencyInjectionMode>
+
+    <!-- Available in 0.7.0, may be "System" (default), "Legacy", or "NodaTime" -->
+    <DateTimeMode>NodaTime</DateTimeMode>
+
+    <!-- Available in 0.7.0, may be "ThrowException" (default) or "ReturnNull" -->
+    <UnknownDiscriminatorHandling>ReturnNull</UnknownDiscriminatorHandling>
+
+    <!-- Available in 0.7.0, HTTP version used by generated clients, may be "1.1", "2.0", or "3.0", defaults to the runtime default -->
+    <DefaultHttpVersion>2.0</DefaultHttpVersion>
+    <DefaultHttpVersionPolicy>RequestVersionOrLower</DefaultHttpVersionPolicy>
   </PropertyGroup>
 
 </Project>
@@ -135,7 +155,7 @@ within MSBuild. When the target is complete, the `OpenApiSpec` item should be
 added to the project.
 
 ```xml
-<Project Sdk="Yardarm.Sdk/0.3.0-beta0001">
+<Project Sdk="Yardarm.Sdk/0.6.1">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

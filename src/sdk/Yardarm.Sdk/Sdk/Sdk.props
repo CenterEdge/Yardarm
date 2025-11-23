@@ -26,6 +26,19 @@
     -->
     <DependencyInjectionMode Condition=" '$(DependencyInjectionMode)' == '' ">Microsoft.Extensions.Http</DependencyInjectionMode>
 
+    <!--
+      By default, use System types for dates and times, including DateOnly and TimeOnly if available based on
+      target framework. Set to "Legacy" to avoid the use of DateOnly and TimeOnly for greater compatibility.
+      Set to "NodaTime" to use NodaTime types.
+    -->
+    <DateTimeMode Condition=" '$(DateTimeMode)' == '' ">System</DateTimeMode>
+
+    <!--
+      By default, throw exceptions during JSON deserialization when an unknown discriminator is encountered.
+      Set to "ReturnNull" to return null instead.
+    -->
+    <UnknownDiscriminatorHandling Condition=" '$(UnknownDiscriminatorHandling)' == '' ">ThrowException</UnknownDiscriminatorHandling>
+
     <!-- By default embed source files with debug symbols -->
     <EmbedAllSources Condition=" '$(EmbedAllSources)' == '' ">true</EmbedAllSources>
 

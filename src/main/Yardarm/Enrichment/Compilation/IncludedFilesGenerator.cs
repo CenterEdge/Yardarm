@@ -20,7 +20,6 @@ public sealed class IncludedFilesGenerator(GenerationContext generationContext) 
             yield break;
         }
 
-        List<SyntaxTree> syntaxTrees = [];
         foreach (IncludedFile includedFile in generationContext.Settings.IncludedFiles)
         {
             if (includedFile.ShouldInclude(generationContext))

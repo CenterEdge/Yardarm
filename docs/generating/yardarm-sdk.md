@@ -110,8 +110,10 @@ They may freely reference internal types in the generated SDK. However, Intellis
 
 `Compile` items may also be used to include files from other directories.
 
+This feature is available beginning in Yardarm SDK version `0.7.0`.
+
 ```xml
-<Project Sdk="Yardarm.Sdk/0.6.1">
+<Project Sdk="Yardarm.Sdk/0.7.0">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

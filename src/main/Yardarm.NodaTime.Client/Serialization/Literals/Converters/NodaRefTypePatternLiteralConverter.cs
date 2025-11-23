@@ -15,7 +15,7 @@ internal sealed class NodaRefTypePatternLiteralConverter<T>(IPattern<T> pattern,
     [return: NotNullIfNotNull(nameof(value))]
     public override T? Read(string? value, string? format)
     {
-        if (value is null)
+        if (value is null or { Length: 0 })
         {
             return default;
         }

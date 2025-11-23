@@ -1,5 +1,4 @@
 ﻿using System;
-using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization.Literals.Converters;
 

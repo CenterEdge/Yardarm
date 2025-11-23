@@ -7,36 +7,23 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Generation.Operation;
 
-namespace Yardarm.Spec
+namespace Yardarm.Spec;
+
+public static class LocatedOpenApiElementExtensions
 {
-    public static class LocatedOpenApiElementExtensions
+    private static readonly ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse> _unknownResponses = [];
+
+    private static readonly OpenApiSchema _defaultSchema = new();
+
+    extension(ILocatedOpenApiElement element)
     {
-        private static readonly ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse> _unknownResponses =
-            new ConditionalWeakTable<OpenApiResponses, OpenApiUnknownResponse>();
+        public bool IsRoot => element.Parent is null;
 
-        private static readonly OpenApiSchema _defaultSchema = new OpenApiSchema();
-
-        public static bool IsRoot(this ILocatedOpenApiElement element) => element.Parent is null;
-
-        public static bool IsReference<T>(this ILocatedOpenApiElement<T> element)
-            where T : IOpenApiReferenceable =>
-            element.Element.Reference != null;
-
-        public static ILocatedOpenApiElement<T> CreateRoot<T>(this T rootItem, string key)
-            where T : IOpenApiElement =>
-            LocatedOpenApiElement.CreateRoot(rootItem, key);
-
-        public static IEnumerable<ILocatedOpenApiElement<T>> CreateRoot<T>(
-            this IEnumerable<KeyValuePair<string, T>> rootItems)
-            where T : IOpenApiElement =>
-            rootItems.Select(p => p.Value.CreateRoot(p.Key));
-
-        public static ILocatedOpenApiElement<T> CreateChild<T>(this ILocatedOpenApiElement element,
-            T child, string key)
+        public ILocatedOpenApiElement<T> CreateChild<T>(T child, string key)
             where T : IOpenApiElement =>
             new LocatedOpenApiElement<T>(child, key, element);
 
-        public static IEnumerable<ILocatedOpenApiElement> Parents(this ILocatedOpenApiElement element)
+        public IEnumerable<ILocatedOpenApiElement> Parents()
         {
             var current = element;
             while (current.Parent != null)
@@ -45,154 +32,204 @@ namespace Yardarm.Spec
                 yield return current;
             }
         }
+    }
 
-        public static ILocatedOpenApiElement<T> ResolveComponentReference<T>(this OpenApiDocument document,
-            OpenApiReference reference)
+    extension<T>(ILocatedOpenApiElement<T> element)
+        where T : IOpenApiReferenceable
+    {
+        public bool IsReference => element.Element.Reference != null;
+    }
+
+    extension<T>(T rootItem)
+        where T : IOpenApiElement
+    {
+        public ILocatedOpenApiElement<T> CreateRoot(string key) =>
+            LocatedOpenApiElement.CreateRoot(rootItem, key);
+    }
+
+    extension<T>(IEnumerable<KeyValuePair<string, T>> rootItems)
+        where T : IOpenApiElement
+    {
+        public IEnumerable<ILocatedOpenApiElement<T>> CreateRoot() =>
+            rootItems.Select(p => p.Value.CreateRoot(p.Key));
+    }
+
+    extension(OpenApiDocument document)
+    {
+        public ILocatedOpenApiElement<T> ResolveComponentReference<T>(OpenApiReference reference)
             where T : IOpenApiElement =>
             ((T)document.ResolveReference(reference)).CreateRoot(reference.Id);
-
-        #region GetAllSchemas
 
         // These methods collect all schemas directly owned by a given object (not a reference), including recursive
         // lookups within schemas.
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(this OpenApiDocument document) =>
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas() =>
             document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
                 .Concat(document.Paths.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
-            this OpenApiDocument document,
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
             IOperationNameProvider operationNameProvider) =>
             document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
                 .Concat(document.Paths.CreateRoot().GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider))
                 .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
                 .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
+    }
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems) =>
-            pathItems.SelectMany(GetAllSchemas);
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this ILocatedOpenApiElement<OpenApiPathItem> pathItem) =>
-            pathItem.GetParameters().SelectMany(p => p.GetSchemaOrDefault().GetAllSchemas())
-                .Concat(pathItem.GetOperations().GetAllSchemas());
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems,
-            IOperationNameProvider operationNameProvider) =>
-            pathItems.SelectMany(p => p.GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider));
+    public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+        this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
+        operations.SelectMany(p => p.GetAllSchemas());
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
-            this ILocatedOpenApiElement<OpenApiPathItem> pathItem,
-            IOperationNameProvider operationNameProvider) =>
-            pathItem.GetParameters().SelectMany(p => p.GetSchemaOrDefault().GetAllSchemas())
-                .Concat(pathItem.GetOperations().WhereOperationHasName(operationNameProvider).GetAllSchemas());
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
-            operations.SelectMany(p => p.GetAllSchemas());
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this ILocatedOpenApiElement<OpenApiOperation> operation)
+    public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+        this ILocatedOpenApiElement<OpenApiOperation> operation)
+    {
+        var requestBody = operation.GetRequestBody();
+        if (requestBody is not null && !requestBody.IsReference)
         {
-            var requestBody = operation.GetRequestBody();
-            if (requestBody is not null && !requestBody.IsReference())
-            {
-                var requestSchemas = requestBody
-                    .GetMediaTypes()
-                    .Select(p => p.GetSchema())
-                    .Where(p => p is not null && !p.IsReference())
-                    .SelectMany(p => p!.GetAllSchemas());
+            var requestSchemas = requestBody
+                .GetMediaTypes()
+                .Select(p => p.GetSchema())
+                .Where(p => p is not null && !p.IsReference)
+                .SelectMany(p => p!.GetAllSchemas());
 
-                foreach (var schema in requestSchemas)
-                {
-                    yield return schema;
-                }
-            }
-
-            foreach (var responseSchema in operation
-                         .GetResponseSet()
-                         .GetResponses()
-                         .Where(p => !p.IsReference())
-                         .GetAllSchemas())
+            foreach (var schema in requestSchemas)
             {
-                yield return responseSchema;
+                yield return schema;
             }
         }
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> requestBody) =>
-            requestBody.GetMediaTypes()
-                .Select(p => p.GetSchema())
-                .Where(p => p is not null && !p.IsReference())!
-                .SelectMany(p => p!.GetAllSchemas());
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> requestBody) =>
-            requestBody.GetMediaTypes()
-                .Select(p => p.GetSchema())
-                .Where(p => p is not null && !p.IsReference())!
-                .SelectMany(p => p!.GetAllSchemas());
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
-            this ILocatedOpenApiElement<OpenApiSchema> schema)
+        foreach (var responseSchema in operation
+                     .GetResponseSet()
+                     .GetResponses()
+                     .Where(p => !p.IsReference)
+                     .GetAllSchemas())
         {
-            yield return schema;
+            yield return responseSchema;
+        }
+    }
 
-            var itemSchema = schema.GetItemSchema();
-            if (itemSchema is not null && !itemSchema.IsReference())
-            {
-                foreach (var childSchema in itemSchema.GetAllSchemas())
-                {
-                    yield return childSchema;
-                }
-            }
+    public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+        this IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> requestBody) =>
+        requestBody.GetMediaTypes()
+            .Select(p => p.GetSchema())
+            .Where(p => p is not null && !p.IsReference)!
+            .SelectMany(p => p!.GetAllSchemas());
 
-            foreach (var childSchema in schema.GetProperties()
-                         .Where(p => !p.IsReference())
-                         .SelectMany(p => p.GetAllSchemas()))
+    public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+        this IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> requestBody) =>
+        requestBody.GetMediaTypes()
+            .Select(p => p.GetSchema())
+            .Where(p => p is not null && !p.IsReference)!
+            .SelectMany(p => p!.GetAllSchemas());
+
+    public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas(
+        this ILocatedOpenApiElement<OpenApiSchema> schema)
+    {
+        yield return schema;
+
+        var itemSchema = schema.GetItemSchema();
+        if (itemSchema is not null && !itemSchema.IsReference)
+        {
+            foreach (var childSchema in itemSchema.GetAllSchemas())
             {
                 yield return childSchema;
             }
         }
 
-        #endregion
+        foreach (var childSchema in schema.GetProperties()
+                     .Where(p => !p.IsReference)
+                     .SelectMany(p => p.GetAllSchemas()))
+        {
+            yield return childSchema;
+        }
+    }
 
-        #region PathItem
+    #region PathItem
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> ToLocatedElements(this OpenApiPaths paths) =>
+    extension(OpenApiPaths paths)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> ToLocatedElements() =>
             paths.Select(p => p.Value.CreateRoot(p.Key));
+    }
 
-        #endregion
+    extension(IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas() =>
+            pathItems.SelectMany(GetAllSchemas);
 
-        #region Operation
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
+            IOperationNameProvider operationNameProvider) =>
+            pathItems.SelectMany(p => p.GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider));
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> paths) =>
-            paths.SelectMany(GetOperations);
+        public IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
+            pathItems.SelectMany(GetOperations);
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations(
-            this ILocatedOpenApiElement<OpenApiPathItem> path) =>
-            path.Element.Operations
-                .Select(operation => path.CreateChild(operation.Value, operation.Key.ToString()));
+        public IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters() =>
+            pathItems.SelectMany(GetParameters);
+    }
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> WhereOperationHasName(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations, IOperationNameProvider operationNameProvider) =>
+    extension(ILocatedOpenApiElement<OpenApiPathItem> pathItem)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemas() =>
+            pathItem.GetParameters().SelectMany(p => p.GetSchemaOrDefault().GetAllSchemas())
+                .Concat(pathItem.GetOperations().GetAllSchemas());
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
+            IOperationNameProvider operationNameProvider) =>
+            pathItem.GetParameters().SelectMany(p => p.GetSchemaOrDefault().GetAllSchemas())
+                .Concat(pathItem.GetOperations().WhereOperationHasName(operationNameProvider).GetAllSchemas());
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
+            pathItem.Element.Operations
+                .Select(operation => pathItem.CreateChild(operation.Value, operation.Key.ToString()));
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters() =>
+            pathItem.Element.Parameters?
+                .Select(p => pathItem.CreateChild(p, p.Name))
+            ?? [];
+    }
+
+    #endregion
+
+    #region Operation
+
+    extension(IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> WhereOperationHasName(
+            IOperationNameProvider operationNameProvider) =>
             operations
                 .Where(operation => !string.IsNullOrEmpty(operationNameProvider.GetOperationName(operation)));
 
-        #endregion
-
-        #region Parameters
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
+        public IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters() =>
             operations.SelectMany(GetParameters);
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters(
-            this ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        /// <summary>
+        /// Gets all operation parameters including parameters defined on the path, if applicable.
+        /// Duplicates are treated as overrides and the operation parameter is returned.
+        /// </summary>
+        public IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetAllParameters() =>
+            operations.SelectMany(GetAllParameters);
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
+            operations
+                .Select(GetRequestBody)
+                .Where(p => p != null)!;
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> GetResponseSets() =>
+            operations
+                .Select(GetResponseSet);
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags() =>
+            operations
+                .SelectMany(GetTags);
+    }
+
+    extension(ILocatedOpenApiElement<OpenApiOperation> operation)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters() =>
             operation.Element.Parameters
                 .Select(p => operation.CreateChild(p, p.Name));
 
@@ -200,16 +237,7 @@ namespace Yardarm.Spec
         /// Gets all operation parameters including parameters defined on the path, if applicable.
         /// Duplicates are treated as overrides and the operation parameter is returned.
         /// </summary>
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetAllParameters(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
-            operations.SelectMany(GetAllParameters);
-
-        /// <summary>
-        /// Gets all operation parameters including parameters defined on the path, if applicable.
-        /// Duplicates are treated as overrides and the operation parameter is returned.
-        /// </summary>
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetAllParameters(
-            this ILocatedOpenApiElement<OpenApiOperation> operation)
+        public IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetAllParameters()
         {
             var parameters = operation.GetParameters();
 
@@ -225,197 +253,174 @@ namespace Yardarm.Spec
             return parameters;
         }
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiPathItem>> pathItems) =>
-            pathItems.SelectMany(GetParameters);
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiParameter>> GetParameters(
-            this ILocatedOpenApiElement<OpenApiPathItem> pathItem) =>
-            pathItem.Element.Parameters?
-                .Select(p => pathItem.CreateChild(p, p.Name))
-            ?? Enumerable.Empty<ILocatedOpenApiElement<OpenApiParameter>>();
-
-        #endregion
-
-        #region RequestBody
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
-            operations
-                .Select(GetRequestBody)
-                .Where(p => p != null)!;
-
-        public static ILocatedOpenApiElement<OpenApiRequestBody>? GetRequestBody(
-            this ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        public ILocatedOpenApiElement<OpenApiRequestBody>? GetRequestBody() =>
             operation.Element.RequestBody != null
                 ? operation.CreateChild(operation.Element.RequestBody, "requestBody")
                 : null;
 
-        #endregion
-
-        #region ResponseSet
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> GetResponseSets(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
-            operations
-                .Select(GetResponseSet);
-
-        public static ILocatedOpenApiElement<OpenApiResponses> GetResponseSet(
-            this ILocatedOpenApiElement<OpenApiOperation> operation) =>
+        public ILocatedOpenApiElement<OpenApiResponses> GetResponseSet() =>
             operation.CreateChild(operation.Element.Responses, "responses");
 
-        #endregion
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSecurityRequirement>> GetSecurityRequirements() =>
+            operation.Element.Security
+                .Select((requirement, index) => operation.CreateChild(requirement, index.ToString()));
 
-        #region Response
+        public IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags() =>
+            operation.Element.Tags
+                .Select((tag, index) => operation.CreateChild(tag, index.ToString()));
+    }
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> responseSets) =>
+    #endregion
+
+    #region Request
+
+    extension(IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> requestBodies)
+    {
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes() =>
+            requestBodies
+                .SelectMany(GetMediaTypes);
+
+    }
+
+    extension(ILocatedOpenApiElement<OpenApiRequestBody> requestBody)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes() =>
+            requestBody.Element.Content?
+                .Select(p => requestBody.CreateChild(p.Value, p.Key))
+            ?? [];
+    }
+
+    #endregion
+
+    #region Response
+
+    extension(IEnumerable<ILocatedOpenApiElement<OpenApiResponses>> responseSets)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
             responseSets
                 .SelectMany(GetResponses);
+    }
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses(
-            this ILocatedOpenApiElement<OpenApiResponses> responseSet) =>
+    extension(ILocatedOpenApiElement<OpenApiResponses> responseSet)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
             responseSet.Element
                 .Select(p => responseSet.CreateChild(p.Value, p.Key));
 
-        public static ILocatedOpenApiElement<OpenApiUnknownResponse> GetUnknownResponse(
-            this ILocatedOpenApiElement<OpenApiResponses> responses)
+        public ILocatedOpenApiElement<OpenApiUnknownResponse> GetUnknownResponse()
         {
-            ArgumentNullException.ThrowIfNull(responses);
+            ArgumentNullException.ThrowIfNull(responseSet);
 
-            return responses.CreateChild(_unknownResponses.GetOrCreateValue(responses.Element),
+            return responseSet.CreateChild(_unknownResponses.GetOrCreateValue(responseSet.Element),
                 OpenApiUnknownResponse.Key);
         }
+    }
 
-        #endregion
+    extension(IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> responses)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes() =>
+            responses
+                .SelectMany(GetMediaTypes);
+    }
 
-        #region Tag
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> operations) =>
-            operations
-                .SelectMany(GetTags);
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags(
-            this ILocatedOpenApiElement<OpenApiOperation> operation) =>
-            operation.Element.Tags
-                .Select((tag, index) => operation.CreateChild(tag, index.ToString()));
-
-        #endregion
-
-        #region Header
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiHeader>> GetHeaders(
-            this ILocatedOpenApiElement<OpenApiResponse> response) =>
+    extension(ILocatedOpenApiElement<OpenApiResponse> response)
+    {
+        public IEnumerable<ILocatedOpenApiElement<OpenApiHeader>> GetHeaders() =>
             response.Element.Headers
                 .Select(p => response.CreateChild(p.Value, p.Key));
 
-        #endregion
-
-        #region MediaType
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> requestBody) =>
-            requestBody
-                .SelectMany(GetMediaTypes);
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes(
-            this ILocatedOpenApiElement<OpenApiRequestBody> requestBody) =>
-            requestBody.Element.Content?
-                .Select(p => requestBody.CreateChild(p.Value, p.Key))
-            ?? Enumerable.Empty<ILocatedOpenApiElement<OpenApiMediaType>>();
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes(
-            this IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> response) =>
-            response
-                .SelectMany(GetMediaTypes);
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes(
-            this ILocatedOpenApiElement<OpenApiResponse> response) =>
+        public IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes() =>
             response.Element.Content?
                 .Select(p => response.CreateChild(p.Value, p.Key))
-            ?? Enumerable.Empty<ILocatedOpenApiElement<OpenApiMediaType>>();
+            ?? [];
+    }
 
-        #endregion
+    #endregion
 
-        #region Schema
+    #region Header
 
-        public static ILocatedOpenApiElement<OpenApiSchema>? GetAdditionalProperties(
-            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
-            schema.Element.AdditionalProperties != null
-                ? schema.CreateChild(schema.Element.AdditionalProperties, "additionalProperties")
-                : null;
-
-        public static ILocatedOpenApiElement<OpenApiSchema> GetAdditionalPropertiesOrDefault(
-            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
-            GetAdditionalProperties(schema) ?? schema.CreateChild(_defaultSchema, "additionalProperties");
-
-        public static ILocatedOpenApiElement<OpenApiSchema>? GetItemSchema(
-            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
-            schema.Element.Items != null
-                ? schema.CreateChild(schema.Element.Items, "items")
-                : null;
-
-        public static ILocatedOpenApiElement<OpenApiSchema> GetItemSchemaOrDefault(
-            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
-            GetItemSchema(schema) ?? schema.CreateChild(_defaultSchema, "items");
-
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetProperties(
-            this ILocatedOpenApiElement<OpenApiSchema> schema) =>
-            schema.Element.Properties?
-                .Select(p => schema.CreateChild(p.Value, p.Key))
-            ?? Enumerable.Empty<ILocatedOpenApiElement<OpenApiSchema>>();
-
-        public static ILocatedOpenApiElement<OpenApiSchema>? GetSchema(
-            this ILocatedOpenApiElement<OpenApiHeader> header) =>
+    extension(ILocatedOpenApiElement<OpenApiHeader> header)
+    {
+        public ILocatedOpenApiElement<OpenApiSchema>? GetSchema() =>
             header.Element.Schema != null
                 ? header.CreateChild(header.Element.Schema, "schema")
                 : null;
 
-        public static ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault(
-            this ILocatedOpenApiElement<OpenApiHeader> header) =>
+        public ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault() =>
             header.GetSchema() ?? header.CreateChild(_defaultSchema, "schema");
+    }
 
-        public static ILocatedOpenApiElement<OpenApiSchema>? GetSchema(
-            this ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
+    #endregion
+
+    #region MediaType
+
+    extension(ILocatedOpenApiElement<OpenApiMediaType> mediaType)
+    {
+        public ILocatedOpenApiElement<OpenApiSchema>? GetSchema() =>
             mediaType.Element.Schema != null
                 ? mediaType.CreateChild(mediaType.Element.Schema, "schema")
                 : null;
 
-        public static ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault(
-            this ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
+        public ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault() =>
             mediaType.GetSchema() ?? mediaType.CreateChild(_defaultSchema, "schema");
+    }
 
-        public static ILocatedOpenApiElement<OpenApiSchema>? GetSchema(
-            this ILocatedOpenApiElement<OpenApiParameter> parameter) =>
+    #endregion
+
+    #region Parameter
+
+    extension(ILocatedOpenApiElement<OpenApiParameter> parameter)
+    {
+        public ILocatedOpenApiElement<OpenApiSchema>? GetSchema() =>
             parameter.Element.Schema != null
                 ? parameter.CreateChild(parameter.Element.Schema, "schema")
                 : null;
 
-        public static ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault(
-            this ILocatedOpenApiElement<OpenApiParameter> parameter) =>
+        public ILocatedOpenApiElement<OpenApiSchema> GetSchemaOrDefault() =>
             parameter.GetSchema() ?? parameter.CreateChild(_defaultSchema, "schema");
+    }
 
-        #endregion
+    #endregion
 
-        #region SecurityRequirement
+    #region Schema
 
-        public static IEnumerable<ILocatedOpenApiElement<OpenApiSecurityRequirement>> GetSecurityRequirements(
-            this ILocatedOpenApiElement<OpenApiOperation> operation) =>
-            operation.Element.Security
-                .Select((requirement, index) => operation.CreateChild(requirement, index.ToString()));
+    extension(ILocatedOpenApiElement<OpenApiSchema> schema)
+    {
+        public ILocatedOpenApiElement<OpenApiSchema>? GetAdditionalProperties() =>
+            schema.Element.AdditionalProperties != null
+                ? schema.CreateChild(schema.Element.AdditionalProperties, "additionalProperties")
+                : null;
 
-        #endregion
+        public ILocatedOpenApiElement<OpenApiSchema> GetAdditionalPropertiesOrDefault() =>
+            GetAdditionalProperties(schema) ?? schema.CreateChild(_defaultSchema, "additionalProperties");
 
-        #region SecurityRequirement
+        public ILocatedOpenApiElement<OpenApiSchema>? GetItemSchema() =>
+            schema.Element.Items != null
+                ? schema.CreateChild(schema.Element.Items, "items")
+                : null;
 
-        public static IEnumerable<KeyValuePair<ILocatedOpenApiElement<OpenApiSecurityScheme>, IList<string>>>
-            GetSecuritySchemes(this ILocatedOpenApiElement<OpenApiSecurityRequirement> requirement) =>
+        public ILocatedOpenApiElement<OpenApiSchema> GetItemSchemaOrDefault() =>
+            GetItemSchema(schema) ?? schema.CreateChild(_defaultSchema, "items");
+
+        public IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> GetProperties() =>
+            schema.Element.Properties?
+                .Select(p => schema.CreateChild(p.Value, p.Key))
+            ?? [];
+    }
+
+    #endregion
+
+    #region SecurityRequirement
+
+    extension(ILocatedOpenApiElement<OpenApiSecurityRequirement> requirement)
+    {
+        public IEnumerable<KeyValuePair<ILocatedOpenApiElement<OpenApiSecurityScheme>, IList<string>>> GetSecuritySchemes() =>
             requirement.Element
                 .Select((p, index) =>
                     new KeyValuePair<ILocatedOpenApiElement<OpenApiSecurityScheme>, IList<string>>(
                         requirement.CreateChild(p.Key, index.ToString()), p.Value));
-
-        #endregion
     }
+
+    #endregion
 }

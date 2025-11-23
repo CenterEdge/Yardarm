@@ -8,23 +8,25 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using RootNamespace.Api;
 using RootNamespace.Internal;
-using Yardarm.Client.Internal;
 
-namespace RootNamespace
+namespace RootNamespace;
+
+/// <summary>
+/// Extensions for <see cref="IApiBuilder"/>.
+/// </summary>
+public static class ApiBuilderExtensions
 {
-    /// <summary>
-    /// Extensions for <see cref="IApiBuilder"/>.
-    /// </summary>
-    public static class ApiBuilderExtensions
+    private static readonly TimeSpan s_minimumHandlerLifetime = TimeSpan.FromSeconds(1);
+
+    /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
+    extension(IApiBuilder builder)
     {
-        private static readonly TimeSpan s_minimumHandlerLifetime = TimeSpan.FromSeconds(1);
 
         #region APIs
 
         /// <summary>
         /// Add all APIs with their default concrete implementation.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureClient">Action to configure the <see cref="IHttpClientBuilder"/> called for each API. The first parameter is the type of the API interface.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -33,7 +35,7 @@ namespace RootNamespace
         /// they must all be added individually.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddAllApis(this IApiBuilder builder, Action<Type, IHttpClientBuilder>? configureClient = null)
+        public IApiBuilder AddAllApis(Action<Type, IHttpClientBuilder>? configureClient = null)
         {
             builder.AddAllApisInternal(configureClient, false);
 
@@ -43,7 +45,6 @@ namespace RootNamespace
         /// <summary>
         /// Add all unregistered APIs with their default concrete implementation.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureClient">Action to configure the <see cref="IHttpClientBuilder"/> called for each API. The first parameter is the type of the API interface.</param>
         /// <remarks>
         /// <para>
@@ -51,7 +52,7 @@ namespace RootNamespace
         /// registered individually.
         /// </para>
         /// </remarks>
-        public static void AddAllOtherApis(this IApiBuilder builder, Action<Type, IHttpClientBuilder>? configureClient = null)
+        public void AddAllOtherApis(Action<Type, IHttpClientBuilder>? configureClient = null)
         {
             builder.AddAllApisInternal(configureClient, true);
         }
@@ -61,7 +62,6 @@ namespace RootNamespace
         /// </summary>
         /// <typeparam name="TClient">The API interface.</typeparam>
         /// <typeparam name="TImplementation">The concrete API implementation.</typeparam>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureClient">An action to configure the <see cref="HttpClient"/> used by the API.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -71,13 +71,12 @@ namespace RootNamespace
         /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-            this IApiBuilder builder,
+        public IApiBuilder AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
             Action<IHttpClientBuilder>? configureClient = null)
             where TClient : class, IApi
             where TImplementation : class, TClient
         {
-            ThrowHelper.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(builder);
 
             if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
             {
@@ -99,7 +98,6 @@ namespace RootNamespace
         /// </summary>
         /// <typeparam name="TClient">The API interface.</typeparam>
         /// <typeparam name="TImplementation">The concrete API implementation.</typeparam>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
         /// <param name="configureClient">An action to configure the <see cref="HttpClient"/> used by the API.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
@@ -110,15 +108,14 @@ namespace RootNamespace
         /// <typeparamref name="TClient"/> as the service type.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-            this IApiBuilder builder,
+        public IApiBuilder AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
             string name,
             Action<IHttpClientBuilder>? configureClient = null)
             where TClient : class, IApi
             where TImplementation : class, TClient
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(name);
 
             if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
             {
@@ -139,7 +136,6 @@ namespace RootNamespace
         /// Add an API by name with its concrete implementation to the <see cref="IApiBuilder"/> and the <see cref="IServiceCollection"/>.
         /// </summary>
         /// <typeparam name="TClient">The concrete API implementation.</typeparam>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
         /// <param name="configureClient">An action to configure the <see cref="HttpClient"/> used by the API.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
@@ -149,14 +145,13 @@ namespace RootNamespace
         /// can be retrieved from <see cref="IHttpClientFactory" /> by providing the <paramref name="name"/>.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddApi<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClient>(
-            this IApiBuilder builder,
+        public IApiBuilder AddApi<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClient>(
             string name,
             Action<IHttpClientBuilder>? configureClient = null)
             where TClient : class
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(name);
 
             var clientBuilder = builder.Services.AddHttpClient<TClient>(name);
 
@@ -169,7 +164,7 @@ namespace RootNamespace
         }
 
         // Internal implementation used by AddAllApis and AddAllOtherApis
-        private static void AddAllApisInternal(this IApiBuilder builder,
+        private void AddAllApisInternal(
             Action<Type, IHttpClientBuilder>? configureClient,
             bool skipIfAlreadyRegistered)
         {
@@ -177,16 +172,15 @@ namespace RootNamespace
         }
 
         // Internal implementation used by AddAllApisInternal
-        private static void AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
-            this IApiBuilder builder,
+        private void AddApi<TClient, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
             Action<Type, IHttpClientBuilder>? configureClient,
             string name,
             bool skipIfAlreadyRegistered)
             where TClient : class, IApi
             where TImplementation : class, TClient
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(name);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(name);
 
             if (!ApiClientMappingRegistry.TryReserve(builder.Services, typeof(TClient)))
             {
@@ -212,14 +206,13 @@ namespace RootNamespace
         /// <summary>
         /// Configure the default <see cref="Authentication.Authenticators"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureAuthenticators">Delegate to configure the <see cref="Authentication.Authenticators"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
-        public static IApiBuilder ConfigureAuthenticators(this IApiBuilder builder,
+        public IApiBuilder ConfigureAuthenticators(
             Action<Authentication.Authenticators> configureAuthenticators)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureAuthenticators);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureAuthenticators);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
                 options.AuthenticatorActions.Add(configureAuthenticators));
@@ -230,14 +223,13 @@ namespace RootNamespace
         /// <summary>
         /// Configure the default <see cref="Authentication.Authenticators"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureAuthenticators">Delegate to configure the <see cref="Authentication.Authenticators"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
-        public static IApiBuilder ConfigureAuthenticators(this IApiBuilder builder,
+        public IApiBuilder ConfigureAuthenticators(
             Action<IServiceProvider, Authentication.Authenticators> configureAuthenticators)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureAuthenticators);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureAuthenticators);
 
             builder.Services.AddTransient<IConfigureOptions<ApiFactoryOptions>>(services =>
             {
@@ -257,7 +249,6 @@ namespace RootNamespace
         /// <summary>
         /// Apply common configuration to the <see cref="HttpClient"/> for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureClient">An action to configure the <see cref="HttpClient"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -266,10 +257,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigureHttpClient(this IApiBuilder builder, Action<HttpClient> configureClient)
+        public IApiBuilder ConfigureHttpClient(Action<HttpClient> configureClient)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureClient);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureClient);
 
             builder.Services.Configure<ApiFactoryOptions>(options => options.HttpClientActions.Add(configureClient));
 
@@ -279,7 +270,6 @@ namespace RootNamespace
         /// <summary>
         /// Apply common configuration to the <see cref="HttpClient"/> for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureClient">An action to configure the <see cref="HttpClient"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -288,10 +278,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigureHttpClient(this IApiBuilder builder, Action<IServiceProvider, HttpClient> configureClient)
+        public IApiBuilder ConfigureHttpClient(Action<IServiceProvider, HttpClient> configureClient)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureClient);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureClient);
 
             builder.Services.AddTransient<IConfigureOptions<ApiFactoryOptions>>(services =>
             {
@@ -311,7 +301,6 @@ namespace RootNamespace
         /// <summary>
         /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureHandler">A function to create the <see cref="HttpMessageHandler"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -320,10 +309,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigurePrimaryHttpMessageHandler(this IApiBuilder builder, Func<HttpMessageHandler> configureHandler)
+        public IApiBuilder ConfigurePrimaryHttpMessageHandler(Func<HttpMessageHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureHandler);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -336,7 +325,6 @@ namespace RootNamespace
         /// <summary>
         /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureHandler">A function to create the <see cref="HttpMessageHandler"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -345,10 +333,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigurePrimaryHttpMessageHandler(this IApiBuilder builder, Func<IServiceProvider, HttpMessageHandler> configureHandler)
+        public IApiBuilder ConfigurePrimaryHttpMessageHandler(Func<IServiceProvider, HttpMessageHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureHandler);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -362,7 +350,6 @@ namespace RootNamespace
         /// Apply a default factory for the primary <see cref="HttpMessageHandler"/> for all APIs.
         /// </summary>
         /// <typeparam name="THandler">The type of the <see cref="HttpMessageHandler"/> to request from the DI container.</typeparam>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
         /// <para>
@@ -370,10 +357,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigurePrimaryHttpMessageHandler<THandler>(this IApiBuilder builder)
+        public IApiBuilder ConfigurePrimaryHttpMessageHandler<THandler>()
             where THandler : HttpMessageHandler
         {
-            ThrowHelper.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -390,7 +377,6 @@ namespace RootNamespace
         /// <summary>
         /// Adds a delegate that will be used to create an additional message handler for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureHandler">A delegate used to create a <see cref="DelegatingHandler"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -399,10 +385,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddHttpMessageHandler(this IApiBuilder builder, Func<DelegatingHandler> configureHandler)
+        public IApiBuilder AddHttpMessageHandler(Func<DelegatingHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureHandler);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -415,7 +401,6 @@ namespace RootNamespace
         /// <summary>
         /// Adds a delegate that will be used to create an additional message handler for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureHandler">A delegate used to create a <see cref="DelegatingHandler"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -424,10 +409,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddHttpMessageHandler(this IApiBuilder builder, Func<IServiceProvider, DelegatingHandler> configureHandler)
+        public IApiBuilder AddHttpMessageHandler(Func<IServiceProvider, DelegatingHandler> configureHandler)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureHandler);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureHandler);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -441,7 +426,6 @@ namespace RootNamespace
         /// Adds an additional message handler from the dependency injection container to all APIs.
         /// </summary>
         /// <typeparam name="THandler">The type of the <see cref="DelegatingHandler"/> to request from the DI container.</typeparam>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
         /// <para>
@@ -449,10 +433,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder AddHttpMessageHandler<THandler>(this IApiBuilder builder)
+        public IApiBuilder AddHttpMessageHandler<THandler>()
             where THandler : DelegatingHandler
         {
-            ThrowHelper.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(builder);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -469,7 +453,6 @@ namespace RootNamespace
         /// <summary>
         /// Apply a default base <see cref="Uri"/> for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="uri">The base URI. The URI should generally end with a trailing "/".</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -478,10 +461,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigureBaseAddress(this IApiBuilder builder, Uri uri)
+        public IApiBuilder ConfigureBaseAddress(Uri uri)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(uri);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(uri);
 
             return builder.ConfigureHttpClient(client => client.BaseAddress = uri);
         }
@@ -489,7 +472,6 @@ namespace RootNamespace
         /// <summary>
         /// Apply a default base <see cref="Uri"/> for all APIs.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="configureUri">A delegate which retrieves the base URI. The URI should generally end with a trailing "/".</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -498,10 +480,10 @@ namespace RootNamespace
         /// via the <see cref="IHttpClientBuilder"/> for a specific API.
         /// </para>
         /// </remarks>
-        public static IApiBuilder ConfigureBaseAddress(this IApiBuilder builder, Func<IServiceProvider, Uri> configureUri)
+        public IApiBuilder ConfigureBaseAddress(Func<IServiceProvider, Uri> configureUri)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(configureUri);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(configureUri);
 
             return builder.ConfigureHttpClient((serviceProvider, client) => client.BaseAddress = configureUri(serviceProvider));
         }
@@ -513,7 +495,6 @@ namespace RootNamespace
         /// <summary>
         /// Sets the default delegate which determines whether to redact the HTTP header value before logging.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="shouldRedactHeaderValue">The delegate which determines whether to redact the HTTP header value before logging.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -524,10 +505,10 @@ namespace RootNamespace
         /// Any value set for a specific API via an <see cref="IHttpClientBuilder"/> overrides this default value.
         /// </para>
         /// </remarks>
-        public static IApiBuilder RedactLoggedHeaders(this IApiBuilder builder, Func<string, bool> shouldRedactHeaderValue)
+        public IApiBuilder RedactLoggedHeaders(Func<string, bool> shouldRedactHeaderValue)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(shouldRedactHeaderValue);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(shouldRedactHeaderValue);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -540,7 +521,6 @@ namespace RootNamespace
         /// <summary>
         /// Sets the default collection of HTTP headers names for which values should be redacted before logging.
         /// </summary>
-        /// <param name="builder">The <see cref="IApiBuilder"/>.</param>
         /// <param name="redactedLoggedHeaderNames">The collection of HTTP headers names for which values should be redacted before logging.</param>
         /// <returns>The <see cref="IApiBuilder"/>.</returns>
         /// <remarks>
@@ -548,10 +528,10 @@ namespace RootNamespace
         /// Any value set for a specific API via an <see cref="IHttpClientBuilder"/> overrides this default value.
         /// </para>
         /// </remarks>
-        public static IApiBuilder RedactLoggedHeaders(this IApiBuilder builder, IEnumerable<string> redactedLoggedHeaderNames)
+        public IApiBuilder RedactLoggedHeaders(IEnumerable<string> redactedLoggedHeaderNames)
         {
-            ThrowHelper.ThrowIfNull(builder);
-            ThrowHelper.ThrowIfNull(redactedLoggedHeaderNames);
+            ArgumentNullException.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(redactedLoggedHeaderNames);
 
             builder.Services.Configure<ApiFactoryOptions>(options =>
             {
@@ -579,9 +559,9 @@ namespace RootNamespace
         /// See <see cref="HttpClientBuilderExtensions.SetHandlerLifetime"/> for more details.
         /// </para>
         /// </remarks>
-        public static IApiBuilder SetHandlerLifetime(this IApiBuilder builder, TimeSpan handlerLifetime)
+        public IApiBuilder SetHandlerLifetime(TimeSpan handlerLifetime)
         {
-            ThrowHelper.ThrowIfNull(builder);
+            ArgumentNullException.ThrowIfNull(builder);
 
             if (handlerLifetime != Timeout.InfiniteTimeSpan && handlerLifetime < s_minimumHandlerLifetime)
             {
@@ -593,23 +573,23 @@ namespace RootNamespace
         }
 
         #endregion
-
-        #region Helpers
-
-        private static void AddCommonConfiguration(IHttpClientBuilder builder)
-        {
-            builder.Services.AddSingleton<IConfigureOptions<HttpClientFactoryOptions>>(serviceProvider =>
-                ActivatorUtilities.CreateInstance<YardarmConfigureHttpClientFactoryOptions>(serviceProvider,
-                    builder.Name));
-        }
-
-        [DoesNotReturn]
-        private static void ThrowRegistrationError(Type clientType)
-        {
-            throw new InvalidOperationException(
-                $"The API {clientType} has already been registered. It may only be registered once.");
-        }
-
-        #endregion
     }
+
+    #region Helpers
+
+    private static void AddCommonConfiguration(IHttpClientBuilder builder)
+    {
+        builder.Services.AddSingleton<IConfigureOptions<HttpClientFactoryOptions>>(serviceProvider =>
+            ActivatorUtilities.CreateInstance<YardarmConfigureHttpClientFactoryOptions>(serviceProvider,
+                builder.Name));
+    }
+
+    [DoesNotReturn]
+    private static void ThrowRegistrationError(Type clientType)
+    {
+        throw new InvalidOperationException(
+            $"The API {clientType} has already been registered. It may only be registered once.");
+    }
+
+    #endregion
 }

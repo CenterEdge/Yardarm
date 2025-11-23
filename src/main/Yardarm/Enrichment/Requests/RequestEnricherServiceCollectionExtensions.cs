@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Yardarm.Enrichment.Requests
+namespace Yardarm.Enrichment.Requests;
+
+public static class RequestEnricherServiceCollectionExtensions
 {
-    public static class RequestEnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultRequestEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultRequestEnrichers() =>
             services
                 .AddOpenApiSyntaxNodeEnricher<RequestClassMethodDocumentationEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<RequestInterfaceMethodDocumentationEnricher>()

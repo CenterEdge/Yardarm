@@ -1,11 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Yardarm.Enrichment.Compilation;
 
-namespace Yardarm.Enrichment.Authentication
+namespace Yardarm.Enrichment.Authentication;
+
+public static class AuthenticationEnricherServiceCollectionExtensions
 {
-    public static class AuthenticationEnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultAuthenticationEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultAuthenticationEnrichers() =>
             services
                 .AddOpenApiSyntaxNodeEnricher<SecuritySchemeDocumentationEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<SecuritySchemeRequestEnricher>()

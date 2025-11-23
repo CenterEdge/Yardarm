@@ -4,20 +4,19 @@ using System.Net.Http;
 using Microsoft.Extensions.Http;
 using RootNamespace.Authentication;
 
-namespace RootNamespace.Internal
+namespace RootNamespace.Internal;
+
+internal class ApiFactoryOptions
 {
-    internal class ApiFactoryOptions
-    {
-        private static readonly TimeSpan s_defaultHandlerLifetime = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan s_defaultHandlerLifetime = TimeSpan.FromMinutes(2);
 
-        public List<Action<HttpClient>> HttpClientActions { get; } = new();
+    public List<Action<HttpClient>> HttpClientActions { get; } = [];
 
-        public List<Action<HttpMessageHandlerBuilder>> HttpMessageHandlerBuilderActions { get; } = new();
+    public List<Action<HttpMessageHandlerBuilder>> HttpMessageHandlerBuilderActions { get; } = [];
 
-        public List<Action<Authenticators>> AuthenticatorActions { get; } = new();
+    public List<Action<Authenticators>> AuthenticatorActions { get; } = [];
 
-        public TimeSpan HandlerLifetime { get; set; } = s_defaultHandlerLifetime;
+    public TimeSpan HandlerLifetime { get; set; } = s_defaultHandlerLifetime;
 
-        public Func<string, bool> ShouldRedactHeaderValue { get; set; } = static _ => false;
-    }
+    public Func<string, bool> ShouldRedactHeaderValue { get; set; } = static _ => false;
 }

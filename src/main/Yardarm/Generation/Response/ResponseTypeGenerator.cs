@@ -55,7 +55,7 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
-            bool isPrimaryImplementation = Element.IsRoot() || Response.Reference == null;
+            bool isPrimaryImplementation = Element.IsRoot || Response.Reference == null;
 
             // For non-primary implementations (referencing a response in the components section),
             // inherit from the primary implementation
@@ -75,7 +75,7 @@ namespace Yardarm.Generation.Response
                         .Concat(MethodGenerators.SelectMany(p => p.Generate(Element, className)))
                         .ToArray<MemberDeclarationSyntax>());
 
-            if (Element.IsRoot())
+            if (Element.IsRoot)
             {
                 // Components should be abstract and inherited for each operation
                 declaration = declaration.AddModifiers(Token(SyntaxKind.AbstractKeyword));
@@ -105,7 +105,7 @@ namespace Yardarm.Generation.Response
 
         private IEnumerable<ConstructorDeclarationSyntax> GenerateConstructors(string className)
         {
-            var modifiers = new SyntaxTokenList(Element.IsRoot() ? Token(SyntaxKind.ProtectedKeyword) : Token(SyntaxKind.PublicKeyword));
+            var modifiers = new SyntaxTokenList(Element.IsRoot ? Token(SyntaxKind.ProtectedKeyword) : Token(SyntaxKind.PublicKeyword));
 
             // Construct from HttpResponseMessage
             yield return ConstructorDeclaration(
@@ -168,10 +168,10 @@ namespace Yardarm.Generation.Response
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
-                if (!header.IsReference())
+                if (!header.IsReference)
                 {
                     ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
-                    if (!schemaElement.IsReference())
+                    if (!schemaElement.IsReference)
                     {
                         foreach (var memberDeclaration in headerGenerator.Generate())
                         {
@@ -219,7 +219,7 @@ namespace Yardarm.Generation.Response
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
-            if (Element.IsRoot())
+            if (Element.IsRoot)
             {
                 // We're in the components section
 

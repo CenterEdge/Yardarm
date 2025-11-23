@@ -1,47 +1,46 @@
-﻿using Microsoft.Extensions.Http;
+﻿using System;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
-using Yardarm.Client.Internal;
 
-namespace RootNamespace.Internal
+namespace RootNamespace.Internal;
+
+internal class YardarmConfigureHttpClientFactoryOptions : IConfigureNamedOptions<HttpClientFactoryOptions>
 {
-    internal class YardarmConfigureHttpClientFactoryOptions : IConfigureNamedOptions<HttpClientFactoryOptions>
+    private readonly IOptions<ApiFactoryOptions> _apiFactoryOptions;
+
+    public string Name { get; }
+
+    public YardarmConfigureHttpClientFactoryOptions(string name, IOptions<ApiFactoryOptions> apiFactoryOptions)
     {
-        private readonly IOptions<ApiFactoryOptions> _apiFactoryOptions;
+        ArgumentNullException.ThrowIfNull(name, nameof(name));
+        ArgumentNullException.ThrowIfNull(apiFactoryOptions);
 
-        public string Name { get; }
+        Name = name;
+        _apiFactoryOptions = apiFactoryOptions;
+    }
 
-        public YardarmConfigureHttpClientFactoryOptions(string name, IOptions<ApiFactoryOptions> apiFactoryOptions)
+    public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
+
+    public void Configure(string? name, HttpClientFactoryOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (name == null || name == Name)
         {
-            ThrowHelper.ThrowIfNull(name, nameof(name));
-            ThrowHelper.ThrowIfNull(apiFactoryOptions);
+            ApiFactoryOptions apiFactoryOptions = _apiFactoryOptions.Value;
 
-            Name = name;
-            _apiFactoryOptions = apiFactoryOptions;
-        }
+            options.HandlerLifetime = apiFactoryOptions.HandlerLifetime;
+            options.ShouldRedactHeaderValue = apiFactoryOptions.ShouldRedactHeaderValue;
 
-        public void Configure(HttpClientFactoryOptions options) => Configure(Options.DefaultName, options);
-
-        public void Configure(string? name, HttpClientFactoryOptions options)
-        {
-            ThrowHelper.ThrowIfNull(options, nameof(options));
-
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (name == null || name == Name)
+            foreach (var action in apiFactoryOptions.HttpClientActions)
             {
-                ApiFactoryOptions apiFactoryOptions = _apiFactoryOptions.Value;
+                options.HttpClientActions.Add(action);
+            }
 
-                options.HandlerLifetime = apiFactoryOptions.HandlerLifetime;
-                options.ShouldRedactHeaderValue = apiFactoryOptions.ShouldRedactHeaderValue;
-
-                foreach (var action in apiFactoryOptions.HttpClientActions)
-                {
-                    options.HttpClientActions.Add(action);
-                }
-
-                foreach (var action in apiFactoryOptions.HttpMessageHandlerBuilderActions)
-                {
-                    options.HttpMessageHandlerBuilderActions.Add(action);
-                }
+            foreach (var action in apiFactoryOptions.HttpMessageHandlerBuilderActions)
+            {
+                options.HttpMessageHandlerBuilderActions.Add(action);
             }
         }
     }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Yardarm.Enrichment.Tags
+namespace Yardarm.Enrichment.Tags;
+
+public static class TagEnricherServiceCollectionExtensions
 {
-    public static class TagEnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultTagEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultTagEnrichers() =>
             services
                 .AddOpenApiSyntaxNodeEnricher<DeprecatedOperationEnricher>();
     }

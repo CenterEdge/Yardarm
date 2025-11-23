@@ -1,6 +1,5 @@
-﻿namespace RootNamespace.Api
+﻿namespace RootNamespace.Api;
+
+public interface IApi
 {
-    public interface IApi
-    {
-    }
 }

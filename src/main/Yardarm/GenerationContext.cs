@@ -115,6 +115,7 @@ namespace Yardarm
             new(7, 0),
             new(8, 0),
             new(9, 0),
+            new(10, 0),
         ];
 
         private static IEnumerable<string> GetNetPreprocessorSymbols(Version frameworkVersion)

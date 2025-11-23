@@ -2,27 +2,20 @@
 using System.Net.Http;
 
 // ReSharper disable once CheckNamespace
-namespace RootNamespace.Serialization
+namespace RootNamespace.Serialization;
+
+/// <summary>
+/// A response returned an unknown status code.
+/// </summary>
+public class UnknownMediaTypeException(string? mediaType, HttpContent? httpContent)
+    : Exception($"Unknown media type '{mediaType}'.")
 {
-    /// <summary>
-    /// A response returned an unknown status code.
-    /// </summary>
-    public class UnknownMediaTypeException : Exception
+    public HttpContent? HttpContent { get; } = httpContent;
+
+    public string? MediaType { get; } = mediaType;
+
+    public UnknownMediaTypeException(string? mediaType)
+        : this(mediaType, null)
     {
-        public HttpContent? HttpContent { get; }
-
-        public string? MediaType { get; }
-
-        public UnknownMediaTypeException(string? mediaType)
-            : this(mediaType, null)
-        {
-        }
-
-        public UnknownMediaTypeException(string? mediaType, HttpContent? httpContent)
-            : base($"Unknown media type '{mediaType}'.")
-        {
-            MediaType = mediaType;
-            HttpContent = httpContent;
-        }
     }
 }

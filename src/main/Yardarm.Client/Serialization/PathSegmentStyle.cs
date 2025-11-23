@@ -1,10 +1,9 @@
 ﻿// ReSharper disable once CheckNamespace
-namespace RootNamespace.Serialization
+namespace RootNamespace.Serialization;
+
+internal enum PathSegmentStyle
 {
-    internal enum PathSegmentStyle
-    {
-        Simple,
-        Label,
-        Matrix
-    }
+    Simple,
+    Label,
+    Matrix
 }

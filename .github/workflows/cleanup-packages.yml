@@ -18,34 +18,34 @@ jobs:
         package-name: Yardarm
         package-type: nuget
         min-versions-to-keep: 30
-        ignore-versions: ^(?!.*ci-pr).*$
+        ignore-versions: ^(?!.*PullRequest).*$
     - uses: actions/delete-package-versions@v5
       with:
         package-name: Yardarm.NewtonsoftJson
         package-type: nuget
         min-versions-to-keep: 30
-        ignore-versions: ^(?!.*ci-pr).*$
+        ignore-versions: ^(?!.*PullRequest).*$
     - uses: actions/delete-package-versions@v5
       with:
         package-name: Yardarm.SystemTextJson
         package-type: nuget
         min-versions-to-keep: 30
-        ignore-versions: ^(?!.*ci-pr).*$
+        ignore-versions: ^(?!.*PullRequest).*$
     - uses: actions/delete-package-versions@v5
       with:
         package-name: Yardarm.MicrosoftExtensionsHttp
         package-type: nuget
         min-versions-to-keep: 30
-        ignore-versions: ^(?!.*ci-pr).*$
+        ignore-versions: ^(?!.*PullRequest).*$
     - uses: actions/delete-package-versions@v5
       with:
         package-name: Yardarm.CommandLine
         package-type: nuget
         min-versions-to-keep: 30
-        ignore-versions: ^(?!.*ci-pr).*$
+        ignore-versions: ^(?!.*PullRequest).*$
     - uses: actions/delete-package-versions@v5
       with:
         package-name: Yardarm.Sdk
         package-type: nuget
         min-versions-to-keep: 30
-        ignore-versions: ^(?!.*ci-pr).*$
+        ignore-versions: ^(?!.*PullRequest).*$

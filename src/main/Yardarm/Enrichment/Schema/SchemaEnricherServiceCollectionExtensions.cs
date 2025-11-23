@@ -2,11 +2,13 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Yardarm.Enrichment.Schema.Internal;
 
-namespace Yardarm.Enrichment.Schema
+namespace Yardarm.Enrichment.Schema;
+
+public static class SchemaEnricherServiceCollectionExtensions
 {
-    public static class SchemaEnricherServiceCollectionExtensions
+    extension(IServiceCollection services)
     {
-        public static IServiceCollection AddDefaultSchemaEnrichers(this IServiceCollection services) =>
+        public IServiceCollection AddDefaultSchemaEnrichers() =>
             services
                 .AddOpenApiSyntaxNodeEnricher<RequiredPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<DocumentationPropertyEnricher>()
@@ -14,7 +16,7 @@ namespace Yardarm.Enrichment.Schema
                 .AddOpenApiSyntaxNodeEnricher<AdditionalPropertiesEnricher>()
                 .AddSchemaEnrichersCore();
 
-        public static IServiceCollection AddSchemaEnrichersCore(this IServiceCollection services)
+        public IServiceCollection AddSchemaEnrichersCore()
         {
             services.TryAddSingleton<ISchemaBaseTypeRegistry, SchemaBaseTypeRegistry>();
 

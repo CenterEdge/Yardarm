@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-using Yardarm.Client.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace RootNamespace.Serialization.Json
@@ -15,7 +14,7 @@ namespace RootNamespace.Serialization.Json
 
         public AdditionalPropertiesDictionary(IDictionary<string, JToken> dictionary)
         {
-            ThrowHelper.ThrowIfNull(dictionary);
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _dictionary = dictionary;
         }
@@ -85,7 +84,7 @@ namespace RootNamespace.Serialization.Json
         /// <inheritdoc />
         public void CopyTo(KeyValuePair<string, TValue>[] array, int arrayIndex)
         {
-            ThrowHelper.ThrowIfNull(array);
+            ArgumentNullException.ThrowIfNull(array);
 
             Array.Copy(this.ToArray(), 0, array, arrayIndex, Count);
         }

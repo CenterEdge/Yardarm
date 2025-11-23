@@ -6,9 +6,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.Helpers
+namespace Yardarm.Helpers;
+
+public static class PropertyHelpers
 {
-    public static class PropertyHelpers
+    extension(PropertyDeclarationSyntax property)
     {
         /// <summary>
         /// Makes the type of a <see cref="PropertyDeclarationSyntax"/> nullable, if it isn't already.
@@ -16,7 +18,7 @@ namespace Yardarm.Helpers
         /// <param name="property">The <see cref="PropertyDeclarationSyntax"/> to update.</param>
         /// <returns>The mutated property declaration, or the original if no mutation was required.</returns>
         [Pure]
-        public static PropertyDeclarationSyntax MakeNullable(this PropertyDeclarationSyntax property) =>
+        public PropertyDeclarationSyntax MakeNullable() =>
             property.Type is NullableTypeSyntax
                 ? property // Already nullable
                 : property.WithType(NullableType(property.Type));
@@ -30,8 +32,7 @@ namespace Yardarm.Helpers
         /// <param name="compilation">Current <see cref="CSharpCompilation"/>.</param>
         /// <returns>The mutated property declaration, or the original if no mutation was required.</returns>
         [Pure]
-        public static PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(this PropertyDeclarationSyntax property,
-            CSharpCompilation compilation) =>
+        public PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(CSharpCompilation compilation) =>
             MakeNullableOrInitializeIfReferenceType(property, compilation.GetSemanticModel(property.SyntaxTree));
 
         /// <summary>
@@ -43,8 +44,7 @@ namespace Yardarm.Helpers
         /// <param name="semanticModel"><see cref="SemanticModel"/> used to perform type analysis.</param>
         /// <returns>The mutated property declaration, or the original if no mutation was required.</returns>
         [Pure]
-        public static PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(this PropertyDeclarationSyntax property,
-            SemanticModel semanticModel)
+        public PropertyDeclarationSyntax MakeNullableOrInitializeIfReferenceType(SemanticModel semanticModel)
         {
             ArgumentNullException.ThrowIfNull(property);
             ArgumentNullException.ThrowIfNull(semanticModel);

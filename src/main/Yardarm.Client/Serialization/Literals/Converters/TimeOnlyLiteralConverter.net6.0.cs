@@ -1,5 +1,4 @@
 ﻿using System;
-using Yardarm.Client.Internal;
 
 namespace RootNamespace.Serialization.Literals.Converters;
 
@@ -7,7 +6,7 @@ internal sealed class TimeOnlyLiteralConverter : ValueTypeLiteralConverter<TimeO
 {
     protected override TimeOnly ReadCore(string value, string? format)
     {
-        ThrowHelper.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(value);
 
         char firstChar = value[0];
         int firstSeparator = value.AsSpan().IndexOfAny('.', ':');

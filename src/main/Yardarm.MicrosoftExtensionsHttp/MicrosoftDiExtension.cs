@@ -4,21 +4,20 @@ using Yardarm.Generation;
 using Yardarm.MicrosoftExtensionsHttp.Internal;
 using Yardarm.Packaging;
 
-namespace Yardarm.MicrosoftExtensionsHttp
+namespace Yardarm.MicrosoftExtensionsHttp;
+
+public class MicrosoftDiExtension : YardarmExtension
 {
-    public class MicrosoftDiExtension : YardarmExtension
+    public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        public override IServiceCollection ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddSingleton<IDependencyGenerator, DependencyInjectionDependencyGenerator>()
-                .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
-                .AddResourceFileEnricher<ServiceCollectionExtensionsEnricher>()
-                .AddResourceFileEnricher<ApiBuilderExtensionsEnricher>();
+        services
+            .AddSingleton<IDependencyGenerator, DependencyInjectionDependencyGenerator>()
+            .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
+            .AddResourceFileEnricher<ServiceCollectionExtensionsEnricher>()
+            .AddResourceFileEnricher<ApiBuilderExtensionsEnricher>();
 
-            return services;
-        }
-
-        public override bool IsOutputTrimmable(GenerationContext context) => true;
+        return services;
     }
+
+    public override bool IsOutputTrimmable(GenerationContext context) => true;
 }

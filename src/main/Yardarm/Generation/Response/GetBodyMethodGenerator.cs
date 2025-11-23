@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Response
 
         public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className)
         {
-            if (!response.IsRoot() && response.Element.Reference != null)
+            if (!response.IsRoot && response.Element.Reference != null)
             {
                 // Do not generator for responses within operations that are references to components, these will inherit
                 // their get body method from the component base class

@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Net.Http;
-using Yardarm.Client.Internal;
 
-namespace RootNamespace.Serialization
+namespace RootNamespace.Serialization;
+
+/// <summary>
+/// Defines how to serialize multipart/form-data properties.
+/// </summary>
+/// <typeparam name="T">Type of schema to be serialized.</typeparam>
+/// <typeparam name="TProperty">Type of the property to be serialized.</typeparam>
+internal sealed class MultipartPropertyInfo<T, TProperty> : MultipartPropertyInfo<T>
 {
-    /// <summary>
-    /// Defines how to serialize multipart/form-data properties.
-    /// </summary>
-    /// <typeparam name="T">Type of schema to be serialized.</typeparam>
-    /// <typeparam name="TProperty">Type of the property to be serialized.</typeparam>
-    internal sealed class MultipartPropertyInfo<T, TProperty> : MultipartPropertyInfo<T>
+    private readonly Func<T, TProperty> _propertyGetter;
+
+    public MultipartPropertyInfo(Func<T, TProperty> propertyGetter,
+        Func<T, MultipartFieldDetails?> detailsGetter,
+        string propertyName,
+        params string[] mediaTypes)
+        : base(detailsGetter, propertyName, mediaTypes)
     {
-        private readonly Func<T, TProperty> _propertyGetter;
+        ArgumentNullException.ThrowIfNull(propertyGetter);
 
-        public MultipartPropertyInfo(Func<T, TProperty> propertyGetter,
-            Func<T, MultipartFieldDetails?> detailsGetter,
-            string propertyName,
-            params string[] mediaTypes)
-            : base(detailsGetter, propertyName, mediaTypes)
-        {
-            ThrowHelper.ThrowIfNull(propertyGetter);
-
-            _propertyGetter = propertyGetter;
-        }
-
-        protected override HttpContent Serialize(ITypeSerializerRegistry typeSerializerRegistry,
-            string mediaType, T value) =>
-            typeSerializerRegistry.Serialize(_propertyGetter(value), mediaType);
+        _propertyGetter = propertyGetter;
     }
+
+    protected override HttpContent Serialize(ITypeSerializerRegistry typeSerializerRegistry,
+        string mediaType, T value) =>
+        typeSerializerRegistry.Serialize(_propertyGetter(value), mediaType);
 }

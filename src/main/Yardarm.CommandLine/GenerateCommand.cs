@@ -49,6 +49,7 @@ namespace Yardarm.CommandLine
                 IntermediateOutputPath = _options.IntermediateOutputPath,
                 NoRestore = _options.NoRestore,
                 ReferencedAssemblies = _options.References?.ToList(),
+                IncludedFiles = _options.IncludedFiles?.Select(p => IncludedFile.CreateFromFile(p, Directory.GetCurrentDirectory())).ToList(),
             };
 
             settings.NoWarn.AddRange(

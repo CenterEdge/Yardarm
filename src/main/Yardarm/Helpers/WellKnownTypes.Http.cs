@@ -12,6 +12,13 @@ namespace Yardarm.Helpers
         {
             public static partial class Net
             {
+                public static partial class HttpVersion
+                {
+                    public static NameSyntax Name { get; } = QualifiedName(
+                        Net.Name,
+                        IdentifierName("HttpVersion"));
+                }
+
                 public static class Http
                 {
                     public static NameSyntax Name { get; } = QualifiedName(
@@ -112,6 +119,13 @@ namespace Yardarm.Helpers
                         public static NameSyntax Name { get; } = QualifiedName(
                             Http.Name,
                             IdentifierName("HttpResponseMessage"));
+                    }
+
+                    public static class HttpVersionPolicy
+                    {
+                        public static NameSyntax Name { get; } = QualifiedName(
+                            Http.Name,
+                            IdentifierName("HttpVersionPolicy"));
                     }
 
                     public static class StreamContent

@@ -1,19 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
-namespace Yardarm.Build.Tasks
+namespace Yardarm.Build.Tasks;
+
+internal static class StringBuilderExtensions
 {
-    internal static class StringBuilderExtensions
-    {
-        private static readonly char[] CharsToEscape = {'\\', '"'};
+    private static readonly char[] CharsToEscape = ['\\', '"'];
 
+    /// <param name="builder"></param>
+    extension(StringBuilder builder)
+    {
         /// <summary>
         /// Appends wrapped in quotes, escaping any backslashes or double quotes.
         /// </summary>
-        /// <param name="builder"></param>
         /// <param name="str"></param>
-        public static void AppendQuoted(this StringBuilder builder, string? str)
+        public void AppendQuoted(string? str)
         {
             if (str is null)
             {

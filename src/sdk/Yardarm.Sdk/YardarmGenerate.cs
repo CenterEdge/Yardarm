@@ -24,6 +24,7 @@ public class YardarmGenerate : YardarmCommonTask
 
     public ITaskItem[]? SpecFile { get; set; }
     public ITaskItem[]? References { get; set; }
+    public ITaskItem[]? IncludedFiles { get; set; }
 
     protected override bool ValidateParameters()
     {
@@ -120,6 +121,17 @@ public class YardarmGenerate : YardarmCommonTask
 
                 builder.Append(' ');
                 builder.AppendQuoted(referencePath);
+            }
+        }
+
+        if (IncludedFiles is { Length: > 0 })
+        {
+            builder.Append(" --include");
+
+            foreach (var includedFile in IncludedFiles)
+            {
+                builder.Append(' ');
+                builder.AppendQuoted(includedFile.ItemSpec);
             }
         }
     }

@@ -117,6 +117,11 @@ namespace Yardarm
         /// </summary>
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// C# files to include in the compilation. These files will be compiled along with the generated source files.
+        /// </summary>
+        public List<IncludedFile>? IncludedFiles { get; set; }
+
         public CSharpCompilationOptions CompilationOptions { get; set; } =
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithDeterministic(true)

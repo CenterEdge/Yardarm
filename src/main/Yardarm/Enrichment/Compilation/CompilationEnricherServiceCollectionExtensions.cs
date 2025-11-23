@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Yardarm.Generation;
 
 namespace Yardarm.Enrichment.Compilation;
 
@@ -16,8 +17,10 @@ public static class CompilationEnricherServiceCollectionExtensions
                 .AddCompilationEnricher<SyntaxTreeCompilationEnricher>()
                 .AddCompilationEnricher<OpenApiCompilationEnricher>()
                 .AddCompilationEnricher<FormatCompilationEnricher>()
+                .AddTransient<ISyntaxTreeGenerator, IncludedFilesGenerator>()
                 .AddResourceFileEnricher<DefaultTypeSerializersEnricher>()
-                .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>();
+                .AddResourceFileEnricher<DefaultLiteralConvertersEnricher>()
+                .AddResourceFileEnricher<DefaultHttpVersionEnricher>();
 
         public IServiceCollection AddAssemblyInfoEnricher<T>()
             where T : class, IAssemblyInfoEnricher =>

@@ -4,7 +4,7 @@
 
     <AssemblyName>Yardarm.Build.Tasks</AssemblyName>
     <RootNamespace>Yardarm.Build.Tasks</RootNamespace>
-    <LangVersion>12</LangVersion>
+    <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
 
     <PackageId>Yardarm.Sdk</PackageId>

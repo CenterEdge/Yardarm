@@ -74,6 +74,8 @@ Properties to configure behaviors may be passed using the `-p` command line swit
 - `DefaultHttpVersionPolicy` - Set to `RequestVersionOrLower`, `RequestVersionOrHigher`, or `RequestVersionExact` to change the default
   HTTP version policy used by generated clients. Defaults to the runtime default (currently `RequestVersionOrLower`) and is ignored on
   downlevel runtimes that do not support this feature.
+- `UnknownDiscriminatorHandling=ReturnNull` - For System.Text.Json only, will cause discriminated objects where the discriminator value
+  is unknown to return null rather than throwing an exception during deserialization.
 
 ## Source Code
 

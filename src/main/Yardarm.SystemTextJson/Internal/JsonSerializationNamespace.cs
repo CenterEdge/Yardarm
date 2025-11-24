@@ -12,6 +12,7 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
     public NameSyntax JsonDateConverter { get; }
     public NameSyntax JsonTypeSerializer { get; }
     public NameSyntax JsonHelpers { get; }
+    public NameSyntax UnknownDiscriminatorHandling { get; }
 
     public JsonSerializationNamespace(ISerializationNamespace serializationNamespace)
     {
@@ -32,6 +33,10 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
         JsonHelpers = QualifiedName(
             Name,
             IdentifierName("JsonHelpers"));
+
+        UnknownDiscriminatorHandling = QualifiedName(
+            Name,
+            IdentifierName("UnknownDiscriminatorHandling"));
     }
 
     public InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName) =>
@@ -46,4 +51,8 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
     public TypeSyntax JsonNamedStringEnumConverterName(TypeSyntax enumType) =>
         QualifiedName(Name, GenericName(Identifier("JsonNamedStringEnumConverter"),
             TypeArgumentList(SingletonSeparatedList(enumType))));
+
+    public TypeSyntax JsonDiscriminatedObjectConverterName(TypeSyntax schemaType) =>
+        QualifiedName(Name, GenericName(Identifier("JsonDiscriminatedObjectConverter"),
+            TypeArgumentList(SingletonSeparatedList(schemaType))));
 }

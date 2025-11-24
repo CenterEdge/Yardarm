@@ -104,7 +104,7 @@ i.e. `dotnet build /p:Version=5.6.7`.
     -->
 
     <!-- May be "System.Text.Json" (default), "Newtonsoft.Json", or "None" -->
-    <JsonMode>NewtonsoftJson</JsonMode>
+    <JsonMode>Newtonsoft.Json</JsonMode>
 
     <!-- May be "Microsoft.Extensions.Http" (default) or "None" -->
     <DependencyInjectionMode>None</DependencyInjectionMode>

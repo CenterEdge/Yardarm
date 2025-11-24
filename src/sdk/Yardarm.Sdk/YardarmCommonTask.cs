@@ -58,13 +58,20 @@ namespace Yardarm.Build.Tasks
                 builder.AppendQuoted(BaseIntermediateOutputPath);
             }
 
-            if (!string.IsNullOrEmpty(AdditionalProperties))
+            if (AdditionalProperties is { Length: > 0 })
             {
-                builder.Append(" -p ");
-                builder.AppendQuoted(AdditionalProperties);
+                builder.Append(" -p");
+                foreach (var property in AdditionalProperties.Split(';'))
+                {
+                    if (property.Length > 0)
+                    {
+                        builder.Append(' ');
+                        builder.AppendQuoted(property.Trim());
+                    }
+                }
             }
 
-            if (Extensions is {Length: > 0})
+            if (Extensions is { Length: > 0 })
             {
                 builder.Append(" -x");
                 foreach (var extension in Extensions)

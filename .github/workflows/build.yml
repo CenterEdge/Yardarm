@@ -107,11 +107,11 @@ jobs:
       run: dotnet restore
     - name: Install SDK dependencies
       working-directory: ./src/sdk
-      run: dotnet restore Yardarm.Sdk.sln
+      run: dotnet restore Yardarm.Sdk.slnx
 
     - name: Build SDK
       working-directory: ./src/sdk
-      run: dotnet build --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-restore Yardarm.Sdk.sln
+      run: dotnet build --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-restore Yardarm.Sdk.slnx
     - name: Test Generate
       run: ./scripts/generate-sdk.sh
 

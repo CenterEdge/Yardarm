@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../Directory.Build.props" />
+    <File Path="../Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="Yardarm.Benchmarks/Yardarm.Benchmarks.csproj" />
+  <Project Path="Yardarm.Client.UnitTests/Yardarm.Client.UnitTests.csproj" />
+  <Project Path="Yardarm.Client/Yardarm.Client.csproj" />
+  <Project Path="Yardarm.CommandLine/Yardarm.CommandLine.csproj" />
+  <Project Path="Yardarm.MicrosoftExtensionsHttp.Client/Yardarm.MicrosoftExtensionsHttp.Client.csproj" />
+  <Project Path="Yardarm.MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp.csproj" />
+  <Project Path="Yardarm.NewtonsoftJson.Client/Yardarm.NewtonsoftJson.Client.csproj" />
+  <Project Path="Yardarm.NewtonsoftJson/Yardarm.NewtonsoftJson.csproj" />
+  <Project Path="Yardarm.NodaTime.Client/Yardarm.NodaTime.Client.csproj" />
+  <Project Path="Yardarm.NodaTime.UnitTests/Yardarm.NodaTime.UnitTests.csproj" />
+  <Project Path="Yardarm.NodaTime/Yardarm.NodaTime.csproj" />
+  <Project Path="Yardarm.SystemTextJson.Client/Yardarm.SystemTextJson.Client.csproj" />
+  <Project Path="Yardarm.SystemTextJson.UnitTests/Yardarm.SystemTextJson.UnitTests.csproj" />
+  <Project Path="Yardarm.SystemTextJson/Yardarm.SystemTextJson.csproj" />
+  <Project Path="Yardarm.UnitTests/Yardarm.UnitTests.csproj" />
+  <Project Path="Yardarm/Yardarm.csproj" />
+</Solution>

@@ -1,60 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.ProjectModel;
-using NuGet.Versioning;
 using Yardarm.Packaging;
 
-namespace Yardarm.Enrichment.Packaging
+namespace Yardarm.Enrichment.Packaging;
+
+internal class DependencyPackageSpecEnricher(
+    IEnumerable<IDependencyGenerator> dependencyGenerators)
+    : IPackageSpecEnricher
 {
-    internal class DependencyPackageSpecEnricher : IPackageSpecEnricher
+    private readonly IDependencyGenerator[] _dependencyGenerators = [.. dependencyGenerators];
+
+    public PackageSpec Enrich(PackageSpec packageSpec)
     {
-        private readonly IDependencyGenerator[] _dependencyGenerators;
-
-        public DependencyPackageSpecEnricher(IEnumerable<IDependencyGenerator> dependencyGenerators)
+        for (int i = 0; i < packageSpec.TargetFrameworks.Count; i++)
         {
-            _dependencyGenerators = dependencyGenerators.ToArray();
-        }
+            TargetFrameworkInformation targetFramework = packageSpec.TargetFrameworks[i];
 
-        public PackageSpec Enrich(PackageSpec packageSpec)
-        {
-            foreach (TargetFrameworkInformation targetFramework in packageSpec.TargetFrameworks)
+            ImmutableArray<LibraryDependency> newDependencies = targetFramework.Dependencies
+                .AddRange(_dependencyGenerators.SelectMany(p => p.GetDependencies(targetFramework.FrameworkName)));
+
+            if (!newDependencies.Equals(targetFramework.Dependencies))
             {
-                targetFramework.Dependencies.AddRange(_dependencyGenerators
-                    .SelectMany(p => p.GetDependencies(targetFramework.FrameworkName)));
-
-                if (targetFramework.FrameworkName.Framework == NuGetFrameworkConstants.NetCoreApp)
+                packageSpec.TargetFrameworks[i] = new TargetFrameworkInformation(targetFramework)
                 {
-                    targetFramework.FrameworkReferences.Add(new FrameworkDependency("Microsoft.NETCore.App",
-                        FrameworkDependencyFlags.All));
-
-                    var frameworkVersion = targetFramework.FrameworkName.Version;
-                    targetFramework.DownloadDependencies.Add(new DownloadDependency("Microsoft.NETCore.App.Ref",
-                        new VersionRange(
-                            minVersion: new NuGetVersion(frameworkVersion.Major, frameworkVersion.Minor, 0),
-                            maxVersion: new NuGetVersion(frameworkVersion.Major, frameworkVersion.Minor + 1, 0),
-                            includeMaxVersion: false)));
-                }
-                else if (targetFramework.FrameworkName.Framework == NuGetFrameworkConstants.NetStandardFramework
-                         && targetFramework.FrameworkName.Version == NuGetFrameworkConstants.NetStandard21)
-                {
-                    // Note that .NET Standard 2.0 is a library reference added by the StandardDependencyGenerator,
-                    // whereas .NET Standard 2.1 is a framework reference.
-
-                    targetFramework.FrameworkReferences.Add(new FrameworkDependency("NETStandard.Library",
-                        FrameworkDependencyFlags.All));
-
-                    targetFramework.DownloadDependencies.Add(new DownloadDependency("NETStandard.Library.Ref",
-                        new VersionRange(
-                            minVersion: new NuGetVersion(2, 1, 0),
-                            maxVersion: new NuGetVersion(2, 1, 0),
-                            includeMaxVersion: true)));
-                }
+                    Dependencies = newDependencies
+                };
             }
-
-            return packageSpec;
         }
+
+        return packageSpec;
     }
 }

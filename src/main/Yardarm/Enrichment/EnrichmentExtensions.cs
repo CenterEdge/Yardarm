@@ -32,7 +32,7 @@ public static class EnrichmentExtensions
             enrichers
                 .Sort()
                 .ToAsyncEnumerable()
-                .AggregateAwaitWithCancellationAsync(target, (p, enricher, ct) => enricher.EnrichAsync(p, ct),
+                .AggregateAsync(target, (p, enricher, ct) => enricher.EnrichAsync(p, ct),
                     cancellationToken);
 
         public ValueTask<TTarget> EnrichAsync<TContext>(IEnumerable<IAsyncEnricher<TTarget, TContext>> enrichers,
@@ -40,7 +40,7 @@ public static class EnrichmentExtensions
             enrichers
                 .Sort()
                 .ToAsyncEnumerable()
-                .AggregateAwaitWithCancellationAsync(target, (p, enricher, ct) => enricher.EnrichAsync(p, context, ct),
+                .AggregateAsync(target, (p, enricher, ct) => enricher.EnrichAsync(p, context, ct),
                     cancellationToken);
     }
 }

@@ -51,6 +51,20 @@ public class NodaPatternConverterTests
         result.Should().Be("2020-01-02");
     }
 
+    [Fact]
+    public void Serialize_LocalDateTime_ReturnsString()
+    {
+        // Act
+
+        string result = NodaLiteralConverters.LocalDateTimeConverter.Write(
+            new LocalDateTime(2020, 1, 2, 5, 30, 45),
+            "local-date-time");
+
+        // Assert
+
+        result.Should().Be("2020-01-02T05:30:45");
+    }
+
     [Theory]
     [InlineData("partial-time")]
     public void Serialize_LocalTime_ReturnsString(string format)
@@ -129,6 +143,20 @@ public class NodaPatternConverterTests
         // Assert
 
         result.Should().Be(new LocalDate(year: 2020, 01, 02));
+    }
+
+    [Fact]
+    public void Deserialize_LocalDateTime_DeserializesString()
+    {
+        // Act
+
+        var result = NodaLiteralConverters.LocalDateTimeConverter.Read(
+            "2020-01-02T05:30:45",
+            "local-date-time");
+
+        // Assert
+
+        result.Should().Be(new LocalDateTime(year: 2020, 01, 02, 05, 30, 45));
     }
 
     [Fact]

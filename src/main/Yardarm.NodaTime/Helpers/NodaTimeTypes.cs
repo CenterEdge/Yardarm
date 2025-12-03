@@ -18,6 +18,9 @@ internal static class NodaTimeTypes
     public static NameSyntax LocalDate { get; } =
         QualifiedName(NodaTime, IdentifierName("LocalDate"));
 
+    public static NameSyntax LocalDateTime { get; } =
+        QualifiedName(NodaTime, IdentifierName("LocalDateTime"));
+
     public static NameSyntax LocalTime { get; } =
         QualifiedName(NodaTime, IdentifierName("LocalTime"));
 

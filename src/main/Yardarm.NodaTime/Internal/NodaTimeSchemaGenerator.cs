@@ -20,6 +20,7 @@ internal sealed class NodaTimeSchemaGenerator(
     public static FrozenSet<string> SupportedFormats { get; } = new[]
     {
         "date-time",
+        "date-time-local",
         "date",
         "full-date",
         "partial-time",
@@ -30,6 +31,10 @@ internal sealed class NodaTimeSchemaGenerator(
     private static YardarmTypeInfo? s_localDate;
     private static YardarmTypeInfo LocalDate => s_localDate ??= new YardarmTypeInfo(
         NodaTimeTypes.LocalDate, isGenerated: false);
+
+    private static YardarmTypeInfo? s_localDateTime;
+    private static YardarmTypeInfo LocalDateTime => s_localDateTime ??= new YardarmTypeInfo(
+        NodaTimeTypes.LocalDateTime, isGenerated: false);
 
     private static YardarmTypeInfo? s_localTime;
     private static YardarmTypeInfo LocalTime => s_localTime ??= new YardarmTypeInfo(
@@ -48,6 +53,7 @@ internal sealed class NodaTimeSchemaGenerator(
         YardarmTypeInfo? typeInfo = Element.Element.Format switch
         {
             "date-time" => OffsetDateTime,
+            "date-time-local" => LocalDateTime,
             "date" or "full-date" => LocalDate,
             "partial-time" => LocalTime,
             "time" or "full-time" => OffsetTime,

@@ -9,6 +9,7 @@ namespace RootNamespace.Serialization.Literals.Converters;
 internal static class NodaLiteralConverters
 {
     private static NodaPatternLiteralConverter<LocalDate>? s_localDateConverter;
+    private static NodaPatternLiteralConverter<LocalDateTime>? s_localDateTimeConverter;
     private static NodaPatternLiteralConverter<LocalTime>? s_localTimeConverter;
     private static NodaPatternLiteralConverter<OffsetDateTime>? s_offsetDateTimeConverter;
     private static NodaPatternLiteralConverter<OffsetTime>? s_offsetTimeConverter;
@@ -19,6 +20,13 @@ internal static class NodaLiteralConverters
     public static LiteralConverter<LocalDate> LocalDateConverter => s_localDateConverter ??=
         new NodaPatternLiteralConverter<LocalDate>(
             LocalDatePattern.Iso, CreateIsoValidator<LocalDate>(x => x.Calendar));
+
+    /// <summary>
+    /// Converter for local date/times, using the ISO-8601 date pattern without a time zone identifier.
+    /// </summary>
+    public static LiteralConverter<LocalDateTime> LocalDateTimeConverter => s_localDateTimeConverter ??=
+        new NodaPatternLiteralConverter<LocalDateTime>(
+            LocalDateTimePattern.ExtendedIso, CreateIsoValidator<LocalDateTime>(x => x.Calendar));
 
     /// <summary>
     /// Converter for local times, using the ISO-8601 time pattern, extended as required to accommodate nanoseconds.

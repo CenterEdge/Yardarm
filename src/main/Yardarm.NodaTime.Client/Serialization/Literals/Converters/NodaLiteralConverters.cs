@@ -16,6 +16,13 @@ internal static class NodaLiteralConverters
             LocalDatePattern.Iso, CreateIsoValidator<LocalDate>(x => x.Calendar));
 
     /// <summary>
+    /// Converter for local date/times, using the ISO-8601 date pattern without a time zone identifier.
+    /// </summary>
+    public static LiteralConverter<LocalDateTime> LocalDateTimeConverter => field ??=
+        new NodaPatternLiteralConverter<LocalDateTime>(
+            LocalDateTimePattern.ExtendedIso, CreateIsoValidator<LocalDateTime>(x => x.Calendar));
+
+    /// <summary>
     /// Converter for local times, using the ISO-8601 time pattern, extended as required to accommodate nanoseconds.
     /// </summary>
     public static LiteralConverter<LocalTime> LocalTimeConverter => field ??=

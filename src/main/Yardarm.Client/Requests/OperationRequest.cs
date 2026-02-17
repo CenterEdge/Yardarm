@@ -2,6 +2,10 @@
 using System.Net.Http;
 using RootNamespace.Authentication;
 
+#if NET5_0_OR_GREATER
+using System.Collections.Generic;
+#endif
+
 namespace RootNamespace.Requests;
 
 /// <summary>
@@ -21,6 +25,13 @@ public abstract class OperationRequest : IOperationRequest
 
     /// <inheritdoc />
     public bool EnableResponseStreaming { get; set; }
+
+#if NET5_0_OR_GREATER
+    private HttpRequestOptions? _options;
+
+    /// <inheritdoc />
+    public HttpRequestOptions Options => _options ??= new();
+#endif
 
     /// <summary>
     /// The HTTP method of the request.
@@ -60,6 +71,11 @@ public abstract class OperationRequest : IOperationRequest
     {
         var requestMessage = new HttpRequestMessage(Method, BuildUri(context));
         ApplyHttpVersion(requestMessage);
+
+#if NET5_0_OR_GREATER
+        ApplyOptions(requestMessage);
+#endif
+
         AddHeaders(context, requestMessage);
         requestMessage.Content = BuildContent(context);
         return requestMessage;
@@ -82,4 +98,19 @@ public abstract class OperationRequest : IOperationRequest
     /// <param name="context">Context of the request.</param>
     /// <returns><see cref="Uri"/> of the request.</returns>
     protected abstract Uri BuildUri(BuildRequestContext context);
+
+#if NET5_0_OR_GREATER
+    private void ApplyOptions(HttpRequestMessage requestMessage)
+    {
+        if (_options is HttpRequestOptions options)
+        {
+            var destination = (IDictionary<string, object?>)requestMessage.Options;
+
+            foreach (KeyValuePair<string, object?> option in options)
+            {
+                destination[option.Key] = option.Value;
+            }
+        }
+    }
+#endif
 }

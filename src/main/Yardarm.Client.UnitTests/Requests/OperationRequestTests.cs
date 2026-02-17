@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using RootNamespace.Authentication;
 using RootNamespace.Requests;
 using RootNamespace.Serialization;
 using Xunit;
@@ -67,6 +68,9 @@ public class OperationRequestTests
 
     private sealed class DimOperationRequest : IOperationRequest
     {
+        public IAuthenticator Authenticator { get; set; }
+        public bool EnableResponseStreaming { get; set; }
     }
+
     private static readonly HttpRequestOptionsKey<string> s_testOptionKey = new("TestOption");
 }

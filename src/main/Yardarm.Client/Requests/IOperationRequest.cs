@@ -1,6 +1,12 @@
 ﻿using RootNamespace.Authentication;
 using RootNamespace.Responses;
 
+#if NET5_0_OR_GREATER
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Threading;
+#endif
+
 namespace RootNamespace.Requests;
 
 public interface IOperationRequest
@@ -24,4 +30,22 @@ public interface IOperationRequest
     /// </para>
     /// </remarks>
     public bool EnableResponseStreaming { get; set; }
+
+#if NET5_0_OR_GREATER
+    /// <summary>
+    /// Options to apply to the <see cref="HttpRequestMessage"/>.
+    /// </summary>
+    // This includes a DIM for backward compatibility, it should normally be unused.
+    public HttpRequestOptions Options => OperationRequestExtensions.OptionsTable.GetValue(this, static _ => []);
+#endif
 }
+
+#if NET5_0_OR_GREATER
+internal static class OperationRequestExtensions
+{
+    private static ConditionalWeakTable<IOperationRequest, HttpRequestOptions>? s_optionsTable = null;
+
+    public static ConditionalWeakTable<IOperationRequest, HttpRequestOptions> OptionsTable =>
+        s_optionsTable ?? Interlocked.CompareExchange(ref s_optionsTable, [], null) ?? s_optionsTable;
+}
+#endif

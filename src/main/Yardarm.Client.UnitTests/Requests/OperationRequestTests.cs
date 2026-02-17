@@ -45,11 +45,28 @@ public class OperationRequestTests
         Assert.False(requestMessage.Options.TryGetValue(s_testOptionKey, out _));
     }
 
+    [Fact]
+    public void Options_DefaultInterfaceMember_UsesDimImplementation()
+    {
+        // Arrange
+        IOperationRequest request = new DimOperationRequest();
+
+        // Act
+        request.Options.Set(s_testOptionKey, "TestValue");
+
+        // Assert
+        Assert.True(request.Options.TryGetValue(s_testOptionKey, out var value));
+        Assert.Equal("TestValue", value);
+    }
+
     private sealed class TestOperationRequest : OperationRequest
     {
         protected override HttpMethod Method => HttpMethod.Get;
         protected override Uri BuildUri(BuildRequestContext context) => new("https://example.com");
     }
 
+    private sealed class DimOperationRequest : IOperationRequest
+    {
+    }
     private static readonly HttpRequestOptionsKey<string> s_testOptionKey = new("TestOption");
 }

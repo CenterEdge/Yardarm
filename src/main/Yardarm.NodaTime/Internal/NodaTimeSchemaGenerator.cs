@@ -12,10 +12,10 @@ using Yardarm.Spec;
 namespace Yardarm.NodaTime.Internal;
 
 internal sealed class NodaTimeSchemaGenerator(
-    ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+    ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
     GenerationContext context,
     ITypeGenerator? parent)
-    : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
+    : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
 {
     public static FrozenSet<string> SupportedFormats { get; } = new[]
     {

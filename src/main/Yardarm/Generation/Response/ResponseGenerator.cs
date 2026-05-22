@@ -10,7 +10,7 @@ namespace Yardarm.Generation.Response
 {
     public class ResponseGenerator(
         OpenApiDocument document,
-        ITypeGeneratorRegistry<OpenApiResponse> responseGeneratorRegistry,
+        ITypeGeneratorRegistry<IOpenApiResponse> responseGeneratorRegistry,
         IOperationNameProvider operationNameProvider)
         : ISyntaxTreeGenerator
     {
@@ -24,7 +24,7 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiResponse>> GetResponses() =>
+        private IEnumerable<ILocatedOpenApiElement<IOpenApiResponse>> GetResponses() =>
             document.Components.Responses
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(document.Paths.ToLocatedElements()
@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Response
                     .GetResponseSets()
                     .GetResponses());
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiResponse> response) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiResponse> response) =>
             responseGeneratorRegistry.Get(response).GenerateSyntaxTree();
     }
 }

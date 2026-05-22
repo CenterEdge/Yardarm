@@ -10,7 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
 
-public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
 {
     private readonly IOpenApiElementRegistry _elementRegistry;
 
@@ -21,7 +21,7 @@ public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyD
         _elementRegistry = elementRegistry;
     }
 
-    public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+    public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         if (!context.LocatedElement.IsJsonSchema)
         {
@@ -36,10 +36,10 @@ public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyD
         }
 
         bool isRequired =
-            context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
+            context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
             parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
-        bool isNullable = context.LocatedElement.Element.Nullable;
+        bool isNullable = context.LocatedElement.Element.IsNullable();
 
         // We prefer not to send null values if the property is not required.
         // However, for nullable properties, prefer to send the null explicitly.

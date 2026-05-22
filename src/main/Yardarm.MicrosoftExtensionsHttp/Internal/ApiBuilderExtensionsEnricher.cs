@@ -20,8 +20,8 @@ namespace Yardarm.MicrosoftExtensionsHttp.Internal;
 /// </summary>
 internal class ApiBuilderExtensionsEnricher(
     OpenApiDocument document,
-    ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
-    [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiTag> tagImplementationGeneratorRegistry,
+    ITypeGeneratorRegistry<IOpenApiTag> tagGeneratorRegistry,
+    [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<IOpenApiTag> tagImplementationGeneratorRegistry,
     IOperationNameProvider operationNameProvider)
     : IResourceFileEnricher
 {

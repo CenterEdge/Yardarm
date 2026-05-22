@@ -9,7 +9,7 @@ namespace Yardarm.Generation.Request
 {
     public class ParameterGenerator(
         OpenApiDocument document,
-        ITypeGeneratorRegistry<OpenApiParameter> parameterGeneratorRegistry)
+        ITypeGeneratorRegistry<IOpenApiParameter> parameterGeneratorRegistry)
         : ISyntaxTreeGenerator
     {
         public IEnumerable<SyntaxTree> Generate()
@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Request
             }
         }
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiParameter> parameter) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiParameter> parameter) =>
             parameterGeneratorRegistry.Get(parameter).GenerateSyntaxTree();
     }
 }

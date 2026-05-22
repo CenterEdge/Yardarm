@@ -41,7 +41,7 @@ namespace Yardarm.Enrichment.Authentication
 
             foreach (var securityRequirement in operation.GetSecurityRequirements())
             {
-                ILocatedOpenApiElement<OpenApiSecurityScheme>[] securitySchemes = securityRequirement.GetSecuritySchemes()
+                ILocatedOpenApiElement<IOpenApiSecurityScheme>[] securitySchemes = securityRequirement.GetSecuritySchemes()
                     .Select(p => p.Key)
                     .ToArray();
 

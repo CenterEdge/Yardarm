@@ -8,6 +8,6 @@ namespace Yardarm.Generation.Request
     public interface IRequestMemberGenerator
     {
         IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType);
+            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType);
     }
 }

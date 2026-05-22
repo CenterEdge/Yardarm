@@ -4,14 +4,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.NewtonsoftJson.Helpers;
+using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, OpenApiSchema>
+    public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, IOpenApiSchema>
     {
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context) =>
-            context.Element.Type == "string"
+            OpenApiEnrichmentContext<IOpenApiSchema> context) =>
+            context.Element.HasType(JsonSchemaType.String)
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                         SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(

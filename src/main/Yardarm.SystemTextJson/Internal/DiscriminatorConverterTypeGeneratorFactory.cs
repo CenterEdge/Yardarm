@@ -6,7 +6,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.SystemTextJson.Internal;
 
-internal class DiscriminatorConverterTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiSchema>
+internal class DiscriminatorConverterTypeGeneratorFactory : ITypeGeneratorFactory<IOpenApiSchema>
 {
     private readonly GenerationContext _context;
     private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
@@ -24,6 +24,6 @@ internal class DiscriminatorConverterTypeGeneratorFactory : ITypeGeneratorFactor
         _rootNamespace = rootNamespace;
     }
 
-    public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
+    public ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiSchema> element, ITypeGenerator? parent) =>
         new DiscriminatorConverterTypeGenerator(element, _context, parent, _jsonSerializationNamespace, _rootNamespace);
 }

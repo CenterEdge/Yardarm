@@ -9,9 +9,9 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request
 {
-    public class ParameterTypeGenerator : TypeGeneratorBase<OpenApiParameter>
+    public class ParameterTypeGenerator : TypeGeneratorBase<IOpenApiParameter>
     {
-        public ParameterTypeGenerator(ILocatedOpenApiElement<OpenApiParameter> element, GenerationContext context,
+        public ParameterTypeGenerator(ILocatedOpenApiElement<IOpenApiParameter> element, GenerationContext context,
             ITypeGenerator? parent) : base(element, context, parent)
         {
         }

@@ -13,7 +13,7 @@ namespace Yardarm.Generation.Authentication
     {
         public const string BearerTokenPropertyName = "BearerToken";
 
-        public BearerSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public BearerSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

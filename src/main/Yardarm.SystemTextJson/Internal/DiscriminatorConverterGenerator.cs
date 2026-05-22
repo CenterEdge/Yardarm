@@ -11,7 +11,7 @@ namespace Yardarm.SystemTextJson.Internal;
 
 internal class DiscriminatorConverterGenerator(
     OpenApiDocument document,
-    [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiSchema> converterTypeGeneratorRegistry,
+    [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<IOpenApiSchema> converterTypeGeneratorRegistry,
     IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
 {
     public IEnumerable<SyntaxTree> Generate()

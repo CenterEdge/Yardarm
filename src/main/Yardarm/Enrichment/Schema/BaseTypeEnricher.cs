@@ -6,7 +6,7 @@ using Microsoft.OpenApi;
 
 namespace Yardarm.Enrichment.Schema
 {
-    public class BaseTypeEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
+    public class BaseTypeEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSchema>
     {
         private readonly GenerationContext _context;
 
@@ -18,7 +18,7 @@ namespace Yardarm.Enrichment.Schema
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             var feature = _context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
             var additionalBaseTypes = feature.GetBaseTypes(context.LocatedElement);

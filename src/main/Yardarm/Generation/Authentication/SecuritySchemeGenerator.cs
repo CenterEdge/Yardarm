@@ -10,9 +10,9 @@ namespace Yardarm.Generation.Authentication
     public class SecuritySchemeGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiSecurityScheme> _securitySchemeGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<IOpenApiSecurityScheme> _securitySchemeGeneratorRegistry;
 
-        public SecuritySchemeGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiSecurityScheme> securitySchemeGeneratorRegistry)
+        public SecuritySchemeGenerator(OpenApiDocument document, ITypeGeneratorRegistry<IOpenApiSecurityScheme> securitySchemeGeneratorRegistry)
         {
             ArgumentNullException.ThrowIfNull(document);
             ArgumentNullException.ThrowIfNull(securitySchemeGeneratorRegistry);
@@ -31,11 +31,11 @@ namespace Yardarm.Generation.Authentication
             }
         }
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiSecurityScheme>> GetSecuritySchemes() =>
+        private IEnumerable<ILocatedOpenApiElement<IOpenApiSecurityScheme>> GetSecuritySchemes() =>
             _document.Components.SecuritySchemes
                 .Select(p => p.Value.CreateRoot(p.Key));
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiSecurityScheme> securityScheme) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiSecurityScheme> securityScheme) =>
             _securitySchemeGeneratorRegistry.Get(securityScheme).GenerateSyntaxTree();
     }
 }

@@ -8,16 +8,16 @@ namespace Yardarm.Enrichment.Authentication
     /// <summary>
     /// Adds XML documentation to security scheme classes.
     /// </summary>
-    public class SecuritySchemeDocumentationEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSecurityScheme>
+    public class SecuritySchemeDocumentationEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSecurityScheme>
     {
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSecurityScheme> context) =>
+            OpenApiEnrichmentContext<IOpenApiSecurityScheme> context) =>
             !string.IsNullOrWhiteSpace(context.Element.Description)
                 ? AddDocumentation(target, context.Element)
                 : target;
 
         private ClassDeclarationSyntax AddDocumentation(ClassDeclarationSyntax target,
-            OpenApiSecurityScheme context) =>
+            IOpenApiSecurityScheme context) =>
             target.WithLeadingTrivia(
                 target.GetLeadingTrivia().Insert(0,
                     DocumentationSyntaxHelpers.BuildXmlCommentTrivia(

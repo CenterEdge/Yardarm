@@ -68,7 +68,7 @@ internal class TypeGeneratorRegistry<TElement> : ITypeGeneratorRegistry<TElement
             // When making the new type generator with the factory for a reference, we must ensure
             // that we are using the referenced component path for the ILocatedOpenApiElement.
 
-            var referenceId = LocatedOpenApiElementExtensions.GetReferenceId(element.Element);
+            var referenceId = element.Element.GetReferenceId();
             if (referenceId != null)
             {
                 // Get the resolved target via the Target property on the reference holder

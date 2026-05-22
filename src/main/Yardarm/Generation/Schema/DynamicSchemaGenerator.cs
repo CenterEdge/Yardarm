@@ -9,10 +9,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema
 {
     public sealed class DynamicSchemaGenerator(
-        ILocatedOpenApiElement<OpenApiSchema> element,
+        ILocatedOpenApiElement<IOpenApiSchema> element,
         GenerationContext context,
         ITypeGenerator? parent)
-        : TypeGeneratorBase<OpenApiSchema>(element, context, parent)
+        : TypeGeneratorBase<IOpenApiSchema>(element, context, parent)
     {
         internal static YardarmTypeInfo DynamicObjectTypeInfo { get; }  = new(
             NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword))),

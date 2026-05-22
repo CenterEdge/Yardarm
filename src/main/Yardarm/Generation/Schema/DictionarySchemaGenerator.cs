@@ -11,10 +11,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema
 {
     public class DictionarySchemaGenerator(
-        ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+        ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
         GenerationContext context,
         ITypeGenerator? parent)
-        : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
+        : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
     {
         protected override YardarmTypeInfo GetTypeInfo() =>
             new(WellKnownTypes.System.Collections.Generic.DictionaryT.Name(

@@ -7,8 +7,8 @@ namespace Yardarm.Enrichment.Schema
 {
     public interface ISchemaBaseTypeRegistry
     {
-        void AddBaseType(ILocatedOpenApiElement<OpenApiSchema> schema, BaseTypeSyntax type);
+        void AddBaseType(ILocatedOpenApiElement<IOpenApiSchema> schema, BaseTypeSyntax type);
 
-        IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<OpenApiSchema> schema);
+        IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<IOpenApiSchema> schema);
     }
 }

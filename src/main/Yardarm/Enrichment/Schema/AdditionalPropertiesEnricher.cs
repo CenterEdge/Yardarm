@@ -16,7 +16,7 @@ namespace Yardarm.Enrichment.Schema
     /// Adds AdditionalProperties to object schemas, but runs after the <see cref="BaseTypeEnricher"/>. This allows
     /// property shadowing with the new keyword or dropping of unnecessary duplicates.
     /// </summary>
-    public class AdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
+    public class AdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSchema>
     {
         private readonly GenerationContext _context;
 
@@ -33,7 +33,7 @@ namespace Yardarm.Enrichment.Schema
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             if (!context.Element.AdditionalPropertiesAllowed)
             {
@@ -89,14 +89,14 @@ namespace Yardarm.Enrichment.Schema
                 propertyName, isShadowing));
         }
 
-        private (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) GetDictionaryType(OpenApiEnrichmentContext<OpenApiSchema> context)
+        private (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) GetDictionaryType(OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            ILocatedOpenApiElement<OpenApiSchema> additionalProperties =
+            ILocatedOpenApiElement<IOpenApiSchema> additionalProperties =
                 context.LocatedElement.GetAdditionalPropertiesOrDefault();
             ITypeGenerator schemaGenerator = _context.TypeGeneratorRegistry.Get(additionalProperties);
 
             TypeSyntax valueType = schemaGenerator.TypeInfo.Name;
-            if (additionalProperties.Element.Nullable)
+            if (additionalProperties.Element.IsNullable())
             {
                 valueType = NullableType(valueType);
             }

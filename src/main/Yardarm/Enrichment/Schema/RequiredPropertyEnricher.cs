@@ -7,15 +7,15 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Schema
 {
-    public class RequiredPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class RequiredPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             bool isRequired =
-                context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
+                context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
                 parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
-            if (!isRequired || context.Element.Nullable)
+            if (!isRequired || context.Element.IsNullable())
             {
                 // If the property is optional OR nullable then the property should be nullable
                 // This is because .NET does not have a good way to differentiate between missing and null

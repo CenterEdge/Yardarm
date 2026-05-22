@@ -10,7 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
         private readonly IOpenApiElementRegistry _elementRegistry;
         private readonly IJsonSerializationNamespace _serializationNamespace;
@@ -24,9 +24,9 @@ namespace Yardarm.NewtonsoftJson
             _serializationNamespace = serializationNamespace;
         }
 
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            if (context.Element.Type != "string" || context.Element.Format is not "date" and not "full-date")
+            if (!context.Element.HasType(JsonSchemaType.String) || context.Element.Format is not "date" and not "full-date")
             {
                 // Only applies to date-only strings
                 return syntax;

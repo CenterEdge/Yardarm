@@ -26,7 +26,7 @@ namespace Yardarm.Serialization
                     });
         }
 
-        public SerializerDescriptorWithPriority? Select(ILocatedOpenApiElement<OpenApiMediaType> mediaType)
+        public SerializerDescriptorWithPriority? Select(ILocatedOpenApiElement<IOpenApiMediaType> mediaType)
         {
             if (_descriptors.TryGetValue(mediaType.Key, out SerializerDescriptorWithPriority descriptor))
             {

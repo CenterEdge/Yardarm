@@ -13,7 +13,7 @@ internal class HttpMethodPropertyGenerator : IRequestMemberGenerator
     public const string MethodPropertyName = "Method";
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType) =>
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType) =>
         [
             PropertyDeclaration(
                 attributeLists: default,

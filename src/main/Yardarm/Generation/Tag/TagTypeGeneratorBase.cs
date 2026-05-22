@@ -12,12 +12,12 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Tag
 {
     public abstract class TagTypeGeneratorBase(
-        ILocatedOpenApiElement<OpenApiTag> tagElement,
+        ILocatedOpenApiElement<IOpenApiTag> tagElement,
         GenerationContext context,
         IOperationNameProvider operationNameProvider)
-        : TypeGeneratorBase<OpenApiTag>(tagElement, context, null)
+        : TypeGeneratorBase<IOpenApiTag>(tagElement, context, null)
     {
-        protected OpenApiTag Tag => Element.Element;
+        protected IOpenApiTag Tag => Element.Element;
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
             ILocatedOpenApiElement<OpenApiOperation> operation)

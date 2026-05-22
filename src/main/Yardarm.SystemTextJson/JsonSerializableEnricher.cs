@@ -24,7 +24,7 @@ namespace Yardarm.SystemTextJson;
 /// </summary>
 internal class JsonSerializableEnricher : ICompilationEnricher
 {
-    private readonly ITypeGeneratorRegistry<OpenApiSchema> _schemaGeneratorRegistry;
+    private readonly ITypeGeneratorRegistry<IOpenApiSchema> _schemaGeneratorRegistry;
     private readonly string _rootNamespacePrefix;
 
     public Type[] ExecuteAfter { get; } =
@@ -33,7 +33,7 @@ internal class JsonSerializableEnricher : ICompilationEnricher
         typeof(SyntaxTreeCompilationEnricher)
     ];
 
-    public JsonSerializableEnricher(ITypeGeneratorRegistry<OpenApiSchema> schemaGeneratorRegistry, IRootNamespace rootNamespace)
+    public JsonSerializableEnricher(ITypeGeneratorRegistry<IOpenApiSchema> schemaGeneratorRegistry, IRootNamespace rootNamespace)
     {
         ArgumentNullException.ThrowIfNull(schemaGeneratorRegistry);
 
@@ -94,7 +94,7 @@ internal class JsonSerializableEnricher : ICompilationEnricher
         bool hasEmittedDynamicTypes = false;
         char[] workingBuffer = new char[256];
 
-        foreach (var type in _schemaGeneratorRegistry.GetAll().OfType<TypeGeneratorBase<OpenApiSchema>>())
+        foreach (var type in _schemaGeneratorRegistry.GetAll().OfType<TypeGeneratorBase<IOpenApiSchema>>())
         {
             if (!type.Element.IsJsonSchema)
             {

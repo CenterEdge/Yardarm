@@ -70,8 +70,8 @@ public static class YardarmCoreServiceCollectionExtensions
             services.AddTypeGeneratorFactory<OpenApiResponses, ResponseSetTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<OpenApiOperation, RequestTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<OpenApiParameter, ParameterTypeGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiTag, TagTypeGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiTag, TagImplementationTypeGeneratorFactory>(TagImplementationTypeGenerator.GeneratorCategory);
+            services.AddTypeGeneratorFactory<IOpenApiTag, TagTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiTag, TagImplementationTypeGeneratorFactory>(TagImplementationTypeGenerator.GeneratorCategory);
             services.AddTypeGeneratorFactory<OpenApiUnknownResponse, UnknownResponseTypeGeneratorFactory>();
 
             services.AddSingleton<IRequestMemberGenerator, AddHeadersMethodGenerator>();

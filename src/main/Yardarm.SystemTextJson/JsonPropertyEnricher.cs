@@ -11,10 +11,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
 
-public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
 {
     public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context)
+        OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         if (!context.LocatedElement.IsJsonSchema)
         {

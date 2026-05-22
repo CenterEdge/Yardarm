@@ -3,17 +3,18 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Enrichment;
+using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
 using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
 
-public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, OpenApiSchema>
+public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax, IOpenApiSchema>
 {
     public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context) =>
-        context.Element.Type == "string" && context.LocatedElement.IsJsonSchema
+        OpenApiEnrichmentContext<IOpenApiSchema> context) =>
+        context.Element.HasType(JsonSchemaType.String) && context.LocatedElement.IsJsonSchema
             ? EnrichEnum(target)
             : target;
 

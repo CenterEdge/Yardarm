@@ -6,7 +6,7 @@ using Yardarm.Helpers;
 
 namespace Yardarm.Enrichment.Schema
 {
-    public class DocumentationPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class DocumentationPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
         public Type[] ExecuteAfter { get; } =
         {
@@ -15,17 +15,17 @@ namespace Yardarm.Enrichment.Schema
         };
 
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context) =>
+            OpenApiEnrichmentContext<IOpenApiSchema> context) =>
             string.IsNullOrWhiteSpace(context.Element.Description)
                 ? target
                 : AddDocumentation(target, context.Element);
 
         private PropertyDeclarationSyntax AddDocumentation(PropertyDeclarationSyntax target,
-            OpenApiSchema context) =>
+            IOpenApiSchema context) =>
             target.WithLeadingTrivia(
                 target.GetLeadingTrivia().Insert(0, GetDocumentationTrivia(context)));
 
-        private SyntaxTrivia GetDocumentationTrivia(OpenApiSchema context) =>
+        private SyntaxTrivia GetDocumentationTrivia(IOpenApiSchema context) =>
             DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
                 DocumentationSyntaxHelpers.BuildSummaryElement(context.Description));
     }

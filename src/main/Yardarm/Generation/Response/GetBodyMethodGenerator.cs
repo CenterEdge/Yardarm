@@ -31,9 +31,9 @@ namespace Yardarm.Generation.Response
             SerializationNamespace = serializationNamespace;
         }
 
-        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className)
+        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<IOpenApiResponse> response, string className)
         {
-            if (!response.IsRoot && response.Element.Reference != null)
+            if (!response.IsRoot && response.Element is IOpenApiReferenceHolder)
             {
                 // Do not generator for responses within operations that are references to components, these will inherit
                 // their get body method from the component base class
@@ -45,8 +45,8 @@ namespace Yardarm.Generation.Response
                 yield break;
             }
 
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
-            ILocatedOpenApiElement<OpenApiSchema>? schema = mediaType?.GetSchema();
+            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
+            ILocatedOpenApiElement<IOpenApiSchema>? schema = mediaType?.GetSchema();
             if (schema == null)
             {
                 yield break;
@@ -70,7 +70,7 @@ namespace Yardarm.Generation.Response
         }
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            ILocatedOpenApiElement<OpenApiResponse> response, TypeSyntax returnType)
+            ILocatedOpenApiElement<IOpenApiResponse> response, TypeSyntax returnType)
         {
             // Return from _body field if not null, otherwise deserialize and set the _body field
 

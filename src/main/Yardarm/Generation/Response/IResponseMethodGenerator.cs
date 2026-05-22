@@ -7,6 +7,6 @@ namespace Yardarm.Generation.Response
 {
     public interface IResponseMethodGenerator
     {
-        IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className);
+        IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<IOpenApiResponse> response, string className);
     }
 }

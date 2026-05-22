@@ -37,8 +37,8 @@ namespace Yardarm.Spec
                 x.Element is IOpenApiReferenceHolder &&
                 y.Element is IOpenApiReferenceHolder)
             {
-                var refX = LocatedOpenApiElementExtensions.GetReferenceV3(x.Element);
-                var refY = LocatedOpenApiElementExtensions.GetReferenceV3(y.Element);
+                var refX = OpenApiReferenceExtensions.GetReferenceV3(x.Element);
+                var refY = OpenApiReferenceExtensions.GetReferenceV3(y.Element);
 
                 if (refX != null)
                 {
@@ -64,7 +64,7 @@ namespace Yardarm.Spec
 
         public int GetHashCode(ILocatedOpenApiElement<T> obj)
         {
-            var refV3 = LocatedOpenApiElementExtensions.GetReferenceV3(obj.Element);
+            var refV3 = OpenApiReferenceExtensions.GetReferenceV3(obj.Element);
             if (refV3 != null)
             {
                 return refV3.GetHashCode();

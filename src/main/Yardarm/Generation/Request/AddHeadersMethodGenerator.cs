@@ -28,7 +28,7 @@ public class AddHeadersMethodGenerator(
 
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         if (mediaType is not null)
         {
@@ -70,12 +70,12 @@ public class AddHeadersMethodGenerator(
         ILocatedOpenApiElement<OpenApiOperation> operation)
     {
         ILocatedOpenApiElement<OpenApiResponses> responseSet = operation.GetResponseSet();
-        ILocatedOpenApiElement<OpenApiResponse> primaryResponse = responseSet
+        ILocatedOpenApiElement<IOpenApiResponse> primaryResponse = responseSet
             .GetResponses()
             .OrderBy(p => p.Key)
             .First();
 
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
         if (mediaType != null)
         {
             yield return ExpressionStatement(InvocationExpression(
@@ -94,7 +94,7 @@ public class AddHeadersMethodGenerator(
             string propertyName = propertyNameFormatter.Format(headerParameter.Name);
 
             ExpressionSyntax valueExpression;
-            if (headerParameter is {Schema.Type: "array"})
+            if (headerParameter.Schema.HasType(JsonSchemaType.Array))
             {
                 valueExpression = InvocationExpression(
                     MemberAccessExpression(

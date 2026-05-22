@@ -10,10 +10,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema
 {
     public class NumberSchemaGenerator(
-        ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+        ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
         GenerationContext context,
         ITypeGenerator? parent)
-        : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
+        : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
     {
         private static YardarmTypeInfo? s_integer;
         private static YardarmTypeInfo Integer => s_integer ??= new YardarmTypeInfo(
@@ -40,17 +40,15 @@ namespace Yardarm.Generation.Schema
             PredefinedType(Token(SyntaxKind.DoubleKeyword)), NameKind.Struct, isGenerated: false);
 
         protected override YardarmTypeInfo GetTypeInfo() =>
-            (Element.Element.Type, Element.Element.Format) switch
+            Element.Element.Format switch
             {
-                (_, "int32") => Integer,
-                (_, "integer") => Integer,
-                (_, "int") => Integer,
-                (_, "int64") => Long,
-                (_, "byte") => Byte,
-                ("integer", _) => Long,
-                ("number", "decimal") => Decimal,
-                ("number", "float") => Float,
-                ("number", _) => Double,
+                "int32" or "integer" or "int" => Integer,
+                "int64" => Long,
+                "byte" => Byte,
+                "decimal" when Element.Element.HasType(JsonSchemaType.Number) => Decimal,
+                "float" when Element.Element.HasType(JsonSchemaType.Number) => Float,
+                _ when Element.Element.HasType(JsonSchemaType.Integer) => Long,
+                _ when Element.Element.HasType(JsonSchemaType.Number) => Double,
                 _ => DynamicSchemaGenerator.DynamicObjectTypeInfo
             };
 

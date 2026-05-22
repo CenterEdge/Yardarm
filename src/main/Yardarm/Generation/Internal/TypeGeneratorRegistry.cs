@@ -15,7 +15,7 @@ internal class TypeGeneratorRegistry(IServiceProvider serviceProvider) : ITypeGe
         ArgumentNullException.ThrowIfNull(element);
 
         var getTypedMethod = s_getTypedMethod ??=
-            ((Func<ILocatedOpenApiElement<OpenApiSchema>, string?, ITypeGenerator>)Get).GetMethodInfo()
+            ((Func<ILocatedOpenApiElement<IOpenApiSchema>, string?, ITypeGenerator>)Get).GetMethodInfo()
             .GetGenericMethodDefinition();
 
         return (ITypeGenerator)getTypedMethod.MakeGenericMethod(element.ElementType)

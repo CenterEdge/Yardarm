@@ -11,7 +11,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, OpenApiSchema>
+    public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, IOpenApiSchema>
     {
         protected GenerationContext Context { get; }
         protected IJsonSerializationNamespace JsonSerializationNamespace { get; }
@@ -27,15 +27,15 @@ namespace Yardarm.NewtonsoftJson
         }
 
         public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context) =>
+            OpenApiEnrichmentContext<IOpenApiSchema> context) =>
             context.Element.Discriminator?.PropertyName != null
                 ? AddJsonConverter(target, context)
                 : target;
 
         protected virtual InterfaceDeclarationSyntax AddJsonConverter(InterfaceDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            OpenApiSchema schema = context.Element;
+            IOpenApiSchema schema = context.Element;
 
             var attribute = SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(
                 SyntaxFactory.AttributeArgument(
@@ -62,15 +62,17 @@ namespace Yardarm.NewtonsoftJson
                                     // Add two parameters to the object array for each mapping
                                     // First is the string key of the mapping, second is the Type to deserialize
 
-                                    OpenApiSchema? referencedSchema = schema.OneOf
-                                        .FirstOrDefault(p => p.Reference?.ReferenceV3 == mapping.Value);
+                                    // mapping.Value is now an OpenApiSchemaReference
+                                    var mappingReferenceId = mapping.Value.GetReferenceId();
+                                    IOpenApiSchema? referencedSchema = schema.OneOf?
+                                        .FirstOrDefault(p => p is IOpenApiReferenceHolder && p.GetReferenceId() == mappingReferenceId);
 
                                     return referencedSchema != null
                                         ? new ExpressionSyntax[]
                                         {
                                             SyntaxHelpers.StringLiteral(mapping.Key), SyntaxFactory.TypeOfExpression(
                                                 Context.TypeGeneratorRegistry.Get(
-                                                    referencedSchema.CreateRoot(referencedSchema.Reference.Id)).TypeInfo.Name)
+                                                    referencedSchema.CreateRoot(referencedSchema.GetReferenceId()!)).TypeInfo.Name)
                                         }
                                         : Enumerable.Empty<ExpressionSyntax>();
                                 }))));

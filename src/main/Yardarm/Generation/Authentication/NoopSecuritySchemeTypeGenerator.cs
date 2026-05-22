@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Authentication
     {
         private readonly ILogger<NoopSecuritySchemeTypeGenerator> _logger;
 
-        public NoopSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public NoopSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace, ILogger<NoopSecuritySchemeTypeGenerator> logger)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

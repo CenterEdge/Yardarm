@@ -9,9 +9,9 @@ namespace Yardarm.Generation.Schema
     public class SchemaGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiSchema> _typeGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<IOpenApiSchema> _typeGeneratorRegistry;
 
-        public SchemaGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry)
+        public SchemaGenerator(OpenApiDocument document, ITypeGeneratorRegistry<IOpenApiSchema> typeGeneratorRegistry)
         {
             ArgumentNullException.ThrowIfNull(document);
             ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);

@@ -5,7 +5,7 @@ using Microsoft.OpenApi;
 
 namespace Yardarm.Enrichment.Responses
 {
-    public class BaseTypeEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiResponse>
+    public class BaseTypeEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiResponse>
     {
         private readonly IResponseBaseTypeRegistry _responseBaseTypeRegistry;
 
@@ -17,7 +17,7 @@ namespace Yardarm.Enrichment.Responses
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiResponse> context)
+            OpenApiEnrichmentContext<IOpenApiResponse> context)
         {
             BaseTypeSyntax[] additionalBaseTypes = _responseBaseTypeRegistry
                 .GetBaseTypes(context.LocatedElement).ToArray();

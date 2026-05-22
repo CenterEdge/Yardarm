@@ -14,7 +14,7 @@ namespace Yardarm.Generation.Schema
     {
         protected override NameKind NameKind => NameKind.Class;
 
-        public ObjectSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+        public ObjectSchemaGenerator(ILocatedOpenApiElement<IOpenApiSchema> schemaElement, GenerationContext context,
             ITypeGenerator? parent)
             : base(schemaElement, context, parent)
         {
@@ -45,7 +45,7 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual ClassDeclarationSyntax AddProperties(ClassDeclarationSyntax declaration,
-            IEnumerable<ILocatedOpenApiElement<OpenApiSchema>> properties)
+            IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> properties)
         {
             MemberDeclarationSyntax[] members = properties
                 .SelectMany(p => DeclareProperty(p, declaration.Identifier.ValueText))
@@ -55,11 +55,11 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> DeclareProperty(
-            ILocatedOpenApiElement<OpenApiSchema> property, string ownerName)
+            ILocatedOpenApiElement<IOpenApiSchema> property, string ownerName)
         {
             yield return CreatePropertyDeclaration(property, ownerName);
 
-            if (property.Element.Reference == null)
+            if (property.Element is not IOpenApiReferenceHolder)
             {
                 // This isn't a reference, so we must generate the child schema
 
@@ -72,7 +72,7 @@ namespace Yardarm.Generation.Schema
             }
         }
 
-        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<OpenApiSchema> property, string ownerName)
+        protected virtual MemberDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<IOpenApiSchema> property, string ownerName)
         {
             string propertyName = Context.NameFormatterSelector.GetFormatter(NameKind.Property).Format(property.Key);
 
@@ -95,14 +95,14 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateAdditionalPropertiesMember(
-            ILocatedOpenApiElement<OpenApiSchema> additionalProperties)
+            ILocatedOpenApiElement<IOpenApiSchema> additionalProperties)
         {
             // The AdditionalProperties element isn't generated here, it's done by the AdditionalPropertiesEnricher
             // However, we do need to generate the schema now
 
             ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(additionalProperties);
 
-            if (schemaGenerator.TypeInfo.IsGenerated && additionalProperties.Element.Reference == null)
+            if (schemaGenerator.TypeInfo.IsGenerated && additionalProperties.Element is not IOpenApiReferenceHolder)
             {
                 foreach (MemberDeclarationSyntax childTypeDeclaration in schemaGenerator.Generate())
                 {

@@ -14,7 +14,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson.Internal;
 
-internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSchema>
+internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<IOpenApiSchema>
 {
     public const string GeneratorCategory = "DiscriminatorConverter";
 
@@ -51,7 +51,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
     private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
     private readonly NameSyntax _typeName;
 
-    public DiscriminatorConverterTypeGenerator(ILocatedOpenApiElement<OpenApiSchema> element,
+    public DiscriminatorConverterTypeGenerator(ILocatedOpenApiElement<IOpenApiSchema> element,
         GenerationContext context, ITypeGenerator? parent, IJsonSerializationNamespace jsonSerializationNamespace,
         IRootNamespace rootNamespace)
         : base(element, context, parent)

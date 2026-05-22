@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Authentication
 
         private string? _apiKeyPropertyName;
 
-        public ApiKeyHeaderSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public ApiKeyHeaderSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

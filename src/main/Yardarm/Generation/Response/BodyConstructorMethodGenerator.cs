@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Response
             _mediaTypeSelector = mediaTypeSelector;
         }
 
-        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className)
+        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<IOpenApiResponse> response, string className)
         {
             var bodyType = GetBodyType(response);
             if (bodyType is null)
@@ -73,7 +73,7 @@ namespace Yardarm.Generation.Response
                             IdentifierName(ResponseTypeGenerator.BodyFieldName),
                             IdentifierName("body")))));
             }
-            else if (response.Element.Reference == null)
+            else if (response.Element is not IOpenApiReferenceHolder)
             {
                 // This is an inline response that is not a reference to a component, there is no status code on the constructor since it's known
 
@@ -147,15 +147,15 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<OpenApiResponse> response)
+        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response)
         {
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(response);
+            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = _mediaTypeSelector.Select(response);
             if (mediaType == null)
             {
                 return null;
             }
 
-            ILocatedOpenApiElement<OpenApiSchema>? schemaElement = mediaType.GetSchema();
+            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetSchema();
             if (schemaElement == null)
             {
                 return null;

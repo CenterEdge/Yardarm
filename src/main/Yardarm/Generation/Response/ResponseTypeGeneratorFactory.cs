@@ -5,7 +5,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {
-    public class ResponseTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiResponse>
+    public class ResponseTypeGeneratorFactory : ITypeGeneratorFactory<IOpenApiResponse>
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -14,7 +14,7 @@ namespace Yardarm.Generation.Response
             _serviceProvider = serviceProvider;
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiResponse> element, ITypeGenerator? parent) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiResponse> element, ITypeGenerator? parent) =>
             ActivatorUtilities.CreateInstance<ResponseTypeGenerator>(_serviceProvider, element);
     }
 }

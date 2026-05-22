@@ -20,7 +20,7 @@ namespace Yardarm.SystemTextJson;
 /// <summary>
 /// Updates additional properties members with the <see cref="JsonExtensionDataAttribute" />.
 /// </summary>
-public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiSchema>
+public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, IOpenApiSchema>
 {
     public Type[] ExecuteAfter { get; } =
     [
@@ -36,7 +36,7 @@ public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<Compi
     }
 
     public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context)
+        OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         var members = target
             .GetSpecialMembers(SpecialMembers.AdditionalProperties)

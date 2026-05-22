@@ -4,7 +4,7 @@ using Microsoft.OpenApi;
 
 namespace Yardarm.Spec
 {
-    public class TagComparer : IEqualityComparer<ILocatedOpenApiElement<OpenApiTag>>
+    public class TagComparer : IEqualityComparer<ILocatedOpenApiElement<IOpenApiTag>>
     {
         public static TagComparer Instance { get; } = new();
 
@@ -12,7 +12,7 @@ namespace Yardarm.Spec
         {
         }
 
-        public bool Equals(ILocatedOpenApiElement<OpenApiTag>? x, ILocatedOpenApiElement<OpenApiTag>? y)
+        public bool Equals(ILocatedOpenApiElement<IOpenApiTag>? x, ILocatedOpenApiElement<IOpenApiTag>? y)
         {
             if (x == null)
             {
@@ -32,6 +32,6 @@ namespace Yardarm.Spec
             return x.Element.Name == y.Element.Name;
         }
 
-        public int GetHashCode(ILocatedOpenApiElement<OpenApiTag> obj) => obj.Element.Name.GetHashCode();
+        public int GetHashCode(ILocatedOpenApiElement<IOpenApiTag> obj) => obj.Element.Name.GetHashCode();
     }
 }

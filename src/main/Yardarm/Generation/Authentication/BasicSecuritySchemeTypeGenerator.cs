@@ -18,7 +18,7 @@ namespace Yardarm.Generation.Authentication
         public const string PasswordPropertyName = "Password";
         public const string CacheFieldName = "_cache";
 
-        public BasicSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public BasicSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

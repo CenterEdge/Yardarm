@@ -7,8 +7,8 @@ namespace Yardarm.Enrichment.Responses
 {
     public interface IResponseBaseTypeRegistry
     {
-        void AddBaseType(ILocatedOpenApiElement<OpenApiResponse> response, BaseTypeSyntax type);
+        void AddBaseType(ILocatedOpenApiElement<IOpenApiResponse> response, BaseTypeSyntax type);
 
-        IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<OpenApiResponse> response);
+        IEnumerable<BaseTypeSyntax> GetBaseTypes(ILocatedOpenApiElement<IOpenApiResponse> response);
     }
 }

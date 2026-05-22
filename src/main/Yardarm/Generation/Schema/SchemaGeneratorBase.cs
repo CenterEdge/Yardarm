@@ -8,13 +8,13 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
-    public abstract class SchemaGeneratorBase : TypeGeneratorBase<OpenApiSchema>
+    public abstract class SchemaGeneratorBase : TypeGeneratorBase<IOpenApiSchema>
     {
-        protected OpenApiSchema Schema => Element.Element;
+        protected IOpenApiSchema Schema => Element.Element;
 
         protected abstract NameKind NameKind { get; }
 
-        protected SchemaGeneratorBase(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+        protected SchemaGeneratorBase(ILocatedOpenApiElement<IOpenApiSchema> schemaElement, GenerationContext context,
             ITypeGenerator? parent)
             : base(schemaElement, context, parent)
         {
@@ -22,7 +22,8 @@ namespace Yardarm.Generation.Schema
 
         protected override YardarmTypeInfo GetTypeInfo()
         {
-            if (Schema.Reference != null)
+            var referenceId = Schema.GetReferenceId();
+            if (referenceId != null)
             {
                 NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
@@ -30,7 +31,7 @@ namespace Yardarm.Generation.Schema
 
                 return new YardarmTypeInfo(
                     SyntaxFactory.QualifiedName(ns,
-                        SyntaxFactory.IdentifierName(formatter.Format(Schema.Reference.Id))),
+                        SyntaxFactory.IdentifierName(formatter.Format(referenceId))),
                     NameKind);
             }
 

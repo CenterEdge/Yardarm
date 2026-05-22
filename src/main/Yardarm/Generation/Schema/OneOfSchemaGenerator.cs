@@ -17,7 +17,7 @@ namespace Yardarm.Generation.Schema
     {
         protected override NameKind NameKind => NameKind.Interface;
 
-        public OneOfSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+        public OneOfSchemaGenerator(ILocatedOpenApiElement<IOpenApiSchema> schemaElement, GenerationContext context,
             ITypeGenerator? parent)
             : base(schemaElement, context, parent)
         {
@@ -34,8 +34,8 @@ namespace Yardarm.Generation.Schema
             // Register the referenced schema to implement this interface
             var baseTypeRegistry = Context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
             foreach (var referencedSchema in Schema.OneOf
-                .Where(p => p.Reference != null)
-                .Select(p => ((OpenApiSchema) Context.Document.ResolveReference(p.Reference)).CreateRoot(p.Reference.Id)))
+                .Where(p => p is IOpenApiReferenceHolder)
+                .Select(p => p.CreateRoot(p.GetReferenceId()!)))
             {
                 baseTypeRegistry.AddBaseType(referencedSchema, SyntaxFactory.SimpleBaseType(interfaceNameAndNamespace));
             }

@@ -1,16 +1,17 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
+using Yardarm.Spec;
 using Yardarm.Helpers;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Requests
 {
-    public class RequiredParameterEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiParameter>
+    public class RequiredParameterEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiParameter>
     {
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiParameter> context)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiParameter> context)
         {
-            if (!context.Element.Required || context.Element.Schema.Nullable)
+            if (!context.Element.Required || context.Element.Schema.IsNullable())
             {
                 // If the parameter is optional OR nullable then the property should be nullable
                 // This is because .NET does not have a good way to differentiate between missing and null

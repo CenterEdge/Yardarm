@@ -4,7 +4,7 @@ using Yardarm.Spec;
 
 namespace Yardarm.Generation.Response
 {
-    public class HeaderTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiHeader>
+    public class HeaderTypeGeneratorFactory : ITypeGeneratorFactory<IOpenApiHeader>
     {
         private readonly GenerationContext _context;
 
@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Response
             _context = context;
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiHeader> element, ITypeGenerator? parent) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiHeader> element, ITypeGenerator? parent) =>
             new HeaderTypeGenerator(element, _context, parent);
     }
 }

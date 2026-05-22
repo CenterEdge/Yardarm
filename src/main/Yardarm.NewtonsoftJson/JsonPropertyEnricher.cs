@@ -11,10 +11,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             if (target.Parent is ClassDeclarationSyntax classDeclaration &&
                 classDeclaration.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator))
@@ -28,10 +28,10 @@ namespace Yardarm.NewtonsoftJson
                     AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
 
             bool isRequired =
-                context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
+                context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
                 parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
-            bool isNullable = context.LocatedElement.Element.Nullable;
+            bool isNullable = context.LocatedElement.Element.IsNullable();
 
             if (!isRequired && !isNullable)
             {

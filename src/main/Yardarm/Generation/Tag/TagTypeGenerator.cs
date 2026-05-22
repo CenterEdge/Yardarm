@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Tag
     {
         private readonly IApiNamespace _apiNamespace;
 
-        public TagTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+        public TagTypeGenerator(ILocatedOpenApiElement<IOpenApiTag> tagElement, GenerationContext context,
             IApiNamespace apiNamespace, IOperationNameProvider operationNameProvider)
             : base(tagElement, context, operationNameProvider)
         {

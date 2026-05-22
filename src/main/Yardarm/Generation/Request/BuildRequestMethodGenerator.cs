@@ -27,7 +27,7 @@ public class BuildRequestMethodGenerator(
     protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         if (mediaType is not null)
         {

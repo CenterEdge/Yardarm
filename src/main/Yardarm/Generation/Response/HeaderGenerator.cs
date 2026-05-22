@@ -10,9 +10,9 @@ namespace Yardarm.Generation.Response
     public class HeaderGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiHeader> _headerGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<IOpenApiHeader> _headerGeneratorRegistry;
 
-        public HeaderGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiHeader> headerGeneratorRegistry)
+        public HeaderGenerator(OpenApiDocument document, ITypeGeneratorRegistry<IOpenApiHeader> headerGeneratorRegistry)
         {
             ArgumentNullException.ThrowIfNull(document);
             ArgumentNullException.ThrowIfNull(headerGeneratorRegistry);
@@ -32,7 +32,7 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiHeader> parameter) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiHeader> parameter) =>
             _headerGeneratorRegistry.Get(parameter).GenerateSyntaxTree();
     }
 }

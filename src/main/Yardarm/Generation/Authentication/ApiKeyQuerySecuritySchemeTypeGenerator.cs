@@ -10,7 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Authentication
 {
     public class ApiKeyQuerySecuritySchemeTypeGenerator(
-        ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement,
+        ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement,
         GenerationContext context,
         IAuthenticationNamespace authenticationNamespace,
         ISerializationNamespace serializationNamespace)

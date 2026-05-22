@@ -19,10 +19,10 @@ namespace Yardarm.SystemTextJson;
 /// in the future if we're mixing JSON and non-JSON content types using the same schema. But we don't do that now so we'll
 /// cross that bridge when we come to it.
 /// </remarks>
-public class JsonNodeEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiSchema>
+public class JsonNodeEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, IOpenApiSchema>
 {
     public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context)
+        OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         var dynamicTypes = target
             .DescendantNodes(p =>

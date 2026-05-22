@@ -10,11 +10,11 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema
 {
-    public class ArraySchemaGenerator : TypeGeneratorBase<OpenApiSchema>
+    public class ArraySchemaGenerator : TypeGeneratorBase<IOpenApiSchema>
     {
-        protected OpenApiSchema Schema => Element.Element;
+        protected IOpenApiSchema Schema => Element.Element;
 
-        public ArraySchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+        public ArraySchemaGenerator(ILocatedOpenApiElement<IOpenApiSchema> schemaElement, GenerationContext context,
             ITypeGenerator? parent)
             : base(schemaElement, context, parent)
         {
@@ -31,14 +31,14 @@ namespace Yardarm.Generation.Schema
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {
-            ILocatedOpenApiElement<OpenApiSchema> itemSchema = GetItemSchema();
+            ILocatedOpenApiElement<IOpenApiSchema> itemSchema = GetItemSchema();
 
-            return itemSchema.Element.Reference is null
+            return itemSchema.Element is not IOpenApiReferenceHolder
                 ? Context.TypeGeneratorRegistry.Get(itemSchema).Generate()
                 : Enumerable.Empty<MemberDeclarationSyntax>();
         }
 
-        private ILocatedOpenApiElement<OpenApiSchema> GetItemSchema() =>
+        private ILocatedOpenApiElement<IOpenApiSchema> GetItemSchema() =>
             Element.GetItemSchemaOrDefault();
 
         /// <summary>

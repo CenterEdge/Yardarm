@@ -8,9 +8,9 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response
 {
-    public class HeaderTypeGenerator : TypeGeneratorBase<OpenApiHeader>
+    public class HeaderTypeGenerator : TypeGeneratorBase<IOpenApiHeader>
     {
-        public HeaderTypeGenerator(ILocatedOpenApiElement<OpenApiHeader> element, GenerationContext context,
+        public HeaderTypeGenerator(ILocatedOpenApiElement<IOpenApiHeader> element, GenerationContext context,
             ITypeGenerator? parent) : base(element, context, parent)
         {
         }

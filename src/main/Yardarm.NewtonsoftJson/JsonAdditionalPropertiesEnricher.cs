@@ -20,7 +20,7 @@ namespace Yardarm.NewtonsoftJson
     /// Also wires up a private field to use <see cref="JsonExtensionDataAttribute"/> to serializer/deserialize
     /// the properties.
     /// </summary>
-    public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiSchema>
+    public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, IOpenApiSchema>
     {
         private const string BackingFieldName = "_additionalProperties";
         private const string WrapperFieldName = "_additionalPropertiesWrapper";
@@ -56,7 +56,7 @@ namespace Yardarm.NewtonsoftJson
         }
 
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             var members = target.GetSpecialMembers(SpecialMembers.AdditionalProperties)
                 .OfType<PropertyDeclarationSyntax>().ToArray();

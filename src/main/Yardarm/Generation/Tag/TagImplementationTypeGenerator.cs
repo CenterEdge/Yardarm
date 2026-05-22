@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Tag
         private readonly IAuthenticationNamespace _authenticationNamespace;
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
-        public TagImplementationTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+        public TagImplementationTypeGenerator(ILocatedOpenApiElement<IOpenApiTag> tagElement, GenerationContext context,
             ISerializationNamespace serializationNamespace, IAuthenticationNamespace authenticationNamespace,
             IOperationMethodGenerator operationMethodGenerator, IOperationNameProvider operationNameProvider)
             : base(tagElement, context, operationNameProvider)
@@ -50,7 +50,7 @@ namespace Yardarm.Generation.Tag
         {
             string className = GetClassName();
 
-            var baseType = Context.TypeGeneratorRegistry.Get<OpenApiTag>(Element);
+            var baseType = Context.TypeGeneratorRegistry.Get<IOpenApiTag>(Element);
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)

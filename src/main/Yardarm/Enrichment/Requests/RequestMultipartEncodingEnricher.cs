@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
+using Yardarm.Spec;
 using Yardarm.Enrichment.Schema;
 using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
@@ -15,7 +16,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Requests
 {
-    public class RequestMultipartEncodingEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiMediaType>
+    public class RequestMultipartEncodingEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiMediaType>
     {
         public Type[] ExecuteBefore { get; } =
         {
@@ -40,11 +41,11 @@ namespace Yardarm.Enrichment.Requests
         };
 
         private readonly ISerializationNamespace _serializationNamespace;
-        private readonly ITypeGeneratorRegistry<OpenApiSchema> _schemaRegistry;
+        private readonly ITypeGeneratorRegistry<IOpenApiSchema> _schemaRegistry;
         private readonly INameFormatter _propertyNameFormatter;
 
         public RequestMultipartEncodingEnricher(ISerializationNamespace serializationNamespace,
-            ITypeGeneratorRegistry<OpenApiSchema> schemaRegistry,
+            ITypeGeneratorRegistry<IOpenApiSchema> schemaRegistry,
             INameFormatterSelector nameFormatterSelector)
         {
             ArgumentNullException.ThrowIfNull(serializationNamespace);
@@ -57,14 +58,14 @@ namespace Yardarm.Enrichment.Requests
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiMediaType> context) =>
+            OpenApiEnrichmentContext<IOpenApiMediaType> context) =>
             IsMultipartEncoding(context.LocatedElement.Key)
             && target.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator)
                 ? AddSerializationData(AddBodyClass(target, context, out TypeSyntax? bodyType), context, bodyType)
                 : target;
 
         private ClassDeclarationSyntax AddBodyClass(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiMediaType> context,
+            OpenApiEnrichmentContext<IOpenApiMediaType> context,
             out TypeSyntax? bodyType)
         {
             var bodyProperty = target.Members
@@ -117,7 +118,7 @@ namespace Yardarm.Enrichment.Requests
         }
 
         private ClassDeclarationSyntax AddSerializationData(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiMediaType> element, TypeSyntax? bodyType)
+            OpenApiEnrichmentContext<IOpenApiMediaType> element, TypeSyntax? bodyType)
         {
             if (bodyType is null)
             {
@@ -165,7 +166,7 @@ namespace Yardarm.Enrichment.Requests
         }
 
         private ArgumentSyntax CreateArgument(TypeSyntax classIdentifier, string propertyName,
-            OpenApiSchema propertySchema, OpenApiEncoding? encoding)
+            IOpenApiSchema propertySchema, OpenApiEncoding? encoding)
         {
             var mediaTypes = encoding?.ContentType != null
                 ? GetMediaTypes(encoding.ContentType)
@@ -202,16 +203,17 @@ namespace Yardarm.Enrichment.Requests
                 ArgumentList(SeparatedList(arguments))));
         }
 
-        private static ArgumentSyntax[] SelectDefaultMediaTypes(OpenApiSchema schema) =>
+        private static ArgumentSyntax[] SelectDefaultMediaTypes(IOpenApiSchema schema) =>
             schema switch
             {
-                {Type: "string", Format: "binary" or "base64"} => OctetStreamEncoding,
-                {Type: "object"} or {Type: "array", Items.Type: "object"} => JsonEncoding,
+                _ when schema.HasType(JsonSchemaType.String) && schema.Format is "binary" or "base64" => OctetStreamEncoding,
+                _ when schema.HasType(JsonSchemaType.Object) => JsonEncoding,
+                _ when schema.HasType(JsonSchemaType.Array) && schema.Items is not null && schema.Items.HasType(JsonSchemaType.Object) => JsonEncoding,
                 _ => PlainTextEncoding
             };
 
-        private static IEnumerable<KeyValuePair<string, OpenApiSchema>> GetProperties(OpenApiMediaType element) =>
-            element.Schema?.Properties ?? Enumerable.Empty<KeyValuePair<string, OpenApiSchema>>();
+        private static IEnumerable<KeyValuePair<string, IOpenApiSchema>> GetProperties(IOpenApiMediaType element) =>
+            element.Schema?.Properties ?? Enumerable.Empty<KeyValuePair<string, IOpenApiSchema>>();
 
         private static IEnumerable<string> GetMediaTypes(string contentType) =>
             contentType.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation;

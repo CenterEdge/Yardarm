@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Response;
 using Yardarm.Spec;
 

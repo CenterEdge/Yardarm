@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 
 namespace Yardarm.Spec;
@@ -37,7 +36,7 @@ public static class LocatedOpenApiElementExtensions
     extension<T>(ILocatedOpenApiElement<T> element)
         where T : IOpenApiReferenceable
     {
-        public bool IsReference => element.Element.Reference != null;
+        public bool IsReference => element.Element is IOpenApiReferenceHolder;
     }
 
     extension<T>(T rootItem)
@@ -56,9 +55,34 @@ public static class LocatedOpenApiElementExtensions
 
     extension(OpenApiDocument document)
     {
-        public ILocatedOpenApiElement<T> ResolveComponentReference<T>(OpenApiReference reference)
-            where T : IOpenApiElement =>
-            ((T)document.ResolveReference(reference)).CreateRoot(reference.Id);
+        /// <summary>
+        /// Gets the reference ID from a reference holder element, or null if not a reference.
+        /// </summary>
+        public static string? GetReferenceId(IOpenApiElement element) =>
+            GetBaseReference(element)?.Id;
+
+        /// <summary>
+        /// Gets the ReferenceV3 string from a reference holder element, or null if not a reference.
+        /// </summary>
+        public static string? GetReferenceV3(IOpenApiElement element) =>
+            GetBaseReference(element)?.ReferenceV3;
+
+        /// <summary>
+        /// Gets the BaseOpenApiReference from an element if it is a reference holder.
+        /// </summary>
+        private static BaseOpenApiReference? GetBaseReference(IOpenApiElement element)
+        {
+            if (element is not IOpenApiReferenceHolder)
+            {
+                return null;
+            }
+
+            // All reference holders in Microsoft.OpenApi derive from BaseOpenApiReferenceHolder<T,U,V>
+            // which has a public property Reference of type V : BaseOpenApiReference.
+            // We can access it via the IOpenApiReferenceHolder<V> interface using reflection on the generic interface.
+            var refProp = element.GetType().GetProperty("Reference");
+            return refProp?.GetValue(element) as BaseOpenApiReference;
+        }
 
         // These methods collect all schemas directly owned by a given object (not a reference), including recursive
         // lookups within schemas.

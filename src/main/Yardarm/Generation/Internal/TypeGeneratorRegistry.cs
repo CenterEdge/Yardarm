@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Internal;

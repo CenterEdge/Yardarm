@@ -1,9 +1,9 @@
-﻿using System;
+using Microsoft.OpenApi;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Interfaces;
 using Yardarm.Helpers;
 using Yardarm.Spec;
 

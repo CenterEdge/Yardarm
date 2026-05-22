@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi;
+using System.Collections.Generic;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation;

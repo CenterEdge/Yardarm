@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Names;
 using Yardarm.Spec;
 
@@ -44,28 +44,21 @@ namespace Yardarm.Generation.Schema
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
             ILocatedOpenApiElement<OpenApiSchema> schemaElement,
-            IOpenApiAny value,
+            JsonNode? value,
             INameFormatter nameFormatter,
             NamingContext namingContext)
         {
-            if (value.AnyType != AnyType.Primitive)
+            string? stringValue = value?.GetValue<string>();
+            if (stringValue is null)
             {
                 return null;
             }
 
-            var primitive = (IOpenApiPrimitive) value;
-            if (primitive.PrimitiveType != PrimitiveType.String)
-            {
-                return null;
-            }
-
-            var stringPrimitive = (OpenApiPrimitive<string>)primitive;
-
-            string memberName = namingContext.RegisterName(nameFormatter.Format(stringPrimitive.Value));
+            string memberName = namingContext.RegisterName(nameFormatter.Format(stringValue));
 
             return SyntaxFactory.EnumMemberDeclaration(memberName)
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                    CreateEnumMemberAttribute(stringPrimitive.Value))
+                    CreateEnumMemberAttribute(stringValue))
                     .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
         }
 

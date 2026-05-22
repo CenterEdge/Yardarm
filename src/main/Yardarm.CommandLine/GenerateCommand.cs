@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Reader;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using Serilog;
@@ -132,11 +132,13 @@ namespace Yardarm.CommandLine
 
         protected async Task<OpenApiDocument> ReadDocumentAsync()
         {
-            var reader = new OpenApiStreamReader();
+            var settings = new OpenApiReaderSettings();
+            settings.AddYamlReader();
 
             await using var stream = File.OpenRead(_options.InputFile);
 
-            return reader.Read(stream, out _);
+            var result = await OpenApiDocument.LoadAsync(stream, settings: settings);
+            return result.Document;
         }
 
         private void ApplyVersion(YardarmGenerationSettings settings)

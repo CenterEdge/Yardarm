@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.OpenApi.Models;
+using System;
+using Microsoft.OpenApi;
 using Yardarm.Generation;
 using Yardarm.Names;
 using Yardarm.Spec;

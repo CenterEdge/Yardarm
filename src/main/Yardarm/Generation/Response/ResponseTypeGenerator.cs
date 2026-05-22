@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -7,7 +7,7 @@ using System.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
@@ -55,14 +55,24 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
-            bool isPrimaryImplementation = Element.IsRoot || Response.Reference == null;
+            bool isPrimaryImplementation = Element.IsRoot || !Element.IsReference;
 
             // For non-primary implementations (referencing a response in the components section),
             // inherit from the primary implementation
-            TypeSyntax baseType = isPrimaryImplementation
-                ? ResponsesNamespace.OperationResponse
-                : Context.TypeGeneratorRegistry.Get(
-                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!)).TypeInfo.Name;
+            TypeSyntax baseType;
+            if (isPrimaryImplementation)
+            {
+                baseType = ResponsesNamespace.OperationResponse;
+            }
+            else
+            {
+                // The element is a reference; get the target and create a root element for it
+                var referenceId = LocatedOpenApiElementExtensions.GetReferenceId(Response);
+                var targetProp = Response.GetType().GetProperty("Target");
+                var target = (OpenApiResponse?)targetProp?.GetValue(Response);
+                var rootElement = target!.CreateRoot(referenceId!);
+                baseType = Context.TypeGeneratorRegistry.Get(rootElement).TypeInfo.Name;
+            }
 
             var bodyType = GetSchemaGenerator().schemaGenerator?.TypeInfo.Name;
 

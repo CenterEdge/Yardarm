@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Yardarm.Spec
 {
@@ -35,18 +34,21 @@ namespace Yardarm.Spec
             }
 
             if (IsReferenceEqual &&
-                x.Element is IOpenApiReferenceable referenceableX &&
-                y.Element is IOpenApiReferenceable referenceableY)
+                x.Element is IOpenApiReferenceHolder &&
+                y.Element is IOpenApiReferenceHolder)
             {
-                if (referenceableX.Reference != null)
+                var refX = LocatedOpenApiElementExtensions.GetReferenceV3(x.Element);
+                var refY = LocatedOpenApiElementExtensions.GetReferenceV3(y.Element);
+
+                if (refX != null)
                 {
-                    if (referenceableY.Reference == null)
+                    if (refY == null)
                     {
                         // Can't be equal if one is a reference and the other is not
                         return false;
                     }
 
-                    return referenceableX.Reference.ReferenceV3 == referenceableY.Reference.ReferenceV3;
+                    return refX == refY;
                 }
             }
 
@@ -62,9 +64,10 @@ namespace Yardarm.Spec
 
         public int GetHashCode(ILocatedOpenApiElement<T> obj)
         {
-            if (obj.Element is IOpenApiReferenceable referenceable && referenceable.Reference != null)
+            var refV3 = LocatedOpenApiElementExtensions.GetReferenceV3(obj.Element);
+            if (refV3 != null)
             {
-                return referenceable.Reference.ReferenceV3.GetHashCode();
+                return refV3.GetHashCode();
             }
             else
             {

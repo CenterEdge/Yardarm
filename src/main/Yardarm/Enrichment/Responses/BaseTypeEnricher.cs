@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Yardarm.Enrichment.Responses
 {

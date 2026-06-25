@@ -62,7 +62,13 @@ jobs:
       run: dotnet build --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-restore
     - name: Test
       working-directory: ./src/main
-      run: dotnet test --configuration Release --no-build --verbosity normal --logger "GitHubActions;summary.includePassedTests=true;summary.includeSkippedTests=true"
+      run: >-
+        dotnet test
+        --configuration Release
+        --no-build
+        --report-github
+        --report-github-summary-include-passed
+        --report-github-summary-include-skipped
     - name: Test Generate
       run: ./scripts/generate.sh
 

@@ -42,9 +42,6 @@ internal static class NodaTimeTypes
         {
             public static NameSyntax Name { get; } =
                 QualifiedName(Serialization.Name, IdentifierName("SystemTextJson"));
-
-            public static NameSyntax NodaTimeDefaultJsonConverterFactory { get; } =
-                QualifiedName(Name, IdentifierName("NodaTimeDefaultJsonConverterFactory"));
         }
 
         public static class JsonNet

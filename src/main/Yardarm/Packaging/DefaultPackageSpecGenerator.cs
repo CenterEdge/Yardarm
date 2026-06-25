@@ -35,7 +35,6 @@ namespace Yardarm.Packaging
             {
                 Name = _settings.AssemblyName,
                 FilePath = _settings.AssemblyName,
-                Dependencies = new List<LibraryDependency>()
             }.Enrich(Enrichers);
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(NuGetFramework frameworkName)
@@ -74,6 +73,7 @@ namespace Yardarm.Packaging
             return new TargetFrameworkInformation
             {
                 FrameworkName = frameworkName,
+                TargetAlias = frameworkName.GetShortFolderName(),
                 FrameworkReferences = frameworkDependencies,
                 DownloadDependencies = downloadDependencies
             };

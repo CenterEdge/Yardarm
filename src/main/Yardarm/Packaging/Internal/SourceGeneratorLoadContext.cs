@@ -43,8 +43,7 @@ namespace Yardarm.Packaging.Internal
             TargetFrameworkInformation? frameworkInformation = packageSpec.TargetFrameworks
                 .FirstOrDefault(p => p.FrameworkName == targetFramework);
 
-            foreach (LibraryDependency directDependency in packageSpec.Dependencies
-                         .Concat(frameworkInformation?.Dependencies ?? Enumerable.Empty<LibraryDependency>()))
+            foreach (LibraryDependency directDependency in frameworkInformation?.Dependencies ?? [])
             {
                 // Get the exact version we restored
                 NuGetVersion? version = lockFileTarget.Libraries

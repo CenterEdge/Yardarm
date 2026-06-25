@@ -1,0 +1,82 @@
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
+using NodaTime.Text;
+
+namespace RootNamespace.Serialization.Json;
+
+/// <summary>
+/// Extends <see cref="NodaTimeDefaultJsonConverterFactory"/> to support
+/// Yardarm-specific conversions.
+/// </summary>
+/// <remarks>
+/// In particular, uses RFC3339 style formatting for <see cref="OffsetTime"/> which always outputs the
+/// minutes of the time zone offset, even if they are zero. This is required for OpenAPI 3.1 compliance.
+/// </remarks>
+internal sealed class YardarmNodaTimeJsonConverterFactory : JsonConverterFactory
+{
+    public static JsonConverter<OffsetTime> OffsetTimeConverter { get; } =
+        new NodaPatternConverter<OffsetTime>(OffsetTimePattern.Rfc3339);
+    public static JsonConverter<OffsetTime?> NullableOffsetTimeConverter { get; } =
+        new NodaNullableConverter<OffsetTime>(OffsetTimeConverter);
+
+    private readonly NodaTimeDefaultJsonConverterFactory _innerFactory = new();
+
+    public override bool CanConvert(Type typeToConvert)
+    {
+        if (typeToConvert == typeof(OffsetTime) || typeToConvert == typeof(OffsetTime?))
+        {
+            return true;
+        }
+
+        return _innerFactory.CanConvert(typeToConvert);
+    }
+
+    public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (typeToConvert == typeof(OffsetTime))
+        {
+            return OffsetTimeConverter;
+        }
+        if (typeToConvert == typeof(OffsetTime?))
+        {
+            return NullableOffsetTimeConverter;
+        }
+
+        return _innerFactory.CreateConverter(typeToConvert, options);
+    }
+
+    /// <summary>
+    /// Creates a new NodaNullableConverter.
+    /// </summary>
+    /// <param name="innerConverter">Inner converter for serializing and deserializing when not null.</param>
+    private sealed class NodaNullableConverter<T>(JsonConverter<T> innerConverter) : JsonConverter<T?>
+        where T : struct
+    {
+        /// <inheritdoc />
+        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            return innerConverter.Read(ref reader, typeToConvert, options);
+        }
+
+        /// <inheritdoc />
+        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
+        {
+            if (value is null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                innerConverter.Write(writer, value.Value, options);
+            }
+        }
+    }
+}

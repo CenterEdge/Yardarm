@@ -18,7 +18,7 @@ internal sealed partial class ClientGenerator(GenerationContext generationContex
             yield return exclusion;
         }
 
-        if (!generationContext.Settings.Extensions.Any(p => p.Name == "SystemTextJsonExtension"))
+        if (!GenerationContext.Settings.Extensions.Any(p => p.Name == "SystemTextJsonExtension"))
         {
             yield return NodaTimeJsonConverterFactory();
         }

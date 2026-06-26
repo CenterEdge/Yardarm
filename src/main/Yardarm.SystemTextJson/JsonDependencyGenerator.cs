@@ -19,7 +19,7 @@ public class JsonDependencyGenerator : IDependencyGenerator
                 {
                     Name = "System.Text.Json",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("9.0.0")
+                    VersionRange = VersionRange.Parse("9.0.17")
                 }
             };
         }
@@ -33,7 +33,7 @@ public class JsonDependencyGenerator : IDependencyGenerator
                 {
                     Name = "System.Net.Http.Json",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("9.0.0")
+                    VersionRange = VersionRange.Parse("9.0.17")
                 }
             };
         }

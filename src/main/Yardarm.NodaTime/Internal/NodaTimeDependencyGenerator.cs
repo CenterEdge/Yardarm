@@ -21,7 +21,7 @@ internal sealed class NodaTimeDependencyGenerator(
                 {
                     Name = "NodaTime.Serialization.SystemTextJson",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("1.3.0")
+                    VersionRange = VersionRange.Parse("1.4.0")
                 }
             };
         }
@@ -33,7 +33,7 @@ internal sealed class NodaTimeDependencyGenerator(
                 {
                     Name = "NodaTime.Serialization.JsonNet",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("3.2.0")
+                    VersionRange = VersionRange.Parse("3.3.0")
                 }
             };
         }

@@ -158,6 +158,15 @@
                    @(CustomAdditionalCompileOutputs)"
           DependsOnTargets="$(CoreCompileDependsOn)">
 
+    <PropertyGroup>
+      <!--
+        Always suppress warnings about assembly references targeting newer versions. This is the default behavior for the command line app,
+        but needs to be explicitly passed here since the default is being overridden by the NoWarn property. If not, any value in the NoWarn
+        property would override the default behavior and cause warnings to be emitted.
+      -->
+      <_YardarmNoWarn>CS1701;CS1702;$(NoWarn)</_YardarmNoWarn>
+    </PropertyGroup>
+
     <YardarmGenerate
       ToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
@@ -179,7 +188,7 @@
       KeyContainerName="$(KeyContainerName)"
       DelaySign="$(DelaySign)"
       PublicSign="$(PublicSign)"
-      NoWarn="$(NoWarn)"
+      NoWarn="$(_YardarmNoWarn)"
     >
     </YardarmGenerate>
 

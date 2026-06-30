@@ -158,7 +158,7 @@ namespace Yardarm
             stopwatch.Restart();
 
             ImmutableArray<Diagnostic> additionalDiagnostics;
-            using (var sourceGeneratorLoadContext = new SourceGeneratorLoadContext(context.NuGetRestoreInfo!.Providers))
+            using (var sourceGeneratorLoadContext = new SourceGeneratorLoadContext(context.NuGetRestoreInfo!.Providers, context.Settings))
             {
                 var sourceGenerators = sourceGeneratorLoadContext
                     .GetSourceGenerators(context.GenerationServices.GetRequiredService<PackageSpec>(),

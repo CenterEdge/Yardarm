@@ -149,7 +149,12 @@
   </PropertyGroup>
   <Target Name="CoreCompile"
           Condition=" '$(SkipCompilerExecution)' != 'true' "
-          Inputs="$(MSBuildAllProjects);@(OpenApiSpec);@(Compile);@(CustomAdditionalCompileInputs)"
+          Inputs="$(MSBuildAllProjects);
+                  @(OpenApiSpec);
+                  @(Compile);
+                  @(ReferencePathWithRefAssemblies);
+                  @(Analyzer);
+                  @(CustomAdditionalCompileInputs)"
           Outputs="@(DocFileItem);
                    @(IntermediateAssembly);
                    @(IntermediateRefAssembly);
@@ -183,6 +188,7 @@
       OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
       OutputXmlDocumentation="$(DocumentationFile)"
       References="@(ReferencePathWithRefAssemblies)"
+      Analyzers="@(Analyzer)"
       IncludedFiles="@(Compile)"
       KeyFile="$(KeyOriginatorFile)"
       KeyContainerName="$(KeyContainerName)"

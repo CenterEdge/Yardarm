@@ -183,6 +183,7 @@
       OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
       OutputXmlDocumentation="$(DocumentationFile)"
       References="@(ReferencePathWithRefAssemblies)"
+      Analyzers="@(Analyzer)"
       IncludedFiles="@(Compile)"
       KeyFile="$(KeyOriginatorFile)"
       KeyContainerName="$(KeyContainerName)"

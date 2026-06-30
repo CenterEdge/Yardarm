@@ -31,6 +31,9 @@ namespace Yardarm.CommandLine
         [Option("references", HelpText = "Referenced assemblies to use, rather than calculated references. Typically only supplied by MSBuild. Should be a full path.")]
         public IEnumerable<string> References { get; set; }
 
+        [Option("analyzers", HelpText = "Referenced analyzers to use, rather than calculated analyzers. Typically only supplied by MSBuild. Should be a full path.")]
+        public IEnumerable<string> Analyzers { get; set; }
+
         [Option("nowarn", HelpText = "Warnings to suppress", Default = "CS1701,CS1702")]
         public string NoWarn { get; set; }
 

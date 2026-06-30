@@ -18,14 +18,18 @@ namespace Yardarm.Packaging.Internal
     internal class SourceGeneratorLoadContext : IDisposable
     {
         private readonly RestoreCommandProviders _dependencyProviders;
+        private readonly YardarmGenerationSettings _settings;
         private readonly AssemblyLoadContext _assemblyLoadContext = new(null, true);
         private string? _loadBasePath;
         private bool _disposed;
 
-        public SourceGeneratorLoadContext(RestoreCommandProviders dependencyProviders)
+        public SourceGeneratorLoadContext(RestoreCommandProviders dependencyProviders, YardarmGenerationSettings settings)
         {
             ArgumentNullException.ThrowIfNull(dependencyProviders);
+            ArgumentNullException.ThrowIfNull(settings);
+
             _dependencyProviders = dependencyProviders;
+            _settings = settings;
 
             _assemblyLoadContext.Resolving += Resolving;
         }
@@ -33,6 +37,22 @@ namespace Yardarm.Packaging.Internal
         // Collect C# source generators from the direct NuGet dependencies (ignores transitive dependencies)
         public IEnumerable<ISourceGenerator> GetSourceGenerators(PackageSpec packageSpec, LockFile lockFile, NuGetFramework targetFramework)
         {
+            if (_settings.Analyzers is { Count: > 0 } analyzers)
+            {
+                // Use the analyzers provided by the user (typically from MSBuild)
+
+                foreach (string analyzer in analyzers)
+                {
+                    foreach (ISourceGenerator sourceGenerator in GetSourceGenerators(analyzer))
+                    {
+                        yield return sourceGenerator;
+                    }
+                }
+
+                // This list overrides any automated analyzer selection
+                yield break;
+            }
+
             LockFileTarget? lockFileTarget = lockFile.Targets?
                 .FirstOrDefault(p => p.TargetFramework == targetFramework);
             if (lockFileTarget is null)
@@ -43,28 +63,28 @@ namespace Yardarm.Packaging.Internal
             TargetFrameworkInformation? frameworkInformation = packageSpec.TargetFrameworks
                 .FirstOrDefault(p => p.FrameworkName == targetFramework);
 
-            foreach (LibraryDependency directDependency in frameworkInformation?.Dependencies ?? [])
-            {
-                // Get the exact version we restored
-                NuGetVersion? version = lockFileTarget.Libraries
-                    .FirstOrDefault(p => string.Equals(p.Name, directDependency.Name, StringComparison.OrdinalIgnoreCase))?
-                    .Version;
-                if (version is not null)
-                {
-                    NuGet.Repositories.LocalPackageInfo localPackageInfo =
-                        _dependencyProviders.GlobalPackages.FindPackage(directDependency.Name, version);
-
-                    foreach (ISourceGenerator generator in GetSourceGenerators(localPackageInfo.ExpandedPath, localPackageInfo.Files))
-                    {
-                        yield return generator;
-                    }
-                }
-            }
-
-            // Load analyzers built into the target framework. Note that we load these second in case a NuGet package
-            // is overriding one with a newer version.
             if (frameworkInformation is not null)
             {
+                foreach (LibraryDependency directDependency in frameworkInformation.Dependencies)
+                {
+                    // Get the exact version we restored
+                    NuGetVersion? version = lockFileTarget.Libraries
+                        .FirstOrDefault(p => string.Equals(p.Name, directDependency.Name, StringComparison.OrdinalIgnoreCase))?
+                        .Version;
+                    if (version is not null)
+                    {
+                        NuGet.Repositories.LocalPackageInfo localPackageInfo =
+                            _dependencyProviders.GlobalPackages.FindPackage(directDependency.Name, version);
+
+                        foreach (ISourceGenerator generator in GetSourceGenerators(localPackageInfo.ExpandedPath, localPackageInfo.Files))
+                        {
+                            yield return generator;
+                        }
+                    }
+                }
+
+                // Load analyzers built into the target framework. Note that we load these second in case a NuGet package
+                // is overriding one with a newer version.
                 foreach (string frameworkDirectory in frameworkInformation.GetFrameworkReferenceDirectories(
                              _dependencyProviders))
                 {

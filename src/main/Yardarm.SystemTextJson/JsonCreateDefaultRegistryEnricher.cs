@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Yardarm.Enrichment.Registration;
-using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
@@ -31,11 +30,8 @@ public class JsonCreateDefaultRegistryEnricher : ReturnValueRegistrationEnricher
                 Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     _jsonSerializationNamespace.JsonTypeSerializer,
                     IdentifierName("SupportedMediaTypes"))),
-                Argument(ObjectCreationExpression(_jsonSerializationNamespace.JsonTypeSerializer,
-                    ArgumentList(SingletonSeparatedList(
-                        Argument(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            QualifiedName(_jsonSerializationNamespace.Name, IdentifierName(JsonSerializerContextGenerator.TypeName)),
-                            IdentifierName("Default"))))),
-                        null))
+                Argument(InvocationExpression(
+                    MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, _jsonSerializationNamespace.JsonTypeSerializer, IdentifierName("CreateDefault")),
+                    ArgumentList()))
             ])));
 }

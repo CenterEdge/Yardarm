@@ -6,7 +6,6 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -50,6 +49,32 @@ public class JsonTypeSerializer : ITypeSerializer
 
         _options = context.Options;
     }
+
+    private JsonTypeSerializer(JsonSerializerContext context, Action<JsonSerializerOptions>? configureOptions = null)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (configureOptions is null)
+        {
+            _options = context.Options;
+        }
+        else
+        {
+            var options = new JsonSerializerOptions(context.Options);
+            configureOptions(options);
+            options.MakeReadOnly();
+
+            _options = options;
+        }
+    }
+
+    /// <summary>
+    /// Create a new <see cref="JsonTypeSerializer"/> instance with the default configuration.
+    /// </summary>
+    /// <param name="configureOptions">Optional callback to extend the default <see cref="JsonSerializerOptions"/>.</param>
+    /// <returns>A new <see cref="JsonTypeSerializer"/> instance.</returns>
+    public static JsonTypeSerializer CreateDefault(Action<JsonSerializerOptions>? configureOptions = null) =>
+        new(ModelSerializerContext.Default, configureOptions);
 
     public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
         JsonContent.Create(value, _options.GetTypeInfo(typeof(T)), new MediaTypeHeaderValue(mediaType) {CharSet = Encoding.UTF8.WebName});

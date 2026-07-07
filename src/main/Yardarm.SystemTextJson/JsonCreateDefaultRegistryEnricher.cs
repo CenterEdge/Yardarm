@@ -20,7 +20,7 @@ public class JsonCreateDefaultRegistryEnricher : ReturnValueRegistrationEnricher
     protected override ExpressionSyntax EnrichReturnValue(ExpressionSyntax target) =>
         // Don't use the Add<T> overload here because it will cause trimming to retain
         // all constructors. This will then cause IL2026 warnings if trimming is enabled.
-        // Instead create a new instance directly using the default constructor and add it.
+        // Instead create a new instance using the CreateDefault static method and add it.
         InvocationExpression(
             MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                 target,

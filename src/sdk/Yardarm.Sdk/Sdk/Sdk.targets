@@ -153,6 +153,7 @@
                   @(OpenApiSpec);
                   @(Compile);
                   @(ReferencePathWithRefAssemblies);
+                  @(YardarmExtension);
                   @(Analyzer);
                   @(CustomAdditionalCompileInputs)"
           Outputs="@(DocFileItem);
@@ -212,6 +213,7 @@
       <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" />
       <CoreCompileCache Include="@(OpenApiSpec)" />
       <CoreCompileCache Include="@(Compile)" />
+      <CoreCompileCache Include="@(YardarmExtension)" />
       <CoreCompileCache Include="EmbedAllSources=$(EmbedAllSources)" />
       <CoreCompileCache Include="GenerateDocumentationFile=$(GenerateDocumentationFile)" />
       <CoreCompileCache Include="Version=$(Version)" />

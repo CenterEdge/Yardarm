@@ -153,6 +153,7 @@
                   @(OpenApiSpec);
                   @(Compile);
                   @(ReferencePathWithRefAssemblies);
+                  @(YardarmExtension);
                   @(Analyzer);
                   @(CustomAdditionalCompileInputs)"
           Outputs="@(DocFileItem);

@@ -19,7 +19,7 @@ public sealed class NodaTimeExtension : YardarmExtension
         services
             .AddTypeGeneratorFactory<OpenApiSchema, NodaTimeSchemaGeneratorFactory>()
             .AddRegistrationEnricher<JsonSerializerSettingsEnricher>("JsonSerializerSettings")
-            .AddKeyedTransient<IEnricher<AttributeSyntax>, JsonSourceGenerationOptionsEnricher>("JsonSourceGenerationOptions")
+            .AddKeyedTransient<IEnricher<AttributeSyntax>, NodaTimeJsonSourceGenerationOptionsEnricher>("JsonSourceGenerationOptions")
             .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
             .AddSingleton<IDependencyGenerator, NodaTimeDependencyGenerator>()
             .AddDefaultLiteralConverterEnricher<DefaultLiteralConverterEnricher>();

@@ -5,12 +5,12 @@ using Yardarm.Enrichment;
 using Yardarm.Names;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.NodaTime.Internal;
+namespace Yardarm.NodaTime;
 
 /// <summary>
 /// Enriches the JsonSerializerOptionsAttribute on the JsonSerizalizerContext class when System.Text.Json is used.
 /// </summary>
-internal sealed class JsonSourceGenerationOptionsEnricher(
+public sealed class NodaTimeJsonSourceGenerationOptionsEnricher(
     ISerializationNamespace serializationNamespace)
     : IEnricher<AttributeSyntax>
 {

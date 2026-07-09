@@ -10,7 +10,7 @@ namespace Yardarm.NodaTime;
 /// <summary>
 /// Enriches the JsonSerializerOptionsAttribute on the JsonSerizalizerContext class when System.Text.Json is used.
 /// </summary>
-public sealed class JsonSourceGenerationOptionsEnricher(
+public sealed class NodaTimeJsonSourceGenerationOptionsEnricher(
     ISerializationNamespace serializationNamespace)
     : IEnricher<AttributeSyntax>
 {

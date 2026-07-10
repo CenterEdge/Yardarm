@@ -25,7 +25,7 @@ internal sealed class NullableConverter<T>(JsonConverter<T> innerConverter) : Js
             return null;
         }
 
-        return innerConverter.Read(ref reader, typeToConvert, options);
+        return innerConverter.Read(ref reader, typeof(T), options);
     }
 
     /// <inheritdoc />

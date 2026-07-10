@@ -20,7 +20,7 @@ internal sealed class YardarmNodaTimeJsonConverterFactory : JsonConverterFactory
     public static JsonConverter<OffsetTime> OffsetTimeConverter { get; } =
         new NodaPatternConverter<OffsetTime>(OffsetTimePattern.Rfc3339);
     public static JsonConverter<OffsetTime?> NullableOffsetTimeConverter { get; } =
-        new NodaNullableConverter<OffsetTime>(OffsetTimeConverter);
+        new NullableConverter<OffsetTime>(OffsetTimeConverter);
 
     private readonly NodaTimeDefaultJsonConverterFactory _innerFactory = new();
 
@@ -46,37 +46,5 @@ internal sealed class YardarmNodaTimeJsonConverterFactory : JsonConverterFactory
         }
 
         return _innerFactory.CreateConverter(typeToConvert, options);
-    }
-
-    /// <summary>
-    /// Creates a new NodaNullableConverter.
-    /// </summary>
-    /// <param name="innerConverter">Inner converter for serializing and deserializing when not null.</param>
-    private sealed class NodaNullableConverter<T>(JsonConverter<T> innerConverter) : JsonConverter<T?>
-        where T : struct
-    {
-        /// <inheritdoc />
-        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return null;
-            }
-
-            return innerConverter.Read(ref reader, typeToConvert, options);
-        }
-
-        /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
-        {
-            if (value is null)
-            {
-                writer.WriteNullValue();
-            }
-            else
-            {
-                innerConverter.Write(writer, value.Value, options);
-            }
-        }
     }
 }

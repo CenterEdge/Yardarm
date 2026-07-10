@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Yardarm.Client\Yardarm.Client.csproj" />
+    <ProjectReference Include="..\Yardarm.SystemTextJson.Client\Yardarm.SystemTextJson.Client.csproj" />
   </ItemGroup>
 
 </Project>

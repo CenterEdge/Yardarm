@@ -107,7 +107,7 @@ public class NodaPatternConverterTests
 
         // Assert
 
-        result.Should().Be("-04:00");
+        result.Should().Be("-04");
     }
 
     [Theory]
@@ -137,7 +137,7 @@ public class NodaPatternConverterTests
 
         // Assert
 
-        result.Should().Be("+00:00");
+        result.Should().Be("+00");
     }
 
     [Theory]
@@ -278,7 +278,7 @@ public class NodaPatternConverterTests
         // Act
 
         var result = NodaLiteralConverters.OffsetConverter.Read(
-            "-04:00",
+            "-04",
             format);
 
         // Assert

@@ -32,7 +32,7 @@ internal static class NodaLiteralConverters
     /// Converter for UTC offsets, using the ISO-8601 offset pattern.
     /// </summary>
     public static LiteralConverter<Offset> OffsetConverter => field ??=
-        new NodaPatternLiteralConverter<Offset>(OffsetPattern.CreateWithInvariantCulture("+HH:mm"));
+        new NodaPatternLiteralConverter<Offset>(OffsetPattern.GeneralInvariant);
 
     /// <summary>
     /// Converter for offset date/times.

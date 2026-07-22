@@ -29,6 +29,12 @@ internal static class NodaLiteralConverters
         new NodaPatternLiteralConverter<LocalTime>(LocalTimePattern.ExtendedIso);
 
     /// <summary>
+    /// Converter for UTC offsets, using the ISO-8601 offset pattern.
+    /// </summary>
+    public static LiteralConverter<Offset> OffsetConverter => field ??=
+        new NodaPatternLiteralConverter<Offset>(OffsetPattern.CreateWithInvariantCulture("+HH:mm"));
+
+    /// <summary>
     /// Converter for offset date/times.
     /// </summary>
     public static LiteralConverter<OffsetDateTime> OffsetDateTimeConverter => field ??=

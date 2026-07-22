@@ -27,6 +27,7 @@ internal sealed class NodaTimeSchemaGenerator(
         "time",
         "full-time",
         "duration",
+        "utc-offset",
     }.ToFrozenSet();
 
     private static YardarmTypeInfo LocalDate => field ??= new YardarmTypeInfo(
@@ -47,6 +48,9 @@ internal sealed class NodaTimeSchemaGenerator(
     private static YardarmTypeInfo Period => field ??= new YardarmTypeInfo(
         NodaTimeTypes.Period, isGenerated: false);
 
+    private static YardarmTypeInfo Offset => field ??= new YardarmTypeInfo(
+        NodaTimeTypes.Offset, isGenerated: false);
+
     protected override YardarmTypeInfo GetTypeInfo()
     {
         YardarmTypeInfo? typeInfo = Element.Element.Format switch
@@ -57,6 +61,7 @@ internal sealed class NodaTimeSchemaGenerator(
             "partial-time" => LocalTime,
             "time" or "full-time" => OffsetTime,
             "duration" => Period,
+            "utc-offset" => Offset,
             _ => null
         };
 

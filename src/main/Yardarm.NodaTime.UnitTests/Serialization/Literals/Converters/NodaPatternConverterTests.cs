@@ -96,6 +96,51 @@ public class NodaPatternConverterTests
     }
 
     [Theory]
+    [InlineData("utc-offset")]
+    public void Serialize_Offset_ReturnsString(string format)
+    {
+        // Act
+
+        string result = NodaLiteralConverters.OffsetConverter.Write(
+            Offset.FromHours(-4),
+            format);
+
+        // Assert
+
+        result.Should().Be("-04");
+    }
+
+    [Theory]
+    [InlineData("utc-offset")]
+    public void Serialize_OffsetWithMinutes_ReturnsString(string format)
+    {
+        // Act
+
+        string result = NodaLiteralConverters.OffsetConverter.Write(
+            Offset.FromHoursAndMinutes(5, 30),
+            format);
+
+        // Assert
+
+        result.Should().Be("+05:30");
+    }
+
+    [Theory]
+    [InlineData("utc-offset")]
+    public void Serialize_OffsetZero_ReturnsString(string format)
+    {
+        // Act
+
+        string result = NodaLiteralConverters.OffsetConverter.Write(
+            Offset.Zero,
+            format);
+
+        // Assert
+
+        result.Should().Be("+00");
+    }
+
+    [Theory]
     [InlineData("partial-time")]
     public void Serialize_OffsetTime_ReturnsString(string format)
     {
@@ -224,6 +269,51 @@ public class NodaPatternConverterTests
         // Assert
 
         result.Should().Be(new LocalTime(13, 1, 2, 234));
+    }
+
+    [Theory]
+    [InlineData("utc-offset")]
+    public void Deserialize_Offset_ReturnsOffset(string format)
+    {
+        // Act
+
+        var result = NodaLiteralConverters.OffsetConverter.Read(
+            "-04",
+            format);
+
+        // Assert
+
+        result.Should().Be(Offset.FromHours(-4));
+    }
+
+    [Theory]
+    [InlineData("utc-offset")]
+    public void Deserialize_OffsetWithMinutes_ReturnsOffset(string format)
+    {
+        // Act
+
+        var result = NodaLiteralConverters.OffsetConverter.Read(
+            "+05:30",
+            format);
+
+        // Assert
+
+        result.Should().Be(Offset.FromHoursAndMinutes(5, 30));
+    }
+
+    [Theory]
+    [InlineData("utc-offset")]
+    public void Deserialize_OffsetZ_ReturnsOffset(string format)
+    {
+        // Act
+
+        var result = NodaLiteralConverters.OffsetConverter.Read(
+            "+00:00",
+            format);
+
+        // Assert
+
+        result.Should().Be(Offset.Zero);
     }
 
     [Theory]

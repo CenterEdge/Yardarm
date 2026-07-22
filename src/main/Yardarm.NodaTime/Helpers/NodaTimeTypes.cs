@@ -24,6 +24,9 @@ internal static class NodaTimeTypes
     public static NameSyntax LocalTime { get; } =
         QualifiedName(NodaTime, IdentifierName("LocalTime"));
 
+    public static NameSyntax Offset { get; } =
+        QualifiedName(NodaTime, IdentifierName("Offset"));
+
     public static NameSyntax OffsetDateTime { get; } =
         QualifiedName(NodaTime, IdentifierName("OffsetDateTime"));
 

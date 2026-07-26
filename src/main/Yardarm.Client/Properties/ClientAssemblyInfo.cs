@@ -7,4 +7,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Yardarm.NewtonsoftJson.Client")]
 [assembly: InternalsVisibleTo("Yardarm.NodaTime.Client")]
 [assembly: InternalsVisibleTo("Yardarm.SystemTextJson.Client")]
+[assembly: InternalsVisibleTo("Yardarm.SystemTextJson.UnitTests")]
 #endif

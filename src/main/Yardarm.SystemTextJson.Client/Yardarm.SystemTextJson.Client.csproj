@@ -5,6 +5,7 @@
     <OutputType>Library</OutputType>
 
     <Nullable>enable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup>

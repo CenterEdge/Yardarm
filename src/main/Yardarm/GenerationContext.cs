@@ -55,7 +55,18 @@ namespace Yardarm
         private readonly IOptions<GenerationOptions> _options;
         internal GenerationOptions Options => _options.Value;
 
-        public LanguageVersion LanguageVersion => LanguageVersion.CSharp14;
+        public LanguageVersion LanguageVersion {
+            get;
+            set
+            {
+                if (field != value)
+                {
+                    field = value;
+
+                    _parseOptions = null;
+                }
+            }
+        } = LanguageVersion.CSharp14;
 
         public CSharpParseOptions ParseOptions => _parseOptions ??=
             CSharpParseOptions.Default

@@ -99,9 +99,7 @@ namespace Yardarm.Generation
             buffer.Dispose();
 
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(sourceText,
-                CSharpParseOptions.Default
-                    .WithLanguageVersion(LanguageVersion.CSharp14)
-                    .WithPreprocessorSymbols(GenerationContext.PreprocessorSymbols),
+                options: GenerationContext.ParseOptions,
                 path: PathHelpers.Combine(
                     GenerationContext.Settings.BasePath,
                     "Resources",

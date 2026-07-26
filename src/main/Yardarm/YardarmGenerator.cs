@@ -166,7 +166,8 @@ namespace Yardarm
                     .ToList();
 
                 // Execute the source generators
-                compilation = ExecuteSourceGenerators(compilation,
+                compilation = ExecuteSourceGenerators(context,
+                    compilation,
                     sourceGenerators,
                     out additionalDiagnostics,
                     cancellationToken);
@@ -267,8 +268,8 @@ namespace Yardarm
             }
         }
 
-        private CSharpCompilation ExecuteSourceGenerators(CSharpCompilation compilation, IReadOnlyList<ISourceGenerator>? generators,
-            out ImmutableArray<Diagnostic> diagnostics, CancellationToken cancellationToken = default)
+        private CSharpCompilation ExecuteSourceGenerators(GenerationContext context, CSharpCompilation compilation,
+            IReadOnlyList<ISourceGenerator>? generators, out ImmutableArray<Diagnostic> diagnostics, CancellationToken cancellationToken = default)
         {
             if (generators is null || generators.Count == 0)
             {
@@ -276,7 +277,8 @@ namespace Yardarm
                 return compilation;
             }
 
-            var driver = CSharpGeneratorDriver.Create(generators);
+            var driver = CSharpGeneratorDriver.Create(generators,
+                parseOptions: context.ParseOptions);
 
             driver.RunGeneratorsAndUpdateCompilation(compilation, out var newCompilation, out diagnostics, cancellationToken);
 

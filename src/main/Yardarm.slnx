@@ -3,6 +3,7 @@
     <File Path="../Directory.Build.props" />
     <File Path="../Directory.Build.targets" />
     <File Path="../global.json" />
+    <File Path="../nuget.config" />
     <File Path="Directory.Packages.props" />
   </Folder>
   <Project Path="Yardarm.Benchmarks/Yardarm.Benchmarks.csproj" />

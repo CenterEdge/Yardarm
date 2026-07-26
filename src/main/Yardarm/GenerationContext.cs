@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -21,8 +22,8 @@ namespace Yardarm
         private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
         private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
 
-        private NuGetFramework _currentTargetFramework = NuGetFramework.UnsupportedFramework;
         private HashSet<string>? _preprocessorSymbols;
+        private CSharpParseOptions? _parseOptions;
 
         public OpenApiDocument Document => _openApiDocument.Value;
         public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
@@ -33,20 +34,33 @@ namespace Yardarm
 
         public NuGetFramework CurrentTargetFramework
         {
-            get => _currentTargetFramework;
+            get;
             set
             {
                 ArgumentNullException.ThrowIfNull(value);
-                _currentTargetFramework = value;
-                _preprocessorSymbols = null;
+
+                if (field != value)
+                {
+                    field = value;
+
+                    _preprocessorSymbols = null;
+                    _parseOptions = null;
+                }
             }
-        }
+        } = NuGetFramework.UnsupportedFramework;
 
         public IReadOnlySet<string> PreprocessorSymbols =>
             _preprocessorSymbols ??= GetPreprocessorSymbols(CurrentTargetFramework);
 
         private readonly IOptions<GenerationOptions> _options;
         internal GenerationOptions Options => _options.Value;
+
+        public LanguageVersion LanguageVersion => LanguageVersion.CSharp14;
+
+        public CSharpParseOptions ParseOptions => _parseOptions ??=
+            CSharpParseOptions.Default
+                .WithLanguageVersion(LanguageVersion)
+                .WithPreprocessorSymbols(PreprocessorSymbols);
 
         public GenerationContext(IServiceProvider serviceProvider) : base(serviceProvider)
         {

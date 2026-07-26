@@ -17,6 +17,7 @@ namespace Yardarm.SystemTextJson.Internal;
 /// </summary>
 internal class JsonSerializerContextGenerator(
     IJsonSerializationNamespace jsonSerializationNamespace,
+    GenerationContext context,
     [FromKeyedServices(JsonSerializerContextGenerator.AttributeEnricherKey)] IEnumerable<IEnricher<AttributeSyntax>> enrichers)
     : ISyntaxTreeGenerator
 {
@@ -56,15 +57,18 @@ internal class JsonSerializerContextGenerator(
             .WithAdditionalAnnotations(GeneratorAnnotation);
 
         return [
-            CSharpSyntaxTree.Create(CompilationUnit(
-            default,
-            default,
-            default,
-            SingletonList<MemberDeclarationSyntax>(NamespaceDeclaration(
-                jsonSerializationNamespace.Name,
-                default,
-                default,
-                SingletonList<MemberDeclarationSyntax>(classDeclaration)))))
+            CSharpSyntaxTree.Create(
+                CompilationUnit(
+                    default,
+                    default,
+                    default,
+                    SingletonList<MemberDeclarationSyntax>(NamespaceDeclaration(
+                        jsonSerializationNamespace.Name,
+                        default,
+                        default,
+                        SingletonList<MemberDeclarationSyntax>(classDeclaration)))),
+                options: context.ParseOptions,
+                encoding: System.Text.Encoding.UTF8)
         ];
     }
 }

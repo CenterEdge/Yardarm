@@ -31,6 +31,7 @@ namespace Yardarm.Generation.Internal
                 SyntaxFactory.CompilationUnit()
                     .Enrich(_enrichers)
                     .NormalizeWhitespace(),
+                options: _context.ParseOptions,
                 path: PathHelpers.Combine(_context.Settings.BasePath, "Properties", "AssemblyInfo.cs"),
                 encoding: Encoding.UTF8);
         }

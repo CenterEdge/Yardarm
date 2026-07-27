@@ -26,9 +26,7 @@ public sealed class IncludedFilesGenerator(GenerationContext generationContext) 
             {
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
                     includedFile.GetSourceText(),
-                    CSharpParseOptions.Default
-                        .WithLanguageVersion(LanguageVersion.CSharp14)
-                        .WithPreprocessorSymbols(generationContext.PreprocessorSymbols),
+                    options: generationContext.ParseOptions,
                     path: PathHelpers.Combine(
                         generationContext.Settings.BasePath,
                         includedFile.SourceEmbeddingPath));

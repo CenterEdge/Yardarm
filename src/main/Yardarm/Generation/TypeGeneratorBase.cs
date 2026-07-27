@@ -45,6 +45,7 @@ namespace Yardarm.Generation
             var compilationUnit = GenerateCompilationUnit(members);
 
             return CSharpSyntaxTree.Create(compilationUnit,
+                options: Context.ParseOptions,
                 path: GetSourceFilePath(),
                 encoding: Encoding.UTF8);
         }

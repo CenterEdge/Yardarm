@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Yardarm.Generation.Schema;
 
 namespace Yardarm.Generation;
 
@@ -77,5 +79,20 @@ public static class SyntaxNodeExtensions
         public IEnumerable<SyntaxNode> GetSpecialMembers(string specialMember) =>
             node.GetAnnotatedNodes(SpecialMemberKey)
                 .Where(p => p.GetSpecialMemberAnnotation() == specialMember);
+
+        /// <summary>
+        /// Returns <c>true</c> if the <see cref="SyntaxNode"/> is an externally discriminated union, otherwise <c>false</c>.
+        /// </summary>
+        /// <returns><c>true</c> if the <see cref="SyntaxNode"/> is a externally discriminated union, otherwise <c>false</c>.</returns>
+        /// <remarks>
+        /// An externally discriminated union is a union type that is serialized as an object with a single property, the name of that
+        /// property determining the type of value of the union. The contents of the case are serialized within the property.
+        /// </remarks>
+        public bool IsExternallyDiscriminatedUnion()
+        {
+            ArgumentNullException.ThrowIfNull(node);
+
+            return node.GetGeneratorAnnotation() == typeof(ExternallyDiscriminatedUnionSchemaGenerator);
+        }
     }
 }

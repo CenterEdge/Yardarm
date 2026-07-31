@@ -152,6 +152,12 @@ public static class YardarmCoreServiceCollectionExtensions
                 {
                     options.DefaultHttpVersionPolicy = versionPolicy;
                 }
+
+                if (settings.Properties.TryGetValue("UnionDiscriminationStrategy", out string? enableUnions)
+                    && Enum.TryParse(enableUnions, out UnionDiscriminationStrategy unionDiscriminationStrategy))
+                {
+                    options.UnionDiscriminationStrategy = unionDiscriminationStrategy;
+                }
             });
 
             return services;

@@ -85,17 +85,29 @@ namespace Yardarm
             _options = serviceProvider.GetRequiredService<IOptions<GenerationOptions>>();
         }
 
-        private static HashSet<string> GetPreprocessorSymbols(NuGetFramework targetFramework) =>
-            new(targetFramework switch
+        private HashSet<string> GetPreprocessorSymbols(NuGetFramework targetFramework)
+        {
+            HashSet<string> result =
+            [
+                .. targetFramework switch
+                {
+                    { Framework: NuGetFrameworkConstants.NetStandardFramework } =>
+                        GetNetStandardPreprocessorSymbols(targetFramework.Version),
+                    { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: < 5 } =>
+                        GetNetCoreAppPreprocessorSymbols(targetFramework.Version),
+                    { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: >= 5 } =>
+                        GetNetPreprocessorSymbols(targetFramework.Version),
+                    _ => []
+                }
+            ];
+
+            if (_options.Value.UnionDiscriminationStrategy != UnionDiscriminationStrategy.None)
             {
-                { Framework: NuGetFrameworkConstants.NetStandardFramework } =>
-                    GetNetStandardPreprocessorSymbols(targetFramework.Version),
-                { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: < 5 } =>
-                    GetNetCoreAppPreprocessorSymbols(targetFramework.Version),
-                { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: >= 5 } =>
-                    GetNetPreprocessorSymbols(targetFramework.Version),
-                _ => []
-            });
+                result.Add("UNION_SUPPORT");
+            }
+
+            return result;
+        }
 
         private static readonly Version[] s_dotNetStandardVersions =
         [

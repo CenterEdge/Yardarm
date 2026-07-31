@@ -237,6 +237,28 @@ namespace Yardarm.Helpers
                         Identifier("ReadOnlySpan"),
                         TypeArgumentList(SingletonSeparatedList(elementType))));
 
+            public static class Runtime
+            {
+                public static NameSyntax Name { get; } = QualifiedName(
+                    System.Name,
+                    IdentifierName("Runtime"));
+
+                public static class CompilerServices
+                {
+                    public static NameSyntax Name { get; } = QualifiedName(
+                        Runtime.Name,
+                        IdentifierName("CompilerServices"));
+
+                    public static NameSyntax IUnion { get; } = QualifiedName(
+                        Name,
+                        IdentifierName("IUnion"));
+
+                    public static NameSyntax UnionAttribute { get; } = QualifiedName(
+                        Name,
+                        IdentifierName("UnionAttribute"));
+                }
+            }
+
             public static class Text
             {
                 public static NameSyntax Name { get; } = QualifiedName(

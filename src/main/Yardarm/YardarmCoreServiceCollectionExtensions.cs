@@ -154,7 +154,8 @@ public static class YardarmCoreServiceCollectionExtensions
                 }
 
                 if (settings.Properties.TryGetValue("UnionDiscriminationStrategy", out string? enableUnions)
-                    && Enum.TryParse(enableUnions, out UnionDiscriminationStrategy unionDiscriminationStrategy))
+                    && Enum.TryParse(enableUnions, ignoreCase: true, out UnionDiscriminationStrategy unionDiscriminationStrategy)
+                    && Enum.IsDefined(unionDiscriminationStrategy))
                 {
                     options.UnionDiscriminationStrategy = unionDiscriminationStrategy;
                 }

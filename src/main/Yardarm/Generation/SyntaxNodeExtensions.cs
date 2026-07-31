@@ -83,7 +83,7 @@ public static class SyntaxNodeExtensions
         /// <summary>
         /// Returns <c>true</c> if the <see cref="SyntaxNode"/> is an externally discriminated union, otherwise <c>false</c>.
         /// </summary>
-        /// <returns><c>true</c> if the <see cref="SyntaxNode"/> is a externally discriminated union, otherwise <c>false</c>.</returns>
+        /// <returns><c>true</c> if the <see cref="SyntaxNode"/> is an externally discriminated union, otherwise <c>false</c>.</returns>
         /// <remarks>
         /// An externally discriminated union is a union type that is serialized as an object with a single property, the name of that
         /// property determining the type of value of the union. The contents of the case are serialized within the property.

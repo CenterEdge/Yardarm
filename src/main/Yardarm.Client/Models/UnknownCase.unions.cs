@@ -10,7 +10,7 @@
         /// </summary>
         public static UnknownCase Value { get; } = new();
 
-        // Prevent construction outside of this class, so that the only instance is the singleton Instance property.
+        // Prevent construction outside of this class, so that the only instance is the singleton Value property.
         private UnknownCase()
         {
         }

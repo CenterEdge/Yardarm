@@ -40,6 +40,9 @@ namespace Yardarm.Generation
         [GeneratedRegex(@"\.unions\.cs$")]
         private static partial Regex Unions();
 
+        [GeneratedRegex(@"\.extdunions\.cs$")]
+        private static partial Regex ExternallyDiscriminatedUnions();
+
         private static readonly UTF8Encoding s_utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
         private static ReadOnlySpan<byte> RootNamespaceBytes => "RootNamespace"u8;
 
@@ -63,10 +66,10 @@ namespace Yardarm.Generation
                 ? [NetCoreAppSuffix(), AnyNetNumberSuffix()]
                 : [NetStandardSuffix(), .. GetNetVersionSuffixExclusions(GenerationContext.CurrentTargetFramework.Version)];
 
-            if (GenerationContext.Options.UnionDiscriminationStrategy == UnionDiscriminationStrategy.None)
+            if (!GenerationContext.Options.ExternallyDiscriminatedUnions)
             {
                 // Exclude files with the ".unions.cs" suffix if unions are not enabled
-                exclusions = exclusions.Append(Unions());
+                exclusions = exclusions.Concat([Unions(), ExternallyDiscriminatedUnions()]);
             }
 
             return exclusions;

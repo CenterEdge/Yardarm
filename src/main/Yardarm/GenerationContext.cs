@@ -101,7 +101,7 @@ namespace Yardarm
                 }
             ];
 
-            if (_options.Value.UnionDiscriminationStrategy != UnionDiscriminationStrategy.None)
+            if (_options.Value.ExternallyDiscriminatedUnions)
             {
                 result.Add("UNION_SUPPORT");
             }

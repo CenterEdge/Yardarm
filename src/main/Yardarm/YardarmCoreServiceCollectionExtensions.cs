@@ -153,11 +153,10 @@ public static class YardarmCoreServiceCollectionExtensions
                     options.DefaultHttpVersionPolicy = versionPolicy;
                 }
 
-                if (settings.Properties.TryGetValue("UnionDiscriminationStrategy", out string? enableUnions)
-                    && Enum.TryParse(enableUnions, ignoreCase: true, out UnionDiscriminationStrategy unionDiscriminationStrategy)
-                    && Enum.IsDefined(unionDiscriminationStrategy))
+                if (settings.Properties.TryGetValue("ExternallyDiscriminatedUnions", out string? value)
+                    && bool.TryParse(value, out bool externallyDiscriminatedUnions))
                 {
-                    options.UnionDiscriminationStrategy = unionDiscriminationStrategy;
+                    options.ExternallyDiscriminatedUnions = externallyDiscriminatedUnions;
                 }
             });
 

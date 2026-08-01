@@ -5,5 +5,5 @@ internal class GenerationOptions
     public bool LegacyDateTimeHandling { get; set; }
     public string? DefaultHttpVersion { get; set; }
     public string? DefaultHttpVersionPolicy { get; set; }
-    public UnionDiscriminationStrategy UnionDiscriminationStrategy { get; set; } = UnionDiscriminationStrategy.None;
+    public bool ExternallyDiscriminatedUnions { get; set; }
 }

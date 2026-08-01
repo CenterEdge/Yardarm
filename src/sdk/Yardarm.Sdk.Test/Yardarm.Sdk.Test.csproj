@@ -18,6 +18,7 @@
     <DefaultHttpVersion>2.0</DefaultHttpVersion>
     <DefaultHttpVersionPolicy>RequestVersionOrLower</DefaultHttpVersionPolicy>
     <UnknownDiscriminatorHandling>ReturnNull</UnknownDiscriminatorHandling>
+    <ExternallyDiscriminatedUnions>true</ExternallyDiscriminatedUnions>
   </PropertyGroup>
 
   <Import Project="../Yardarm.Sdk/Sdk/Sdk.targets" />

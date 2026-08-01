@@ -99,6 +99,7 @@
       <_EffectiveYardarmProperties Condition=" '$(UnknownDiscriminatorHandling)' != 'ThrowException' And '$(UnknownDiscriminatorHandling)' != '' ">$(_EffectiveYardarmProperties);UnknownDiscriminatorHandling=$(UnknownDiscriminatorHandling)</_EffectiveYardarmProperties>
       <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersion)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersion=$(DefaultHttpVersion)</_EffectiveYardarmProperties>
       <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersionPolicy)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersionPolicy=$(DefaultHttpVersionPolicy)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(ExternallyDiscriminatedUnions)' == 'true' ">$(_EffectiveYardarmProperties);ExternallyDiscriminatedUnions=true</_EffectiveYardarmProperties>
     </PropertyGroup>
   </Target>
 

@@ -39,6 +39,12 @@
     -->
     <UnknownDiscriminatorHandling Condition=" '$(UnknownDiscriminatorHandling)' == '' ">ThrowException</UnknownDiscriminatorHandling>
 
+    <!--
+      By default, don't detect and handle externally discriminated unions when generating models.
+      Set to "true" to enable externally discriminated unions.
+    -->
+    <ExternallyDiscriminatedUnions Condition=" '$(ExternallyDiscriminatedUnions)' == '' ">false</ExternallyDiscriminatedUnions>
+
     <!-- By default embed source files with debug symbols -->
     <EmbedAllSources Condition=" '$(EmbedAllSources)' == '' ">true</EmbedAllSources>
 

@@ -12,7 +12,8 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 
     public virtual ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent)
     {
-        if (context.Options.ExternallyDiscriminatedUnions && ExternallyDiscriminatedUnionSchemaGenerator.IsEligible(element.Element))
+        if (context.Options.ExternallyDiscriminatedUnions
+            && ExternallyDiscriminatedUnionSchemaGenerator.IsEligible(element, context.TypeGeneratorRegistry))
         {
             return GetExternallyDiscriminatedUnionGenerator(element, parent);
         }

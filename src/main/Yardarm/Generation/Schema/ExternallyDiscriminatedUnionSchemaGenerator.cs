@@ -129,11 +129,14 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
     /// <remarks>
     /// To be eligible, the schema must be anyOf-based, with no other source of properties, and each anyOf schema must be an object
     /// with a single required property. The name and type of the property must be unique across all anyOf schemas, and the type of the
-    /// property must be a reference a component schema (nested schemas are not supported).
+    /// property must be a reference to a component schema (nested schemas are not supported).
     /// </remarks>
-    public static bool IsEligible(OpenApiSchema schema)
+    public static bool IsEligible(ILocatedOpenApiElement<OpenApiSchema> schema, ITypeGeneratorRegistry typeGeneratorRegistry)
     {
-        if (schema is not
+        ArgumentNullException.ThrowIfNull(schema);
+        ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
+
+        if (schema.Element is not
             {
                 AnyOf.Count: > 0,
                 OneOf: null or { Count: 0 },
@@ -146,9 +149,12 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
         }
 
         var propertyNames = new HashSet<string>();
-        var schemaNames = new HashSet<string>();
 
-        foreach (OpenApiSchema unionCase in schema.AnyOf)
+        // Can't use a HashSet here because the duplicate check we need to perform is more complex and the
+        // hash code won't necessarily match between two matching TypeSyntax objects.
+        var propertyTypes = new List<TypeSyntax>();
+
+        foreach (OpenApiSchema unionCase in schema.Element.AnyOf)
         {
             if (unionCase is not { Type: null or "object", Properties.Count: 1, Nullable: false })
             {
@@ -164,11 +170,28 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 return false;
             }
 
-            if (!propertyNames.Add(propertyName) || !schemaNames.Add(schemaName))
+            if (!propertyNames.Add(propertyName))
             {
-                // Duplicate property name or schema reference ID
+                // Duplicate property name
                 return false;
             }
+
+            // Building the child element must occur after checking that this is a reference to a component schema,
+            // otherwise we can encounter infinite recursion trying to resolve the parent that is being built when
+            // this method is called.
+            ILocatedOpenApiElement<OpenApiSchema> locatedPropertySchema = schema.CreateChild(propertySchema, propertyName);
+
+            YardarmTypeInfo typeInfo = typeGeneratorRegistry.Get(locatedPropertySchema).TypeInfo;
+            foreach (TypeSyntax propertyType in propertyTypes)
+            {
+                if (propertyType.IsEquivalentTo(typeInfo.Name))
+                {
+                    // Duplicate property type
+                    return false;
+                }
+            }
+
+            propertyTypes.Add(typeInfo.Name);
         }
 
         return true;

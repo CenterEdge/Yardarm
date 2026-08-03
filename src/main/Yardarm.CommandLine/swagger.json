@@ -7951,9 +7951,23 @@
             "required": [
               "customer"
             ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "string": {
+                "$ref": "#/components/schemas/String"
+              }
+            },
+            "required": [
+              "string"
+            ]
           }
         ],
         "additionalProperties": false
+      },
+      "String": {
+        "type": "string"
       },
       "JobStatus": {
         "type": "object",

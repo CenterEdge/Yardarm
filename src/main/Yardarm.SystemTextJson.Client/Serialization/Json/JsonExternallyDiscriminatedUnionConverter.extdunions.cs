@@ -14,7 +14,7 @@ using RootNamespace.Models;
 namespace RootNamespace.Serialization.Json;
 
 /// <summary>
-/// A <see cref="JsonConverter{T}"/> for property-discriminated unions that implement <see cref="IUnion"/>.
+/// A <see cref="JsonConverter{T}"/> for externally discriminated unions that implement <see cref="IUnion"/>.
 /// Constructors must be annotated with <see cref="UnionCaseNameAttribute"/>.
 /// </summary>
 /// <typeparam name="T">Type of the union.</typeparam>
@@ -128,47 +128,59 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
             JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
         }
 
-        if (reader.TokenType == JsonTokenType.EndObject)
-        {
-            // Empty object, always the unknown value
-            return CreateUnknownCase();
-        }
+        T? result = default;
+        bool foundResult = false;
 
-        if (reader.TokenType != JsonTokenType.PropertyName)
+        while (reader.TokenType != JsonTokenType.EndObject)
         {
-            JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
-        }
-
-        string? propertyName = reader.GetString();
-
-        T result;
-        if (propertyName is not null && s_casesByName.TryGetValue(propertyName, out CaseInfo? caseInfo))
-        {
-            // Advance to the value token
-            if (!reader.Read())
+            if (reader.TokenType != JsonTokenType.PropertyName)
             {
                 JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
             }
 
-            JsonTypeInfo typeInfo = options.GetTypeInfo(caseInfo.CaseType);
-            object? value = JsonSerializer.Deserialize(ref reader, typeInfo);
-            if (value is null)
+            if (!foundResult
+                && reader.GetString() is string propertyName
+                && s_casesByName.TryGetValue(propertyName, out CaseInfo? caseInfo))
             {
-                // Null is not a valid union case
-                JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                // Advance to the value token
+                if (!reader.Read())
+                {
+                    JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                }
+
+                JsonTypeInfo typeInfo = options.GetTypeInfo(caseInfo.CaseType);
+                object? value = JsonSerializer.Deserialize(ref reader, typeInfo);
+                if (value is null)
+                {
+                    // Null is not a valid union case
+                    JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                }
+
+                result = caseInfo.Factory(value);
+                foundResult = true;
+
+                // Advance past the value token
+                if (!reader.Read())
+                {
+                    JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                }
             }
-
-            result = caseInfo.Factory(value);
-
-            // Advance past the value token
-            if (!reader.Read())
+            else
             {
-                JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                // Skip the property if it is an unknown case or we have already found a matching case
+                reader.Skip();
+
+                // Read to the next property or EndObject token
+                if (!reader.Read())
+                {
+                    JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                }
             }
         }
-        else
+
+        if (!foundResult)
         {
-            result = CreateUnknownCase(propertyName);
+            result = CreateUnknownCase();
         }
 
         while (reader.TokenType != JsonTokenType.EndObject)

@@ -142,7 +142,8 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 OneOf: null or { Count: 0 },
                 AllOf: null or { Count: 0 },
                 Properties: null or { Count: 0 },
-                Type: null or "object"
+                Type: null or "object",
+                AdditionalProperties: null,
             })
         {
             return false;
@@ -156,7 +157,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
 
         foreach (OpenApiSchema unionCase in schema.Element.AnyOf)
         {
-            if (unionCase is not { Type: null or "object", Properties.Count: 1, Nullable: false })
+            if (unionCase is not { Type: null or "object", Properties.Count: 1, Nullable: false, AdditionalProperties: null })
             {
                 // Not a single property object
                 return false;

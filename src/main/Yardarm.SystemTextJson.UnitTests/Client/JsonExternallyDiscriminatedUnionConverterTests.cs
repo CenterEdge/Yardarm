@@ -91,12 +91,8 @@ public class JsonExternallyDiscriminatedUnionConverterTests
         Assert.Equal("Test", value.Name);
     }
 
-    [Fact]
-    public void Deserialize_CaseA_WithAdditionalProperties_IgnoresExtras()
-    {
-        // Arrange
-
-        const string json = """
+    [Theory]
+    [InlineData("""
         {
             "caseA": {
                 "name": "Test"
@@ -106,8 +102,31 @@ public class JsonExternallyDiscriminatedUnionConverterTests
                 "source": "api"
             }
         }
-        """;
-
+        """)]
+    [InlineData("""
+        {
+            "ignored": true,
+            "caseA": {
+                "name": "Test"
+            },
+            "metadata": {
+                "source": "api"
+            }
+        }
+        """)]
+    [InlineData("""
+        {
+            "ignored": true,
+            "metadata": {
+                "source": "api"
+            },
+            "caseA": {
+                "name": "Test"
+            }
+        }
+        """)]
+    public void Deserialize_CaseA_WithAdditionalProperties_IgnoresExtras(string json)
+    {
         // Act
 
         var result = JsonSerializer.Deserialize<TestUnion>(json, s_options);

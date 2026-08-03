@@ -6233,11 +6233,6 @@
       },
       "AgeIssuanceRestriction": {
         "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/IssuanceRestriction"
-          }
-        ],
         "properties": {
           "minimumAge": {
             "type": "integer",
@@ -7923,26 +7918,55 @@
         "type": "string"
       },
       "IssuanceRestriction": {
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "$ref": "#/components/schemas/IssuanceRestrictionType"
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "age": {
+                  "$ref": "#/components/schemas/AgeIssuanceRestriction"
+              }
+            },
+            "required": [
+              "age"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "waiver": {
+                "$ref": "#/components/schemas/RequireWaiverIssuanceRestriction"
+              }
+            },
+            "required": [
+              "waiver"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "customer": {
+                "$ref": "#/components/schemas/RequireCustomerIssuanceRestriction"
+              }
+            },
+            "required": [
+              "customer"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "string": {
+                "$ref": "#/components/schemas/String"
+              }
+            },
+            "required": [
+              "string"
+            ]
           }
-        },
-        "additionalProperties": false,
-        "discriminator": {
-          "propertyName": "type"
-        }
-      },
-      "IssuanceRestrictionType": {
-        "enum": [
-          "AgeIssuanceRestriction",
-          "RequireCustomerIssuanceRestriction",
-          "RequireWaiverIssuanceRestriction"
         ],
+        "additionalProperties": false
+      },
+      "String": {
         "type": "string"
       },
       "JobStatus": {
@@ -9594,21 +9618,11 @@
       },
       "RequireCustomerIssuanceRestriction": {
         "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/IssuanceRestriction"
-          }
-        ],
         "additionalProperties": false,
         "description": "Requires a valid customer before issuing a pass"
       },
       "RequireWaiverIssuanceRestriction": {
         "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/IssuanceRestriction"
-          }
-        ],
         "additionalProperties": false,
         "description": "Requires a customer to have a valid waiver before issuing a pass"
       },

@@ -37,6 +37,12 @@ namespace Yardarm.Generation
         [GeneratedRegex(@"\.net9\.0\.cs$")]
         private static partial Regex Net90Suffix();
 
+        [GeneratedRegex(@"\.unions\.cs$")]
+        private static partial Regex Unions();
+
+        [GeneratedRegex(@"\.extdunions\.cs$")]
+        private static partial Regex ExternallyDiscriminatedUnions();
+
         private static readonly UTF8Encoding s_utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
         private static ReadOnlySpan<byte> RootNamespaceBytes => "RootNamespace"u8;
 
@@ -54,15 +60,24 @@ namespace Yardarm.Generation
             RootNamespace = rootNamespace;
         }
 
-        public virtual IEnumerable<Regex> GetResourceNameExclusions() =>
-            GenerationContext.CurrentTargetFramework.Framework ==
-                                       NuGetFrameworkConstants.NetStandardFramework
+        public virtual IEnumerable<Regex> GetResourceNameExclusions()
+        {
+            IEnumerable<Regex> exclusions = GenerationContext.CurrentTargetFramework.Framework == NuGetFrameworkConstants.NetStandardFramework
                 ? [NetCoreAppSuffix(), AnyNetNumberSuffix()]
                 : [NetStandardSuffix(), .. GetNetVersionSuffixExclusions(GenerationContext.CurrentTargetFramework.Version)];
 
+            if (!GenerationContext.Options.ExternallyDiscriminatedUnions)
+            {
+                // Exclude files with the ".unions.cs" suffix if unions are not enabled
+                exclusions = exclusions.Concat([Unions(), ExternallyDiscriminatedUnions()]);
+            }
+
+            return exclusions;
+        }
+
         public virtual IEnumerable<SyntaxTree> Generate()
         {
-            Regex[] excludeSuffixes = GetResourceNameExclusions().ToArray();
+            Regex[] excludeSuffixes = [.. GetResourceNameExclusions()];
 
             byte[] namespaceName = s_utf8NoBom.GetBytes(RootNamespace.Name.ToString());
 

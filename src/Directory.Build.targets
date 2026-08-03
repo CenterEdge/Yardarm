@@ -24,7 +24,7 @@
 
   <PropertyGroup Condition=" '$(IsClientProject)' == 'true' ">
     <RootNamespace>RootNamespace</RootNamespace>
-    <DefineConstants>$(DefineConstants);FORTESTS</DefineConstants>
+    <DefineConstants>$(DefineConstants);FORTESTS;UNION_SUPPORT</DefineConstants>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

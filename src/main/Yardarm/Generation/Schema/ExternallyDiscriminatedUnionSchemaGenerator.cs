@@ -175,7 +175,11 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 // Duplicate property name
                 return false;
             }
-
+if (schemaName == schema.Key)
+{
+    // Element contains a component reference to its parent schema
+    return false;
+}
             // Building the child element must occur after checking that this is a reference to a component schema,
             // otherwise we can encounter infinite recursion trying to resolve the parent that is being built when
             // this method is called.

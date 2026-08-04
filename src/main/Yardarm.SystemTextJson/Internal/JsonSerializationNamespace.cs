@@ -55,4 +55,8 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
     public TypeSyntax JsonDiscriminatedObjectConverterName(TypeSyntax schemaType) =>
         QualifiedName(Name, GenericName(Identifier("JsonDiscriminatedObjectConverter"),
             TypeArgumentList(SingletonSeparatedList(schemaType))));
+
+    public TypeSyntax JsonExternallyDiscriminatedUnionConverterName(TypeSyntax schemaType) =>
+        QualifiedName(Name, GenericName(Identifier("JsonExternallyDiscriminatedUnionConverter"),
+            TypeArgumentList(SingletonSeparatedList(schemaType))));
 }

@@ -16,12 +16,12 @@ namespace Yardarm.Generation.Request
         {
         }
 
-        protected override YardarmTypeInfo GetTypeInfo()
+        public override QualifiedNameSyntax GetTypeName()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
-            return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(formatter.Format(Element.Key))));
+            return QualifiedName(ns, IdentifierName(formatter.Format(Element.Key)));
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()

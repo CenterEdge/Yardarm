@@ -6,42 +6,39 @@ using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Yardarm.Generation.Response
+namespace Yardarm.Generation.Response;
+
+public class HeaderTypeGenerator : TypeGeneratorBase<OpenApiHeader>
 {
-    public class HeaderTypeGenerator : TypeGeneratorBase<OpenApiHeader>
+    public HeaderTypeGenerator(ILocatedOpenApiElement<OpenApiHeader> element, GenerationContext context,
+        ITypeGenerator? parent) : base(element, context, parent)
     {
-        public HeaderTypeGenerator(ILocatedOpenApiElement<OpenApiHeader> element, GenerationContext context,
-            ITypeGenerator? parent) : base(element, context, parent)
+    }
+
+    public override QualifiedNameSyntax? GetTypeName()
+        => Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).GetTypeName();
+
+    protected override YardarmTypeInfo CreateTypeInfo() =>
+        Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).TypeInfo;
+
+    public override IEnumerable<MemberDeclarationSyntax> Generate() =>
+        Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();
+
+    public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
+    {
+        QualifiedNameSyntax? name = Parent?.GetChildName(Element, nameKind);
+
+        INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(nameKind);
+
+        if (name == null)
         {
+            // At the components root, use the responses namespace
+            return QualifiedName(
+                Context.NamespaceProvider.GetNamespace(Element),
+                IdentifierName(formatter.Format(Element.Key)));
+
         }
 
-        protected override YardarmTypeInfo GetTypeInfo() =>
-            Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).TypeInfo;
-
-        public override IEnumerable<MemberDeclarationSyntax> Generate() =>
-            Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();
-
-        /// <summary>
-        /// Namespace if the parameter is in components.
-        /// </summary>
-        protected override NameSyntax GetNamespace() => Context.NamespaceProvider.GetNamespace(Element);
-
-        public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
-        {
-            QualifiedNameSyntax? name = Parent?.GetChildName(Element, nameKind);
-
-            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(nameKind);
-
-            if (name == null)
-            {
-                // At the components root, use the responses namespace
-                return QualifiedName(
-                    GetNamespace(),
-                    IdentifierName(formatter.Format(Element.Key)));
-
-            }
-
-            return name;
-        }
+        return name;
     }
 }

@@ -39,7 +39,9 @@ namespace Yardarm.Generation.Schema
         private static YardarmTypeInfo Double => s_double ??= new YardarmTypeInfo(
             PredefinedType(Token(SyntaxKind.DoubleKeyword)), NameKind.Struct, isGenerated: false);
 
-        protected override YardarmTypeInfo GetTypeInfo() =>
+        public override QualifiedNameSyntax? GetTypeName() => null;
+
+        protected override YardarmTypeInfo CreateTypeInfo() =>
             (Element.Element.Type, Element.Element.Format) switch
             {
                 (_, "int32") => Integer,

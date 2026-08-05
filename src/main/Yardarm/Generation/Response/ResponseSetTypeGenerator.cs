@@ -25,14 +25,12 @@ namespace Yardarm.Generation.Response
         protected OpenApiOperation Operation => LocatedOperation.Element;
         protected IResponsesNamespace ResponsesNamespace { get; } = responsesNamespace;
 
-        protected override YardarmTypeInfo GetTypeInfo()
-        {
-            var ns = Context.NamespaceProvider.GetNamespace(Element);
+        public override QualifiedNameSyntax GetTypeName()
+            => QualifiedName(
+                Context.NamespaceProvider.GetNamespace(Element),
+                IdentifierName(GetInterfaceName()));
 
-            return new YardarmTypeInfo(
-                QualifiedName(ns, IdentifierName(GetInterfaceName())),
-                NameKind.Interface);
-        }
+        protected override YardarmTypeInfo CreateTypeInfo() => new(GetTypeName(), NameKind.Interface);
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

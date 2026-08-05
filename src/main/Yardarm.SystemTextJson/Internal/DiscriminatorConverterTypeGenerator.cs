@@ -14,7 +14,13 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson.Internal;
 
-internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSchema>
+internal class DiscriminatorConverterTypeGenerator(
+    ILocatedOpenApiElement<OpenApiSchema> element,
+    GenerationContext context,
+    ITypeGenerator? parent,
+    IJsonSerializationNamespace jsonSerializationNamespace,
+    IRootNamespace rootNamespace)
+    : TypeGeneratorBase<OpenApiSchema>(element, context, parent)
 {
     public const string GeneratorCategory = "DiscriminatorConverter";
 
@@ -48,22 +54,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
                 ])))))
         ]);
 
-    private readonly IJsonSerializationNamespace _jsonSerializationNamespace;
-    private readonly NameSyntax _typeName;
-
-    public DiscriminatorConverterTypeGenerator(ILocatedOpenApiElement<OpenApiSchema> element,
-        GenerationContext context, ITypeGenerator? parent, IJsonSerializationNamespace jsonSerializationNamespace,
-        IRootNamespace rootNamespace)
-        : base(element, context, parent)
-    {
-        ArgumentNullException.ThrowIfNull(jsonSerializationNamespace);
-        ArgumentNullException.ThrowIfNull(rootNamespace);
-
-        _jsonSerializationNamespace = jsonSerializationNamespace;
-        _typeName = BuildTypeName(rootNamespace);
-    }
-
-    protected NameSyntax BuildTypeName(IRootNamespace rootNamespace)
+    public override QualifiedNameSyntax GetTypeName()
     {
         string rootNamespacePrefix = rootNamespace.Name + ".";
         string typeNameString = Context.TypeGeneratorRegistry.Get(Element).TypeInfo.Name.ToString();
@@ -73,14 +64,12 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
             ? typeNameString.Substring(rootNamespacePrefix.Length).Replace(".", "-")
             : typeNameString.Replace(".", "-");
 
-        NameSyntax ns = _jsonSerializationNamespace.Name;
+        NameSyntax ns = jsonSerializationNamespace.Name;
 
         var formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
 
         return QualifiedName(ns, IdentifierName(formatter.Format(className + "-JsonConverter")));
     }
-
-    protected override YardarmTypeInfo GetTypeInfo() => new(_typeName);
 
     public override IEnumerable<MemberDeclarationSyntax> Generate()
     {
@@ -89,7 +78,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
         string className = classNameAndNamespace.Right.Identifier.Text;
 
         var schemaType = Context.TypeGeneratorRegistry.Get(Element).TypeInfo.Name;
-        var baseType = _jsonSerializationNamespace.JsonDiscriminatedObjectConverterName(schemaType);
+        var baseType = jsonSerializationNamespace.JsonDiscriminatedObjectConverterName(schemaType);
 
         var declaration = ClassDeclaration(
                 default,
@@ -128,7 +117,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
                         SyntaxKind.SimpleAssignmentExpression,
                         IdentifierName("UnknownDiscriminatorHandling"),
                         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            _jsonSerializationNamespace.UnknownDiscriminatorHandling,
+                            jsonSerializationNamespace.UnknownDiscriminatorHandling,
                             IdentifierName(unknownDiscriminatorHandling))))
                 ));
         }
@@ -223,7 +212,7 @@ internal class DiscriminatorConverterTypeGenerator : TypeGeneratorBase<OpenApiSc
                         SingletonSeparatedList(VariableDeclarator(
                             Identifier("discriminator"),
                             null,
-                            EqualsValueClause(_jsonSerializationNamespace.GetDiscriminator(
+                            EqualsValueClause(jsonSerializationNamespace.GetDiscriminator(
                                 IdentifierName("reader"),
                                 IdentifierName("PropertyName"))))))),
                 ReturnStatement(SwitchExpression(IdentifierName("discriminator"), SeparatedList(mappings))),

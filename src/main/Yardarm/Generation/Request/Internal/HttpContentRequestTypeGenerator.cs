@@ -26,7 +26,7 @@ namespace Yardarm.Generation.Request.Internal
     {
         private RequestTypeGenerator RequestTypeGenerator => (RequestTypeGenerator)Parent!;
 
-        protected override YardarmTypeInfo GetTypeInfo()
+        public override QualifiedNameSyntax GetTypeName()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(RequestTypeGenerator.Element);
@@ -34,10 +34,8 @@ namespace Yardarm.Generation.Request.Internal
             string? operationName = operationNameProvider.GetOperationName(RequestTypeGenerator.Element);
             Debug.Assert(operationName is not null);
 
-            TypeSyntax name = QualifiedName(ns,
+            return QualifiedName(ns,
                 IdentifierName(formatter.Format($"{operationName}-HttpContent-Request")));
-
-            return new YardarmTypeInfo(name);
         }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()

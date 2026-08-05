@@ -13,6 +13,8 @@ internal class NoopTypeGenerator<T>(ITypeGenerator? parent) : ITypeGenerator
 {
     public ITypeGenerator? Parent { get; } = parent;
 
+    public QualifiedNameSyntax? GetTypeName() => null;
+
     public YardarmTypeInfo TypeInfo { get; } = new YardarmTypeInfo(
         SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword)),
         NameKind.Struct,

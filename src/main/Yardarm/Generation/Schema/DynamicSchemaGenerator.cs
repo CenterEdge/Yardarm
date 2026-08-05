@@ -19,7 +19,9 @@ namespace Yardarm.Generation.Schema
             isGenerated: false,
             requiresDynamicSerialization: true);
 
-        protected override YardarmTypeInfo GetTypeInfo() => DynamicObjectTypeInfo;
+        public override QualifiedNameSyntax? GetTypeName() => null;
+
+        protected override YardarmTypeInfo CreateTypeInfo() => DynamicObjectTypeInfo;
 
         public override IEnumerable<MemberDeclarationSyntax> Generate() => [];
     }

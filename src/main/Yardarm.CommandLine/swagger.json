@@ -10245,12 +10245,12 @@
         }
       },
       "TenderType": {
-        "enum": [
+        "type": "string",
+        "x-extensible-enum": [
           "CreditCardTender",
           "DebitCardTender",
           "CashTender"
-        ],
-        "type": "string"
+        ]
       },
       "Ticket": {
         "type": "object",

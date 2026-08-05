@@ -20,6 +20,8 @@ namespace Yardarm.Generation.Schema
         {
         }
 
+        public QualifiedNameSyntax? GetTypeName() => null;
+
         public YardarmTypeInfo TypeInfo => DynamicSchemaGenerator.DynamicObjectTypeInfo;
 
         public SyntaxTree? GenerateSyntaxTree() => null;

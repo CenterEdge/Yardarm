@@ -91,7 +91,11 @@ public abstract class TypeGeneratorBase : ITypeGenerator
     public virtual CompilationUnitSyntax GenerateCompilationUnit(IEnumerable<MemberDeclarationSyntax> members)
     {
         NameSyntax? ns = GetNamespace();
-        Debug.Assert(ns is not null);
+        if (ns is null)
+        {
+            ThrowHelpers.ThrowInvalidOperationException(
+                "Unable to generate compilation unit, no namespace was returned by GetNamespace.");
+        }
 
         return CompilationUnit(
             externs: default,

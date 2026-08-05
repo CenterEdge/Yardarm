@@ -40,6 +40,7 @@ public abstract class TypeGeneratorBase<T> : TypeGeneratorBase
 
             TypeSyntax nameForPath = GetTypeName() ?? TypeInfo.Name;
             if (nameForPath is QualifiedNameSyntax qualifiedName)
+            {
                 var stack = new Stack<SimpleNameSyntax>(4);
                 QualifiedNameSyntax current = qualifiedName;
                 while (true)

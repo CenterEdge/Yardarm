@@ -21,6 +21,8 @@ namespace Yardarm.Generation.Schema
 
         public YardarmTypeInfo TypeInfo => s_typeInfo;
 
+        public QualifiedNameSyntax? GetTypeName() => null;
+
         public SyntaxTree? GenerateSyntaxTree() => null;
 
         public IEnumerable<MemberDeclarationSyntax> Generate() => [];

@@ -24,12 +24,12 @@ namespace Yardarm.Generation.Tag
             _apiNamespace = apiNamespace;
         }
 
-        protected override YardarmTypeInfo GetTypeInfo() =>
-            new YardarmTypeInfo(
-            QualifiedName(
+        public override QualifiedNameSyntax GetTypeName()
+            => QualifiedName(
                 Context.NamespaceProvider.GetNamespace(Element),
-                IdentifierName(GetInterfaceName())),
-                    NameKind.Interface);
+                IdentifierName(GetInterfaceName()));
+
+        protected override YardarmTypeInfo CreateTypeInfo() => new(GetTypeName(), NameKind.Interface);
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

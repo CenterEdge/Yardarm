@@ -47,7 +47,9 @@ internal sealed class NodaTimeSchemaGenerator(
     private static YardarmTypeInfo Period => field ??= new YardarmTypeInfo(
         NodaTimeTypes.Period, isGenerated: false);
 
-    protected override YardarmTypeInfo GetTypeInfo()
+    public override QualifiedNameSyntax? GetTypeName() => null;
+
+    protected override YardarmTypeInfo CreateTypeInfo()
     {
         YardarmTypeInfo? typeInfo = Element.Element.Format switch
         {

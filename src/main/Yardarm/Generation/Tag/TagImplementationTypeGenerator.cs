@@ -39,12 +39,12 @@ namespace Yardarm.Generation.Tag
             _operationMethodGenerator = operationMethodGenerator;
         }
 
-        protected override YardarmTypeInfo GetTypeInfo() =>
-            new YardarmTypeInfo(
-            QualifiedName(
+        public override QualifiedNameSyntax GetTypeName()
+            => QualifiedName(
                 Context.NamespaceProvider.GetNamespace(Element),
-                IdentifierName(GetClassName())),
-                    NameKind.Class);
+                IdentifierName(GetClassName()));
+
+        protected override YardarmTypeInfo CreateTypeInfo() => new(GetTypeName(), NameKind.Class);
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

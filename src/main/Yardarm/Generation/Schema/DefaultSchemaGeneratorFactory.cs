@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Yardarm.Internal;
 using Yardarm.Spec;
@@ -52,10 +56,26 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
     protected virtual ITypeGenerator GetExternallyDiscriminatedUnionGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
         ExternallyDiscriminatedUnionFactory(context.GenerationServices, [element, context, parent]);
 
-    protected virtual ITypeGenerator GetStringGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
-        element.Element.Enum is { Count: > 0 }
-            ? new EnumSchemaGenerator(element, context, parent)
-            : new StringSchemaGenerator(element, context, parent);
+    protected virtual ITypeGenerator GetStringGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent)
+    {
+        if (element.Element.Enum is { Count: > 0 })
+        {
+            return new EnumSchemaGenerator(element, context, parent);
+        }
+
+        if (element.Element.Extensions.TryGetValue("x-extensible-enum", out IOpenApiExtension? extension)
+            && extension is OpenApiArray { Count: > 0 } array)
+        {
+            List<string> values = [.. array.OfType<OpenApiString>().Select(p => p.Value)];
+
+            if (values.Count > 0)
+            {
+                return new ExtensibleEnumSchemaGenerator(element, context, parent, values);
+            }
+        }
+
+        return new StringSchemaGenerator(element, context, parent);
+    }
 
     protected virtual ITypeGenerator GetDictionaryGenerator(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent) =>
         new DictionarySchemaGenerator(element, context, parent);

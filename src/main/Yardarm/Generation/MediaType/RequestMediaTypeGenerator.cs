@@ -51,7 +51,7 @@ namespace Yardarm.Generation.MediaType
             return null;
         }
 
-        protected override YardarmTypeInfo GetTypeInfo()
+        public override QualifiedNameSyntax GetTypeName()
         {
             SerializerDescriptor? serializerDescriptor = SerializerSelector.Select(Element)?.Descriptor;
             if (serializerDescriptor == null)
@@ -65,15 +65,13 @@ namespace Yardarm.Generation.MediaType
             string? operationName = operationNameProvider.GetOperationName(RequestTypeGenerator.Element);
             Debug.Assert(operationName is not null);
 
-            TypeSyntax name = QualifiedName(ns,
+            return QualifiedName(ns,
                 IdentifierName(formatter.Format($"{operationName}-{serializerDescriptor.NameSegment}-Request")));
-
-            return new YardarmTypeInfo(name);
         }
 
         public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
             NameKind nameKind) =>
-            QualifiedName((NameSyntax)TypeInfo.Name, IdentifierName(
+            QualifiedName(GetTypeName(), IdentifierName(
                 Context.NameFormatterSelector.GetFormatter(nameKind).Format(child.Key + "-Body")));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()

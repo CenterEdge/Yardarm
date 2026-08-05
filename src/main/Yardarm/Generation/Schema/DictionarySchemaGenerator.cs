@@ -16,7 +16,9 @@ namespace Yardarm.Generation.Schema
         ITypeGenerator? parent)
         : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
     {
-        protected override YardarmTypeInfo GetTypeInfo() =>
+        public override QualifiedNameSyntax? GetTypeName() => null;
+
+        protected override YardarmTypeInfo CreateTypeInfo() =>
             new(WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
                     PredefinedType(Token(SyntaxKind.StringKeyword)),
                     Context.TypeGeneratorRegistry.Get(Element.GetAdditionalPropertiesOrDefault()).TypeInfo.Name),

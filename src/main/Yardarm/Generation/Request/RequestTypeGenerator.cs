@@ -35,7 +35,7 @@ namespace Yardarm.Generation.Request
 
         protected OpenApiOperation Operation => Element.Element;
 
-        protected override YardarmTypeInfo GetTypeInfo()
+        public override QualifiedNameSyntax GetTypeName()
         {
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind.Class);
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
@@ -43,8 +43,7 @@ namespace Yardarm.Generation.Request
             string? operationName = operationNameProvider.GetOperationName(Element);
             Debug.Assert(operationName is not null);
 
-            return new YardarmTypeInfo(QualifiedName(ns,
-                IdentifierName(formatter.Format(operationName + "Request"))));
+            return QualifiedName(ns, IdentifierName(formatter.Format(operationName + "Request")));
         }
 
         public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,

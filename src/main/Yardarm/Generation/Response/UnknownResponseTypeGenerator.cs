@@ -24,12 +24,10 @@ namespace Yardarm.Generation.Response
         protected IResponsesNamespace ResponsesNamespace { get; } = responsesNamespace;
         protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
-        protected override YardarmTypeInfo GetTypeInfo()
-        {
-            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
-
-            return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(GetClassName())));
-        }
+        public override QualifiedNameSyntax GetTypeName()
+            => QualifiedName(
+                Context.NamespaceProvider.GetNamespace(Element),
+                IdentifierName(GetClassName()));
 
         public override IEnumerable<MemberDeclarationSyntax> Generate()
         {

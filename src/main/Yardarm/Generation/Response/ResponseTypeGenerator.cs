@@ -38,12 +38,10 @@ namespace Yardarm.Generation.Response
 
         protected OpenApiResponse Response => Element.Element;
 
-        protected override YardarmTypeInfo GetTypeInfo()
-        {
-            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
-
-            return new YardarmTypeInfo(QualifiedName(ns, IdentifierName(GetClassName())));
-        }
+        public override QualifiedNameSyntax GetTypeName()
+            => QualifiedName(
+                Context.NamespaceProvider.GetNamespace(Element),
+                IdentifierName(GetClassName()));
 
         public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child,
             NameKind nameKind) =>

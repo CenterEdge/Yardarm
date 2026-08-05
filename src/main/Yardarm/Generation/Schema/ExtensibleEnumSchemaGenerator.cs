@@ -10,7 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema;
 
 /// <summary>
-/// Generates a C# enum type for an OpenAPI schema that has the "x-extensible-enum" extension.
+/// Generates a static class containing string constants for an OpenAPI schema that has the "x-extensible-enum" extension.
 /// Generates well-known values as constants in a static class which is located and named using the
 /// usual schema class naming techniques. The properties referencing this schema will be generated as a string.
 /// </summary>

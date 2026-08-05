@@ -29,7 +29,11 @@ internal class ExtensibleEnumSchemaGenerator(
     public override IEnumerable<MemberDeclarationSyntax> Generate()
     {
         var classNameAndNamespace = GetTypeName();
-        Debug.Assert(classNameAndNamespace is not null);
+        if (classNameAndNamespace is null)
+        {
+            Yardarm.Helpers.ThrowHelpers.ThrowInvalidOperationException(
+                $"Unable to generate extensible enum for '{Element.Key}', no name was returned by GetTypeName.");
+        }
 
         string className = classNameAndNamespace.Right.Identifier.Text;
 

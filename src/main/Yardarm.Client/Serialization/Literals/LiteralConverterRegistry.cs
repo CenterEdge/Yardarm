@@ -47,23 +47,9 @@ public sealed class LiteralConverterRegistry
 
     private readonly Dictionary<Type, LiteralConverter> _converters = [];
 
-// A LiteralConverterRegistry is generally initialized once and then read many times, so caching converters
-// (including ones discovered via LiteralConverterAttribute) improves performance for repeated lookups.
-    private ConcurrentDictionary<Type, LiteralConverter?>? _dynamicConverters;
-    private ConcurrentDictionary<Type, LiteralConverter?> DynamicConverters
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            ConcurrentDictionary<Type, LiteralConverter?>? converters = _dynamicConverters;
-            if (converters is not null)
-            {
-                return converters;
-            }
-
-            return Interlocked.CompareExchange(ref _dynamicConverters, [], null) ?? _dynamicConverters;
-        }
-    }
+    // A LiteralConverterRegistry is generally initialized once and then read many times, so caching converters
+    // (including ones discovered via LiteralConverterAttribute) improves performance for repeated lookups.
+    private readonly ConcurrentDictionary<Type, LiteralConverter?> _dynamicConverters = [];
 
     /// <summary>
     /// Gets a registered converter for the specified type.
@@ -92,7 +78,7 @@ public sealed class LiteralConverterRegistry
     {
         converter = null;
 
-        LiteralConverter? result = DynamicConverters.GetOrAdd(typeof(T), CreateConverter);
+        LiteralConverter? result = _dynamicConverters.GetOrAdd(typeof(T), CreateConverter);
         if (result is null)
         {
             return false;
@@ -149,7 +135,7 @@ public sealed class LiteralConverterRegistry
             _converters[typeof(T?)] = nullableConverter;
         }
 
-        Volatile.Write(ref _dynamicConverters, null); // Clear the dynamic cache to force a rebuild
+        _dynamicConverters.Clear(); // Clear the dynamic cache to force a rebuild
         return this;
     }
 
@@ -167,7 +153,7 @@ public sealed class LiteralConverterRegistry
 
         _converters[typeof(T)] = converter;
 
-        Volatile.Write(ref _dynamicConverters, null); // Clear the frozen dictionary to force a rebuild
+        _dynamicConverters.Clear(); // Clear the cache dictionary to force a rebuild
         return this;
     }
 

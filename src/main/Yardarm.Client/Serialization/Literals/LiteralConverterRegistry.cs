@@ -78,7 +78,7 @@ public sealed class LiteralConverterRegistry
     {
         converter = null;
 
-        LiteralConverter? result = _dynamicConverters.GetOrAdd(typeof(T), CreateConverter);
+        LiteralConverter? result = _dynamicConverters.GetOrAdd(typeof(T), CreateConverterDelegate);
         if (result is null)
         {
             return false;
@@ -93,6 +93,9 @@ public sealed class LiteralConverterRegistry
         ThrowHelper.ThrowInvalidOperationException($"Registered converter for type '{typeof(T).FullName}' is not of the expected type '{typeof(LiteralConverter<T>).FullName}'.");
         return false;
     }
+
+    // Cache the delegate for reuse
+    private Func<Type, LiteralConverter?> CreateConverterDelegate => field ??= CreateConverter;
 
     private LiteralConverter? CreateConverter(Type type)
     {

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
+using Newtonsoft.Json;
 using RootNamespace.Internal;
 using RootNamespace.Models;
 
@@ -14,17 +12,22 @@ namespace RootNamespace.Serialization.Json;
 /// Constructors must be annotated with <see cref="UnionCaseNameAttribute"/>.
 /// </summary>
 /// <typeparam name="T">Type of the union.</typeparam>
-internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>
-    : JsonConverter<T>
+internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConverter
     where T : IUnion
 {
-    public override bool HandleNull => false;
+    public override bool CanConvert(Type objectType) => objectType == typeof(T);
 
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(serializer);
 
-        if (reader.TokenType != JsonTokenType.StartObject)
+        if (reader.TokenType == JsonToken.Null)
+        {
+            return default;
+        }
+
+        if (reader.TokenType != JsonToken.StartObject)
         {
             JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
         }
@@ -35,21 +38,20 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
             JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
         }
 
-        T? result = default;
-        bool foundResult = false;
+        object? result = null;
         string? firstPropertyName = null;
 
-        while (reader.TokenType != JsonTokenType.EndObject)
+        while (reader.TokenType != JsonToken.EndObject)
         {
-            if (reader.TokenType != JsonTokenType.PropertyName)
+            if (reader.TokenType != JsonToken.PropertyName)
             {
                 JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
             }
 
-            string? propertyName = reader.GetString();
+            string? propertyName = (string?)reader.Value;
             firstPropertyName ??= propertyName;
 
-            if (!foundResult
+            if (result is null
                 && propertyName is not null
                 && ExternallyDiscriminatedUnion<T>.CasesByName.TryGetValue(propertyName, out var caseInfo))
             {
@@ -59,8 +61,7 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
                     JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
                 }
 
-                JsonTypeInfo typeInfo = options.GetTypeInfo(caseInfo.CaseType);
-                object? value = JsonSerializer.Deserialize(ref reader, typeInfo);
+                object? value = serializer.Deserialize(reader, caseInfo.CaseType);
                 if (value is null)
                 {
                     // Null is not a valid union case
@@ -68,7 +69,6 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
                 }
 
                 result = caseInfo.Factory(value);
-                foundResult = true;
 
                 // Advance past the value token
                 if (!reader.Read())
@@ -89,15 +89,27 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
             }
         }
 
-        return foundResult ? result : CreateUnknownCase(firstPropertyName);
+        return result ?? CreateUnknownCase(firstPropertyName);
     }
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(serializer);
 
-        object? innerValue = value.Value;
+        if (value is null)
+        {
+            writer.WriteNull();
+            return;
+        }
+
+        if (value is not T union)
+        {
+            ThrowHelper.ThrowInvalidOperationException("Cannot serialize value of type '{value.GetType()}' as union type '{typeof(T)}'.");
+            return;
+        }
+
+        object? innerValue = union.Value;
         if (innerValue is not null)
         {
             writer.WriteStartObject();
@@ -116,8 +128,7 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
                 {
                     writer.WritePropertyName(caseInfo.CaseName);
 
-                    JsonTypeInfo typeInfo = options.GetTypeInfo(caseInfo.CaseType);
-                    JsonSerializer.Serialize(writer, innerValue, typeInfo);
+                    serializer.Serialize(writer, innerValue, caseInfo.CaseType);
 
                     writer.WriteEndObject();
                     return;
@@ -148,17 +159,17 @@ internal static class JsonDiscriminatedUnionConverter
 {
     [DoesNotReturn]
     public static void ThrowInvalidUnionJson(Type unionType)
-        => throw new JsonException($"Invalid JSON for union type '{unionType.FullName}'.");
+        => throw new JsonSerializationException($"Invalid JSON for union type '{unionType.FullName}'.");
 
     [DoesNotReturn]
     public static void ThrowUnknownUnionCaseType(Type unionType, Type? caseType)
-        => throw new JsonException(caseType is not null
+        => throw new JsonSerializationException(caseType is not null
             ? $"Union type '{unionType.FullName}' does not have a case with type '{caseType.FullName}'."
             : $"Union type '{unionType.FullName}' may not contain a null value.");
 
     [DoesNotReturn]
     public static void ThrowUnknownUnionCase(Type unionType, string? caseName)
-        => throw new JsonException(caseName is not null
+        => throw new JsonSerializationException(caseName is not null
             ? $"Union type '{unionType.FullName}' does not have a case '{caseName}'."
             : $"Union type '{unionType.FullName}' does not have an unknown case.");
 }

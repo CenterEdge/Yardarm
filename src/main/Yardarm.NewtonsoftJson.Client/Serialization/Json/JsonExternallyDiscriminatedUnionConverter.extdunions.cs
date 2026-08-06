@@ -105,7 +105,7 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConvert
 
         if (value is not T union)
         {
-            ThrowHelper.ThrowInvalidOperationException("Cannot serialize value of type '{value.GetType()}' as union type '{typeof(T)}'.");
+            ThrowHelper.ThrowInvalidOperationException($"Cannot serialize value of type '{value.GetType().FullName}' as union type '{typeof(T).FullName}'.");
             return;
         }
 

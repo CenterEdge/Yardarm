@@ -136,7 +136,7 @@ public sealed class LiteralConverterRegistry
             _converters[typeof(T?)] = nullableConverter;
         }
 
-        Volatile.Write(ref _dynamicConverters, null); // Clear the frozen dictionary to force a rebuild
+        Volatile.Write(ref _dynamicConverters, null); // Clear the dynamic cache to force a rebuild
         return this;
     }
 

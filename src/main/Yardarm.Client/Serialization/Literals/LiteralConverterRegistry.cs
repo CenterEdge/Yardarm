@@ -47,8 +47,8 @@ public sealed class LiteralConverterRegistry
 
     private readonly Dictionary<Type, LiteralConverter> _converters = [];
 
-    // A LiteralConverterRegistry is generally initialized once and then read many times, so using a FrozenDictionary
-    // for reads becomes worthwhile for the slightly faster read performance.
+// A LiteralConverterRegistry is generally initialized once and then read many times, so caching converters
+// (including ones discovered via LiteralConverterAttribute) improves performance for repeated lookups.
     private ConcurrentDictionary<Type, LiteralConverter?>? _dynamicConverters;
     private ConcurrentDictionary<Type, LiteralConverter?> DynamicConverters
     {

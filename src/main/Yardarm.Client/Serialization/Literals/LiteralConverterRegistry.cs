@@ -90,9 +90,22 @@ public sealed class LiteralConverterRegistry
     /// <returns>True if the converter was found, otherwise false.</returns>
     public bool TryGet<T>([NotNullWhen(true)] out LiteralConverter<T>? converter)
     {
-        converter = DynamicConverters.GetOrAdd(typeof(T), CreateConverter) as LiteralConverter<T>;
+        converter = null;
 
-        return converter is not null;
+        LiteralConverter? result = DynamicConverters.GetOrAdd(typeof(T), CreateConverter);
+        if (result is null)
+        {
+            return false;
+        }
+
+        if (result is LiteralConverter<T> typedResult)
+        {
+            converter = typedResult;
+            return true;
+        }
+
+        ThrowHelper.ThrowInvalidOperationException($"Registered converter for type '{typeof(T).FullName}' is not of the expected type '{typeof(LiteralConverter<T>).FullName}'.");
+        return false;
     }
 
     private LiteralConverter? CreateConverter(Type type)

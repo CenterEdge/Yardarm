@@ -8,5 +8,16 @@ public sealed class LiteralConverterAttribute([DynamicallyAccessedMembers(Dynami
 {
     public Type Type => type;
 
-    public LiteralConverter CreateConverter() => (LiteralConverter)Activator.CreateInstance(type)!;
+    public LiteralConverter CreateConverter()
+    {
+        object? obj = Activator.CreateInstance(type);
+
+        if (obj is LiteralConverter converter)
+        {
+            return converter;
+        }
+
+        ThrowHelper.ThrowInvalidOperationException($"Type '{type.FullName}' is not a valid LiteralConverter.");
+        return null!;
+    }
 }

@@ -99,14 +99,16 @@ public sealed class LiteralConverterRegistry
 
     private LiteralConverter? CreateConverter(Type type)
     {
-        // First, check for an attribute
-        if (type.GetCustomAttribute<LiteralConverterAttribute>() is LiteralConverterAttribute attribute)
+        LiteralConverter? converter = Nullable.GetUnderlyingType(type) is Type underlyingType
+            ? underlyingType.GetCustomAttribute<LiteralConverterAttribute>()?.CreateNullableConverter()
+            : type.GetCustomAttribute<LiteralConverterAttribute>()?.CreateConverter();
+        if (converter is not null)
         {
-            return attribute.CreateConverter();
+            return converter;
         }
 
         // Next, check our standard converters
-        if (_converters.TryGetValue(type, out LiteralConverter? converter))
+        if (_converters.TryGetValue(type, out converter))
         {
             return converter;
         }

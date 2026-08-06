@@ -13,6 +13,7 @@
   <Project Path="Yardarm.MicrosoftExtensionsHttp.Client/Yardarm.MicrosoftExtensionsHttp.Client.csproj" />
   <Project Path="Yardarm.MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp.csproj" />
   <Project Path="Yardarm.NewtonsoftJson.Client/Yardarm.NewtonsoftJson.Client.csproj" />
+  <Project Path="Yardarm.NewtonsoftJson.UnitTests/Yardarm.NewtonsoftJson.UnitTests.csproj" />
   <Project Path="Yardarm.NewtonsoftJson/Yardarm.NewtonsoftJson.csproj" />
   <Project Path="Yardarm.NodaTime.Client/Yardarm.NodaTime.Client.csproj" />
   <Project Path="Yardarm.NodaTime.UnitTests/Yardarm.NodaTime.UnitTests.csproj" />

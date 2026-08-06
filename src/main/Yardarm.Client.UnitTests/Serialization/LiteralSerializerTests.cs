@@ -1,6 +1,7 @@
 ﻿using System;
 using FluentAssertions;
 using RootNamespace.Serialization.Literals;
+using RootNamespace.Serialization.Literals.Converters;
 using Xunit;
 
 namespace Yardarm.Client.UnitTests.Serialization
@@ -31,6 +32,18 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be("105");
+        }
+
+        [Fact]
+        public void Serialize_CustomConverter_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize(new IntWrapper(105));
+
+            // Assert
+
+            result.Should().Be("106");
         }
 
         [Fact]
@@ -835,6 +848,18 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
+        public void Deserialize_CustomConverter_ReturnsString()
+        {
+            // Act
+
+            IntWrapper result = LiteralSerializer.Deserialize<IntWrapper>("106");
+
+            // Assert
+
+            result.Value.Should().Be(105);
+        }
+
+        [Fact]
         public void Deserialize_Long_ReturnsString()
         {
             // Act
@@ -1081,5 +1106,16 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         #endregion
+
+        [LiteralConverter(typeof(CustomConverter))]
+        private readonly record struct IntWrapper(int Value);
+
+        private sealed class CustomConverter : ValueTypeLiteralConverter<IntWrapper>
+        {
+            private readonly Int32LiteralConverter _innerConverter = new();
+
+            public override string Write(IntWrapper value, string format) => checked(_innerConverter.Write(value.Value + 1, format));
+            protected override IntWrapper ReadCore(string value, string format) => checked(new IntWrapper(_innerConverter.Read(value, format) - 1));
+        }
     }
 }

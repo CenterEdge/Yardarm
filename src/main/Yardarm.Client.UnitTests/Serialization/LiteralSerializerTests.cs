@@ -1156,7 +1156,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
-        [LiteralConverter(typeof(CustomConverter), typeof(NullableLiteralConverter<IntWrapper>))]
+        [LiteralConverter(typeof(CustomConverter))]
         private readonly record struct IntWrapper(int Value);
 
         private sealed class CustomConverter : ValueTypeLiteralConverter<IntWrapper>

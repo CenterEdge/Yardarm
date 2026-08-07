@@ -99,16 +99,26 @@ public sealed class LiteralConverterRegistry
 
     private LiteralConverter? CreateConverter(Type type)
     {
-        LiteralConverter? converter = Nullable.GetUnderlyingType(type) is Type underlyingType
-            ? underlyingType.GetCustomAttribute<LiteralConverterAttribute>()?.CreateNullableConverter()
-            : type.GetCustomAttribute<LiteralConverterAttribute>()?.CreateConverter();
-        if (converter is not null)
+        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
-            return converter;
+            LiteralConverter? innerConverter = _dynamicConverters.GetOrAdd(underlyingType, CreateConverterDelegate);
+
+            if (innerConverter is IValueTypeLiteralConverter valueTypeInnerConverter)
+            {
+                return valueTypeInnerConverter.CreateNullableConverter();
+            }
+        }
+        else
+        {
+            LiteralConverter? attributeConverter = type.GetCustomAttribute<LiteralConverterAttribute>()?.CreateConverter();
+            if (attributeConverter is not null)
+            {
+                return attributeConverter;
+            }
         }
 
         // Next, check our standard converters
-        if (_converters.TryGetValue(type, out converter))
+        if (_converters.TryGetValue(type, out LiteralConverter? converter))
         {
             return converter;
         }

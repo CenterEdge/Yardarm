@@ -9,9 +9,9 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema;
 
 /// <summary>
-/// Generates a static class containing string constants for an OpenAPI schema that has the "x-extensible-enum" extension.
-/// Generates well-known values as constants in a static class which is located and named using the
-/// usual schema class naming techniques. The properties referencing this schema will be generated as a string.
+/// Generates a readonly record struct that can contain any non-null string for an OpenAPI schema that has the "x-extensible-enum" extension.
+/// Generates well-known values as static readonly properties. The generated type implements IExtensibleEnum{TSelf}" and
+/// provides implicit conversions to and from string.
 /// </summary>
 internal class ExtensibleEnumSchemaGenerator(
     GenerationContext context,

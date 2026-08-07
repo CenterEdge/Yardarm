@@ -11,7 +11,7 @@ internal sealed class ExtensibleEnumLiteralConverter<[DynamicallyAccessedMembers
 {
     protected override T ReadCore(string value, string? format) => ExtensibleEnum.Create<T>(value);
 
-    public override string Write(T value, string? format) => value.Value;
+    public override string Write(T value, string? format) => value.Value ?? "";
 
 #if NET6_0_OR_GREATER
 

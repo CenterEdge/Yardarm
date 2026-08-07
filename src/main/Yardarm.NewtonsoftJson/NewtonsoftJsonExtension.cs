@@ -23,6 +23,7 @@ namespace Yardarm.NewtonsoftJson
                 .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonDateOnlyPropertyEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatedUnionEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<JsonExtensibleEnumEnricher>()
                 .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()
                 .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>();
 

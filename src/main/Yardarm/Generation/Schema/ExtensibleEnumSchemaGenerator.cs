@@ -160,7 +160,7 @@ internal class ExtensibleEnumSchemaGenerator(
                     initializer: null))
             ])),
             expressionBody: null,
-            semicolonToken: Token(SyntaxKind.SemicolonToken));
+            semicolonToken: default);
 
         // Static create method to satisfy the IExtensibleEnum<T> interface requirement
         if (Context.CurrentTargetFramework.Version.Major >= 7)
@@ -188,7 +188,7 @@ internal class ExtensibleEnumSchemaGenerator(
                     initializer: null))
                 ])),
                 expressionBody: null,
-                semicolonToken: Token(SyntaxKind.SemicolonToken));
+                semicolonToken: default);
         }
     }
 }

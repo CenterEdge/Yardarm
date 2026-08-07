@@ -15,11 +15,7 @@ internal static class ExtensibleEnum
     /// <summary>
     /// Creates a new instance of the extensible enumeration with the specified value.
     /// </summary>
-    /// <typeparam name="T">The type of the extensible enumeration.</typeparam>
-    /// <param name="value">The value of the extensible enumeration.</param>
-    /// <returns>A new instance of the extensible enumeration.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"> may not be null.</exception>'
-    /// <remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> may not be null.</exception>
     /// For .NET 7 and later, the extensible enumeration type must implement the static abstract method <see cref="IExtensibleEnum{TSelf}.Create(string)"/>.
     /// For runtimes before .NET 7, the extensible enumeration type must have a public constructor that takes a single string parameter.
     /// </remarks>

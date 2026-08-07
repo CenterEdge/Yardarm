@@ -9,204 +9,209 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
-using Yardarm.Packaging;
 
-namespace Yardarm
+namespace Yardarm;
+
+public class YardarmGenerationSettings
 {
-    public class YardarmGenerationSettings
+    private Stream? _dllOutput;
+    private Stream? _pdbOutput;
+    private Stream? _xmlDocumentationOutput;
+
+    private readonly List<YardarmExtension> _extensions = new List<YardarmExtension>();
+    private readonly List<Action<ILoggingBuilder>> _loggingBuilders = new List<Action<ILoggingBuilder>>();
+
+    public string AssemblyName { get; set; } = "Yardarm.Sdk";
+    public string RootNamespace { get; set; } = "Yardarm.Sdk";
+
+    public Version Version { get; set; } = new Version(1, 0, 0);
+    public string? VersionSuffix { get; set; }
+    public string Author { get; set; } = "anonymous";
+    public RepositoryMetadata? Repository { get; set; }
+
+    public IReadOnlyList<YardarmExtension> Extensions => _extensions;
+
+    /// <summary>
+    /// Base path for generated source files. Files are not persisted to this path,
+    /// but it is used within Roslyn to uniquely identify source files.
+    /// </summary>
+    public string BasePath { get; set; } = AppContext.BaseDirectory;
+
+    /// <summary>
+    /// If true, embed generated source code in the symbols PDB file and package. This
+    /// enables stepping into the generated SDK when debugging.
+    /// </summary>
+    public bool EmbedAllSources { get; set; }
+
+    /// <summary>
+    /// If true, embed symbols in the <see cref="NuGetOutput"/>. Useful when uploading to NuGet
+    /// servers that don't support snupkg such as GitHub Packages.
+    /// </summary>
+    public bool EmbedSymbols { get; set; }
+
+    public Stream DllOutput
     {
-        private Stream? _dllOutput;
-        private Stream? _pdbOutput;
-        private Stream? _xmlDocumentationOutput;
-
-        private readonly List<YardarmExtension> _extensions = new List<YardarmExtension>();
-        private readonly List<Action<ILoggingBuilder>> _loggingBuilders = new List<Action<ILoggingBuilder>>();
-
-        public string AssemblyName { get; set; } = "Yardarm.Sdk";
-        public string RootNamespace { get; set; } = "Yardarm.Sdk";
-
-        public Version Version { get; set; } = new Version(1, 0, 0);
-        public string? VersionSuffix { get; set; }
-        public string Author { get; set; } = "anonymous";
-        public RepositoryMetadata? Repository { get; set; }
-
-        public IReadOnlyList<YardarmExtension> Extensions => _extensions;
-
-        /// <summary>
-        /// Base path for generated source files. Files are not persisted to this path,
-        /// but it is used within Roslyn to uniquely identify source files.
-        /// </summary>
-        public string BasePath { get; set; } = AppContext.BaseDirectory;
-
-        /// <summary>
-        /// If true, embed generated source code in the symbols PDB file and package. This
-        /// enables stepping into the generated SDK when debugging.
-        /// </summary>
-        public bool EmbedAllSources { get; set; }
-
-        /// <summary>
-        /// If true, embed symbols in the <see cref="NuGetOutput"/>. Useful when uploading to NuGet
-        /// servers that don't support snupkg such as GitHub Packages.
-        /// </summary>
-        public bool EmbedSymbols { get; set; }
-
-        public Stream DllOutput
+        get => _dllOutput ??= new MemoryStream();
+        set
         {
-            get => _dllOutput ??= new MemoryStream();
-            set
+            ArgumentNullException.ThrowIfNull(value);
+
+            _dllOutput = value;
+        }
+    }
+
+    public Stream PdbOutput
+    {
+        get => _pdbOutput ??= new MemoryStream();
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            _pdbOutput = value;
+        }
+    }
+
+    public Stream XmlDocumentationOutput
+    {
+        get => _xmlDocumentationOutput ??= new MemoryStream();
+        set
+        {
+            ArgumentNullException.ThrowIfNull(value);
+
+            _xmlDocumentationOutput = value;
+        }
+    }
+
+    public Stream? ReferenceAssemblyOutput { get; set; }
+
+    /// <summary>
+    /// Optional intermediate output path. Typically used to store files useful in incremental builds
+    /// and NuGet restores, such as project.assets.json.
+    /// </summary>
+    public string? IntermediateOutputPath { get; set; }
+
+    /// <summary>
+    /// Bypass the restore on generation, assume that a restore has already been done using <see cref="IntermediateOutputPath"/>.
+    /// </summary>
+    public bool NoRestore { get; set; }
+
+    public ImmutableArray<string> TargetFrameworkMonikers { get; set; } = ["netstandard2.0"];
+
+    public Stream? NuGetOutput { get; set; }
+
+    public Stream? NuGetSymbolsOutput { get; set; }
+
+    public ISet<string> NoWarn { get; } = new HashSet<string>();
+
+    /// <summary>
+    /// A list of referenced assembly paths. If null or empty, these will be autogenerated by Yardarm based on referenced
+    /// NuGet packages and frameworks. Typically passed in from MSBuild.
+    /// </summary>
+    public List<string>? ReferencedAssemblies { get; set; }
+
+    /// <summary>
+    /// A list of referenced analyzer paths. If null or empty, these will be autogenerated by Yardarm based on referenced
+    /// NuGet packages and frameworks. Typically passed in from MSBuild.
+    /// </summary>
+    public List<string>? Analyzers { get; set; }
+
+    /// <summary>
+    /// Properties to alter the behavior of the generation process.
+    /// </summary>
+    public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// C# files to include in the compilation. These files will be compiled along with the generated source files.
+    /// </summary>
+    public List<IncludedFile>? IncludedFiles { get; set; }
+
+    public CSharpCompilationOptions CompilationOptions { get; set; } =
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            .WithDeterministic(true)
+            .WithOptimizationLevel(OptimizationLevel.Release)
+            .WithNullableContextOptions(NullableContextOptions.Enable)
+            .WithOverflowChecks(false)
+            .WithPlatform(Platform.AnyCpu)
+            .WithConcurrentBuild(true)
+            .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
+
+    public YardarmGenerationSettings()
+    {
+    }
+
+    public YardarmGenerationSettings(string assemblyName)
+    {
+        AssemblyName = assemblyName;
+        RootNamespace = assemblyName;
+    }
+
+    public IServiceProvider BuildServiceProvider(OpenApiDocument? document)
+    {
+        IServiceCollection services = new ServiceCollection()
+            .AddLogging(builder =>
             {
-                ArgumentNullException.ThrowIfNull(value);
-
-                _dllOutput = value;
-            }
-        }
-
-        public Stream PdbOutput
-        {
-            get => _pdbOutput ??= new MemoryStream();
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-
-                _pdbOutput = value;
-            }
-        }
-
-        public Stream XmlDocumentationOutput
-        {
-            get => _xmlDocumentationOutput ??= new MemoryStream();
-            set
-            {
-                ArgumentNullException.ThrowIfNull(value);
-
-                _xmlDocumentationOutput = value;
-            }
-        }
-
-        public Stream? ReferenceAssemblyOutput { get; set; }
-
-        /// <summary>
-        /// Optional intermediate output path. Typically used to store files useful in incremental builds
-        /// and NuGet restores, such as project.assets.json.
-        /// </summary>
-        public string? IntermediateOutputPath { get; set; }
-
-        /// <summary>
-        /// Bypass the restore on generation, assume that a restore has already been done using <see cref="IntermediateOutputPath"/>.
-        /// </summary>
-        public bool NoRestore { get; set; }
-
-        public ImmutableArray<string> TargetFrameworkMonikers { get; set; } = ["netstandard2.0"];
-
-        public Stream? NuGetOutput { get; set; }
-
-        public Stream? NuGetSymbolsOutput { get; set; }
-
-        public ISet<string> NoWarn { get; } = new HashSet<string>();
-
-        /// <summary>
-        /// A list of referenced assembly paths. If null or empty, these will be autogenerated by Yardarm based on referenced
-        /// NuGet packages and frameworks. Typically passed in from MSBuild.
-        /// </summary>
-        public List<string>? ReferencedAssemblies { get; set; }
-
-        /// <summary>
-        /// A list of referenced analyzer paths. If null or empty, these will be autogenerated by Yardarm based on referenced
-        /// NuGet packages and frameworks. Typically passed in from MSBuild.
-        /// </summary>
-        public List<string>? Analyzers { get; set; }
-
-        /// <summary>
-        /// Properties to alter the behavior of the generation process.
-        /// </summary>
-        public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// C# files to include in the compilation. These files will be compiled along with the generated source files.
-        /// </summary>
-        public List<IncludedFile>? IncludedFiles { get; set; }
-
-        public CSharpCompilationOptions CompilationOptions { get; set; } =
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithDeterministic(true)
-                .WithOptimizationLevel(OptimizationLevel.Release)
-                .WithNullableContextOptions(NullableContextOptions.Enable)
-                .WithOverflowChecks(false)
-                .WithPlatform(Platform.AnyCpu)
-                .WithConcurrentBuild(true)
-                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
-
-        public YardarmGenerationSettings()
-        {
-        }
-
-        public YardarmGenerationSettings(string assemblyName)
-        {
-            AssemblyName = assemblyName;
-            RootNamespace = assemblyName;
-        }
-
-        public IServiceProvider BuildServiceProvider(OpenApiDocument? document)
-        {
-            IServiceCollection services = new ServiceCollection()
-                .AddLogging(builder =>
+                foreach (var configuredBuilder in _loggingBuilders)
                 {
-                    foreach (var configuredBuilder in _loggingBuilders)
-                    {
-                        configuredBuilder(builder);
-                    }
-                });
+                    configuredBuilder(builder);
+                }
+            });
 
-            services = _extensions.Aggregate(services, (p, extension) => extension.ConfigureServices(p));
+        services = _extensions.Aggregate(services, (p, extension) => extension.ConfigureServices(p));
 
-            services.AddYardarm(this, document);
+        services.AddYardarm(this, document);
 
-            return services.BuildServiceProvider();
+        return services.BuildServiceProvider();
+    }
+
+    public YardarmGenerationSettings AddExtension(Type type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        if (!typeof(YardarmExtension).IsAssignableFrom(type))
+        {
+            throw new ArgumentException($"Type {type.FullName} must inherit from YardarmExtension.");
         }
 
-        public YardarmGenerationSettings AddExtension(Type type)
+        ConstructorInfo? constructor = type.GetConstructor([typeof(YardarmGenerationSettings)]);
+        if (constructor is not null)
         {
-            ArgumentNullException.ThrowIfNull(type);
-            if (!typeof(YardarmExtension).IsAssignableFrom(type))
+            _extensions.Add((YardarmExtension)constructor.Invoke([this]));
+        }
+        else
+        {
+            constructor = type.GetConstructor(Type.EmptyTypes);
+            if (constructor is null)
             {
-                throw new ArgumentException($"Type {type.FullName} must inherit from YardarmExtension.");
+                throw new ArgumentException($"Type {type.FullName} must have a parameterless constructor or a constructor that accepts a YardarmGenerationSettings parameter.");
             }
 
-            var constructor = type.GetConstructor(Type.EmptyTypes);
-            if (constructor == null)
-            {
-                throw new ArgumentException($"Type {type.FullName} must have a default constructor.");
-            }
-
-            _extensions.Add((YardarmExtension) constructor.Invoke(null));
-
-            return this;
+            _extensions.Add((YardarmExtension)constructor.Invoke(null));
         }
 
-        public YardarmGenerationSettings AddExtension<T>()
-            where T : YardarmExtension =>
-            AddExtension(typeof(T));
+        return this;
+    }
 
-        public YardarmGenerationSettings AddExtension(Assembly assembly)
+    public YardarmGenerationSettings AddExtension<T>()
+        where T : YardarmExtension =>
+        AddExtension(typeof(T));
+
+    public YardarmGenerationSettings AddExtension(Assembly assembly)
+    {
+        foreach (var type in assembly.GetExportedTypes()
+            .Where(p => p.IsClass && !p.IsAbstract && typeof(YardarmExtension).IsAssignableFrom(p)))
         {
-            foreach (var type in assembly.GetExportedTypes()
-                .Where(p => p.IsClass && !p.IsAbstract && typeof(YardarmExtension).IsAssignableFrom(p)))
-            {
-                AddExtension(type);
-            }
-
-            return this;
+            AddExtension(type);
         }
 
-        public YardarmGenerationSettings AddLogging(Action<ILoggingBuilder> buildAction)
-        {
-            ArgumentNullException.ThrowIfNull(buildAction);
+        return this;
+    }
 
-            _loggingBuilders.Add(buildAction);
+    public YardarmGenerationSettings AddLogging(Action<ILoggingBuilder> buildAction)
+    {
+        ArgumentNullException.ThrowIfNull(buildAction);
 
-            return this;
-        }
+        _loggingBuilders.Add(buildAction);
+
+        return this;
     }
 }

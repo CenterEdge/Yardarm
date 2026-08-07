@@ -17,5 +17,6 @@ internal interface IExtensibleEnum<TSelf> : IEquatable<TSelf>
     /// Creates a new instance of the extensible enumeration with the specified value.
     /// </summary>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> may not be null.</exception>
+    public static abstract TSelf Create(string value);
 #endif
 }

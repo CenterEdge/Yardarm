@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Frozen;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using RootNamespace.Serialization.Literals.Converters;
@@ -46,23 +47,9 @@ public sealed class LiteralConverterRegistry
 
     private readonly Dictionary<Type, LiteralConverter> _converters = [];
 
-    // A LiteralConverterRegistry is generally initialized once and then read many times, so using a FrozenDictionary
-    // for reads becomes worthwhile for the slightly faster read performance.
-    private FrozenDictionary<Type, LiteralConverter>? _frozenConverters;
-    private FrozenDictionary<Type, LiteralConverter> FrozenConverters
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            FrozenDictionary<Type, LiteralConverter>? converters = _frozenConverters;
-            if (converters is not null)
-            {
-                return converters;
-            }
-
-            return Interlocked.CompareExchange(ref _frozenConverters, _converters.ToFrozenDictionary(), null) ?? _frozenConverters;
-        }
-    }
+    // A LiteralConverterRegistry is generally initialized once and then read many times, so caching converters
+    // (including ones discovered via LiteralConverterAttribute) improves performance for repeated lookups.
+    private readonly ConcurrentDictionary<Type, LiteralConverter?> _dynamicConverters = [];
 
     /// <summary>
     /// Gets a registered converter for the specified type.
@@ -89,14 +76,55 @@ public sealed class LiteralConverterRegistry
     /// <returns>True if the converter was found, otherwise false.</returns>
     public bool TryGet<T>([NotNullWhen(true)] out LiteralConverter<T>? converter)
     {
-        if (FrozenConverters.TryGetValue(typeof(T), out LiteralConverter? baseConverter))
+        converter = null;
+
+        LiteralConverter? result = _dynamicConverters.GetOrAdd(typeof(T), CreateConverterDelegate);
+        if (result is null)
         {
-            converter = (LiteralConverter<T>)baseConverter;
+            return false;
+        }
+
+        if (result is LiteralConverter<T> typedResult)
+        {
+            converter = typedResult;
             return true;
         }
 
-        converter = null;
+        ThrowHelper.ThrowInvalidOperationException($"Registered converter for type '{typeof(T).FullName}' is not of the expected type '{typeof(LiteralConverter<T>).FullName}'.");
         return false;
+    }
+
+    // Cache the delegate for reuse
+    private Func<Type, LiteralConverter?> CreateConverterDelegate => field ??= CreateConverter;
+
+    private LiteralConverter? CreateConverter(Type type)
+    {
+        if (Nullable.GetUnderlyingType(type) is Type underlyingType)
+        {
+            LiteralConverter? innerConverter = _dynamicConverters.GetOrAdd(underlyingType, CreateConverterDelegate);
+
+            if (innerConverter is IValueTypeLiteralConverter valueTypeInnerConverter)
+            {
+                return valueTypeInnerConverter.CreateNullableConverter();
+            }
+        }
+        else
+        {
+            LiteralConverter? attributeConverter = type.GetCustomAttribute<LiteralConverterAttribute>()?.CreateConverter();
+            if (attributeConverter is not null)
+            {
+                return attributeConverter;
+            }
+        }
+
+        // Next, check our standard converters
+        if (_converters.TryGetValue(type, out LiteralConverter? converter))
+        {
+            return converter;
+        }
+
+        // No converter found
+        return null;
     }
 
     /// <summary>
@@ -122,7 +150,7 @@ public sealed class LiteralConverterRegistry
             _converters[typeof(T?)] = nullableConverter;
         }
 
-        _frozenConverters = null; // Clear the frozen dictionary to force a rebuild
+        _dynamicConverters.Clear(); // Clear the dynamic cache to force a rebuild
         return this;
     }
 
@@ -140,7 +168,7 @@ public sealed class LiteralConverterRegistry
 
         _converters[typeof(T)] = converter;
 
-        _frozenConverters = null; // Clear the frozen dictionary to force a rebuild
+        _dynamicConverters.Clear(); // Clear the cache dictionary to force a rebuild
         return this;
     }
 

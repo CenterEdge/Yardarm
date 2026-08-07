@@ -10,22 +10,19 @@ public class JsonDependencyGenerator : IDependencyGenerator
 {
     public IEnumerable<LibraryDependency> GetDependencies(NuGetFramework targetFramework)
     {
-        if (targetFramework.Version.Major < 9)
+        if (targetFramework.Version.Major < 10)
         {
-            // Upgrade System.Text.Json to at least 9.0 if we're targeting downlevel frameworks
+            // Upgrade System.Text.Json to at least 10.0 if we're targeting downlevel frameworks
             yield return new LibraryDependency
             {
                 LibraryRange = new LibraryRange
                 {
                     Name = "System.Text.Json",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("9.0.17")
+                    VersionRange = VersionRange.Parse("10.0.10")
                 }
             };
-        }
 
-        if (targetFramework.Version.Major < 10)
-        {
             // System.Net.Http.Json is in-box in .NET 10 and later
             yield return new LibraryDependency
             {
@@ -33,7 +30,7 @@ public class JsonDependencyGenerator : IDependencyGenerator
                 {
                     Name = "System.Net.Http.Json",
                     TypeConstraint = LibraryDependencyTarget.Package,
-                    VersionRange = VersionRange.Parse("9.0.17")
+                    VersionRange = VersionRange.Parse("10.0.10")
                 }
             };
         }

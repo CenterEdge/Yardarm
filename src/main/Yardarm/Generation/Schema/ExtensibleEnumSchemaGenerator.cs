@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi.Models;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -151,11 +152,14 @@ internal class ExtensibleEnumSchemaGenerator(
                     type: PredefinedType(Token(SyntaxKind.StringKeyword)),
                     identifier: Identifier("value"),
                     @default: null))),
-            body: null,
-            expressionBody: ArrowExpressionClause(ImplicitObjectCreationExpression(
-                argumentList: ArgumentList(SingletonSeparatedList(
-                    Argument(IdentifierName("value")))),
-                initializer: null)),
+            body: Block(List([
+                MethodHelpers.ThrowIfArgumentNull("value"),
+                ReturnStatement(ImplicitObjectCreationExpression(
+                    argumentList: ArgumentList(SingletonSeparatedList(
+                        Argument(IdentifierName("value")))),
+                    initializer: null))
+            ])),
+            expressionBody: null,
             semicolonToken: Token(SyntaxKind.SemicolonToken));
 
         // Static create method to satisfy the IExtensibleEnum<T> interface requirement
@@ -176,11 +180,14 @@ internal class ExtensibleEnumSchemaGenerator(
                         identifier: Identifier("value"),
                         @default: null))),
                 constraintClauses: default,
-                body: null,
-                expressionBody: ArrowExpressionClause(ImplicitObjectCreationExpression(
+                body: Block(List([
+                MethodHelpers.ThrowIfArgumentNull("value"),
+                ReturnStatement(ImplicitObjectCreationExpression(
                     argumentList: ArgumentList(SingletonSeparatedList(
                         Argument(IdentifierName("value")))),
-                    initializer: null)),
+                    initializer: null))
+                ])),
+                expressionBody: null,
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
         }
     }

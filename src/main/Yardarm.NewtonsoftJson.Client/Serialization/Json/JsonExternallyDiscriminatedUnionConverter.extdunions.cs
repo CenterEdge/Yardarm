@@ -15,7 +15,7 @@ namespace RootNamespace.Serialization.Json;
 internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConverter
     where T : IUnion
 {
-    public override bool CanConvert(Type objectType) => objectType == typeof(T);
+    public override bool CanConvert(Type objectType) => objectType == typeof(T) || objectType == typeof(T?);
 
     public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {

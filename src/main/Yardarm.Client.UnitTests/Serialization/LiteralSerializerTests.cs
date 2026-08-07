@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using RootNamespace.Models;
 using RootNamespace.Serialization.Literals;
 using RootNamespace.Serialization.Literals.Converters;
 using Xunit;
@@ -267,6 +268,42 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Should().Be("Ordinal");
+        }
+
+        [Fact]
+        public void Serialize_ExtensibleEnum_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize(ExtensibleEnum.Case1);
+
+            // Assert
+
+            result.Should().Be("Case1");
+        }
+
+        [Fact]
+        public void Serialize_NullableExtensibleEnum_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize<ExtensibleEnum?>(ExtensibleEnum.Case1);
+
+            // Assert
+
+            result.Should().Be("Case1");
+        }
+
+        [Fact]
+        public void Serialize_NullableExtensibleEnum_ReturnsEmptyStringForNull()
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize<ExtensibleEnum?>(null);
+
+            // Assert
+
+            result.Should().Be("");
         }
 
         #endregion
@@ -1136,6 +1173,37 @@ namespace Yardarm.Client.UnitTests.Serialization
             result.Should().Be(StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void Deserialize_ExtensibleEnum_ReturnsValue()
+        {
+            // Act
+            ExtensibleEnum result = LiteralSerializer.Deserialize<ExtensibleEnum>("Case1");
+
+            // Assert
+            result.Should().Be(ExtensibleEnum.Case1);
+        }
+
+        [Fact]
+        public void Deserialize_NullableExtensibleEnum_ReturnsValue()
+        {
+            // Act
+            ExtensibleEnum? result = LiteralSerializer.Deserialize<ExtensibleEnum?>("Case1");
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().Be(ExtensibleEnum.Case1);
+        }
+
+        [Fact]
+        public void Deserialize_NullableExtensibleEnum_ReturnsNull()
+        {
+            // Act
+            ExtensibleEnum? result = LiteralSerializer.Deserialize<ExtensibleEnum?>(null);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
         #endregion
 
         #region JoinListT
@@ -1165,6 +1233,15 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             public override string Write(IntWrapper value, string format) => checked(_innerConverter.Write(value.Value + 1, format));
             protected override IntWrapper ReadCore(string value, string format) => checked(new IntWrapper(_innerConverter.Read(value, format) - 1));
+        }
+
+        [LiteralConverter(typeof(ExtensibleEnumLiteralConverter<ExtensibleEnum>))]
+        private readonly record struct ExtensibleEnum(string Value) : IExtensibleEnum<ExtensibleEnum>
+        {
+            public static ExtensibleEnum Case1 { get; } = new(nameof(Case1));
+            public static ExtensibleEnum Case2 { get; } = new(nameof(Case2));
+
+            public static ExtensibleEnum Create(string value) => new(value);
         }
     }
 }

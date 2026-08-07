@@ -13,5 +13,7 @@ public interface IJsonSerializationNamespace
 
     TypeSyntax AdditionalPropertiesDictionary(TypeSyntax valueType);
 
+    TypeSyntax JsonExtensibleEnumConverterName(TypeSyntax enumType);
+
     TypeSyntax JsonExternallyDiscriminatedUnionConverterName(TypeSyntax schemaType);
 }

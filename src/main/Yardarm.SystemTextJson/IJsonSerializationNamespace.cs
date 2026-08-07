@@ -15,5 +15,7 @@ public interface IJsonSerializationNamespace
 
     TypeSyntax JsonDiscriminatedObjectConverterName(TypeSyntax schemaType);
 
+    TypeSyntax JsonExtensibleEnumConverterName(TypeSyntax enumType);
+
     TypeSyntax JsonExternallyDiscriminatedUnionConverterName(TypeSyntax schemaType);
 }

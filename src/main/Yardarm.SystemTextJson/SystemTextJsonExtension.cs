@@ -27,6 +27,7 @@ public class SystemTextJsonExtension : YardarmExtension
             .AddOpenApiSyntaxNodeEnricher<JsonOptionalPropertyEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonDateOnlyPropertyEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatedUnionEnricher>()
+            .AddOpenApiSyntaxNodeEnricher<JsonExtensibleEnumEnricher>()
             .AddSingleton<IDependencyGenerator, JsonDependencyGenerator>()
             .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()
             .AddSingleton<ISyntaxTreeGenerator, DiscriminatorConverterGenerator>()

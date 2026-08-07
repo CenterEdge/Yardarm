@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
-using Yardarm.Internal;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema;
@@ -13,6 +12,9 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 {
     private ObjectFactory<ExternallyDiscriminatedUnionSchemaGenerator> ExternallyDiscriminatedUnionFactory => field ??=
         ActivatorUtilities.CreateFactory<ExternallyDiscriminatedUnionSchemaGenerator>([ typeof(ILocatedOpenApiElement<OpenApiSchema>), typeof(GenerationContext), typeof(ITypeGenerator) ]);
+
+    private ObjectFactory<ExtensibleEnumSchemaGenerator> ExtensibleEnumFactory => field ??=
+        ActivatorUtilities.CreateFactory<ExtensibleEnumSchemaGenerator>([typeof(ILocatedOpenApiElement<OpenApiSchema>), typeof(ITypeGenerator), typeof(List<string>)]);
 
     public virtual ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSchema> element, ITypeGenerator? parent)
     {
@@ -70,7 +72,7 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 
             if (values.Count > 0)
             {
-                return new ExtensibleEnumSchemaGenerator(element, context, parent, values);
+                return ExtensibleEnumFactory.Invoke(context.GenerationServices, [element, parent, values]);
             }
         }
 

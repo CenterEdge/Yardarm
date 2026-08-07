@@ -50,6 +50,10 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
                 Identifier("AdditionalPropertiesDictionary"),
                 TypeArgumentList(SingletonSeparatedList(valueType))));
 
+    public TypeSyntax JsonExtensibleEnumConverterName(TypeSyntax enumType) =>
+        QualifiedName(Name, GenericName(Identifier("JsonExtensibleEnumConverter"),
+            TypeArgumentList(SingletonSeparatedList(enumType))));
+
     public TypeSyntax JsonExternallyDiscriminatedUnionConverterName(TypeSyntax schemaType) =>
         QualifiedName(Name, GenericName(Identifier("JsonExternallyDiscriminatedUnionConverter"),
             TypeArgumentList(SingletonSeparatedList(schemaType))));

@@ -94,5 +94,18 @@ public static class SyntaxNodeExtensions
 
             return node.GetGeneratorAnnotation() == typeof(ExternallyDiscriminatedUnionSchemaGenerator);
         }
+
+        /// <summary>
+        /// Returns <c>true</c> if the <see cref="SyntaxNode"/> is an extensible enumeration, otherwise <c>false</c>.
+        /// </summary>
+        /// <returns><c>true</c> if the <see cref="SyntaxNode"/> is an extensible enumeration, otherwise <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="node"/> may not be <c>null</c>.</exception>
+        /// An extensible enumeration is a strongly-typed string value that can accept any string, not just well-known values.
+        public bool IsExtensibleEnumeration()
+        {
+            ArgumentNullException.ThrowIfNull(node);
+
+            return node.GetGeneratorAnnotation() == typeof(ExtensibleEnumSchemaGenerator);
+        }
     }
 }

@@ -47,6 +47,30 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
+        public void Serialize_NullableCustomConverter_ReturnsString()
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize<IntWrapper?>(new IntWrapper(105));
+
+            // Assert
+
+            result.Should().Be("106");
+        }
+
+        [Fact]
+        public void Serialize_NullableCustomConverter_ReturnsEmptyStringForNull()
+        {
+            // Act
+
+            string result = LiteralSerializer.Serialize<IntWrapper?>(null);
+
+            // Assert
+
+            result.Should().Be("");
+        }
+
+        [Fact]
         public void Serialize_Long_ReturnsString()
         {
             // Act
@@ -848,7 +872,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
-        public void Deserialize_CustomConverter_ReturnsString()
+        public void Deserialize_CustomConverter_ReturnsValue()
         {
             // Act
 
@@ -857,6 +881,31 @@ namespace Yardarm.Client.UnitTests.Serialization
             // Assert
 
             result.Value.Should().Be(105);
+        }
+
+        [Fact]
+        public void Deserialize_NullableCustomConverter_ReturnsValue()
+        {
+            // Act
+
+            IntWrapper? result = LiteralSerializer.Deserialize<IntWrapper?>("106");
+
+            // Assert
+
+            result.Should().NotBeNull();
+            result.Value.Value.Should().Be(105);
+        }
+
+        [Fact]
+        public void Deserialize_NullableCustomConverter_ReturnsNull()
+        {
+            // Act
+
+            IntWrapper? result = LiteralSerializer.Deserialize<IntWrapper?>(null);
+
+            // Assert
+
+            result.Should().BeNull();
         }
 
         [Fact]
@@ -1107,7 +1156,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
-        [LiteralConverter(typeof(CustomConverter))]
+        [LiteralConverter(typeof(CustomConverter), typeof(NullableLiteralConverter<IntWrapper>))]
         private readonly record struct IntWrapper(int Value);
 
         private sealed class CustomConverter : ValueTypeLiteralConverter<IntWrapper>

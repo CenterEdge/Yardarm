@@ -100,9 +100,7 @@ public static class SyntaxNodeExtensions
         /// </summary>
         /// <returns><c>true</c> if the <see cref="SyntaxNode"/> is an extensible enumeration, otherwise <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="node"/> may not be <c>null</c>.</exception>
-        /// <remarks>
-        /// An extensible enumeration a strongly-typed string value that can accept any string, not just well-known values.
-        /// </remarks>
+        /// An extensible enumeration is a strongly-typed string value that can accept any string, not just well-known values.
         public bool IsExtensibleEnumeration()
         {
             ArgumentNullException.ThrowIfNull(node);

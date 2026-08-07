@@ -54,7 +54,7 @@ namespace Yardarm.Packaging.Internal
                     {
                         Name = "System.Collections.Immutable",
                         TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("8.0.0")
+                        VersionRange = VersionRange.Parse("10.0.10")
                     }
                 };
 
@@ -68,16 +68,17 @@ namespace Yardarm.Packaging.Internal
                     }
                 };
             }
-            else if (targetFramework.Version.Major < 8)
+            else if (targetFramework.Version.Major < 10)
             {
-                // .NET < 8 also requires System.Collections.Immutable for FrozenDictionary
+                // .NET < 8 also requires System.Collections.Immutable for FrozenDictionary,
+                // but upgrade to the .NET 10 version for .NET 8 and 9 for consistency
                 yield return new LibraryDependency
                 {
                     LibraryRange = new LibraryRange
                     {
                         Name = "System.Collections.Immutable",
                         TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("8.0.0")
+                        VersionRange = VersionRange.Parse("10.0.10")
                     }
                 };
             }

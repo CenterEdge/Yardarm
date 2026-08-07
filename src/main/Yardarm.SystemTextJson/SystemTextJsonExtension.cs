@@ -11,7 +11,7 @@ using Yardarm.SystemTextJson.Internal;
 
 namespace Yardarm.SystemTextJson;
 
-public class SystemTextJsonExtension : YardarmExtension
+public class SystemTextJsonExtension(YardarmGenerationSettings settings) : YardarmExtension
 {
     public override bool IsOutputTrimmable(GenerationContext context) => true;
 
@@ -55,6 +55,8 @@ public class SystemTextJsonExtension : YardarmExtension
             "JsonPatch",
             serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
         ));
+
+        services.Configure<JsonOptions>(options => options.ApplySettings(settings));
 
         return services;
     }

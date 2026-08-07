@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.SystemTextJson.Helpers;
@@ -18,6 +19,7 @@ namespace Yardarm.SystemTextJson.Internal;
 internal class JsonSerializerContextGenerator(
     IJsonSerializationNamespace jsonSerializationNamespace,
     GenerationContext context,
+    IOptions<JsonOptions> jsonOptions,
     [FromKeyedServices(JsonSerializerContextGenerator.AttributeEnricherKey)] IEnumerable<IEnricher<AttributeSyntax>> enrichers)
     : ISyntaxTreeGenerator
 {
@@ -31,13 +33,34 @@ internal class JsonSerializerContextGenerator(
 
     public IEnumerable<SyntaxTree> Generate()
     {
+        List<AttributeArgumentSyntax> arguments = [
+            AttributeArgument(
+                nameEquals: NameEquals("NumberHandling"),
+                nameColon: null,
+                expression: SystemTextJsonTypes.Serialization.JsonNumberHandling.AllowReadingFromString),
+        ];
+
+        // By default, respect nullable annotations and required constructor parameters
+
+        if (jsonOptions.Value.RespectNullableAnnotations)
+        {
+            arguments.Add(AttributeArgument(
+                nameEquals: NameEquals("RespectNullableAnnotations"),
+                nameColon: null,
+                expression: LiteralExpression(SyntaxKind.TrueLiteralExpression)));
+        }
+
+        if (jsonOptions.Value.RespectRequiredConstructorParameters)
+        {
+            arguments.Add(AttributeArgument(
+                nameEquals: NameEquals("RespectRequiredConstructorParameters"),
+                nameColon: null,
+                expression: LiteralExpression(SyntaxKind.TrueLiteralExpression)));
+        }
+
         AttributeSyntax sourceGenerationOptionsAttribute = Attribute(
             SystemTextJsonTypes.Serialization.JsonSourceGenerationOptionsAttributeName,
-            AttributeArgumentList(SingletonSeparatedList(
-                AttributeArgument(
-                    nameEquals: NameEquals("NumberHandling"),
-                    nameColon: null,
-                    expression: SystemTextJsonTypes.Serialization.JsonNumberHandling.AllowReadingFromString))));
+            AttributeArgumentList(SeparatedList(arguments)));
 
         // Enrich the JsonSourceGenerationOptions attribute with any additional enrichers registered
         // by another extension via IEnricher<AttributeSyntax> with the key "JsonSourceGenerationOptions".

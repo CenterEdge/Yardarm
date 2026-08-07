@@ -142,6 +142,10 @@ internal static class SystemTextJsonTypes
             QualifiedName(Name, GenericName(Identifier("JsonConverter"),
                 TypeArgumentList(SingletonSeparatedList(t))));
 
+        public static NameSyntax JsonRequiredAttributeName { get; } = QualifiedName(
+            Name,
+            IdentifierName("JsonRequiredAttribute"));
+
         public static NameSyntax JsonSerializableAttributeName { get; } = QualifiedName(
             Name,
             IdentifierName("JsonSerializableAttribute"));

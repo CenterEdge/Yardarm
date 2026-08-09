@@ -6,7 +6,7 @@
 
     <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
-      </PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup>
     <EnableTrimAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</EnableTrimAnalyzer>

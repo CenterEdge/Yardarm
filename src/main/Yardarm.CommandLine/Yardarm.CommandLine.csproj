@@ -7,7 +7,7 @@
     <!--
       If .NET target runtime isn't installed, allow the command line tool to run on newer frameworks.
       This may not always work, but provides better compatibility. This option still prefers
-      to use the .NET target runtime as specified in YardarmTargetFrameworks above, and only uses a newer
+      to use the .NET target runtime as specified in TargetFramework above, and only uses a newer
       runtime if the target runtime isn't available.
     -->
     <RollForward>Major</RollForward>

@@ -5,22 +5,20 @@ using Microsoft.Build.Utilities;
 
 namespace Yardarm.Build.Tasks
 {
-    public abstract class YardarmTask : ToolTask
+    public abstract partial class YardarmTask : ToolTask
     {
-        private static readonly Regex s_errorRegex = new Regex(@"^\[(\w+)\] (.+)");
+        [GeneratedRegex(@"^\[(\w+)\] (.+)")]
+        private static partial Regex ErrorRegex { get; }
 
         protected override string GenerateFullPathToTool() => ToolName;
 
         protected override string ToolName =>
-#if NETCOREAPP
-            (int) Environment.OSVersion.Platform > 3 ? "Yardarm.CommandLine" :
-#endif
-            "Yardarm.CommandLine.exe";
+            (int) Environment.OSVersion.Platform > 3 ? "Yardarm.CommandLine" : "Yardarm.CommandLine.exe";
 
 
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
         {
-            var match = s_errorRegex.Match(singleLine);
+            var match = ErrorRegex.Match(singleLine);
 
             if (match.Success)
             {

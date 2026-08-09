@@ -1,0 +1,23 @@
+<Project>
+  <!--
+    Package versions in this file should match the behaviors in the various dependency generators
+    (e.g. JsonDependencyGenerator and StandardDependencyGenerator). They are used for local test builds
+    of the client projects and the Yardarm.SDK.Test project.
+  -->
+
+  <PropertyGroup>
+    <ClientSystemPackageVersion>10.0.10</ClientSystemPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectFile.Contains('Client')) Or $(MSBuildProjectFile.Contains('Client.UnitTests')) Or $(MSBuildProjectFile.Contains('Sdk.Test'))">
+    <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ClientSystemPackageVersion)" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="NodaTime.Serialization.SystemTextJson" Version="1.4.0" />
+    <PackageVersion Include="System.Collections.Immutable" Version="$(ClientSystemPackageVersion)" />
+    <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageVersion Include="System.Net.Http.Json" Version="$(ClientSystemPackageVersion)" />
+    <PackageVersion Include="System.Text.Json" Version="$(ClientSystemPackageVersion)" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+  </ItemGroup>
+</Project>

@@ -3,9 +3,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
     <YardarmSystemPackageVersion>10.0.10</YardarmSystemPackageVersion>
-
-    <!-- This version should be kept in sync with the versions added by the various dependency generators -->
-    <ClientSystemPackageVersion>10.0.10</ClientSystemPackageVersion>
   </PropertyGroup>
 
   <!-- Yardarm Dependencies-->
@@ -24,17 +21,6 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
   </ItemGroup>
 
-  <!-- Client Dependencies -->
-  <ItemGroup Condition="$(MSBuildProjectFile.Contains('Client')) Or $(MSBuildProjectFile.Contains('UnitTests'))">
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ClientSystemPackageVersion)" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="NodaTime.Serialization.SystemTextJson" Version="1.4.0" />
-    <PackageVersion Include="System.Collections.Immutable" Version="$(ClientSystemPackageVersion)" />
-    <PackageVersion Include="System.Net.Http.Json" Version="$(ClientSystemPackageVersion)" />
-    <PackageVersion Include="System.Text.Json" Version="$(ClientSystemPackageVersion)" />
-    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
-  </ItemGroup>
-
   <!-- Test Dependencies -->
   <ItemGroup Condition="$(MSBuildProjectFile.Contains('UnitTests'))">
     <PackageVersion Include="FluentAssertions" Version="8.10.0" />
@@ -42,4 +28,6 @@
     <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)../Client.Packages.props" />
 </Project>

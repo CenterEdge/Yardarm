@@ -10,8 +10,7 @@
     <YardarmToolPath Condition=" !$([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.CommandLine\$(Configuration.ToLower())_win-x64\</YardarmToolPath>
 
     <!-- Below uses a trailing underscore instead of a slash due to the artifacts directory layout -->
-    <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())_</YardarmTaskBasePath>
-    <YardarmTaskBasePath Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())_</YardarmTaskBasePath>
+    <YardarmTaskBasePath>$(MSBuildThisFileDirectory)..\..\artifacts\bin\Yardarm.Sdk\$(Configuration.ToLower())\</YardarmTaskBasePath>
 
     <JsonMode>System.Text.Json</JsonMode>
     <DateTimeMode>Legacy</DateTimeMode>

@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\main\Yardarm.CommandLine\Interop\*.cs">
+    <Compile Include="..\..\main\Core\Yardarm.CommandLine\Interop\*.cs">
       <LinkBase>Interop</LinkBase>
     </Compile>
   </ItemGroup>
@@ -54,7 +54,7 @@
 
   <Target Name="DefineYardarmCommandLineRids">
     <ItemGroup>
-      <_YardarmCommandLine Include="..\..\main\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
+      <_YardarmCommandLine Include="..\..\main\Core\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
         <AdditionalProperties>RuntimeIdentifier=%(YardarmCommandLineRuntimeIdentifier.Identity)</AdditionalProperties>
         <RuntimeIdentifier>%(YardarmCommandLineRuntimeIdentifier.Identity)</RuntimeIdentifier>
       </_YardarmCommandLine>
@@ -66,7 +66,7 @@
     <!--
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False;PublishReadyToRun=true" Targets="Restore;Publish" BuildInParallel="false" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False" Targets="Restore;Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
     </MSBuild>
   </Target>
 
@@ -83,7 +83,7 @@
       the cost of actually copying the files to a publish directory, instead it collects the returned items
       and we can load them directly into the NuGet package.
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False;PublishReadyToRun=true" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
       <Output TaskParameter="TargetOutputs" ItemName="_YardarmCommandLineFiles" />
     </MSBuild>
 
@@ -119,7 +119,7 @@
       Convert the collected _FilteredYardarmCommandLineFiles into _PackageFiles items marked for pack in the appropriate directories.
     -->
     <ItemGroup>
-      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)" BuildAction="None" Pack="true" PackagePath="tools\net8.0\%(_FilteredYardarmCommandLineFiles.RuntimeIdentifier)\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
+      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)" BuildAction="None" Pack="true" PackagePath="tools\$(YardarmTargetFramework)\%(_FilteredYardarmCommandLineFiles.RuntimeIdentifier)\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
     </ItemGroup>
   </Target>
 

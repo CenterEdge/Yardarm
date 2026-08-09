@@ -4,7 +4,7 @@ ARG VERSION=0.1.0-local
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG VERSION
 ARG TARGETARCH
-WORKDIR /app
+WORKDIR /build
 
 # Place a properly formatted RID in /tmp/arch
 RUN arch=$TARGETARCH \
@@ -27,15 +27,12 @@ COPY ["src/main/*.props", "src/main/*.targets", "./main/"]
 RUN dotnet restore -r $(cat /tmp/arch) -p:PublishReadyToRun=true ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /app ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj && \
+    ln -s /app/Yardarm.CommandLine /app/yardarm
 
 # No --platform here so we get the base image for the target platform
-FROM mcr.microsoft.com/dotnet/runtime:10.0
-ARG VERSION
+FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled
 WORKDIR /app
-
-COPY --from=build --chown=$APP_UID:$APP_UID /publish/ ./
-RUN ln -s /app/Yardarm.CommandLine /app/yardarm
+COPY --from=build --chown=$APP_UID:$APP_UID /app/ ./
 ENV PATH=/app:${PATH}
-USER $APP_UID
-CMD ["yardarm"]
+ENTRYPOINT ["yardarm"]

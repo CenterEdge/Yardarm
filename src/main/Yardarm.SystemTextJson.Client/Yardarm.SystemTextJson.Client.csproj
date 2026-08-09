@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0;net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(ClientTargetFrameworks)</TargetFrameworks>
     <OutputType>Library</OutputType>
 
     <Nullable>enable</Nullable>
     <IsAotCompatible>true</IsAotCompatible>
-  </PropertyGroup>
+      </PropertyGroup>
 
   <PropertyGroup>
     <EnableTrimAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</EnableTrimAnalyzer>
@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http.Json" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))" />
-    <PackageReference Include="System.Text.Json" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))" />
+    <PackageReference Include="System.Text.Json" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))" />
   </ItemGroup>
 
   <ItemGroup>

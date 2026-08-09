@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(ClientUnitTestTargetFrameworks)</TargetFrameworks>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Yardarm.NewtonsoftJson\Yardarm.NewtonsoftJson.csproj" />
     <ProjectReference Include="..\Yardarm.NewtonsoftJson.Client\Yardarm.NewtonsoftJson.Client.csproj" />
   </ItemGroup>
 

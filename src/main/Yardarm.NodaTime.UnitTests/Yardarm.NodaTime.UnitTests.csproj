@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>$(ClientUnitTestTargetFrameworks)</TargetFrameworks>
+
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Yardarm.NodaTime\Yardarm.NodaTime.csproj" />
     <ProjectReference Include="..\Yardarm.NodaTime.Client\Yardarm.NodaTime.Client.csproj" />
   </ItemGroup>
 

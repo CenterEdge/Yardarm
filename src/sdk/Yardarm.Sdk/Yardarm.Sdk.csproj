@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\main\Yardarm.CommandLine\Interop\*.cs">
+    <Compile Include="..\..\main\Core\Yardarm.CommandLine\Interop\*.cs">
       <LinkBase>Interop</LinkBase>
     </Compile>
   </ItemGroup>
@@ -54,7 +54,7 @@
 
   <Target Name="DefineYardarmCommandLineRids">
     <ItemGroup>
-      <_YardarmCommandLine Include="..\..\main\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
+      <_YardarmCommandLine Include="..\..\main\Core\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
         <AdditionalProperties>RuntimeIdentifier=%(YardarmCommandLineRuntimeIdentifier.Identity)</AdditionalProperties>
         <RuntimeIdentifier>%(YardarmCommandLineRuntimeIdentifier.Identity)</RuntimeIdentifier>
       </_YardarmCommandLine>

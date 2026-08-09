@@ -27,7 +27,7 @@ COPY ["src/main/*.props", "src/main/*.targets", "./main/"]
 RUN dotnet restore -r $(cat /tmp/arch) -p:PublishReadyToRun=true ./main/Core/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /app ./main/Core/Yardarm.CommandLine/Yardarm.CommandLine.csproj && \
+RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:VERSION=${VERSION} -o /app ./main/Core/Yardarm.CommandLine/Yardarm.CommandLine.csproj && \
     ln -s /app/Yardarm.CommandLine /app/yardarm
 
 # No --platform here so we get the base image for the target platform

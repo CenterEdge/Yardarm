@@ -28,7 +28,8 @@ jobs:
           tag-prefix: release/
 
   build:
-    runs-on: ubuntu-latest
+    # Yardarm.CommandLine must be built on Windows to support building ReadyToRun images for multiple platforms
+    runs-on: windows-latest
     needs: version
     permissions:
       contents: read

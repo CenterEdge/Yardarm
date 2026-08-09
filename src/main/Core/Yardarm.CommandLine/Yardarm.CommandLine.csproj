@@ -5,6 +5,12 @@
     <TargetFramework>$(YardarmTargetFramework)</TargetFramework>
 
     <!--
+      Publish for several specific runtime identifiers, but also publish "any" for use with any other runtime.
+    -->
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64;any</RuntimeIdentifiers>
+    <PublishReadyToRun>true</PublishReadyToRun>
+
+    <!--
       If .NET target runtime isn't installed, allow the command line tool to run on newer frameworks.
       This may not always work, but provides better compatibility. This option still prefers
       to use the .NET target runtime as specified in TargetFramework above, and only uses a newer
@@ -19,8 +25,6 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Description>Command-line tool to generate C# SDKs directly from OpenAPI 3 specifications using the Roslyn compiler.</Description>
 
     <PackAsTool>true</PackAsTool>

@@ -66,7 +66,7 @@
     <!--
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False;PublishReadyToRun=true" Targets="Restore;Publish" BuildInParallel="false" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False" Targets="Restore;Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
     </MSBuild>
   </Target>
 
@@ -83,7 +83,7 @@
       the cost of actually copying the files to a publish directory, instead it collects the returned items
       and we can load them directly into the NuGet package.
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False;PublishReadyToRun=true" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
       <Output TaskParameter="TargetOutputs" ItemName="_YardarmCommandLineFiles" />
     </MSBuild>
 

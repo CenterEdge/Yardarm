@@ -30,15 +30,12 @@ COPY ./src ./
 RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /publish ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 # No --platform here so we get the base image for the target platform
-FROM mcr.microsoft.com/dotnet/runtime:8.0
+FROM mcr.microsoft.com/dotnet/runtime:10.0
 ARG VERSION
 WORKDIR /app
 
-COPY --from=build /publish/ ./
-RUN groupadd -g 1000 -r yardarm && useradd --no-log-init -u 1000 -r -g yardarm yardarm && \
-    mkdir -p /home/yardarm && \
-    chown yardarm:yardarm /home/yardarm && \
-    ln -s /app/Yardarm.CommandLine /app/yardarm
-ENV HOME=/home/yardarm PATH=/app:${PATH}
-USER 1000
+COPY --from=build --chown=$APP_UID:$APP_UID /publish/ ./
+RUN ln -s /app/Yardarm.CommandLine /app/yardarm
+ENV PATH=/app:${PATH}
+USER $APP_UID
 CMD ["yardarm"]

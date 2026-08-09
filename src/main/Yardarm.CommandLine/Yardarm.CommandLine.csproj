@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>$(YardarmTargetFramework)</TargetFramework>
 
     <!--
-      If .NET 8 isn't installed, allow the command line tool to run on newer frameworks.
+      If .NET target runtime isn't installed, allow the command line tool to run on newer frameworks.
       This may not always work, but provides better compatibility. This option still prefers
-      to use the .NET 8 runtime as specified in TargetFramework above, and only uses a newer
-      runtime if .NET 8 isn't available.
+      to use the .NET target runtime as specified in TargetFramework above, and only uses a newer
+      runtime if the target runtime isn't available.
     -->
     <RollForward>Major</RollForward>
 

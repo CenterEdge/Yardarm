@@ -11,23 +11,23 @@ RUN arch=$TARGETARCH \
     && if [ "$TARGETARCH" = "amd64" ]; then arch="x64"; fi \
     && echo "linux-$arch" > /tmp/arch
 
-COPY src/main/Yardarm/*.csproj ./main/Yardarm/
-COPY src/main/Yardarm.Client/*.csproj ./main/Yardarm.Client/
-COPY src/main/Yardarm.CommandLine/*.csproj ./main/Yardarm.CommandLine/
-COPY src/main/Yardarm.MicrosoftExtensionsHttp/*.csproj ./main/Yardarm.MicrosoftExtensionsHttp/
-COPY src/main/Yardarm.MicrosoftExtensionsHttp.Client/*.csproj ./main/Yardarm.MicrosoftExtensionsHttp.Client/
-COPY src/main/Yardarm.NewtonsoftJson/*.csproj ./main/Yardarm.NewtonsoftJson/
-COPY src/main/Yardarm.NewtonsoftJson.Client/*.csproj ./main/Yardarm.NewtonsoftJson.Client/
-COPY src/main/Yardarm.NodaTime/*.csproj ./main/Yardarm.NodaTime/
-COPY src/main/Yardarm.NodaTime.Client/*.csproj ./main/Yardarm.NodaTime.Client/
-COPY src/main/Yardarm.SystemTextJson/*.csproj ./main/Yardarm.SystemTextJson/
-COPY src/main/Yardarm.SystemTextJson.Client/*.csproj ./main/Yardarm.SystemTextJson.Client/
+COPY src/main/Core/Yardarm/*.csproj ./main/Core/Yardarm/
+COPY src/main/Core/Yardarm.Client/*.csproj ./main/Core/Yardarm.Client/
+COPY src/main/Core/Yardarm.CommandLine/*.csproj ./main/Core/Yardarm.CommandLine/
+COPY src/main/MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp/*.csproj ./main/MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp/
+COPY src/main/MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp.Client/*.csproj ./main/MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp.Client/
+COPY src/main/NewtonsoftJson/Yardarm.NewtonsoftJson/*.csproj ./main/NewtonsoftJson/Yardarm.NewtonsoftJson/
+COPY src/main/NewtonsoftJson/Yardarm.NewtonsoftJson.Client/*.csproj ./main/NewtonsoftJson/Yardarm.NewtonsoftJson.Client/
+COPY src/main/NodaTime/Yardarm.NodaTime/*.csproj ./main/NodaTime/Yardarm.NodaTime/
+COPY src/main/NodaTime/Yardarm.NodaTime.Client/*.csproj ./main/NodaTime/Yardarm.NodaTime.Client/
+COPY src/main/SystemTextJson/Yardarm.SystemTextJson/*.csproj ./main/SystemTextJson/Yardarm.SystemTextJson/
+COPY src/main/SystemTextJson/Yardarm.SystemTextJson.Client/*.csproj ./main/SystemTextJson/Yardarm.SystemTextJson.Client/
 COPY ["src/*.props", "src/*.targets", "src/*.snk", "src/nuget.config", "./"]
 COPY ["src/main/*.props", "src/main/*.targets", "./main/"]
-RUN dotnet restore -r $(cat /tmp/arch) -p:PublishReadyToRun=true ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj
+RUN dotnet restore -r $(cat /tmp/arch) -p:PublishReadyToRun=true ./main/Core/Yardarm.CommandLine/Yardarm.CommandLine.csproj
 
 COPY ./src ./
-RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /app ./main/Yardarm.CommandLine/Yardarm.CommandLine.csproj && \
+RUN dotnet publish --no-restore -c Release -r $(cat /tmp/arch) -p:PublishReadyToRun=true -p:VERSION=${VERSION} -o /app ./main/Core/Yardarm.CommandLine/Yardarm.CommandLine.csproj && \
     ln -s /app/Yardarm.CommandLine /app/yardarm
 
 # No --platform here so we get the base image for the target platform

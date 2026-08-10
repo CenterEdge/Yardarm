@@ -74,7 +74,25 @@ Properties to configure behaviors may be passed using the `-p` command line swit
 - `DefaultHttpVersionPolicy` - Set to `RequestVersionOrLower`, `RequestVersionOrHigher`, or `RequestVersionExact` to change the default
   HTTP version policy used by generated clients. Defaults to the runtime default (currently `RequestVersionOrLower`) and is ignored on
   downlevel runtimes that do not support this feature.
-- `UnknownDiscriminatorHandling=ReturnNull` - For System.Text.Json only, will cause discriminated objects where the discriminator value
+- `ExternallyDiscriminatedUnions=true` - When set to `true`, externally discriminated unions using C# 15 union types will be generated when the schema matches the correct pattern. Polyfills are used for downlevel runtimes that do not include union types.
+
+### System.Text.Json Properties
+
+- `JsonStrict=true` - Enables strict JSON serialization and deserialization, which will throw an exception in the following scenarios:
+  - A required property is missing from an object
+  - Non-nullable properties have an explicit `null` value
+  - Property names are not in the correct case
+  - Duplicate property names are present in an object
+  - Numbers are provided as a string rather than a numeric value
+  - Individual settings below will override the strict behavior, but the default is to be strict when this property is set to `true`.
+- `JsonAllowDuplicateProperties=false` - Allows duplicate property names in JSON objects. Defaults to `true` unless `JsonStrict=true` is set.
+- `JsonEnforceRequiredProperties=true` - Enforces that all required properties are present in JSON objects. Defaults to `false` unless `JsonStrict=true` is set.
+- `JsonNumberHandling=Strict` - Comma-delimited list of JsonNumberHandling enumeration values. Defaults to `AllowReadingFromString` unless `JsonStrict=true` is set.
+- `JsonPropertyNameCaseInsensitive=false` - Determines whether property names are matched case-insensitively. Defaults to `true` unless `JsonStrict=true` is set.
+- `JsonRespectNullableAnnotations=true` - Determines whether nullable annotations are respected. Defaults to `false` unless `JsonStrict=true` is set.
+- `JsonRespectRequiredConstructorParameters=true` - Determines whether required constructor parameters are respected. Defaults to `false` unless `JsonStrict=true` is set.
+- `JsonUnmappedMemberHandling=Disallow` - Determines how unmapped members are handled during deserialization. Defaults to `Skip`.
+- `UnknownDiscriminatorHandling=ReturnNull` - Will cause discriminated objects where the discriminator value
   is unknown to return null rather than throwing an exception during deserialization.
 
 ## Source Code

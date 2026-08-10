@@ -119,6 +119,15 @@
       <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersion)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersion=$(DefaultHttpVersion)</_EffectiveYardarmProperties>
       <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersionPolicy)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersionPolicy=$(DefaultHttpVersionPolicy)</_EffectiveYardarmProperties>
       <_EffectiveYardarmProperties Condition=" '$(ExternallyDiscriminatedUnions)' == 'true' ">$(_EffectiveYardarmProperties);ExternallyDiscriminatedUnions=true</_EffectiveYardarmProperties>
+
+      <_EffectiveYardarmProperties Condition=" '$(JsonStrict)' != '' ">$(_EffectiveYardarmProperties);JsonStrict=$(JsonStrict)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonAllowDuplicateProperties)' != '' ">$(_EffectiveYardarmProperties);JsonAllowDuplicateProperties=$(JsonAllowDuplicateProperties)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonEnforceRequiredProperties)' != '' ">$(_EffectiveYardarmProperties);JsonEnforceRequiredProperties=$(JsonEnforceRequiredProperties)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonNumberHandling)' != '' ">$(_EffectiveYardarmProperties);JsonNumberHandling=$(JsonNumberHandling)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonPropertyNameCaseInsensitive)' != '' ">$(_EffectiveYardarmProperties);JsonPropertyNameCaseInsensitive=$(JsonPropertyNameCaseInsensitive)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonRespectNullableAnnotations)' != '' ">$(_EffectiveYardarmProperties);JsonRespectNullableAnnotations=$(JsonRespectNullableAnnotations)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonRespectRequiredConstructorParameters)' != '' ">$(_EffectiveYardarmProperties);JsonRespectRequiredConstructorParameters=$(JsonRespectRequiredConstructorParameters)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonUnmappedMemberHandling)' != '' ">$(_EffectiveYardarmProperties);JsonUnmappedMemberHandling=$(JsonUnmappedMemberHandling)</_EffectiveYardarmProperties>
     </PropertyGroup>
   </Target>
 

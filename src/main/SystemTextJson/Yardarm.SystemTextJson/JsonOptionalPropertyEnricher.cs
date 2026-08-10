@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Yardarm.Enrichment;
 using Yardarm.Spec;
@@ -10,17 +10,11 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
 
-public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+public class JsonOptionalPropertyEnricher(
+    IOpenApiElementRegistry elementRegistry,
+    IOptions<JsonOptions> jsonOptions)
+    : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
 {
-    private readonly IOpenApiElementRegistry _elementRegistry;
-
-    public JsonOptionalPropertyEnricher(IOpenApiElementRegistry elementRegistry)
-    {
-        ArgumentNullException.ThrowIfNull(elementRegistry);
-
-        _elementRegistry = elementRegistry;
-    }
-
     public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
     {
         if (!context.LocatedElement.IsJsonSchema)
@@ -29,7 +23,7 @@ public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyD
             return syntax;
         }
 
-        if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(_elementRegistry) is null)
+        if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(elementRegistry) is null)
         {
             // We don't need to apply this to properties of request classes, only schemas
             return syntax;
@@ -41,13 +35,26 @@ public class JsonOptionalPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyD
 
         bool isNullable = context.LocatedElement.Element.Nullable;
 
+        // For required properties, enforce the requirement on deserialization, unless the feature is disabled.
         // We prefer not to send null values if the property is not required.
         // However, for nullable properties, prefer to send the null explicitly.
         // This is a compromise due to .NET not supporting a concept of null vs missing.
-        return !isRequired && !isNullable
-            ? AddJsonIgnoreAttribute(syntax)
-            : syntax;
+        return isRequired
+            ? jsonOptions.Value.EffectiveEnforceRequiredProperties
+                ? AddJsonRequiredAttribute(syntax)
+                : syntax
+            : !isNullable
+                ? AddJsonIgnoreAttribute(syntax)
+                : syntax;
     }
+
+    private static PropertyDeclarationSyntax AddJsonRequiredAttribute(PropertyDeclarationSyntax syntax) =>
+    syntax
+        .AddAttributeLists(AttributeList(SingletonSeparatedList(
+            Attribute(
+                SystemTextJsonTypes.Serialization.JsonRequiredAttributeName,
+                argumentList: default)))
+            .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
 
     private static PropertyDeclarationSyntax AddJsonIgnoreAttribute(PropertyDeclarationSyntax syntax) =>
         syntax

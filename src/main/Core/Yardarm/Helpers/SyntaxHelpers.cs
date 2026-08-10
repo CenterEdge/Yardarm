@@ -82,5 +82,13 @@ namespace Yardarm.Helpers
             value is not null
                 ? LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value))
                 : LiteralExpression(SyntaxKind.NullLiteralExpression);
+
+        public static LiteralExpressionSyntax BoolLiteral(bool? value) =>
+            value switch
+            {
+                true => LiteralExpression(SyntaxKind.TrueLiteralExpression),
+                false => LiteralExpression(SyntaxKind.FalseLiteralExpression),
+                _ => LiteralExpression(SyntaxKind.NullLiteralExpression),
+            };
     }
 }

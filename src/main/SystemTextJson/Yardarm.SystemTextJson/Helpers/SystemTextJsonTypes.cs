@@ -30,6 +30,28 @@ internal static class SystemTextJsonTypes
         SystemTextJson,
         IdentifierName("JsonException"));
 
+    public static class JsonSerializerDefaults
+    {
+        public static NameSyntax Name => field ??= QualifiedName(
+            SystemTextJson,
+            IdentifierName("JsonSerializerDefaults"));
+
+        public static MemberAccessExpressionSyntax General => field ??= MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
+            Name,
+            IdentifierName("General"));
+
+        public static MemberAccessExpressionSyntax Strict => field ??= MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
+            Name,
+            IdentifierName("Strict"));
+
+        public static MemberAccessExpressionSyntax Web => field ??= MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
+            Name,
+            IdentifierName("Web"));
+    }
+
     public static class JsonTokenType
     {
         public static NameSyntax Name { get; } = QualifiedName(
@@ -179,6 +201,14 @@ internal static class SystemTextJsonTypes
         public static NameSyntax JsonStringEnumMemberNameAttributeName { get; } = QualifiedName(
             Name,
             IdentifierName("JsonStringEnumMemberNameAttribute"));
+
+        public static class JsonUnmappedMemberHandling
+        {
+            // ReSharper disable once MemberHidesStaticFromOuterClass
+            public static NameSyntax Name { get; } = QualifiedName(
+                SystemTextJsonTypes.Serialization.Name,
+                IdentifierName("JsonUnmappedMemberHandling"));
+        }
     }
 
     public static NameSyntax Utf8JsonReader { get; } = QualifiedName(

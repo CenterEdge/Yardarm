@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
+using Yardarm.Helpers;
 using Yardarm.SystemTextJson.Helpers;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -33,29 +34,69 @@ internal class JsonSerializerContextGenerator(
 
     public IEnumerable<SyntaxTree> Generate()
     {
+        JsonOptions options = jsonOptions.Value;
+
         List<AttributeArgumentSyntax> arguments = [
             AttributeArgument(
-                nameEquals: NameEquals("NumberHandling"),
+                nameEquals: null,
                 nameColon: null,
-                expression: SystemTextJsonTypes.Serialization.JsonNumberHandling.AllowReadingFromString),
+                expression: options.Strict
+                    ? SystemTextJsonTypes.JsonSerializerDefaults.Strict
+                    : SystemTextJsonTypes.JsonSerializerDefaults.Web),
         ];
 
-        // By default, respect nullable annotations and required constructor parameters
+        if (options.AllowDuplicateProperties is bool allowDuplicateProperties)
+        {
+            arguments.Add(AttributeArgument(
+                nameEquals: NameEquals("AllowDuplicateProperties"),
+                nameColon: null,
+                expression: SyntaxHelpers.BoolLiteral(allowDuplicateProperties)));
+        }
 
-        if (jsonOptions.Value.RespectNullableAnnotations)
+        if (options.NumberHandling is JsonNumberHandling numberHandling)
+        {
+            arguments.Add(AttributeArgument(
+                nameEquals: NameEquals("NumberHandling"),
+                nameColon: null,
+                expression: MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    SystemTextJsonTypes.Serialization.JsonNumberHandling.Name,
+                    IdentifierName(numberHandling.ToString()))));
+        }
+
+        if (options.PropertyNameCaseInsensitive is bool propertyNameCaseInsensitive)
+        {
+            arguments.Add(AttributeArgument(
+                nameEquals: NameEquals("PropertyNameCaseInsensitive"),
+                nameColon: null,
+                expression: SyntaxHelpers.BoolLiteral(propertyNameCaseInsensitive)));
+        }
+
+        if (options.RespectNullableAnnotations is bool respectNullableAnnotations)
         {
             arguments.Add(AttributeArgument(
                 nameEquals: NameEquals("RespectNullableAnnotations"),
                 nameColon: null,
-                expression: LiteralExpression(SyntaxKind.TrueLiteralExpression)));
+                expression: SyntaxHelpers.BoolLiteral(respectNullableAnnotations)));
         }
 
-        if (jsonOptions.Value.RespectRequiredConstructorParameters)
+        if (options.RespectRequiredConstructorParameters is bool respectRequiredConstructorParameters)
         {
             arguments.Add(AttributeArgument(
                 nameEquals: NameEquals("RespectRequiredConstructorParameters"),
                 nameColon: null,
-                expression: LiteralExpression(SyntaxKind.TrueLiteralExpression)));
+                expression: SyntaxHelpers.BoolLiteral(respectRequiredConstructorParameters)));
+        }
+
+        if (options.UnmappedMemberHandling is JsonUnmappedMemberHandling unmappedMemberHandling)
+        {
+            arguments.Add(AttributeArgument(
+                nameEquals: NameEquals("UnmappedMemberHandling"),
+                nameColon: null,
+                expression: MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    SystemTextJsonTypes.Serialization.JsonUnmappedMemberHandling.Name,
+                    IdentifierName(unmappedMemberHandling.ToString()))));
         }
 
         AttributeSyntax sourceGenerationOptionsAttribute = Attribute(

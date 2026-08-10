@@ -40,7 +40,7 @@ public class JsonOptionalPropertyEnricher(
         // However, for nullable properties, prefer to send the null explicitly.
         // This is a compromise due to .NET not supporting a concept of null vs missing.
         return isRequired
-            ? jsonOptions.Value.EnforceRequiredProperties
+            ? jsonOptions.Value.EffectiveEnforceRequiredProperties
                 ? AddJsonRequiredAttribute(syntax)
                 : syntax
             : !isNullable

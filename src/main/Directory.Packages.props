@@ -2,6 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
+    <RoslynVersion>5.6.0</RoslynVersion>
     <YardarmSystemPackageVersion>10.0.10</YardarmSystemPackageVersion>
   </PropertyGroup>
 
@@ -9,8 +10,8 @@
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.6.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.6.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(YardarmSystemPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(YardarmSystemPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(YardarmSystemPackageVersion)" />

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
 
     <AssemblyName>Yardarm.Build.Tasks</AssemblyName>
     <RootNamespace>Yardarm.Build.Tasks</RootNamespace>
@@ -29,10 +29,6 @@
     <Compile Include="..\..\main\Core\Yardarm.CommandLine\Interop\*.cs">
       <LinkBase>Interop</LinkBase>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Reference Include="System.Runtime.Serialization" Pack="false" />
   </ItemGroup>
 
   <ItemGroup>

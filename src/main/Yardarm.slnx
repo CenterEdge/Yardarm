@@ -13,6 +13,7 @@
     <File Path="../Directory.Build.targets" />
     <File Path="../global.json" />
     <File Path="../nuget.config" />
+    <File Path="Client.Packages.props" />
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/MicrosoftExtensionsHttp/">
@@ -20,18 +21,18 @@
     <Project Path="MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp/Yardarm.MicrosoftExtensionsHttp.csproj" />
   </Folder>
   <Folder Name="/NewtonsoftJson/">
-    <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson.Client/Yardarm.NewtonsoftJson.Client.csproj" />
     <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson.Client.UnitTests/Yardarm.NewtonsoftJson.Client.UnitTests.csproj" />
+    <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson.Client/Yardarm.NewtonsoftJson.Client.csproj" />
     <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson/Yardarm.NewtonsoftJson.csproj" />
   </Folder>
   <Folder Name="/NodaTime/">
-    <Project Path="NodaTime/Yardarm.NodaTime.Client/Yardarm.NodaTime.Client.csproj" />
     <Project Path="NodaTime/Yardarm.NodaTime.Client.UnitTests/Yardarm.NodaTime.Client.UnitTests.csproj" />
+    <Project Path="NodaTime/Yardarm.NodaTime.Client/Yardarm.NodaTime.Client.csproj" />
     <Project Path="NodaTime/Yardarm.NodaTime/Yardarm.NodaTime.csproj" />
   </Folder>
   <Folder Name="/SystemTextJson/">
-    <Project Path="SystemTextJson/Yardarm.SystemTextJson.Client/Yardarm.SystemTextJson.Client.csproj" />
     <Project Path="SystemTextJson/Yardarm.SystemTextJson.Client.UnitTests/Yardarm.SystemTextJson.Client.UnitTests.csproj" />
+    <Project Path="SystemTextJson/Yardarm.SystemTextJson.Client/Yardarm.SystemTextJson.Client.csproj" />
     <Project Path="SystemTextJson/Yardarm.SystemTextJson/Yardarm.SystemTextJson.csproj" />
   </Folder>
 </Solution>

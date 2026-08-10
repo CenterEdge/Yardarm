@@ -16,13 +16,32 @@
     Add Yardarm tasks.
   -->
   <PropertyGroup>
-    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' And '$(MSBuildRuntimeType)' == 'Core' ">$(YardarmTaskBasePath)netcoreapp3.1\Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
-    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' And '$(MSBuildRuntimeType)' != 'Core' ">$(YardarmTaskBasePath)net472\Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
+    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' ">$(YardarmTaskBasePath)Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
   </PropertyGroup>
+
   <UsingTask TaskName="Yardarm.Build.Tasks.YardarmGenerate"
-             AssemblyFile="$(YardarmTaskAssembly)" />
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="CurrentArchitecture"
+             Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+  <UsingTask TaskName="Yardarm.Build.Tasks.YardarmGenerate"
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="*"
+             TaskFactory="TaskHostFactory"
+             Condition=" '$(MSBuildRuntimeType)' == 'Full' "/>
+
   <UsingTask TaskName="Yardarm.Build.Tasks.YardarmCollectDependencies"
-             AssemblyFile="$(YardarmTaskAssembly)" />
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="CurrentArchitecture"
+             Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+  <UsingTask TaskName="Yardarm.Build.Tasks.YardarmCollectDependencies"
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="*"
+             TaskFactory="TaskHostFactory"
+             Condition=" '$(MSBuildRuntimeType)' == 'Full' "/>
 
   <PropertyGroup>
     <!-- This property must be overridden to remove a few targets that compile assemblies -->

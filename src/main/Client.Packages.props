@@ -2,7 +2,7 @@
   <!--
     Package versions in this file should match the behaviors in the various dependency generators
     (e.g. JsonDependencyGenerator and StandardDependencyGenerator). They are used for local test builds
-    of the client projects and the Yardarm.SDK.Test project.
+    of the client projects and the Yardarm.Sdk.Test project.
   -->
 
   <PropertyGroup>

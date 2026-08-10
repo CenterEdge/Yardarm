@@ -16,7 +16,6 @@ public sealed class JsonOptions
     /// - Non-nullable properties may not have a null value in the JSON payload
     /// - Property names are case-sensitive
     /// - Duplicate property names are not allowed in the JSON payload
-    /// - Extra properties in the JSON payload are not allowed
     /// - Numbers may not be provided as strings in the JSON payload
     /// </para>
     /// </remarks>
@@ -62,6 +61,10 @@ public sealed class JsonOptions
     // Automatically enforce required properties if Strict is enabled, unless explicitly overridden by EnforceRequiredProperties.
     internal bool EffectiveEnforceRequiredProperties => EnforceRequiredProperties ?? Strict;
 
+    // By default, even in strict-mode, allow unknown properties. Almost any server implementation may add new properties to the payload,
+    // and we don't want to break clients when that happens. If a user wants to enforce strict behavior, they should explicitly set UnmappedMemberHandling to Disallow.
+    internal JsonUnmappedMemberHandling EffectiveUnmappedMemberHandling => UnmappedMemberHandling ?? JsonUnmappedMemberHandling.Skip;
+
     internal void ApplySettings(YardarmGenerationSettings settings)
     {
         if (settings.Properties.TryGetValue("JsonStrict", out string? strict)
@@ -82,9 +85,18 @@ public sealed class JsonOptions
             EnforceRequiredProperties = enforceRequiredPropertiesBool;
         }
 
-        if (settings.Properties.TryGetValue("JsonNumberHandling", out string? numberHandling)
-            && Enum.TryParse(numberHandling, ignoreCase: true, out JsonNumberHandling numberHandlingEnum))
+        if (settings.Properties.TryGetValue("JsonNumberHandling", out string? numberHandling))
         {
+            var numberHandlingEnum = JsonNumberHandling.Strict;
+
+            foreach (var value in numberHandling.Split(','))
+            {
+                if (Enum.TryParse(value, ignoreCase: true, out JsonNumberHandling parsedValue))
+                {
+                    numberHandlingEnum |= parsedValue;
+                }
+            }
+
             NumberHandling = numberHandlingEnum;
         }
 

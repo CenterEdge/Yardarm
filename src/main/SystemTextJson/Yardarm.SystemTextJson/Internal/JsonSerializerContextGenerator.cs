@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -42,7 +44,7 @@ internal class JsonSerializerContextGenerator(
                 nameColon: null,
                 expression: options.Strict
                     ? SystemTextJsonTypes.JsonSerializerDefaults.Strict
-                    : SystemTextJsonTypes.JsonSerializerDefaults.Web),
+                    : SystemTextJsonTypes.JsonSerializerDefaults.Web)
         ];
 
         if (options.AllowDuplicateProperties is bool allowDuplicateProperties)
@@ -58,10 +60,7 @@ internal class JsonSerializerContextGenerator(
             arguments.Add(AttributeArgument(
                 nameEquals: NameEquals("NumberHandling"),
                 nameColon: null,
-                expression: MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    SystemTextJsonTypes.Serialization.JsonNumberHandling.Name,
-                    IdentifierName(numberHandling.ToString()))));
+                expression: BuildEnumFlags(SystemTextJsonTypes.Serialization.JsonNumberHandling.Name, numberHandling)));
         }
 
         if (options.PropertyNameCaseInsensitive is bool propertyNameCaseInsensitive)
@@ -88,7 +87,7 @@ internal class JsonSerializerContextGenerator(
                 expression: SyntaxHelpers.BoolLiteral(respectRequiredConstructorParameters)));
         }
 
-        if (options.UnmappedMemberHandling is JsonUnmappedMemberHandling unmappedMemberHandling)
+        if (Enum.IsDefined(options.EffectiveUnmappedMemberHandling))
         {
             arguments.Add(AttributeArgument(
                 nameEquals: NameEquals("UnmappedMemberHandling"),
@@ -96,7 +95,7 @@ internal class JsonSerializerContextGenerator(
                 expression: MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
                     SystemTextJsonTypes.Serialization.JsonUnmappedMemberHandling.Name,
-                    IdentifierName(unmappedMemberHandling.ToString()))));
+                    IdentifierName(options.EffectiveUnmappedMemberHandling.ToString()))));
         }
 
         AttributeSyntax sourceGenerationOptionsAttribute = Attribute(
@@ -134,5 +133,52 @@ internal class JsonSerializerContextGenerator(
                 options: context.ParseOptions,
                 encoding: System.Text.Encoding.UTF8)
         ];
+    }
+
+    private static ExpressionSyntax BuildEnumFlags<TEnum>(NameSyntax enumName, TEnum value)
+        where TEnum : struct, Enum
+    {
+        ExpressionSyntax? result = null;
+
+        foreach (var flag in GetSetFlags(enumName, value))
+        {
+            result = result is null
+                ? flag
+                : BinaryExpression(SyntaxKind.BitwiseOrExpression, result, flag);
+        }
+
+        Debug.Assert(result is not null);
+        return result;
+    }
+
+    private static IEnumerable<ExpressionSyntax> GetSetFlags<TEnum>(NameSyntax enumName, TEnum value)
+        where TEnum : struct, Enum
+    {
+        EqualityComparer<TEnum> comparer = EqualityComparer<TEnum>.Default;
+
+        if (comparer.Equals(value, default))
+        {
+            // Enum is 0, so return the default value (which is usually the first enum member)
+
+            yield return MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                enumName,
+                IdentifierName(default(TEnum).ToString()));
+        }
+        else
+        {
+            // Enumerate all enum values other than the default value and return those that are set
+
+            foreach (TEnum flag in Enum.GetValues<TEnum>())
+            {
+                if (!comparer.Equals(flag, default) && value.HasFlag(flag))
+                {
+                    yield return MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        enumName,
+                        IdentifierName(flag.ToString()));
+                }
+            }
+        }
     }
 }

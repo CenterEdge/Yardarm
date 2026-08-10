@@ -66,7 +66,7 @@ namespace Yardarm
                     _parseOptions = null;
                 }
             }
-        } = LanguageVersion.CSharp14;
+        } = LanguageVersion.Preview; // Change once we have access to C# 15
 
         public CSharpParseOptions ParseOptions => _parseOptions ??=
             CSharpParseOptions.Default

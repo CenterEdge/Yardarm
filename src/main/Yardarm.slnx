@@ -9,11 +9,11 @@
   </Folder>
   <Folder Name="/Global/">
     <File Path="../../Dockerfile" />
-    <File Path="../Client.Packages.props" />
     <File Path="../Directory.Build.props" />
     <File Path="../Directory.Build.targets" />
     <File Path="../global.json" />
     <File Path="../nuget.config" />
+    <File Path="Client.Packages.props" />
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/MicrosoftExtensionsHttp/">

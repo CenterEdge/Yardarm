@@ -9,7 +9,7 @@
     <ClientSystemPackageVersion>10.0.10</ClientSystemPackageVersion>
   </PropertyGroup>
 
-  <ItemGroup Condition="$(MSBuildProjectFile.Contains('Client')) Or $(MSBuildProjectFile.Contains('Client.UnitTests')) Or $(MSBuildProjectFile.Contains('Sdk.Test'))">
+  <ItemGroup>
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ClientSystemPackageVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />

@@ -29,5 +29,6 @@
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)../Client.Packages.props" />
+  <Import Project="$(MSBuildThisFileDirectory)Client.Packages.props"
+          Condition="$(MSBuildProjectFile.Contains('Client')) Or $(MSBuildProjectFile.Contains('Client.UnitTests'))"/>
 </Project>

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildThisFileDirectory)../Directory.Packages.props" />
-  <Import Project="$(MSBuildThisFileDirectory)../../Client.Packages.props" />
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)../../main/Client.Packages.props" />
 </Project>

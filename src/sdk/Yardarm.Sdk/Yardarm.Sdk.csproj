@@ -18,6 +18,8 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
     <NoWarn>$(NoWarn);NU5100;NU5128;NU5129</NoWarn>
+
+    <GeneratedSdkVersionProps>$(BaseIntermediateOutputPath)SdkVersion.props</GeneratedSdkVersionProps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,6 +40,34 @@
     <!-- Make sure VS considers any change to any of the targets as requiring a new build/pack -->
     <UpToDateCheckInput Include="@(Content)" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>
+      CollectYardarmCommandLine;
+      GenerateSdkVersionProps;
+      $(GenerateNuspecDependsOn)
+    </GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <!-- Generate a SdkVersion.props file that contains the current version of the Yardarm.Sdk package. -->
+  <Target Name="GenerateSdkVersionProps">
+    <PropertyGroup>
+      <_SdkVersionPropsContent>
+&lt;Project&gt;
+  &lt;PropertyGroup&gt;
+    &lt;YardarmSdkVersion&gt;$(PackageVersion)&lt;/YardarmSdkVersion&gt;
+  &lt;/PropertyGroup&gt;
+&lt;/Project&gt;
+      </_SdkVersionPropsContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GeneratedSdkVersionProps)" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="$(_SdkVersionPropsContent)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(GeneratedSdkVersionProps)" />
+      <_PackageFiles Include="$(GeneratedSdkVersionProps)" Pack="true" PackagePath="Sdk/SdkVersion.props" />
+    </ItemGroup>
+  </Target>
 
   <!--
     Publish and collect the Yardarm command-line application to include as a tool.
@@ -66,12 +96,6 @@
     </MSBuild>
   </Target>
 
-  <PropertyGroup>
-    <GenerateNuspecDependsOn>
-      CollectYardarmCommandLine;
-      $(GenerateNuspecDependsOn)
-    </GenerateNuspecDependsOn>
-  </PropertyGroup>
   <Target Name="CollectYardarmCommandLine"
           DependsOnTargets="DefineYardarmCommandLineRids;BuildYardarmCommandLine">
     <!--

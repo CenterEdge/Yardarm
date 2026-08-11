@@ -11,6 +11,10 @@
     <YardarmTaskBasePath Condition=" '$(YardarmTaskBasePath)' == '' ">$(MSBuildThisFileDirectory)..\tasks\net10.0\</YardarmTaskBasePath>
   </PropertyGroup>
 
+  <!-- Include the SdkVersion.props file if it exists. This is generated dynamically at pack time. -->
+  <Import Project="$(MSBuildThisFileDirectory)SdkVersion.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)SdkVersion.props')" />
+
   <Import Project="$(CustomBeforeYardarmProps)" Condition=" '$(CustomBeforeYardarmProps)' != '' And Exists('$(CustomBeforeYardarmProps)') " />
 
   <PropertyGroup>

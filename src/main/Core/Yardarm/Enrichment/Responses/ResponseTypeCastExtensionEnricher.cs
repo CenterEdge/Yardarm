@@ -27,7 +27,7 @@ namespace Yardarm.Enrichment.Responses
         public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
             OpenApiEnrichmentContext<OpenApiResponses> context)
         {
-            NamespaceDeclarationSyntax? ns = target.ChildNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault();
+            BaseNamespaceDeclarationSyntax? ns = target.ChildNodes().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
             if (ns == null)
             {
                 return target;

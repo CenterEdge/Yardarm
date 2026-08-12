@@ -65,10 +65,18 @@ namespace Yardarm.Generation.Response
             }
             else
             {
-                var target = responseReference!.Target
-                    ?? throw new InvalidOperationException("Response reference target was not resolved.");
-                var referenceId = Response.GetReferenceId()
-                    ?? throw new InvalidOperationException("Response reference ID is missing.");
+                var target = responseReference!.Target;
+                if (target is null)
+                {
+                    ThrowHelpers.ThrowInvalidOperationException("Response reference target was not resolved.");
+                }
+
+                var referenceId = Response.GetReferenceId();
+                if (referenceId is null)
+                {
+                    ThrowHelpers.ThrowInvalidOperationException("Response reference ID is missing.");
+                }
+
                 var rootElement = target.CreateRoot(referenceId);
                 baseType = Context.TypeGeneratorRegistry.Get(rootElement).TypeInfo.Name;
             }

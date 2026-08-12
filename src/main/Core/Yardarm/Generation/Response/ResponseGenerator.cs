@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Response
         }
 
         private IEnumerable<ILocatedOpenApiElement<IOpenApiResponse>> GetResponses() =>
-            (document.Components.Responses ?? Enumerable.Empty<KeyValuePair<string, IOpenApiResponse>>())
+            (document.Components.Responses ?? [])
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Concat(document.Paths.ToLocatedElements()
                     .GetOperations()

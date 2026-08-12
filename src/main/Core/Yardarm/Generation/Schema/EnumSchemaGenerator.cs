@@ -36,20 +36,21 @@ namespace Yardarm.Generation.Schema
             yield return SyntaxFactory.EnumDeclaration(enumName)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                .AddMembers(Schema.Enum
-                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter, namingContext)!)
+                .AddMembers(Schema.Enum!
+                    .OfType<JsonValue>()
+                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter, namingContext))
                     .Where(p => p != null)
+                    .Select(p => p!)
                     .ToArray());
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
             ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
-            JsonNode? value,
+            JsonValue value,
             INameFormatter nameFormatter,
             NamingContext namingContext)
         {
-            string? stringValue = value?.GetValue<string>();
-            if (stringValue is null)
+            if (!value.TryGetValue<string>(out var stringValue) || stringValue is null)
             {
                 return null;
             }

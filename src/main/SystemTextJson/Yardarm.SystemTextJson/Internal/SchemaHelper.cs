@@ -91,7 +91,7 @@ internal static class SchemaHelper
                     // p.Value is an OpenApiSchemaReference which implements IOpenApiSchema
                     var referenceId = p.Value.GetReferenceId();
                     if (referenceId is not null &&
-                        context.Document.Components.Schemas.TryGetValue(referenceId, out var schema))
+                        (context.Document.Components?.Schemas?.TryGetValue(referenceId, out var schema) ?? false))
                     {
                         return (p.Key, Schema: schema.CreateRoot(p.Key));
                     }
@@ -112,7 +112,7 @@ internal static class SchemaHelper
 
         // Find other schemas that reference this one using allOf. This only applies to base
         // classes, don't try this with interfaces.
-        return context.Document.Components.Schemas
+        return ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)context.Document.Components?.Schemas ?? [])
             .Where(p =>
             {
                 var firstAllOf = p.Value.AllOf?.FirstOrDefault();

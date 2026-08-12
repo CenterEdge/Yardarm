@@ -80,9 +80,9 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 semicolonToken: Token(SyntaxKind.SemicolonToken)))));
 
         // Constructors for each union case
-        foreach (var unionCase in Element.Element.AnyOf
+        foreach (var unionCase in (Element.Element.AnyOf ?? [])
             .Select(p => {
-                KeyValuePair<string, IOpenApiSchema> caseProperty = p.Properties.First();
+                KeyValuePair<string, IOpenApiSchema> caseProperty = ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)p.Properties ?? []).First();
 
                 return (caseProperty.Key, Element: LocatedOpenApiElement.CreateRoot(caseProperty.Value, caseProperty.Value.GetReferenceId()!));
             }))
@@ -152,9 +152,9 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
         // hash code won't necessarily match between two matching TypeSyntax objects.
         var propertyTypes = new List<TypeSyntax>();
 
-        foreach (IOpenApiSchema unionCase in schema.Element.AnyOf)
+        foreach (IOpenApiSchema unionCase in schema.Element.AnyOf ?? [])
         {
-            if (unionCase.Properties.Count != 1
+            if ((unionCase.Properties?.Count ?? 0) != 1
                 || (unionCase.Type.HasValue && !unionCase.IsType(JsonSchemaType.Object))
                 || unionCase.Nullable
                 || unionCase.AdditionalProperties is not null)
@@ -163,7 +163,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 return false;
             }
 
-            (string propertyName, IOpenApiSchema propertySchema) = unionCase.Properties.First();
+            (string propertyName, IOpenApiSchema propertySchema) = unionCase.Properties!.First();
 
             if (unionCase.Required is null
                 || !unionCase.Required.Contains(propertyName)

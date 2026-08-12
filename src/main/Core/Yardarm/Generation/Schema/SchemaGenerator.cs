@@ -22,7 +22,7 @@ namespace Yardarm.Generation.Schema
 
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var schema in _document.Components.Schemas)
+            foreach (var schema in (IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)_document.Components?.Schemas ?? [])
             {
                 var element = schema.Value.CreateRoot(schema.Key);
 

@@ -33,7 +33,7 @@ namespace Yardarm.Generation.Schema
 
             // Register the referenced schema to implement this interface
             var baseTypeRegistry = Context.GenerationServices.GetRequiredService<ISchemaBaseTypeRegistry>();
-            foreach (var referencedSchema in Schema.OneOf
+            foreach (var referencedSchema in (Schema.OneOf ?? [])
                 .Where(p => p is IOpenApiReferenceHolder)
                 .Select(p => p.CreateRoot(p.GetReferenceId()!)))
             {

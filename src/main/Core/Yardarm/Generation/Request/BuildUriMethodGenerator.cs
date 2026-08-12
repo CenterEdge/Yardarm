@@ -152,7 +152,8 @@ public class BuildUriMethodGenerator(
 
         var allParameters = operation.GetAllParameters()
             .Select(p => p.Element)
-            .ToDictionary(p => p.Name, p => p);
+            .Where(p => p.Name is not null)
+            .ToDictionary(p => p.Name!, p => p);
 
         PathSegment[] parsedPath = PathParser.Parse(path.Key);
 
@@ -221,7 +222,7 @@ public class BuildUriMethodGenerator(
 
             foreach (IOpenApiParameter queryParameter in queryParameters)
             {
-                if (queryParameter.Schema.IsType(JsonSchemaType.Array))
+                if (queryParameter.Schema?.IsType(JsonSchemaType.Array) == true)
                 {
                     yield return ExpressionStatement(InvocationExpression(MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
@@ -229,8 +230,8 @@ public class BuildUriMethodGenerator(
                             IdentifierName("AppendList")),
                         ArgumentList(SeparatedList(
                         [
-                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
-                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
+                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name!))),
+                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name!))),
                             Argument(LiteralExpression(queryParameter.Explode ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
                             Argument(queryParameter.Style switch
                             {
@@ -239,7 +240,7 @@ public class BuildUriMethodGenerator(
                                 _ => SyntaxHelpers.StringLiteral(",")
                             }),
                             Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
-                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema.Format))
+                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema?.Format))
                         ]))));
                 }
                 else
@@ -250,10 +251,10 @@ public class BuildUriMethodGenerator(
                             IdentifierName("AppendPrimitive")),
                         ArgumentList(SeparatedList(
                         [
-                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
-                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
+                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name!))),
+                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name!))),
                             Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
-                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema.Format))
+                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema?.Format))
                         ]))));
                 }
             }

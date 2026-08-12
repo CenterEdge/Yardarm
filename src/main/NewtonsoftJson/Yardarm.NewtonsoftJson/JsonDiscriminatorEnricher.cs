@@ -36,16 +36,17 @@ namespace Yardarm.NewtonsoftJson
             OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             IOpenApiSchema schema = context.Element;
+            var discriminator = schema.Discriminator;
 
             var attribute = SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(
                 SyntaxFactory.AttributeArgument(
                     SyntaxFactory.TypeOfExpression(JsonSerializationNamespace.DiscriminatorConverter)),
                 SyntaxFactory.AttributeArgument(
-                    SyntaxHelpers.StringLiteral(schema.Discriminator.PropertyName)),
+                    SyntaxHelpers.StringLiteral(discriminator?.PropertyName ?? string.Empty)),
                 SyntaxFactory.AttributeArgument(
                     SyntaxFactory.TypeOfExpression(Context.TypeGeneratorRegistry.Get(context.LocatedElement).TypeInfo.Name)));
 
-            if (schema.Discriminator.Mapping != null)
+            if (discriminator?.Mapping != null)
             {
                 var paramArray = SyntaxFactory.ArrayCreationExpression(
                         SyntaxFactory
@@ -56,7 +57,7 @@ namespace Yardarm.NewtonsoftJson
                                         SyntaxFactory.OmittedArraySizeExpression())))))
                     .WithInitializer(SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression,
                         SyntaxFactory.SeparatedList<ExpressionSyntax>(
-                            schema.Discriminator.Mapping
+                            discriminator.Mapping
                                 .SelectMany(mapping =>
                                 {
                                     // Add two parameters to the object array for each mapping

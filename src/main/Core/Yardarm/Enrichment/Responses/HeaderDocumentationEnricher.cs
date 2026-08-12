@@ -20,6 +20,6 @@ namespace Yardarm.Enrichment.Responses
 
         private SyntaxTrivia GetDocumentationTrivia(IOpenApiHeader context) =>
             DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                DocumentationSyntaxHelpers.BuildSummaryElement(context.Description));
+                DocumentationSyntaxHelpers.BuildSummaryElement(context.Description ?? string.Empty));
     }
 }

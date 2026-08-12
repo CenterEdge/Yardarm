@@ -32,6 +32,6 @@ namespace Yardarm.Spec
             return x.Element.Name == y.Element.Name;
         }
 
-        public int GetHashCode(ILocatedOpenApiElement<IOpenApiTag> obj) => obj.Element.Name.GetHashCode();
+        public int GetHashCode(ILocatedOpenApiElement<IOpenApiTag> obj) => (obj.Element.Name ?? string.Empty).GetHashCode();
     }
 }

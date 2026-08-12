@@ -60,17 +60,17 @@ public static class LocatedOpenApiElementExtensions
         // lookups within schemas.
 
         public IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas() =>
-            document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
+            ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)document.Components?.Schemas ?? []).CreateRoot().SelectMany(p => p.GetAllSchemas())
                 .Concat(document.Paths.CreateRoot().GetAllSchemas())
-                .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
-                .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
+                .Concat(((IEnumerable<KeyValuePair<string, IOpenApiRequestBody>>?)document.Components?.RequestBodies ?? []).CreateRoot().GetAllSchemas())
+                .Concat(((IEnumerable<KeyValuePair<string, IOpenApiResponse>>?)document.Components?.Responses ?? []).CreateRoot().GetAllSchemas());
 
         public IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemasExcludingOperationsWithoutNames(
             IOperationNameProvider operationNameProvider) =>
-            document.Components.Schemas.CreateRoot().SelectMany(p => p.GetAllSchemas())
+            ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)document.Components?.Schemas ?? []).CreateRoot().SelectMany(p => p.GetAllSchemas())
                 .Concat(document.Paths.CreateRoot().GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider))
-                .Concat(document.Components.RequestBodies.CreateRoot().GetAllSchemas())
-                .Concat(document.Components.Responses.CreateRoot().GetAllSchemas());
+                .Concat(((IEnumerable<KeyValuePair<string, IOpenApiRequestBody>>?)document.Components?.RequestBodies ?? []).CreateRoot().GetAllSchemas())
+                .Concat(((IEnumerable<KeyValuePair<string, IOpenApiResponse>>?)document.Components?.Responses ?? []).CreateRoot().GetAllSchemas());
     }
 
 
@@ -184,7 +184,7 @@ public static class LocatedOpenApiElementExtensions
 
         public IEnumerable<ILocatedOpenApiElement<IOpenApiParameter>> GetParameters() =>
             pathItem.Element.Parameters?
-                .Select(p => pathItem.CreateChild(p, p.Name))
+                .Select(p => pathItem.CreateChild(p, p.Name ?? string.Empty))
             ?? [];
     }
 
@@ -227,7 +227,7 @@ public static class LocatedOpenApiElementExtensions
     {
         public IEnumerable<ILocatedOpenApiElement<IOpenApiParameter>> GetParameters() =>
             (operation.Element.Parameters ?? [])
-                .Select(p => operation.CreateChild(p, p.Name));
+                .Select(p => operation.CreateChild(p, p.Name ?? string.Empty));
 
         /// <summary>
         /// Gets all operation parameters including parameters defined on the path, if applicable.

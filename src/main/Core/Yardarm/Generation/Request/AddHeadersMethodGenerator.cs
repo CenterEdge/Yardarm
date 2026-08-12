@@ -91,10 +91,10 @@ public class AddHeadersMethodGenerator(
             .Where(p => p.Element.In == ParameterLocation.Header)
             .Select(p => p.Element))
         {
-            string propertyName = propertyNameFormatter.Format(headerParameter.Name);
+            string propertyName = propertyNameFormatter.Format(headerParameter.Name ?? string.Empty);
 
             ExpressionSyntax valueExpression;
-            if (headerParameter.Schema.IsType(JsonSchemaType.Array))
+            if (headerParameter.Schema?.IsType(JsonSchemaType.Array) == true)
             {
                 valueExpression = InvocationExpression(
                     MemberAccessExpression(
@@ -104,7 +104,7 @@ public class AddHeadersMethodGenerator(
                     ArgumentList(SeparatedList(
                     [
                         Argument(IdentifierName(propertyName)),
-                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema.Format))
+                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema?.Format))
                     ])));
             }
             else
@@ -117,7 +117,7 @@ public class AddHeadersMethodGenerator(
                     ArgumentList(SeparatedList(
                     [
                         Argument(IdentifierName(propertyName)),
-                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema.Format))
+                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema?.Format))
                     ])));
             }
 

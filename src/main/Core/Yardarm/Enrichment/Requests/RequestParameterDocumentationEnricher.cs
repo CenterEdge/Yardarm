@@ -28,6 +28,6 @@ namespace Yardarm.Enrichment.Requests
 
         private SyntaxTrivia GetDocumentationTrivia(IOpenApiParameter context) =>
             DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                DocumentationSyntaxHelpers.BuildSummaryElement(context.Description));
+                DocumentationSyntaxHelpers.BuildSummaryElement(context.Description ?? string.Empty));
     }
 }

@@ -141,7 +141,8 @@ namespace Yardarm.Enrichment.Requests
                 ArgumentList(SeparatedList(
                     GetProperties(element.Element).Select(p =>
                     {
-                        element.Element.Encoding.TryGetValue(p.Key, out OpenApiEncoding? encoding);
+                        OpenApiEncoding? encoding = null;
+                        element.Element.Encoding?.TryGetValue(p.Key, out encoding);
 
                         return CreateArgument(bodyType, p.Key, p.Value, encoding)
                             .WithLeadingTrivia(ElasticCarriageReturnLineFeed);

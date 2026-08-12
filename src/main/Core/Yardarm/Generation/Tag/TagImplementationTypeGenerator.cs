@@ -121,6 +121,6 @@ namespace Yardarm.Generation.Tag
                         IdentifierName("authenticators")))));
         }
 
-        private string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(Tag.Name);
+        private string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(Tag.Name ?? string.Empty);
     }
 }

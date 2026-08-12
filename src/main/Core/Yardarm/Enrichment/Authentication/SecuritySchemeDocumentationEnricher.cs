@@ -21,6 +21,6 @@ namespace Yardarm.Enrichment.Authentication
             target.WithLeadingTrivia(
                 target.GetLeadingTrivia().Insert(0,
                     DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                        DocumentationSyntaxHelpers.BuildSummaryElement(context.Description))));
+                        DocumentationSyntaxHelpers.BuildSummaryElement(context.Description ?? string.Empty))));
     }
 }

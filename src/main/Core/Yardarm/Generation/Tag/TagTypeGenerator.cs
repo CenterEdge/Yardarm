@@ -55,6 +55,6 @@ namespace Yardarm.Generation.Tag
             return declaration;
         }
 
-        private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Tag.Name);
+        private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Tag.Name ?? string.Empty);
     }
 }

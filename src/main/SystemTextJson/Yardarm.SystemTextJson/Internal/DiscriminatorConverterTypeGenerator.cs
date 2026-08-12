@@ -128,7 +128,7 @@ internal class DiscriminatorConverterTypeGenerator(
 
     private PropertyDeclarationSyntax GeneratePropertyNameProperty()
     {
-        string propertyName = Element.Element.Discriminator.PropertyName;
+        string propertyName = Element.Element.Discriminator?.PropertyName ?? string.Empty;
 
         return PropertyDeclaration(
             default,

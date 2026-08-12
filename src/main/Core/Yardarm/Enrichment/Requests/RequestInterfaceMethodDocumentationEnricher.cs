@@ -24,7 +24,7 @@ namespace Yardarm.Enrichment.Requests
 
         private IEnumerable<XmlElementSyntax> GetSections(OpenApiOperation context)
         {
-            yield return DocumentationSyntaxHelpers.BuildSummaryElement(context.Summary);
+            yield return DocumentationSyntaxHelpers.BuildSummaryElement(context.Summary ?? string.Empty);
 
             if (!string.IsNullOrWhiteSpace(context.Description))
             {

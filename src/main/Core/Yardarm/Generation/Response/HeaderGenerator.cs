@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Response
 
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var syntaxTree in (_document.Components.Headers ?? (IEnumerable<KeyValuePair<string, IOpenApiHeader>>)[])
+            foreach (var syntaxTree in (_document.Components?.Headers ?? (IEnumerable<KeyValuePair<string, IOpenApiHeader>>)[])
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Select(Generate)
                 .Where(p => p != null))

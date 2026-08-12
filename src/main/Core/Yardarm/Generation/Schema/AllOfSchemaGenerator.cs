@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Schema
                 if (child is ClassDeclarationSyntax classDeclaration)
                 {
                     bool addedInheritance = false;
-                    foreach (var section in Schema.AllOf)
+                    foreach (var section in Schema.AllOf ?? [])
                     {
                         if (!addedInheritance && section is IOpenApiReferenceHolder)
                         {
@@ -46,7 +46,7 @@ namespace Yardarm.Generation.Schema
                         }
                         else
                         {
-                            classDeclaration = AddProperties(classDeclaration, section.Properties
+                            classDeclaration = AddProperties(classDeclaration, ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)section.Properties ?? [])
                                 .Select(p => Element.CreateChild(p.Value, p.Key)));
                         }
                     }

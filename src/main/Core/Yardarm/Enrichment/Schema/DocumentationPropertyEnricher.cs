@@ -27,6 +27,6 @@ namespace Yardarm.Enrichment.Schema
 
         private SyntaxTrivia GetDocumentationTrivia(IOpenApiSchema context) =>
             DocumentationSyntaxHelpers.BuildXmlCommentTrivia(
-                DocumentationSyntaxHelpers.BuildSummaryElement(context.Description));
+                DocumentationSyntaxHelpers.BuildSummaryElement(context.Description ?? string.Empty));
     }
 }

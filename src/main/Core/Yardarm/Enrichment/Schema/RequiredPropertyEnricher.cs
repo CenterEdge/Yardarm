@@ -15,7 +15,7 @@ namespace Yardarm.Enrichment.Schema
                 context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
                 parentSchema.Element.Required?.Contains(context.LocatedElement.Key) == true;
 
-            if (!isRequired || context.Element.IsNullable())
+            if (!isRequired || context.Element.Nullable)
             {
                 // If the property is optional OR nullable then the property should be nullable
                 // This is because .NET does not have a good way to differentiate between missing and null

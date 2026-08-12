@@ -28,7 +28,7 @@ public static class OpenApiReferenceExtensions
         /// Uses reflection to access the Reference property since the generic interface
         /// requires knowing the concrete reference type at compile time.
         /// </summary>
-        public BaseOpenApiReference? GetBaseReference()
+        private BaseOpenApiReference? GetBaseReference()
         {
             if (element is not IOpenApiReferenceHolder)
             {

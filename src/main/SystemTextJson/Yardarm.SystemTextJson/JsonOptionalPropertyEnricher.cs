@@ -33,7 +33,7 @@ public class JsonOptionalPropertyEnricher(
             context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
             parentSchema.Element.Required.Contains(context.LocatedElement.Key);
 
-        bool isNullable = context.LocatedElement.Element.IsNullable();
+        bool isNullable = context.LocatedElement.Element.Nullable;
 
         // For required properties, enforce the requirement on deserialization, unless the feature is disabled.
         // We prefer not to send null values if the property is not required.

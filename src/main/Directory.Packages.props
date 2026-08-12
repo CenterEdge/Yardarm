@@ -15,8 +15,8 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(YardarmSystemPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(YardarmSystemPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(YardarmSystemPackageVersion)" />
-    <PackageVersion Include="Microsoft.OpenApi" Version="3.5.3" />
-    <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="3.5.3" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="3.9.0" />
+    <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="3.9.0" />
     <PackageVersion Include="NuGet.Commands" Version="7.6.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />

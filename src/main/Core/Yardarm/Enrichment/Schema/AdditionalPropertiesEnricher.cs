@@ -96,7 +96,7 @@ namespace Yardarm.Enrichment.Schema
             ITypeGenerator schemaGenerator = _context.TypeGeneratorRegistry.Get(additionalProperties);
 
             TypeSyntax valueType = schemaGenerator.TypeInfo.Name;
-            if (additionalProperties.Element.IsNullable())
+            if (additionalProperties.Element.Nullable)
             {
                 valueType = NullableType(valueType);
             }

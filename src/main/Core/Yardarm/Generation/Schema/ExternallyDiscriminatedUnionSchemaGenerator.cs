@@ -156,7 +156,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
         {
             if (unionCase.Properties.Count != 1
                 || (unionCase.Type.HasValue && !unionCase.IsType(JsonSchemaType.Object))
-                || unionCase.IsNullable()
+                || unionCase.Nullable
                 || unionCase.AdditionalProperties is not null)
             {
                 // Not a single property object

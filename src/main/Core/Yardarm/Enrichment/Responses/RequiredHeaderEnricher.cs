@@ -11,7 +11,7 @@ namespace Yardarm.Enrichment.Responses
     {
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiHeader> context)
         {
-            if (!context.Element.Required || context.Element.Schema.IsNullable())
+            if (!context.Element.Required || context.Element.Schema.Nullable)
             {
                 // If the parameter is optional OR nullable then the property should be nullable
                 // This is because .NET does not have a good way to differentiate between missing and null

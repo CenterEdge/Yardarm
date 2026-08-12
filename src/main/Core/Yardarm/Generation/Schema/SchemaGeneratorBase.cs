@@ -20,6 +20,14 @@ public abstract class SchemaGeneratorBase(
     /// <inheritdoc />
     public override QualifiedNameSyntax? GetTypeName()
     {
+        if (Element.IsRoot)
+        {
+            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
+
+            return QualifiedName(ns, IdentifierName(formatter.Format(Element.Key)));
+        }
+
         if (Schema is IOpenApiReferenceHolder)
         {
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);

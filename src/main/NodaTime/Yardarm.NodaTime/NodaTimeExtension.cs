@@ -17,7 +17,7 @@ public sealed class NodaTimeExtension : YardarmExtension
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
         services
-            .AddTypeGeneratorFactory<OpenApiSchema, NodaTimeSchemaGeneratorFactory>()
+            .AddTypeGeneratorFactory<IOpenApiSchema, NodaTimeSchemaGeneratorFactory>()
             .AddRegistrationEnricher<JsonSerializerSettingsEnricher>("JsonSerializerSettings")
             .AddKeyedTransient<IEnricher<AttributeSyntax>, NodaTimeJsonSourceGenerationOptionsEnricher>("JsonSourceGenerationOptions")
             .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()

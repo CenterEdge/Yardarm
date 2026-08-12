@@ -62,14 +62,14 @@ public static class YardarmCoreServiceCollectionExtensions
             services.TryAddSingleton<ITypeGeneratorRegistry, TypeGeneratorRegistry>();
             services.TryAddTypeGeneratorRegistry(generatorCategory: null);
 
-            services.AddTypeGeneratorFactory<OpenApiHeader, HeaderTypeGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiMediaType, MediaTypeGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiSchema, DefaultSchemaGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiSecurityScheme, SecuritySchemeTypeGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiResponse, ResponseTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiHeader, HeaderTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiMediaType, MediaTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiSchema, DefaultSchemaGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiSecurityScheme, SecuritySchemeTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiResponse, ResponseTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<OpenApiResponses, ResponseSetTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<OpenApiOperation, RequestTypeGeneratorFactory>();
-            services.AddTypeGeneratorFactory<OpenApiParameter, ParameterTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiParameter, ParameterTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<IOpenApiTag, TagTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<IOpenApiTag, TagImplementationTypeGeneratorFactory>(TagImplementationTypeGenerator.GeneratorCategory);
             services.AddTypeGeneratorFactory<OpenApiUnknownResponse, UnknownResponseTypeGeneratorFactory>();

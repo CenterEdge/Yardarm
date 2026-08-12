@@ -50,7 +50,8 @@ public static class LocatedOpenApiElementExtensions
         where T : IOpenApiElement
     {
         public IEnumerable<ILocatedOpenApiElement<T>> CreateRoot() =>
-            rootItems.Select(p => p.Value.CreateRoot(p.Key));
+            rootItems?.Select(p => p.Value.CreateRoot(p.Key))
+            ?? Enumerable.Empty<ILocatedOpenApiElement<T>>();
     }
 
     extension(OpenApiDocument document)
@@ -178,7 +179,7 @@ public static class LocatedOpenApiElementExtensions
                 .Concat(pathItem.GetOperations().WhereOperationHasName(operationNameProvider).GetAllSchemas());
 
         public IEnumerable<ILocatedOpenApiElement<OpenApiOperation>> GetOperations() =>
-            pathItem.Element.Operations
+            (pathItem.Element.Operations ?? [])
                 .Select(operation => pathItem.CreateChild(operation.Value, operation.Key.ToString()));
 
         public IEnumerable<ILocatedOpenApiElement<IOpenApiParameter>> GetParameters() =>
@@ -225,7 +226,7 @@ public static class LocatedOpenApiElementExtensions
     extension(ILocatedOpenApiElement<OpenApiOperation> operation)
     {
         public IEnumerable<ILocatedOpenApiElement<IOpenApiParameter>> GetParameters() =>
-            operation.Element.Parameters
+            (operation.Element.Parameters ?? [])
                 .Select(p => operation.CreateChild(p, p.Name));
 
         /// <summary>
@@ -254,14 +255,14 @@ public static class LocatedOpenApiElementExtensions
                 : null;
 
         public ILocatedOpenApiElement<OpenApiResponses> GetResponseSet() =>
-            operation.CreateChild(operation.Element.Responses, "responses");
+            operation.CreateChild(operation.Element.Responses ?? [], "responses");
 
         public IEnumerable<ILocatedOpenApiElement<OpenApiSecurityRequirement>> GetSecurityRequirements() =>
-            operation.Element.Security
+            (operation.Element.Security ?? [])
                 .Select((requirement, index) => operation.CreateChild(requirement, index.ToString()));
 
         public IEnumerable<ILocatedOpenApiElement<IOpenApiTag>> GetTags() =>
-            operation.Element.Tags
+            (operation.Element.Tags ?? Enumerable.Empty<OpenApiTagReference>())
                 .Select((tag, index) => operation.CreateChild<IOpenApiTag>(tag, index.ToString()));
     }
 
@@ -322,7 +323,7 @@ public static class LocatedOpenApiElementExtensions
     extension(ILocatedOpenApiElement<IOpenApiResponse> response)
     {
         public IEnumerable<ILocatedOpenApiElement<IOpenApiHeader>> GetHeaders() =>
-            response.Element.Headers
+            (response.Element.Headers ?? Enumerable.Empty<KeyValuePair<string, IOpenApiHeader>>())
                 .Select(p => response.CreateChild(p.Value, p.Key));
 
         public IEnumerable<ILocatedOpenApiElement<IOpenApiMediaType>> GetMediaTypes() =>

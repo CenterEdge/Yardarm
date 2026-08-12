@@ -29,7 +29,7 @@ namespace Yardarm.Enrichment.Authentication
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<OpenApiOperation> context) =>
-            context.Element.Security.Count > 0 && target.GetGeneratorAnnotation() == typeof(RequestTypeGenerator)
+            context.Element.Security is { Count: > 0 } && target.GetGeneratorAnnotation() == typeof(RequestTypeGenerator)
                 ? AddSecuritySchemes(target, context.LocatedElement)
                 : target;
 

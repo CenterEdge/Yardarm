@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Response
             string className = GetClassName();
 
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
-                .AddElementAnnotation<ClassDeclarationSyntax, OpenApiResponse>(Element, Context.ElementRegistry)
+                .AddElementAnnotation<ClassDeclarationSyntax, IOpenApiResponse>(Element, Context.ElementRegistry)
                 .AddBaseListTypes(SimpleBaseType(ResponsesNamespace.UnknownResponse))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(

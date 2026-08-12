@@ -14,7 +14,7 @@ namespace Yardarm.Generation.Request
     {
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var syntaxTree in document.Components.Parameters
+            foreach (var syntaxTree in (document.Components.Parameters ?? Enumerable.Empty<KeyValuePair<string, IOpenApiParameter>>())
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Select(Generate)
                 .Where(p => p != null))

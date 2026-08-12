@@ -33,7 +33,7 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
             .AddSingleton<ISyntaxTreeGenerator, DiscriminatorConverterGenerator>()
             .AddSingleton<ISyntaxTreeGenerator, JsonSerializerContextGenerator>()
             .AddSingleton<ICompilationEnricher, JsonSerializableEnricher>()
-            .AddTypeGeneratorFactory<OpenApiSchema, DiscriminatorConverterTypeGeneratorFactory>(DiscriminatorConverterTypeGenerator.GeneratorCategory);
+            .AddTypeGeneratorFactory<IOpenApiSchema, DiscriminatorConverterTypeGeneratorFactory>(DiscriminatorConverterTypeGenerator.GeneratorCategory);
 
         services
             .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();

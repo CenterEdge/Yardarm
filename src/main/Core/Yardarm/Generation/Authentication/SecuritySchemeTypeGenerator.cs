@@ -94,6 +94,6 @@ namespace Yardarm.Generation.Authentication
             ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
 
         protected virtual string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class)
-            .Format(Element.Element.GetReferenceId()!);
+            .Format(Element.Element.GetReferenceId() ?? Element.Key);
     }
 }

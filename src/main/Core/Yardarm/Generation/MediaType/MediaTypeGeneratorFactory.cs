@@ -21,8 +21,8 @@ namespace Yardarm.Generation.MediaType
 
             return parent switch
             {
-                NoopTypeGenerator<OpenApiRequestBody> requestBodyParent => Factory(serviceProvider, [element, requestBodyParent]),
-                ResponseTypeGenerator noop => new NoopTypeGenerator<OpenApiMediaType>(noop),
+                NoopTypeGenerator<IOpenApiRequestBody> requestBodyParent => Factory(serviceProvider, [element, requestBodyParent]),
+                ResponseTypeGenerator noop => new NoopTypeGenerator<IOpenApiMediaType>(noop),
                 _ => throw new ArgumentException("Unknown parent type for OpenApiMediaType", nameof(parent))
             };
         }

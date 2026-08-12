@@ -70,7 +70,7 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
             return new EnumSchemaGenerator(element, context, parent);
         }
 
-        if (element.Element.Extensions.TryGetValue("x-extensible-enum", out IOpenApiExtension? extension)
+        if (element.Element.Extensions?.TryGetValue("x-extensible-enum", out IOpenApiExtension? extension) == true
             && extension is JsonNodeExtension { Node: JsonArray { Count: > 0 } array })
         {
             List<string> values = [.. array.OfType<JsonValue>().Select(p => p.GetValue<string>())];

@@ -27,7 +27,7 @@ namespace Yardarm.Enrichment.Responses
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<IOpenApiResponse> context) =>
-            IsBaseResponseClass(context.LocatedElement) && context.Element.Headers.Count > 0
+            IsBaseResponseClass(context.LocatedElement) && context.Element.Headers is { Count: > 0 }
                 ? target.AddMembers(GenerateMethod(context.LocatedElement))
                 : target;
 

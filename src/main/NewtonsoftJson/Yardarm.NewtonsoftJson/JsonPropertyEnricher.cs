@@ -29,7 +29,7 @@ namespace Yardarm.NewtonsoftJson
 
             bool isRequired =
                 context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
-                parentSchema.Element.Required.Contains(context.LocatedElement.Key);
+                parentSchema.Element.Required?.Contains(context.LocatedElement.Key) == true;
 
             bool isNullable = context.LocatedElement.Element.Nullable;
 

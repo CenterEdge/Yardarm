@@ -71,6 +71,8 @@ internal class TypeGeneratorRegistry<TElement> : ITypeGeneratorRegistry<TElement
             var referenceId = element.Element.GetReferenceId();
             if (referenceId != null)
             {
+                // TODO: This is a bit of a hack, but it works for now. We should do this without using reflection.
+
                 // Get the resolved target via the Target property on the reference holder
                 var targetProp = element.Element.GetType().GetProperty("Target");
                 if (targetProp?.GetValue(element.Element) is TElement resolvedTarget)

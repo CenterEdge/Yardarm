@@ -46,8 +46,8 @@ namespace Yardarm.Generation.Schema
                         }
                         else
                         {
-                            classDeclaration = AddProperties(classDeclaration, ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)section.Properties ?? [])
-                                .Select(p => Element.CreateChild(p.Value, p.Key)));
+                            classDeclaration = AddProperties(classDeclaration, section.Properties?
+                                .Select(p => Element.CreateChild(p.Value, p.Key)) ?? []);
                         }
                     }
 

@@ -80,12 +80,12 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 semicolonToken: Token(SyntaxKind.SemicolonToken)))));
 
         // Constructors for each union case
-        foreach (var unionCase in (Element.Element.AnyOf ?? [])
+        foreach (var unionCase in Element.Element.AnyOf?
             .Select(p => {
-                KeyValuePair<string, IOpenApiSchema> caseProperty = ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)p.Properties ?? []).First();
+                KeyValuePair<string, IOpenApiSchema> caseProperty = p.Properties!.First();
 
                 return (caseProperty.Key, Element: LocatedOpenApiElement.CreateRoot(caseProperty.Value, caseProperty.Value.GetReferenceId()!));
-            }))
+            }) ?? [])
         {
             ITypeGenerator caseType = Context.TypeGeneratorRegistry.Get(unionCase.Element);
 

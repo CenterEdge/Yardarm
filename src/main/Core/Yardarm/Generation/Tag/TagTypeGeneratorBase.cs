@@ -46,6 +46,6 @@ namespace Yardarm.Generation.Tag
             Context.Document.Paths.ToLocatedElements()
                 .GetOperations()
                 .WhereOperationHasName(operationNameProvider)
-                .Where(p => (p.Element.Tags ?? (IEnumerable<OpenApiTagReference>)[]).Any(q => q.Name == Tag.Name));
+                .Where(p => p.Element.Tags?.Any(q => q.Name == Tag.Name) == true);
     }
 }

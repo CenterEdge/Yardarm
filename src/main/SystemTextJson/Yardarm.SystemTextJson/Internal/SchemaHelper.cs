@@ -112,13 +112,14 @@ internal static class SchemaHelper
 
         // Find other schemas that reference this one using allOf. This only applies to base
         // classes, don't try this with interfaces.
-        return ((IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)context.Document.Components?.Schemas ?? [])
+        return context.Document.Components?.Schemas?
             .Where(p =>
             {
                 var firstAllOf = p.Value.AllOf?.FirstOrDefault();
                 return firstAllOf is IOpenApiReferenceHolder &&
                        firstAllOf.GetReferenceId() == element.Key;
             })
-            .Select(p => (p.Key, p.Value.CreateRoot(p.Key)));
+            .Select(p => (p.Key, p.Value.CreateRoot(p.Key)))
+            ?? [];
     }
 }

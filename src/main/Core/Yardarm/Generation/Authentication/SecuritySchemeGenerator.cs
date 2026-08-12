@@ -32,8 +32,9 @@ namespace Yardarm.Generation.Authentication
         }
 
         private IEnumerable<ILocatedOpenApiElement<IOpenApiSecurityScheme>> GetSecuritySchemes() =>
-            ((IEnumerable<KeyValuePair<string, IOpenApiSecurityScheme>>?)_document.Components?.SecuritySchemes ?? [])
-                .Select(p => p.Value.CreateRoot(p.Key));
+            _document.Components?.SecuritySchemes?
+                .Select(p => p.Value.CreateRoot(p.Key))
+            ?? [];
 
         protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiSecurityScheme> securityScheme) =>
             _securitySchemeGeneratorRegistry.Get(securityScheme).GenerateSyntaxTree();

@@ -50,7 +50,8 @@ namespace Yardarm.Enrichment.Authentication
         {
             var nameFormatter = _context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-            foreach (var scheme in ((IEnumerable<KeyValuePair<string, IOpenApiSecurityScheme>>?)_context.Document.Components?.SecuritySchemes ?? []).Select(p => p.Value.CreateRoot(p.Key)))
+            foreach (var scheme in _context.Document.Components?.SecuritySchemes?
+                .Select(p => p.Value.CreateRoot(p.Key)) ?? [])
             {
                 TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(scheme).TypeInfo.Name;
 

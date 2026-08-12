@@ -53,7 +53,8 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
-            bool isPrimaryImplementation = Element.IsRoot || !Element.IsReference;
+            var responseReference = Response as IOpenApiReferenceHolder<OpenApiResponse, IOpenApiResponse, OpenApiReferenceWithDescriptionAndSummary>;
+            bool isPrimaryImplementation = Element.IsRoot || responseReference is null;
 
             // For non-primary implementations (referencing a response in the components section),
             // inherit from the primary implementation
@@ -64,11 +65,11 @@ namespace Yardarm.Generation.Response
             }
             else
             {
-                // The element is a reference; get the target and create a root element for it
-                var referenceId = Response.GetReferenceId();
-                var targetProp = Response.GetType().GetProperty("Target");
-                var target = (IOpenApiResponse?)targetProp?.GetValue(Response);
-                var rootElement = target!.CreateRoot(referenceId!);
+                var target = responseReference!.Target
+                    ?? throw new InvalidOperationException("Response reference target was not resolved.");
+                var referenceId = Response.GetReferenceId()
+                    ?? throw new InvalidOperationException("Response reference ID is missing.");
+                var rootElement = target.CreateRoot(referenceId);
                 baseType = Context.TypeGeneratorRegistry.Get(rootElement).TypeInfo.Name;
             }
 

@@ -93,7 +93,7 @@ internal static class SchemaHelper
                     if (referenceId is not null &&
                         (context.Document.Components?.Schemas?.TryGetValue(referenceId, out var schema) ?? false))
                     {
-                        return (p.Key, Schema: schema.CreateRoot(p.Key));
+                        return (p.Key, Schema: schema.CreateRoot(referenceId));
                     }
 
                     return (p.Key, Schema: null!);

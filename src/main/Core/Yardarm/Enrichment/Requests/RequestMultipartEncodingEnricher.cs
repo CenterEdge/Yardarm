@@ -206,9 +206,9 @@ namespace Yardarm.Enrichment.Requests
         private static ArgumentSyntax[] SelectDefaultMediaTypes(IOpenApiSchema schema) =>
             schema switch
             {
-                _ when schema.HasType(JsonSchemaType.String) && schema.Format is "binary" or "base64" => OctetStreamEncoding,
-                _ when schema.HasType(JsonSchemaType.Object) => JsonEncoding,
-                _ when schema.HasType(JsonSchemaType.Array) && schema.Items is not null && schema.Items.HasType(JsonSchemaType.Object) => JsonEncoding,
+                _ when schema.IsType(JsonSchemaType.String) && schema.Format is "binary" or "base64" => OctetStreamEncoding,
+                _ when schema.IsType(JsonSchemaType.Object) => JsonEncoding,
+                _ when schema.IsType(JsonSchemaType.Array) && schema.Items is not null && schema.Items.IsType(JsonSchemaType.Object) => JsonEncoding,
                 _ => PlainTextEncoding
             };
 

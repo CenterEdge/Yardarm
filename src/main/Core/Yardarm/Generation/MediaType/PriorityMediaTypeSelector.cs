@@ -26,7 +26,7 @@ namespace Yardarm.Generation.MediaType
             foreach (var mediaType in response.GetMediaTypes())
             {
                 double quality = _serializerSelector.Select(mediaType)?.Quality ?? 0.0;
-                if (quality == 0 && !(mediaType.Element.Schema is { Format: "binary" } s && s.HasType(JsonSchemaType.String)))
+                if (quality == 0 && !(mediaType.Element.Schema is { Format: "binary" } s && s.IsType(JsonSchemaType.String)))
                 {
                     // Don't allow a media type with no serializer to be selected unless it's a binary string
                     continue;

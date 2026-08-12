@@ -8,11 +8,11 @@ namespace Yardarm.Spec;
 public static class OpenApiSchemaTypeExtensions
 {
     /// <summary>
-    /// Checks if the schema's Type includes the specified type flag,
-    /// ignoring the Null flag (which represents nullable in OpenAPI 3.1).
+    /// Checks if the schema's Type equals the specified type after removing
+    /// the Null flag (which represents nullable in OpenAPI 3.1).
     /// </summary>
-    public static bool HasType(this IOpenApiSchema schema, JsonSchemaType type) =>
-        schema.Type.HasValue && (schema.Type.Value & ~JsonSchemaType.Null & type) != 0;
+    public static bool IsType(this IOpenApiSchema schema, JsonSchemaType type) =>
+        schema.Type.HasValue && (schema.Type.Value & ~JsonSchemaType.Null) == type;
 
     /// <summary>
     /// Checks if the schema is nullable (Type includes the Null flag).

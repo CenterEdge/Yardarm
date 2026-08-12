@@ -35,15 +35,15 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 
         return element.Element switch
         {
-            _ when element.Element.HasType(JsonSchemaType.Object)
+            _ when element.Element.IsType(JsonSchemaType.Object)
                    && element.Element.AdditionalPropertiesAllowed
                    && (element.Element.Properties is null or { Count: 0 })
                    && (element.Element.AnyOf is null or { Count: 0 }) => GetDictionaryGenerator(element, parent),
-            _ when element.Element.HasType(JsonSchemaType.Object) => GetObjectGenerator(element, parent),
-            _ when element.Element.HasType(JsonSchemaType.String) => GetStringGenerator(element, parent),
-            _ when element.Element.HasType(JsonSchemaType.Number) || element.Element.HasType(JsonSchemaType.Integer) => GetNumberGenerator(element, parent),
-            _ when element.Element.HasType(JsonSchemaType.Boolean) => GetBooleanGenerator(element),
-            _ when element.Element.HasType(JsonSchemaType.Array) => GetArrayGenerator(element, parent),
+            _ when element.Element.IsType(JsonSchemaType.Object) => GetObjectGenerator(element, parent),
+            _ when element.Element.IsType(JsonSchemaType.String) => GetStringGenerator(element, parent),
+            _ when element.Element.IsType(JsonSchemaType.Number) || element.Element.IsType(JsonSchemaType.Integer) => GetNumberGenerator(element, parent),
+            _ when element.Element.IsType(JsonSchemaType.Boolean) => GetBooleanGenerator(element),
+            _ when element.Element.IsType(JsonSchemaType.Array) => GetArrayGenerator(element, parent),
             _ => new DynamicSchemaGenerator(element, context, parent)
         };
     }

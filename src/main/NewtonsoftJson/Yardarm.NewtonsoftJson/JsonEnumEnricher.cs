@@ -12,7 +12,7 @@ namespace Yardarm.NewtonsoftJson
     {
         public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
             OpenApiEnrichmentContext<IOpenApiSchema> context) =>
-            context.Element.HasType(JsonSchemaType.String)
+            context.Element.IsType(JsonSchemaType.String)
                 ? target
                     .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
                         SyntaxFactory.Attribute(NewtonsoftJsonTypes.JsonConverterAttributeName).AddArgumentListArguments(

@@ -14,7 +14,7 @@ public class JsonEnumEnricher : IOpenApiSyntaxNodeEnricher<EnumDeclarationSyntax
 {
     public EnumDeclarationSyntax Enrich(EnumDeclarationSyntax target,
         OpenApiEnrichmentContext<IOpenApiSchema> context) =>
-        context.Element.HasType(JsonSchemaType.String) && context.LocatedElement.IsJsonSchema
+        context.Element.IsType(JsonSchemaType.String) && context.LocatedElement.IsJsonSchema
             ? EnrichEnum(target)
             : target;
 

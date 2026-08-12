@@ -67,7 +67,7 @@ public class BuildUriMethodGenerator(
         {
             allParameters.TryGetValue(pathSegment.Value, out var parameter);
 
-            if (parameter?.Schema?.HasType(JsonSchemaType.Array) == true)
+            if (parameter?.Schema?.IsType(JsonSchemaType.Array) == true)
             {
                 return Interpolation(InvocationExpression(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
@@ -221,7 +221,7 @@ public class BuildUriMethodGenerator(
 
             foreach (IOpenApiParameter queryParameter in queryParameters)
             {
-                if (queryParameter.Schema.HasType(JsonSchemaType.Array))
+                if (queryParameter.Schema.IsType(JsonSchemaType.Array))
                 {
                     yield return ExpressionStatement(InvocationExpression(MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,

@@ -27,7 +27,7 @@ public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyD
 
     public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
-        if (!context.Element.HasType(JsonSchemaType.String) || context.Element.Format is not "date" and not "full-date")
+        if (!context.Element.IsType(JsonSchemaType.String) || context.Element.Format is not "date" and not "full-date")
         {
             // Only applies to date-only strings
             return syntax;

@@ -94,7 +94,7 @@ public class AddHeadersMethodGenerator(
             string propertyName = propertyNameFormatter.Format(headerParameter.Name);
 
             ExpressionSyntax valueExpression;
-            if (headerParameter.Schema.HasType(JsonSchemaType.Array))
+            if (headerParameter.Schema.IsType(JsonSchemaType.Array))
             {
                 valueExpression = InvocationExpression(
                     MemberAccessExpression(

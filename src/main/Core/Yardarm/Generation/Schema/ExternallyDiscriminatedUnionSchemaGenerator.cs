@@ -140,7 +140,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
             || schema.Element.OneOf is { Count: > 0 }
             || schema.Element.AllOf is { Count: > 0 }
             || schema.Element.Properties is { Count: > 0 }
-            || (schema.Element.Type.HasValue && !schema.Element.HasType(JsonSchemaType.Object))
+            || (schema.Element.Type.HasValue && !schema.Element.IsType(JsonSchemaType.Object))
             || schema.Element.AdditionalProperties is not null)
         {
             return false;
@@ -155,7 +155,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
         foreach (IOpenApiSchema unionCase in schema.Element.AnyOf)
         {
             if (unionCase.Properties.Count != 1
-                || (unionCase.Type.HasValue && !unionCase.HasType(JsonSchemaType.Object))
+                || (unionCase.Type.HasValue && !unionCase.IsType(JsonSchemaType.Object))
                 || unionCase.IsNullable()
                 || unionCase.AdditionalProperties is not null)
             {

@@ -81,7 +81,7 @@ namespace Yardarm.Enrichment.Responses
                 TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(schemaElement).TypeInfo.Name;
 
                 InvocationExpressionSyntax deserializeExpression;
-                if (schemaElement.Element.HasType(JsonSchemaType.Array))
+                if (schemaElement.Element.IsType(JsonSchemaType.Array))
                 {
                     deserializeExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             _serializationNamespace.HeaderSerializer,

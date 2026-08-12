@@ -8,7 +8,7 @@ public sealed class NodaTimeSchemaGeneratorFactory(GenerationContext context) : 
 {
     public ITypeGenerator? Create(ILocatedOpenApiElement<IOpenApiSchema> element, ITypeGenerator? parent)
     {
-        if (element.Element is { Format: not null } && element.Element.HasType(JsonSchemaType.String)
+        if (element.Element is { Format: not null } && element.Element.IsType(JsonSchemaType.String)
             && NodaTimeSchemaGenerator.SupportedFormats.Contains(element.Element.Format))
         {
             return new NodaTimeSchemaGenerator(element, context, parent);

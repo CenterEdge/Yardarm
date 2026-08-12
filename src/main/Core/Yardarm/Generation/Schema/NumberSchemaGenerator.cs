@@ -47,10 +47,10 @@ namespace Yardarm.Generation.Schema
                 "int32" or "integer" or "int" => Integer,
                 "int64" => Long,
                 "byte" => Byte,
-                "decimal" when Element.Element.HasType(JsonSchemaType.Number) => Decimal,
-                "float" when Element.Element.HasType(JsonSchemaType.Number) => Float,
-                _ when Element.Element.HasType(JsonSchemaType.Integer) => Long,
-                _ when Element.Element.HasType(JsonSchemaType.Number) => Double,
+                "decimal" when Element.Element.IsType(JsonSchemaType.Number) => Decimal,
+                "float" when Element.Element.IsType(JsonSchemaType.Number) => Float,
+                _ when Element.Element.IsType(JsonSchemaType.Integer) => Long,
+                _ when Element.Element.IsType(JsonSchemaType.Number) => Double,
                 _ => DynamicSchemaGenerator.DynamicObjectTypeInfo
             };
 

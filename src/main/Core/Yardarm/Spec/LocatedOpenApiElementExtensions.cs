@@ -51,7 +51,7 @@ public static class LocatedOpenApiElementExtensions
     {
         public IEnumerable<ILocatedOpenApiElement<T>> CreateRoot() =>
             rootItems?.Select(p => p.Value.CreateRoot(p.Key))
-            ?? Enumerable.Empty<ILocatedOpenApiElement<T>>();
+            ?? [];
     }
 
     extension(OpenApiDocument document)

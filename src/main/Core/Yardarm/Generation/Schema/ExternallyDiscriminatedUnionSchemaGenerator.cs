@@ -165,7 +165,8 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
 
             (string propertyName, IOpenApiSchema propertySchema) = unionCase.Properties.First();
 
-            if (!unionCase.Required.Contains(propertyName)
+            if (unionCase.Required is null
+                || !unionCase.Required.Contains(propertyName)
                 || propertySchema is not IOpenApiReferenceHolder
                 || propertySchema.GetReferenceId() is not string schemaName)
             {

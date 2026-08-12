@@ -2,15 +2,15 @@
     "profiles": {
         "Generate": {
             "commandName": "Project",
-            "commandLineArgs": "generate --no-restore -n Test.Yardarm -x ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.SystemTextJson.dll ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.NodaTime.dll ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false ExternallyDiscriminatedUnions=true -f net8.0 --embed -o output/ --intermediate-dir output\\obj -v 1.0.0 -i swagger.json"
+            "commandLineArgs": "generate --no-restore -n Test.Yardarm -x Yardarm.SystemTextJson.dll Yardarm.NodaTime.dll Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false ExternallyDiscriminatedUnions=true -f net8.0 --embed -o output/ --intermediate-dir output\\obj -v 1.0.0 -i swagger.json"
         },
         "Restore": {
             "commandName": "Project",
-            "commandLineArgs": "restore -n Test.Yardarm -x ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.SystemTextJson.dll ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.NodaTime.dll ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false ExternallyDiscriminatedUnions=true -f net8.0 --intermediate-dir output\\obj"
+            "commandLineArgs": "restore -n Test.Yardarm -x Yardarm.SystemTextJson.dll Yardarm.NodaTime.dll Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false ExternallyDiscriminatedUnions=true -f net8.0 --intermediate-dir output\\obj"
         },
         "CollectDependencies": {
             "commandName": "Project",
-            "commandLineArgs": "collect-dependencies -n Test -x ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.SystemTextJson.dll ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.NodaTime.dll ../../../artifacts/bin/Yardarm.CommandLine/debug/Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false ExternallyDiscriminatedUnions=true -f net8.0 --intermediate-dir output\\obj"
+            "commandLineArgs": "collect-dependencies -n Test -x Yardarm.SystemTextJson.dll Yardarm.NodaTime.dll Yardarm.MicrosoftExtensionsHttp.dll -p LegacyDateTimeHandling=false ExternallyDiscriminatedUnions=true -f net8.0 --intermediate-dir output\\obj"
         }
     }
 }

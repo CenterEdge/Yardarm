@@ -33,6 +33,7 @@ public static class OpenApiReferenceExtensions
             return null;
         }
 
+        // TODO: Redesign this to avoid reflection when retrieving the reference.
         // All reference holders in Microsoft.OpenApi derive from BaseOpenApiReferenceHolder<T,U,V>
         // which has a public property Reference of type V : BaseOpenApiReference.
         var refProp = element.GetType().GetProperty("Reference");

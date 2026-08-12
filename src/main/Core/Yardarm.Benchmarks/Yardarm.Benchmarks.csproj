@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(YardarmTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Yardarm.Client\Yardarm.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="BenchmarkDotNet" />
+    <Using Include="BenchmarkDotNet.Attributes" />
+  </ItemGroup>
+
+</Project>

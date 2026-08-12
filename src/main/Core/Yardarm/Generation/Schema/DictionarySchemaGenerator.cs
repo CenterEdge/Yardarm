@@ -1,0 +1,31 @@
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi;
+using Yardarm.Helpers;
+using Yardarm.Names;
+using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
+namespace Yardarm.Generation.Schema
+{
+    public class DictionarySchemaGenerator(
+        ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
+        GenerationContext context,
+        ITypeGenerator? parent)
+        : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
+    {
+        public override QualifiedNameSyntax? GetTypeName() => null;
+
+        protected override YardarmTypeInfo CreateTypeInfo() =>
+            new(WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
+                    PredefinedType(Token(SyntaxKind.StringKeyword)),
+                    Context.TypeGeneratorRegistry.Get(Element.GetAdditionalPropertiesOrDefault()).TypeInfo.Name),
+                isGenerated: false);
+
+        public override SyntaxTree? GenerateSyntaxTree() => null;
+
+        public override IEnumerable<MemberDeclarationSyntax> Generate() => [];
+    }
+}

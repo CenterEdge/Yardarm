@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
 
     <AssemblyName>Yardarm.Build.Tasks</AssemblyName>
     <RootNamespace>Yardarm.Build.Tasks</RootNamespace>
@@ -18,6 +18,8 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
     <NoWarn>$(NoWarn);NU5100;NU5128;NU5129</NoWarn>
+
+    <GeneratedSdkVersionProps>$(BaseIntermediateOutputPath)SdkVersion.props</GeneratedSdkVersionProps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,13 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\main\Yardarm.CommandLine\Interop\*.cs">
+    <Compile Include="..\..\main\Core\Yardarm.CommandLine\Interop\*.cs">
       <LinkBase>Interop</LinkBase>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Reference Include="System.Runtime.Serialization" Pack="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +40,34 @@
     <!-- Make sure VS considers any change to any of the targets as requiring a new build/pack -->
     <UpToDateCheckInput Include="@(Content)" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>
+      CollectYardarmCommandLine;
+      GenerateSdkVersionProps;
+      $(GenerateNuspecDependsOn)
+    </GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <!-- Generate a SdkVersion.props file that contains the current version of the Yardarm.Sdk package. -->
+  <Target Name="GenerateSdkVersionProps">
+    <PropertyGroup>
+      <_SdkVersionPropsContent>
+&lt;Project&gt;
+  &lt;PropertyGroup&gt;
+    &lt;YardarmSdkVersion&gt;$(PackageVersion)&lt;/YardarmSdkVersion&gt;
+  &lt;/PropertyGroup&gt;
+&lt;/Project&gt;
+      </_SdkVersionPropsContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GeneratedSdkVersionProps)" Overwrite="true" WriteOnlyWhenDifferent="true" Lines="$(_SdkVersionPropsContent)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(GeneratedSdkVersionProps)" />
+      <_PackageFiles Include="$(GeneratedSdkVersionProps)" Pack="true" PackagePath="Sdk/SdkVersion.props" />
+    </ItemGroup>
+  </Target>
 
   <!--
     Publish and collect the Yardarm command-line application to include as a tool.
@@ -54,7 +80,7 @@
 
   <Target Name="DefineYardarmCommandLineRids">
     <ItemGroup>
-      <_YardarmCommandLine Include="..\..\main\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
+      <_YardarmCommandLine Include="..\..\main\Core\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
         <AdditionalProperties>RuntimeIdentifier=%(YardarmCommandLineRuntimeIdentifier.Identity)</AdditionalProperties>
         <RuntimeIdentifier>%(YardarmCommandLineRuntimeIdentifier.Identity)</RuntimeIdentifier>
       </_YardarmCommandLine>
@@ -66,16 +92,10 @@
     <!--
       Ensure that the CommandLine build has been run for both RuntimeIdentifier values
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False;PublishReadyToRun=true" Targets="Restore;Publish" BuildInParallel="false" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False" Targets="Restore;Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
     </MSBuild>
   </Target>
 
-  <PropertyGroup>
-    <GenerateNuspecDependsOn>
-      CollectYardarmCommandLine;
-      $(GenerateNuspecDependsOn)
-    </GenerateNuspecDependsOn>
-  </PropertyGroup>
   <Target Name="CollectYardarmCommandLine"
           DependsOnTargets="DefineYardarmCommandLineRids;BuildYardarmCommandLine">
     <!--
@@ -83,7 +103,7 @@
       the cost of actually copying the files to a publish directory, instead it collects the returned items
       and we can load them directly into the NuGet package.
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=net8.0;SelfContained=False;PublishReadyToRun=true" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
       <Output TaskParameter="TargetOutputs" ItemName="_YardarmCommandLineFiles" />
     </MSBuild>
 
@@ -119,7 +139,7 @@
       Convert the collected _FilteredYardarmCommandLineFiles into _PackageFiles items marked for pack in the appropriate directories.
     -->
     <ItemGroup>
-      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)" BuildAction="None" Pack="true" PackagePath="tools\net8.0\%(_FilteredYardarmCommandLineFiles.RuntimeIdentifier)\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
+      <_PackageFiles Include="@(_FilteredYardarmCommandLineFiles)" BuildAction="None" Pack="true" PackagePath="tools\$(YardarmTargetFramework)\%(_FilteredYardarmCommandLineFiles.RuntimeIdentifier)\yardarm\%(_FilteredYardarmCommandLineFiles.TargetPath)" />
     </ItemGroup>
   </Target>
 

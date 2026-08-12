@@ -115,9 +115,22 @@ i.e. `dotnet build /p:Version=5.6.7`.
     <!-- Available in 0.7.0, may be "ThrowException" (default) or "ReturnNull" -->
     <UnknownDiscriminatorHandling>ReturnNull</UnknownDiscriminatorHandling>
 
+    <!-- Available in 0.8.0, enable detecting and generating C# 15 unions for externally discriminated unions -->
+    <ExternallyDiscriminatedUnions>true</ExternallyDiscriminatedUnions>
+
     <!-- Available in 0.7.0, HTTP version used by generated clients, may be "1.1", "2.0", or "3.0", defaults to the runtime default -->
     <DefaultHttpVersion>2.0</DefaultHttpVersion>
     <DefaultHttpVersionPolicy>RequestVersionOrLower</DefaultHttpVersionPolicy>
+
+    <!-- Available in 0.8.0, customize various System.Text.Json settings. See README.md for more information. -->
+    <JsonStrict>true</JsonStrict>
+    <JsonAllowDuplicateProperties>false</JsonAllowDuplicateProperties>
+    <JsonEnforceRequiredProperties>true</JsonEnforceRequiredProperties>
+    <JsonNumberHandling>Strict</JsonNumberHandling>
+    <JsonPropertyNameCaseInsensitive>false</JsonPropertyNameCaseInsensitive>
+    <JsonRespectNullableAnnotations>true</JsonRespectNullableAnnotations>
+    <JsonRespectRequiredConstructorParameters>true</JsonRespectRequiredConstructorParameters>
+    <JsonUnmappedMemberHandling>Disallow</JsonUnmappedMemberHandling>
   </PropertyGroup>
 
 </Project>

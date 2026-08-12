@@ -1,0 +1,174 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
+using NuGet.Frameworks;
+using Yardarm.Generation;
+using Yardarm.Internal;
+using Yardarm.Names;
+using Yardarm.Packaging;
+using Yardarm.Spec;
+
+namespace Yardarm
+{
+    public class GenerationContext : YardarmContext
+    {
+        private readonly Lazy<OpenApiDocument> _openApiDocument;
+        private readonly Lazy<IOpenApiElementRegistry> _elementRegistry;
+        private readonly Lazy<INamespaceProvider> _namespaceProvider;
+        private readonly Lazy<INameFormatterSelector> _nameFormatterSelector;
+        private readonly Lazy<ITypeGeneratorRegistry> _typeGeneratorRegistry;
+
+        private HashSet<string>? _preprocessorSymbols;
+        private CSharpParseOptions? _parseOptions;
+
+        public OpenApiDocument Document => _openApiDocument.Value;
+        public IOpenApiElementRegistry ElementRegistry => _elementRegistry.Value;
+        public INamespaceProvider NamespaceProvider => _namespaceProvider.Value;
+        public INameFormatterSelector NameFormatterSelector => _nameFormatterSelector.Value;
+
+        public ITypeGeneratorRegistry TypeGeneratorRegistry => _typeGeneratorRegistry.Value;
+
+        public NuGetFramework CurrentTargetFramework
+        {
+            get;
+            set
+            {
+                ArgumentNullException.ThrowIfNull(value);
+
+                if (field != value)
+                {
+                    field = value;
+
+                    _preprocessorSymbols = null;
+                    _parseOptions = null;
+                }
+            }
+        } = NuGetFramework.UnsupportedFramework;
+
+        public IReadOnlySet<string> PreprocessorSymbols =>
+            _preprocessorSymbols ??= GetPreprocessorSymbols(CurrentTargetFramework);
+
+        private readonly IOptions<GenerationOptions> _options;
+        internal GenerationOptions Options => _options.Value;
+
+        public LanguageVersion LanguageVersion {
+            get;
+            set
+            {
+                if (field != value)
+                {
+                    field = value;
+
+                    _parseOptions = null;
+                }
+            }
+        } = LanguageVersion.Preview; // Change once we have access to C# 15
+
+        public CSharpParseOptions ParseOptions => _parseOptions ??=
+            CSharpParseOptions.Default
+                .WithLanguageVersion(LanguageVersion)
+                .WithPreprocessorSymbols(PreprocessorSymbols);
+
+        public GenerationContext(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+            _openApiDocument = new Lazy<OpenApiDocument>(serviceProvider.GetRequiredService<OpenApiDocument>);
+            _elementRegistry = new Lazy<IOpenApiElementRegistry>(serviceProvider.GetRequiredService<IOpenApiElementRegistry>);
+            _namespaceProvider = new Lazy<INamespaceProvider>(serviceProvider.GetRequiredService<INamespaceProvider>);
+            _nameFormatterSelector =
+                new Lazy<INameFormatterSelector>(serviceProvider.GetRequiredService<INameFormatterSelector>);
+            _typeGeneratorRegistry =
+                new Lazy<ITypeGeneratorRegistry>(serviceProvider.GetRequiredService<ITypeGeneratorRegistry>);
+            _options = serviceProvider.GetRequiredService<IOptions<GenerationOptions>>();
+        }
+
+        private HashSet<string> GetPreprocessorSymbols(NuGetFramework targetFramework)
+        {
+            HashSet<string> result =
+            [
+                .. targetFramework switch
+                {
+                    { Framework: NuGetFrameworkConstants.NetStandardFramework } =>
+                        GetNetStandardPreprocessorSymbols(targetFramework.Version),
+                    { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: < 5 } =>
+                        GetNetCoreAppPreprocessorSymbols(targetFramework.Version),
+                    { Framework: NuGetFrameworkConstants.NetCoreApp, Version.Major: >= 5 } =>
+                        GetNetPreprocessorSymbols(targetFramework.Version),
+                    _ => []
+                }
+            ];
+
+            if (_options.Value.ExternallyDiscriminatedUnions)
+            {
+                result.Add("UNION_SUPPORT");
+            }
+
+            return result;
+        }
+
+        private static readonly Version[] s_dotNetStandardVersions =
+        [
+            new(2, 0),
+            new(2, 1),
+        ];
+
+        private static IEnumerable<string> GetNetStandardPreprocessorSymbols(Version frameworkVersion)
+        {
+            yield return "NETSTANDARD";
+            yield return $"NETSTANDARD{frameworkVersion.Major}_{frameworkVersion.Minor}";
+
+            foreach (var version in s_dotNetStandardVersions.Where(p => p <= frameworkVersion))
+            {
+                yield return $"NETSTANDARD{version.Major}_{version.Minor}_OR_GREATER";
+            }
+        }
+
+        private static readonly Version[] s_dotNetCoreVersions =
+        [
+            new(2, 0),
+            new(2, 1),
+            new(3, 0),
+            new(3, 1),
+        ];
+
+        private static IEnumerable<string> GetNetCoreAppPreprocessorSymbols(Version frameworkVersion)
+        {
+            yield return "NETCOREAPP";
+            yield return $"NETCOREAPP{frameworkVersion.Major}_{frameworkVersion.Minor}";
+
+            foreach (var version in s_dotNetCoreVersions.Where(p => p <= frameworkVersion))
+            {
+                yield return $"NETCOREAPP{version.Major}_{version.Minor}_OR_GREATER";
+            }
+        }
+
+        private static readonly Version[] s_dotNetVersions =
+        [
+            new(5, 0),
+            new(6, 0),
+            new(7, 0),
+            new(8, 0),
+            new(9, 0),
+            new(10, 0),
+        ];
+
+        private static IEnumerable<string> GetNetPreprocessorSymbols(Version frameworkVersion)
+        {
+            yield return $"NET{frameworkVersion.Major}_{frameworkVersion.Minor}";
+
+            foreach (var version in s_dotNetVersions.Where(p => p <= frameworkVersion))
+            {
+                yield return $"NET{version.Major}_{version.Minor}_OR_GREATER";
+            }
+
+            // Also include all .NET Core 3.1 symbols except NETCOREAPP3_1
+            foreach (string symbol in GetNetCoreAppPreprocessorSymbols(new Version(3, 1)).Except(["NETCOREAPP3_1"]))
+            {
+                yield return symbol;
+            }
+        }
+    }
+}

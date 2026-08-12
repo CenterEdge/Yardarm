@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(YardarmTargetFramework)</TargetFramework>
+
+    <!--
+      Publish for several specific runtime identifiers, but also publish "any" for use with any other runtime.
+    -->
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64;any</RuntimeIdentifiers>
+    <PublishReadyToRun>true</PublishReadyToRun>
+
+    <!--
+      If .NET target runtime isn't installed, allow the command line tool to run on newer frameworks.
+      This may not always work, but provides better compatibility. This option still prefers
+      to use the .NET target runtime as specified in TargetFramework above, and only uses a newer
+      runtime if the target runtime isn't available.
+    -->
+    <RollForward>Major</RollForward>
+
+    <!--
+      Since we are highly parallelized and doing a lot of SyntaxNode heap allocations, for multicore
+      machines we can get fewer GC pauses by using server GC. This is a good default for this project.
+    -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <Description>Command-line tool to generate C# SDKs directly from OpenAPI 3 specifications using the Roslyn compiler.</Description>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>yardarm</ToolCommandName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.OpenApi.YamlReader" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\MicrosoftExtensionsHttp\Yardarm.MicrosoftExtensionsHttp\Yardarm.MicrosoftExtensionsHttp.csproj" />
+    <ProjectReference Include="..\..\NewtonsoftJson\Yardarm.NewtonsoftJson\Yardarm.NewtonsoftJson.csproj" />
+    <ProjectReference Include="..\..\NodaTime\Yardarm.NodaTime\Yardarm.NodaTime.csproj" />
+    <ProjectReference Include="..\..\SystemTextJson\Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj" />
+    <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="*.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

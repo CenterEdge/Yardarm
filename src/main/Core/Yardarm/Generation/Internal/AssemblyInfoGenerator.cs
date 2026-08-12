@@ -1,0 +1,39 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Yardarm.Enrichment;
+using Yardarm.Enrichment.Compilation;
+using Yardarm.Helpers;
+
+namespace Yardarm.Generation.Internal
+{
+    internal class AssemblyInfoGenerator : ISyntaxTreeGenerator
+    {
+        private readonly GenerationContext _context;
+        private readonly IEnumerable<IAssemblyInfoEnricher> _enrichers;
+
+        public AssemblyInfoGenerator(GenerationContext context,
+            IEnumerable<IAssemblyInfoEnricher> enrichers)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(enrichers);
+
+            _context = context;
+            _enrichers = enrichers;
+        }
+
+        public IEnumerable<SyntaxTree> Generate()
+        {
+            yield return CSharpSyntaxTree.Create(
+                SyntaxFactory.CompilationUnit()
+                    .Enrich(_enrichers)
+                    .NormalizeWhitespace(),
+                options: _context.ParseOptions,
+                path: PathHelpers.Combine(_context.Settings.BasePath, "Properties", "AssemblyInfo.cs"),
+                encoding: Encoding.UTF8);
+        }
+    }
+}

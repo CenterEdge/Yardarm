@@ -1,0 +1,28 @@
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi;
+using Yardarm.Names;
+using Yardarm.Spec;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
+namespace Yardarm.Generation.Schema
+{
+    public sealed class DynamicSchemaGenerator(
+        ILocatedOpenApiElement<IOpenApiSchema> element,
+        GenerationContext context,
+        ITypeGenerator? parent)
+        : TypeGeneratorBase<IOpenApiSchema>(element, context, parent)
+    {
+        internal static YardarmTypeInfo DynamicObjectTypeInfo { get; }  = new(
+            NullableType(PredefinedType(Token(SyntaxKind.ObjectKeyword))),
+            isGenerated: false,
+            requiresDynamicSerialization: true);
+
+        public override QualifiedNameSyntax? GetTypeName() => null;
+
+        protected override YardarmTypeInfo CreateTypeInfo() => DynamicObjectTypeInfo;
+
+        public override IEnumerable<MemberDeclarationSyntax> Generate() => [];
+    }
+}

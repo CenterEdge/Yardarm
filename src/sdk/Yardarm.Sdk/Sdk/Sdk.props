@@ -6,10 +6,14 @@
 
     <UsingYardarmSdk>true</UsingYardarmSdk>
 
-    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' And $([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\tools\net8.0\linux-x64\yardarm\</YardarmToolPath>
-    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' ">$(MSBuildThisFileDirectory)..\tools\net8.0\win-x64\yardarm\</YardarmToolPath>
-    <YardarmTaskBasePath Condition=" '$(YardarmTaskBasePath)' == '' ">$(MSBuildThisFileDirectory)..\tasks\</YardarmTaskBasePath>
+    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' And $([MSBuild]::IsOSPlatform('Linux')) ">$(MSBuildThisFileDirectory)..\tools\net10.0\linux-x64\yardarm\</YardarmToolPath>
+    <YardarmToolPath Condition=" '$(YardarmToolPath)' == '' ">$(MSBuildThisFileDirectory)..\tools\net10.0\win-x64\yardarm\</YardarmToolPath>
+    <YardarmTaskBasePath Condition=" '$(YardarmTaskBasePath)' == '' ">$(MSBuildThisFileDirectory)..\tasks\net10.0\</YardarmTaskBasePath>
   </PropertyGroup>
+
+  <!-- Include the SdkVersion.props file if it exists. This is generated dynamically at pack time. -->
+  <Import Project="$(MSBuildThisFileDirectory)SdkVersion.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)SdkVersion.props')" />
 
   <Import Project="$(CustomBeforeYardarmProps)" Condition=" '$(CustomBeforeYardarmProps)' != '' And Exists('$(CustomBeforeYardarmProps)') " />
 
@@ -38,6 +42,12 @@
       Set to "ReturnNull" to return null instead.
     -->
     <UnknownDiscriminatorHandling Condition=" '$(UnknownDiscriminatorHandling)' == '' ">ThrowException</UnknownDiscriminatorHandling>
+
+    <!--
+      By default, don't detect and handle externally discriminated unions when generating models.
+      Set to "true" to enable externally discriminated unions.
+    -->
+    <ExternallyDiscriminatedUnions Condition=" '$(ExternallyDiscriminatedUnions)' == '' ">false</ExternallyDiscriminatedUnions>
 
     <!-- By default embed source files with debug symbols -->
     <EmbedAllSources Condition=" '$(EmbedAllSources)' == '' ">true</EmbedAllSources>

@@ -16,13 +16,32 @@
     Add Yardarm tasks.
   -->
   <PropertyGroup>
-    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' And '$(MSBuildRuntimeType)' == 'Core' ">$(YardarmTaskBasePath)netcoreapp3.1\Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
-    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' And '$(MSBuildRuntimeType)' != 'Core' ">$(YardarmTaskBasePath)net472\Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
+    <YardarmTaskAssembly Condition=" '$(YardarmTaskAssembly)' == '' ">$(YardarmTaskBasePath)Yardarm.Build.Tasks.dll</YardarmTaskAssembly>
   </PropertyGroup>
+
   <UsingTask TaskName="Yardarm.Build.Tasks.YardarmGenerate"
-             AssemblyFile="$(YardarmTaskAssembly)" />
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="CurrentArchitecture"
+             Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+  <UsingTask TaskName="Yardarm.Build.Tasks.YardarmGenerate"
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="*"
+             TaskFactory="TaskHostFactory"
+             Condition=" '$(MSBuildRuntimeType)' == 'Full' "/>
+
   <UsingTask TaskName="Yardarm.Build.Tasks.YardarmCollectDependencies"
-             AssemblyFile="$(YardarmTaskAssembly)" />
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="CurrentArchitecture"
+             Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+  <UsingTask TaskName="Yardarm.Build.Tasks.YardarmCollectDependencies"
+             AssemblyFile="$(YardarmTaskAssembly)"
+             Runtime="NET"
+             Architecture="*"
+             TaskFactory="TaskHostFactory"
+             Condition=" '$(MSBuildRuntimeType)' == 'Full' "/>
 
   <PropertyGroup>
     <!-- This property must be overridden to remove a few targets that compile assemblies -->
@@ -99,6 +118,16 @@
       <_EffectiveYardarmProperties Condition=" '$(UnknownDiscriminatorHandling)' != 'ThrowException' And '$(UnknownDiscriminatorHandling)' != '' ">$(_EffectiveYardarmProperties);UnknownDiscriminatorHandling=$(UnknownDiscriminatorHandling)</_EffectiveYardarmProperties>
       <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersion)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersion=$(DefaultHttpVersion)</_EffectiveYardarmProperties>
       <_EffectiveYardarmProperties Condition=" '$(DefaultHttpVersionPolicy)' != '' ">$(_EffectiveYardarmProperties);DefaultHttpVersionPolicy=$(DefaultHttpVersionPolicy)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(ExternallyDiscriminatedUnions)' == 'true' ">$(_EffectiveYardarmProperties);ExternallyDiscriminatedUnions=true</_EffectiveYardarmProperties>
+
+      <_EffectiveYardarmProperties Condition=" '$(JsonStrict)' != '' ">$(_EffectiveYardarmProperties);JsonStrict=$(JsonStrict)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonAllowDuplicateProperties)' != '' ">$(_EffectiveYardarmProperties);JsonAllowDuplicateProperties=$(JsonAllowDuplicateProperties)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonEnforceRequiredProperties)' != '' ">$(_EffectiveYardarmProperties);JsonEnforceRequiredProperties=$(JsonEnforceRequiredProperties)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonNumberHandling)' != '' ">$(_EffectiveYardarmProperties);JsonNumberHandling=$(JsonNumberHandling)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonPropertyNameCaseInsensitive)' != '' ">$(_EffectiveYardarmProperties);JsonPropertyNameCaseInsensitive=$(JsonPropertyNameCaseInsensitive)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonRespectNullableAnnotations)' != '' ">$(_EffectiveYardarmProperties);JsonRespectNullableAnnotations=$(JsonRespectNullableAnnotations)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonRespectRequiredConstructorParameters)' != '' ">$(_EffectiveYardarmProperties);JsonRespectRequiredConstructorParameters=$(JsonRespectRequiredConstructorParameters)</_EffectiveYardarmProperties>
+      <_EffectiveYardarmProperties Condition=" '$(JsonUnmappedMemberHandling)' != '' ">$(_EffectiveYardarmProperties);JsonUnmappedMemberHandling=$(JsonUnmappedMemberHandling)</_EffectiveYardarmProperties>
     </PropertyGroup>
   </Target>
 
@@ -149,7 +178,13 @@
   </PropertyGroup>
   <Target Name="CoreCompile"
           Condition=" '$(SkipCompilerExecution)' != 'true' "
-          Inputs="$(MSBuildAllProjects);@(OpenApiSpec);@(Compile);@(CustomAdditionalCompileInputs)"
+          Inputs="$(MSBuildAllProjects);
+                  @(OpenApiSpec);
+                  @(Compile);
+                  @(ReferencePathWithRefAssemblies);
+                  @(YardarmExtension);
+                  @(Analyzer);
+                  @(CustomAdditionalCompileInputs)"
           Outputs="@(DocFileItem);
                    @(IntermediateAssembly);
                    @(IntermediateRefAssembly);
@@ -157,6 +192,15 @@
                    $(NonExistentFile);
                    @(CustomAdditionalCompileOutputs)"
           DependsOnTargets="$(CoreCompileDependsOn)">
+
+    <PropertyGroup>
+      <!--
+        Always suppress warnings about assembly references targeting newer versions. This is the default behavior for the command line app,
+        but needs to be explicitly passed here since the default is being overridden by the NoWarn property. If not, any value in the NoWarn
+        property would override the default behavior and cause warnings to be emitted.
+      -->
+      <_YardarmNoWarn>CS1701;CS1702;$(NoWarn)</_YardarmNoWarn>
+    </PropertyGroup>
 
     <YardarmGenerate
       ToolPath="$(YardarmToolPath)"
@@ -174,12 +218,13 @@
       OutputDebugSymbols="@(_DebugSymbolsIntermediatePath)"
       OutputXmlDocumentation="$(DocumentationFile)"
       References="@(ReferencePathWithRefAssemblies)"
+      Analyzers="@(Analyzer)"
       IncludedFiles="@(Compile)"
       KeyFile="$(KeyOriginatorFile)"
       KeyContainerName="$(KeyContainerName)"
       DelaySign="$(DelaySign)"
       PublicSign="$(PublicSign)"
-      NoWarn="$(NoWarn)"
+      NoWarn="$(_YardarmNoWarn)"
     >
     </YardarmGenerate>
 
@@ -197,6 +242,7 @@
       <CustomAdditionalCompileInputs Include="$(IntermediateOutputPath)$(MSBuildProjectFile).CoreCompileInputs.cache" />
       <CoreCompileCache Include="@(OpenApiSpec)" />
       <CoreCompileCache Include="@(Compile)" />
+      <CoreCompileCache Include="@(YardarmExtension)" />
       <CoreCompileCache Include="EmbedAllSources=$(EmbedAllSources)" />
       <CoreCompileCache Include="GenerateDocumentationFile=$(GenerateDocumentationFile)" />
       <CoreCompileCache Include="Version=$(Version)" />

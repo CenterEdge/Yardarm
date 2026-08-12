@@ -11,6 +11,10 @@
 
     <UseArtifactsOutput>true</UseArtifactsOutput>
 
+    <YardarmTargetFramework>net10.0</YardarmTargetFramework>
+    <ClientTargetFrameworks>netstandard2.0;net8.0;net10.0</ClientTargetFrameworks>
+    <ClientUnitTestTargetFrameworks>net8.0;net10.0</ClientUnitTestTargetFrameworks>
+
     <!--
       The .Client projects still target .NET 6 to ensure compatibility when generating .NET 6 targets,
       despite the fact that .NET 6 is out of support. Support will be dropped from Yardarm at a later date.

@@ -240,7 +240,7 @@ namespace Yardarm.Generation.Response
             {
                 // We're in the components section
 
-                return formatter.Format(Response.GetReferenceId()! + "Response");
+                return formatter.Format(Element.Key + "Response");
             }
             else
             {

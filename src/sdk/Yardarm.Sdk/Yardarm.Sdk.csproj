@@ -73,37 +73,23 @@
     Publish and collect the Yardarm command-line application to include as a tool.
     Only do this once as part of the outer multi-targeting run.
   -->
-  <ItemGroup>
-    <YardarmCommandLineRuntimeIdentifier Include="any" />
-  </ItemGroup>
-
-  <Target Name="DefineYardarmCommandLineRids">
-    <ItemGroup>
-      <_YardarmCommandLine Include="..\..\main\Core\Yardarm.CommandLine\Yardarm.CommandLine.csproj">
-        <AdditionalProperties>RuntimeIdentifier=%(YardarmCommandLineRuntimeIdentifier.Identity)</AdditionalProperties>
-        <RuntimeIdentifier>%(YardarmCommandLineRuntimeIdentifier.Identity)</RuntimeIdentifier>
-      </_YardarmCommandLine>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="BuildYardarmCommandLine"
-          DependsOnTargets="DefineYardarmCommandLineRids">
+  <Target Name="BuildYardarmCommandLine">
     <!--
       Build the portable command-line payload used only by the SDK package. The command-line
       project's own multi-RID tool package remains unchanged.
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False;PublishReadyToRun=false" Targets="Restore;Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="..\..\main\Core\Yardarm.CommandLine\Yardarm.CommandLine.csproj" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);RuntimeIdentifier=any;SelfContained=False;PublishReadyToRun=false" Targets="Restore;Publish" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
     </MSBuild>
   </Target>
 
   <Target Name="CollectYardarmCommandLine"
-          DependsOnTargets="DefineYardarmCommandLineRids;BuildYardarmCommandLine">
+          DependsOnTargets="BuildYardarmCommandLine">
     <!--
       Collect the files to be published. By using ComputeFilesToPublish and PublishItemsOutputGroup we skip
       the cost of actually copying the files to a publish directory, instead it collects the returned items
       and we can load them directly into the NuGet package.
     -->
-    <MSBuild Projects="@(_YardarmCommandLine)" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);SelfContained=False;PublishReadyToRun=false" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
+    <MSBuild Projects="..\..\main\Core\Yardarm.CommandLine\Yardarm.CommandLine.csproj" Properties="Configuration=$(Configuration);TargetFramework=$(YardarmTargetFramework);RuntimeIdentifier=any;SelfContained=False;PublishReadyToRun=false" Targets="PublishItemsOutputGroup" BuildInParallel="$(BuildInParallel)" SkipNonexistentProjects="false" ContinueOnError="false">
       <Output TaskParameter="TargetOutputs" ItemName="_YardarmCommandLineFiles" />
     </MSBuild>
 

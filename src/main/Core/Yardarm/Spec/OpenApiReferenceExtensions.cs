@@ -25,21 +25,12 @@ public static class OpenApiReferenceExtensions
 
         /// <summary>
         /// Gets the BaseOpenApiReference from an element if it is a reference holder.
-        /// Uses reflection to access the Reference property since the generic interface
-        /// requires knowing the concrete reference type at compile time.
         /// </summary>
         private BaseOpenApiReference? GetBaseReference()
         {
-            if (element is not IOpenApiReferenceHolder)
-            {
-                return null;
-            }
-
-            // TODO: Redesign this to avoid reflection when retrieving the reference.
-            // All reference holders in Microsoft.OpenApi derive from BaseOpenApiReferenceHolder<T,U,V>
-            // which has a public property Reference of type V : BaseOpenApiReference.
-            var refProp = element.GetType().GetProperty("Reference");
-            return refProp?.GetValue(element) as BaseOpenApiReference;
+            return element is IOpenApiReferenceHolder referenceHolder
+                ? OpenApiReferenceHolderAccessor.GetReference(referenceHolder)
+                : null;
         }
     }
 }

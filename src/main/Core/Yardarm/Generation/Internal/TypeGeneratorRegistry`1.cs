@@ -63,22 +63,15 @@ internal class TypeGeneratorRegistry<TElement> : ITypeGeneratorRegistry<TElement
     private static ITypeGenerator CreateTypeGenerator(ILocatedOpenApiElement<TElement> element, TypeGeneratorRegistry<TElement> registry)
     {
         if (LocatedElementEqualityComparer<TElement>.IsReferenceEqualDefault &&
-            element.Element is IOpenApiReferenceHolder)
+            element.Element is IOpenApiReferenceHolder referenceHolder &&
+            OpenApiReferenceHolderAccessor.GetReference(referenceHolder)?.Id is { } referenceId)
         {
             // When making the new type generator with the factory for a reference, we must ensure
             // that we are using the referenced component path for the ILocatedOpenApiElement.
 
-            var referenceId = element.Element.GetReferenceId();
-            if (referenceId != null)
+            if (OpenApiReferenceHolderAccessor.GetTarget(referenceHolder) is TElement resolvedTarget)
             {
-                // TODO: This is a bit of a hack, but it works for now. We should do this without using reflection.
-
-                // Get the resolved target via the Target property on the reference holder
-                var targetProp = element.Element.GetType().GetProperty("Target");
-                if (targetProp?.GetValue(element.Element) is TElement resolvedTarget)
-                {
-                    element = LocatedOpenApiElement.CreateRoot(resolvedTarget, referenceId);
-                }
+                element = LocatedOpenApiElement.CreateRoot(resolvedTarget, referenceId);
             }
         }
 

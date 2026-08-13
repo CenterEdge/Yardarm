@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Authentication
 
         private string? _apiKeyPropertyName;
 
-        public ApiKeyHeaderSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public ApiKeyHeaderSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

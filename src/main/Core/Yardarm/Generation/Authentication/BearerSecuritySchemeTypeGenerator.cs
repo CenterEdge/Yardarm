@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -13,7 +13,7 @@ namespace Yardarm.Generation.Authentication
     {
         public const string BearerTokenPropertyName = "BearerToken";
 
-        public BearerSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public BearerSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

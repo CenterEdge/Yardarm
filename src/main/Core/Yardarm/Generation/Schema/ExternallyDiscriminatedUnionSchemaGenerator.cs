@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Schema;
 /// </para>
 /// </remarks>
 internal class ExternallyDiscriminatedUnionSchemaGenerator(
-    ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+    ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
     GenerationContext context,
     ITypeGenerator? parent,
     IRootNamespace rootNamespace)
@@ -80,12 +80,12 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
                 semicolonToken: Token(SyntaxKind.SemicolonToken)))));
 
         // Constructors for each union case
-        foreach (var unionCase in Element.Element.AnyOf
+        foreach (var unionCase in Element.Element.AnyOf?
             .Select(p => {
-                KeyValuePair<string, OpenApiSchema> caseProperty = p.Properties.First();
+                KeyValuePair<string, IOpenApiSchema> caseProperty = p.Properties!.First();
 
-                return (caseProperty.Key, Element: LocatedOpenApiElement.CreateRoot(caseProperty.Value, caseProperty.Value.Reference.Id));
-            }))
+                return (caseProperty.Key, Element: LocatedOpenApiElement.CreateRoot(caseProperty.Value, caseProperty.Value.GetReferenceId()!));
+            }) ?? [])
         {
             ITypeGenerator caseType = Context.TypeGeneratorRegistry.Get(unionCase.Element);
 
@@ -131,20 +131,17 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
     /// with a single required property. The name and type of the property must be unique across all anyOf schemas, and the type of the
     /// property must be a reference to a component schema (nested schemas are not supported).
     /// </remarks>
-    public static bool IsEligible(ILocatedOpenApiElement<OpenApiSchema> schema, ITypeGeneratorRegistry typeGeneratorRegistry)
+    public static bool IsEligible(ILocatedOpenApiElement<IOpenApiSchema> schema, ITypeGeneratorRegistry typeGeneratorRegistry)
     {
         ArgumentNullException.ThrowIfNull(schema);
         ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
 
-        if (schema.Element is not
-            {
-                AnyOf.Count: > 0,
-                OneOf: null or { Count: 0 },
-                AllOf: null or { Count: 0 },
-                Properties: null or { Count: 0 },
-                Type: null or "object",
-                AdditionalProperties: null,
-            })
+        if (schema.Element.AnyOf is not { Count: > 0 }
+            || schema.Element.OneOf is { Count: > 0 }
+            || schema.Element.AllOf is { Count: > 0 }
+            || schema.Element.Properties is { Count: > 0 }
+            || (schema.Element.Type.HasValue && !schema.Element.IsType(JsonSchemaType.Object))
+            || schema.Element.AdditionalProperties is not null)
         {
             return false;
         }
@@ -155,17 +152,23 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
         // hash code won't necessarily match between two matching TypeSyntax objects.
         var propertyTypes = new List<TypeSyntax>();
 
-        foreach (OpenApiSchema unionCase in schema.Element.AnyOf)
+        foreach (IOpenApiSchema unionCase in schema.Element.AnyOf ?? [])
         {
-            if (unionCase is not { Type: null or "object", Properties.Count: 1, Nullable: false, AdditionalProperties: null })
+            if ((unionCase.Properties?.Count ?? 0) != 1
+                || (unionCase.Type.HasValue && !unionCase.IsType(JsonSchemaType.Object))
+                || unionCase.Nullable
+                || unionCase.AdditionalProperties is not null)
             {
                 // Not a single property object
                 return false;
             }
 
-            (string propertyName, OpenApiSchema propertySchema) = unionCase.Properties.First();
+            (string propertyName, IOpenApiSchema propertySchema) = unionCase.Properties!.First();
 
-            if (!unionCase.Required.Contains(propertyName) || propertySchema.Reference?.Id is not string schemaName)
+            if (unionCase.Required is null
+                || !unionCase.Required.Contains(propertyName)
+                || propertySchema is not IOpenApiReferenceHolder
+                || propertySchema.GetReferenceId() is not string schemaName)
             {
                 // Property is not required or is not a reference to a component schema
                 return false;
@@ -186,7 +189,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
             // Building the child element must occur after checking that this is a reference to a component schema,
             // otherwise we can encounter infinite recursion trying to resolve the parent that is being built when
             // this method is called.
-            ILocatedOpenApiElement<OpenApiSchema> locatedPropertySchema = schema.CreateChild(propertySchema, propertyName);
+            ILocatedOpenApiElement<IOpenApiSchema> locatedPropertySchema = schema.CreateChild(propertySchema, propertyName);
 
             YardarmTypeInfo typeInfo = typeGeneratorRegistry.Get(locatedPropertySchema).TypeInfo;
             foreach (TypeSyntax propertyType in propertyTypes)

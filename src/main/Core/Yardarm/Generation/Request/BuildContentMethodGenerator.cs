@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -24,7 +24,7 @@ public class BuildContentMethodGenerator(
     protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         if (mediaType == null)
         {
@@ -55,7 +55,7 @@ public class BuildContentMethodGenerator(
     }
 
     protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-        ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<OpenApiMediaType> mediaType)
+        ILocatedOpenApiElement<OpenApiOperation> operation, ILocatedOpenApiElement<IOpenApiMediaType> mediaType)
     {
         ExpressionSyntax serializationDataExpression =
             SerializationDataPropertyGenerator.GetSerializationData();

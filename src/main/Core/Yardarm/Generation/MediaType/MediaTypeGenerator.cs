@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Serialization;
 using Yardarm.Spec;
@@ -11,7 +11,7 @@ namespace Yardarm.Generation.MediaType
 {
     public class MediaTypeGenerator(
         OpenApiDocument document,
-        ITypeGeneratorRegistry<OpenApiMediaType> mediaTypeGeneratorRegistry,
+        ITypeGeneratorRegistry<IOpenApiMediaType> mediaTypeGeneratorRegistry,
         ISerializerSelector serializerSelector,
         IOperationNameProvider operationNameProvider) : ISyntaxTreeGenerator
     {
@@ -25,7 +25,7 @@ namespace Yardarm.Generation.MediaType
             }
         }
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiMediaType>> GetMediaTypes()
+        private IEnumerable<ILocatedOpenApiElement<IOpenApiMediaType>> GetMediaTypes()
         {
             foreach (var requestBody in GetRequestBodies())
             {
@@ -52,13 +52,13 @@ namespace Yardarm.Generation.MediaType
             }
         }
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiRequestBody>> GetRequestBodies() =>
+        private IEnumerable<ILocatedOpenApiElement<IOpenApiRequestBody>> GetRequestBodies() =>
             document.Paths.ToLocatedElements()
                 .GetOperations()
                 .WhereOperationHasName(operationNameProvider)
                 .GetRequestBodies();
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiMediaType> mediaType) =>
             mediaTypeGeneratorRegistry.Get(mediaType).GenerateSyntaxTree();
     }
 }

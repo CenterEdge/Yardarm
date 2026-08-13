@@ -1,8 +1,8 @@
-﻿using System;
+using Microsoft.OpenApi;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.OpenApi.Interfaces;
 
 namespace Yardarm.Spec.Internal
 {

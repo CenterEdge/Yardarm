@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -11,7 +11,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Responses
 {
-    public class HeaderParsingEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiResponse>
+    public class HeaderParsingEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiResponse>
     {
         private readonly GenerationContext _context;
         private readonly ISerializationNamespace _serializationNamespace;
@@ -26,8 +26,8 @@ namespace Yardarm.Enrichment.Responses
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiResponse> context) =>
-            IsBaseResponseClass(context.LocatedElement) && context.Element.Headers.Count > 0
+            OpenApiEnrichmentContext<IOpenApiResponse> context) =>
+            IsBaseResponseClass(context.LocatedElement) && context.Element.Headers is { Count: > 0 }
                 ? target.AddMembers(GenerateMethod(context.LocatedElement))
                 : target;
 
@@ -39,10 +39,10 @@ namespace Yardarm.Enrichment.Responses
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private static bool IsBaseResponseClass(ILocatedOpenApiElement<OpenApiResponse> response) =>
-            response.IsRoot || response.Element.Reference == null;
+        private static bool IsBaseResponseClass(ILocatedOpenApiElement<IOpenApiResponse> response) =>
+            response.IsRoot || response.Element is not IOpenApiReferenceHolder;
 
-        public MethodDeclarationSyntax GenerateMethod(ILocatedOpenApiElement<OpenApiResponse> response) =>
+        public MethodDeclarationSyntax GenerateMethod(ILocatedOpenApiElement<IOpenApiResponse> response) =>
             MethodDeclaration(
                 default,
                 new SyntaxTokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)),
@@ -62,7 +62,7 @@ namespace Yardarm.Enrichment.Responses
                 null);
 
         protected virtual IEnumerable<StatementSyntax> GenerateStatements(
-            ILocatedOpenApiElement<OpenApiResponse> response)
+            ILocatedOpenApiElement<IOpenApiResponse> response)
         {
             var propertyNameFormatter = _context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
@@ -76,12 +76,12 @@ namespace Yardarm.Enrichment.Responses
 
             foreach (var header in response.GetHeaders())
             {
-                ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
+                ILocatedOpenApiElement<IOpenApiSchema> schemaElement = header.GetSchemaOrDefault();
 
                 TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(schemaElement).TypeInfo.Name;
 
                 InvocationExpressionSyntax deserializeExpression;
-                if (schemaElement is {Element.Type: "array"})
+                if (schemaElement.Element.IsType(JsonSchemaType.Array))
                 {
                     deserializeExpression = InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                             _serializationNamespace.HeaderSerializer,

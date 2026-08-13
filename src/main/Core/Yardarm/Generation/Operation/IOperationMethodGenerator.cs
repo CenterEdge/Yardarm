@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Operation

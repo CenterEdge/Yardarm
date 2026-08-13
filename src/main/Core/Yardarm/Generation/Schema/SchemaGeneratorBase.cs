@@ -1,5 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -8,25 +8,33 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema;
 
 public abstract class SchemaGeneratorBase(
-    ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+    ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
     GenerationContext context,
     ITypeGenerator? parent)
-    : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
+    : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
 {
-    protected OpenApiSchema Schema => Element.Element;
+    protected IOpenApiSchema Schema => Element.Element;
 
     protected abstract NameKind NameKind { get; }
 
     /// <inheritdoc />
     public override QualifiedNameSyntax? GetTypeName()
     {
-        if (Schema.Reference is not null)
+        if (Element.IsRoot)
+        {
+            NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
+            INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
+
+            return QualifiedName(ns, IdentifierName(formatter.Format(Element.Key)));
+        }
+
+        if (Schema is IOpenApiReferenceHolder)
         {
             NameSyntax ns = Context.NamespaceProvider.GetNamespace(Element);
 
             INameFormatter formatter = Context.NameFormatterSelector.GetFormatter(NameKind);
 
-            return QualifiedName(ns, IdentifierName(formatter.Format(Schema.Reference.Id)));
+            return QualifiedName(ns, IdentifierName(formatter.Format(Schema.GetReferenceId()!)));
         }
 
         return Parent?.GetChildName(Element, NameKind);

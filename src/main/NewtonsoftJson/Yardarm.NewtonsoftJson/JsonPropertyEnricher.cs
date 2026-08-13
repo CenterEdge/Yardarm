@@ -1,6 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
@@ -11,10 +11,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
         public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             if (target.Parent is ClassDeclarationSyntax classDeclaration &&
                 classDeclaration.GetGeneratorAnnotation() == typeof(RequestMediaTypeGenerator))
@@ -28,8 +28,8 @@ namespace Yardarm.NewtonsoftJson
                     AttributeArgument(SyntaxHelpers.StringLiteral(context.LocatedElement.Key)))));
 
             bool isRequired =
-                context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
-                parentSchema.Element.Required.Contains(context.LocatedElement.Key);
+                context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
+                parentSchema.Element.Required?.Contains(context.LocatedElement.Key) == true;
 
             bool isNullable = context.LocatedElement.Element.Nullable;
 

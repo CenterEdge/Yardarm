@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.OpenApi.Models;
+using System;
+using Microsoft.OpenApi;
 using Yardarm.Serialization;
 using Yardarm.Spec;
 
@@ -16,9 +16,9 @@ namespace Yardarm.Generation.MediaType
             _serializerSelector = serializerSelector;
         }
 
-        public ILocatedOpenApiElement<OpenApiMediaType>? Select(ILocatedOpenApiElement<OpenApiResponse> response)
+        public ILocatedOpenApiElement<IOpenApiMediaType>? Select(ILocatedOpenApiElement<IOpenApiResponse> response)
         {
-            ILocatedOpenApiElement<OpenApiMediaType>? highestPriorityMediaType = null;
+            ILocatedOpenApiElement<IOpenApiMediaType>? highestPriorityMediaType = null;
             double? highestQuality = null;
 
             // Select the highest priority media type. In the event of a tie, the first one wins. In the event there
@@ -26,7 +26,7 @@ namespace Yardarm.Generation.MediaType
             foreach (var mediaType in response.GetMediaTypes())
             {
                 double quality = _serializerSelector.Select(mediaType)?.Quality ?? 0.0;
-                if (quality == 0 && mediaType.Element.Schema is not { Type: "string", Format: "binary" })
+                if (quality == 0 && !(mediaType.Element.Schema is { Format: "binary" } s && s.IsType(JsonSchemaType.String)))
                 {
                     // Don't allow a media type with no serializer to be selected unless it's a binary string
                     continue;

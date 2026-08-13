@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Generation.Request;
 using Yardarm.Names;
@@ -15,18 +15,18 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.MediaType
 {
     public class RequestMediaTypeGenerator(
-        ILocatedOpenApiElement<OpenApiMediaType> mediaTypeElement,
+        ILocatedOpenApiElement<IOpenApiMediaType> mediaTypeElement,
         ITypeGenerator parent,
         GenerationContext context,
         IRequestsNamespace requestsNamespace,
         ISerializerSelector serializerSelector,
         IEnumerable<IRequestMemberGenerator> memberGenerators,
         IOperationNameProvider operationNameProvider)
-        : TypeGeneratorBase<OpenApiMediaType>(mediaTypeElement, context, parent)
+        : TypeGeneratorBase<IOpenApiMediaType>(mediaTypeElement, context, parent)
     {
         public const string BodyPropertyName = "Body";
 
-        protected OpenApiMediaType MediaType => Element.Element;
+        protected IOpenApiMediaType MediaType => Element.Element;
 
         protected RequestTypeGenerator RequestTypeGenerator { get; } =
             FindParentRequestTypeGenerator(parent)
@@ -90,7 +90,7 @@ namespace Yardarm.Generation.MediaType
             var schema = Element.GetSchemaOrDefault();
             declaration = declaration.AddMembers(CreateBodyPropertyDeclaration(schema));
 
-            if (schema.Element.Reference == null)
+            if (schema.Element is not IOpenApiReferenceHolder)
             {
                 ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schema);
 
@@ -106,7 +106,7 @@ namespace Yardarm.Generation.MediaType
                     .ToArray());
         }
 
-        protected virtual PropertyDeclarationSyntax CreateBodyPropertyDeclaration(ILocatedOpenApiElement<OpenApiSchema> schema)
+        protected virtual PropertyDeclarationSyntax CreateBodyPropertyDeclaration(ILocatedOpenApiElement<IOpenApiSchema> schema)
         {
             var typeName = Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name;
 

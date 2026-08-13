@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Spec;
 
@@ -11,14 +11,14 @@ namespace Yardarm.Generation.Tag
 {
     public class TagGenerator(
         OpenApiDocument document,
-        ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
-        [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiTag> tagImplementationGeneratorRegistry,
+        ITypeGeneratorRegistry<IOpenApiTag> tagGeneratorRegistry,
+        [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<IOpenApiTag> tagImplementationGeneratorRegistry,
         IOperationNameProvider operationNameProvider)
         : ISyntaxTreeGenerator
     {
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (ILocatedOpenApiElement<OpenApiTag> tag in GetTags())
+            foreach (ILocatedOpenApiElement<IOpenApiTag> tag in GetTags())
             {
                 SyntaxTree? tree = tagGeneratorRegistry.Get(tag).GenerateSyntaxTree();
                 if (tree is not null)
@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Tag
             }
         }
 
-        private IEnumerable<ILocatedOpenApiElement<OpenApiTag>> GetTags() => document.Paths.ToLocatedElements()
+        private IEnumerable<ILocatedOpenApiElement<IOpenApiTag>> GetTags() => document.Paths.ToLocatedElements()
             .GetOperations()
             .WhereOperationHasName(operationNameProvider)
             .GetTags()

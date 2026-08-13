@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Spec;
 using Yardarm.Generation;
@@ -20,8 +20,8 @@ namespace Yardarm.MicrosoftExtensionsHttp.Internal;
 /// </summary>
 internal class ApiBuilderExtensionsEnricher(
     OpenApiDocument document,
-    ITypeGeneratorRegistry<OpenApiTag> tagGeneratorRegistry,
-    [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiTag> tagImplementationGeneratorRegistry,
+    ITypeGeneratorRegistry<IOpenApiTag> tagGeneratorRegistry,
+    [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<IOpenApiTag> tagImplementationGeneratorRegistry,
     IOperationNameProvider operationNameProvider)
     : IResourceFileEnricher
 {

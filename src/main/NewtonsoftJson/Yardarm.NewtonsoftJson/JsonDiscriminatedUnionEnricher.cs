@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.NewtonsoftJson.Helpers;
@@ -10,10 +10,10 @@ namespace Yardarm.NewtonsoftJson;
 
 public sealed class JsonDiscriminatedUnionEnricher(
     IJsonSerializationNamespace jsonSerializationNamespace)
-    : IOpenApiSyntaxNodeEnricher<StructDeclarationSyntax, OpenApiSchema>
+    : IOpenApiSyntaxNodeEnricher<StructDeclarationSyntax, IOpenApiSchema>
 {
     public StructDeclarationSyntax Enrich(StructDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context) =>
+        OpenApiEnrichmentContext<IOpenApiSchema> context) =>
         target.IsExternallyDiscriminatedUnion()
             ? AddJsonConverter(target)
             : target;

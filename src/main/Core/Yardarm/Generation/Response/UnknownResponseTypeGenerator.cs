@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -34,7 +34,7 @@ namespace Yardarm.Generation.Response
             string className = GetClassName();
 
             ClassDeclarationSyntax declaration = ClassDeclaration(className)
-                .AddElementAnnotation<ClassDeclarationSyntax, OpenApiResponse>(Element, Context.ElementRegistry)
+                .AddElementAnnotation<ClassDeclarationSyntax, IOpenApiResponse>(Element, Context.ElementRegistry)
                 .AddBaseListTypes(SimpleBaseType(ResponsesNamespace.UnknownResponse))
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddMembers(

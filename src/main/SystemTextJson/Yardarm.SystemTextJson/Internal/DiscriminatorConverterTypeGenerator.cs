@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -15,12 +15,12 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.SystemTextJson.Internal;
 
 internal class DiscriminatorConverterTypeGenerator(
-    ILocatedOpenApiElement<OpenApiSchema> element,
+    ILocatedOpenApiElement<IOpenApiSchema> element,
     GenerationContext context,
     ITypeGenerator? parent,
     IJsonSerializationNamespace jsonSerializationNamespace,
     IRootNamespace rootNamespace)
-    : TypeGeneratorBase<OpenApiSchema>(element, context, parent)
+    : TypeGeneratorBase<IOpenApiSchema>(element, context, parent)
 {
     public const string GeneratorCategory = "DiscriminatorConverter";
 
@@ -128,7 +128,7 @@ internal class DiscriminatorConverterTypeGenerator(
 
     private PropertyDeclarationSyntax GeneratePropertyNameProperty()
     {
-        string propertyName = Element.Element.Discriminator.PropertyName;
+        string propertyName = Element.Element.Discriminator?.PropertyName ?? string.Empty;
 
         return PropertyDeclaration(
             default,

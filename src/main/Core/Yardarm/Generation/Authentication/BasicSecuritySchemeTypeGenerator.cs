@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -18,7 +18,7 @@ namespace Yardarm.Generation.Authentication
         public const string PasswordPropertyName = "Password";
         public const string CacheFieldName = "_cache";
 
-        public BasicSecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        public BasicSecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, authenticationNamespace)
         {

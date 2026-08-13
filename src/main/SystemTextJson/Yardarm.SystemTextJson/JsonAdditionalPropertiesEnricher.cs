@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Newtonsoft.Json;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Schema;
@@ -20,7 +20,7 @@ namespace Yardarm.SystemTextJson;
 /// <summary>
 /// Updates additional properties members with the <see cref="JsonExtensionDataAttribute" />.
 /// </summary>
-public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, OpenApiSchema>
+public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, IOpenApiSchema>
 {
     public Type[] ExecuteAfter { get; } =
     [
@@ -36,7 +36,7 @@ public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<Compi
     }
 
     public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context)
+        OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         var members = target
             .GetSpecialMembers(SpecialMembers.AdditionalProperties)

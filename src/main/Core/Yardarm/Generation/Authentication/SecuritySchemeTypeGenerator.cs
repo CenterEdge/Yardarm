@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -12,7 +12,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Authentication
 {
-    public abstract class SecuritySchemeTypeGenerator : TypeGeneratorBase<OpenApiSecurityScheme>
+    public abstract class SecuritySchemeTypeGenerator : TypeGeneratorBase<IOpenApiSecurityScheme>
     {
         private static readonly SyntaxTokenList _withAsyncModifiers = new SyntaxTokenList(
             Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.VirtualKeyword), Token(SyntaxKind.AsyncKeyword));
@@ -24,13 +24,13 @@ namespace Yardarm.Generation.Authentication
 
         protected IAuthenticationNamespace AuthenticationNamespace { get; set; }
 
-        protected OpenApiSecurityScheme SecurityScheme => Element.Element;
+        protected IOpenApiSecurityScheme SecurityScheme => Element.Element;
 
         protected virtual bool ApplyUsesAsyncAwait => false;
 
         protected virtual bool ProcessResponseUsesAsyncAwait => false;
 
-        protected SecuritySchemeTypeGenerator(ILocatedOpenApiElement<OpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
+        protected SecuritySchemeTypeGenerator(ILocatedOpenApiElement<IOpenApiSecurityScheme> securitySchemeElement, GenerationContext context,
             IAuthenticationNamespace authenticationNamespace)
             : base(securitySchemeElement, context, null)
         {
@@ -94,6 +94,6 @@ namespace Yardarm.Generation.Authentication
             ReturnStatement(LiteralExpression(SyntaxKind.DefaultLiteralExpression)));
 
         protected virtual string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class)
-            .Format(Element.Element.Reference.Id);
+            .Format(Element.Element.GetReferenceId() ?? Element.Key);
     }
 }

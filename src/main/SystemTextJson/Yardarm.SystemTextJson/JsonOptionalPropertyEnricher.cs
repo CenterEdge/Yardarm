@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
@@ -13,9 +13,9 @@ namespace Yardarm.SystemTextJson;
 public class JsonOptionalPropertyEnricher(
     IOpenApiElementRegistry elementRegistry,
     IOptions<JsonOptions> jsonOptions)
-    : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
 {
-    public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+    public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         if (!context.LocatedElement.IsJsonSchema)
         {
@@ -23,15 +23,15 @@ public class JsonOptionalPropertyEnricher(
             return syntax;
         }
 
-        if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(elementRegistry) is null)
+        if (syntax.Parent?.GetElementAnnotation<IOpenApiSchema>(elementRegistry) is null)
         {
             // We don't need to apply this to properties of request classes, only schemas
             return syntax;
         }
 
         bool isRequired =
-            context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
-            parentSchema.Element.Required.Contains(context.LocatedElement.Key);
+            context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
+            parentSchema.Element.Required?.Contains(context.LocatedElement.Key) == true;
 
         bool isNullable = context.LocatedElement.Element.Nullable;
 

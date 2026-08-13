@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 
 namespace Yardarm.Enrichment.Requests
@@ -24,7 +24,7 @@ namespace Yardarm.Enrichment.Requests
 
         private IEnumerable<XmlElementSyntax> GetSections(OpenApiOperation context)
         {
-            yield return DocumentationSyntaxHelpers.BuildSummaryElement(context.Summary);
+            yield return DocumentationSyntaxHelpers.BuildSummaryElement(context.Summary ?? string.Empty);
 
             if (!string.IsNullOrWhiteSpace(context.Description))
             {

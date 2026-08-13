@@ -1,7 +1,7 @@
-﻿using System;
+using Microsoft.OpenApi;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.OpenApi.Interfaces;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment

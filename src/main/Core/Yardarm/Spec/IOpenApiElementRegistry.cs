@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Yardarm.Spec
 {

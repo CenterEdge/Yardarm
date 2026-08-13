@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -9,11 +9,11 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Schema;
 
-public class ArraySchemaGenerator : TypeGeneratorBase<OpenApiSchema>
+public class ArraySchemaGenerator : TypeGeneratorBase<IOpenApiSchema>
 {
-    protected OpenApiSchema Schema => Element.Element;
+    protected IOpenApiSchema Schema => Element.Element;
 
-    public ArraySchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+    public ArraySchemaGenerator(ILocatedOpenApiElement<IOpenApiSchema> schemaElement, GenerationContext context,
         ITypeGenerator? parent)
         : base(schemaElement, context, parent)
     {
@@ -32,14 +32,14 @@ public class ArraySchemaGenerator : TypeGeneratorBase<OpenApiSchema>
 
     public override IEnumerable<MemberDeclarationSyntax> Generate()
     {
-        ILocatedOpenApiElement<OpenApiSchema> itemSchema = GetItemSchema();
+        ILocatedOpenApiElement<IOpenApiSchema> itemSchema = GetItemSchema();
 
-        return itemSchema.Element.Reference is null
+        return itemSchema.Element is not IOpenApiReferenceHolder
             ? Context.TypeGeneratorRegistry.Get(itemSchema).Generate()
             : Enumerable.Empty<MemberDeclarationSyntax>();
     }
 
-    private ILocatedOpenApiElement<OpenApiSchema> GetItemSchema() =>
+    private ILocatedOpenApiElement<IOpenApiSchema> GetItemSchema() =>
         Element.GetItemSchemaOrDefault();
 
     public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)

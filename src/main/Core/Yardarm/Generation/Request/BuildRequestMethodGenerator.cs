@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -27,7 +27,7 @@ public class BuildRequestMethodGenerator(
     protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         if (mediaType is not null)
         {

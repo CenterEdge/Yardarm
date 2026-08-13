@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Tag
 {
-    public class TagImplementationTypeGeneratorFactory : ITypeGeneratorFactory<OpenApiTag>
+    public class TagImplementationTypeGeneratorFactory : ITypeGeneratorFactory<IOpenApiTag>
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -16,7 +16,7 @@ namespace Yardarm.Generation.Tag
             _serviceProvider = serviceProvider;
         }
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiTag> element, ITypeGenerator? parent) =>
+        public ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiTag> element, ITypeGenerator? parent) =>
             ActivatorUtilities.CreateInstance<TagImplementationTypeGenerator>(_serviceProvider, element);
     }
 }

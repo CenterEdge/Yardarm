@@ -1,48 +1,48 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Authentication
 {
-    public class SecuritySchemeTypeGeneratorFactory(IServiceProvider serviceProvider) : ITypeGeneratorFactory<OpenApiSecurityScheme>
+    public class SecuritySchemeTypeGeneratorFactory(IServiceProvider serviceProvider) : ITypeGeneratorFactory<IOpenApiSecurityScheme>
     {
         private static ObjectFactory<ApiKeyHeaderSecuritySchemeTypeGenerator>? _apiKeyHeaderFactory;
         private static ObjectFactory<ApiKeyHeaderSecuritySchemeTypeGenerator> ApiKeyHeaderFactory => _apiKeyHeaderFactory ??=
             ActivatorUtilities.CreateFactory<ApiKeyHeaderSecuritySchemeTypeGenerator>(
             [
-                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+                typeof(ILocatedOpenApiElement<IOpenApiSecurityScheme>)
             ]);
 
         private static ObjectFactory<ApiKeyQuerySecuritySchemeTypeGenerator>? _apiKeyQueryFactory;
         private static ObjectFactory<ApiKeyQuerySecuritySchemeTypeGenerator> ApiKeyQueryFactory => _apiKeyQueryFactory ??=
             ActivatorUtilities.CreateFactory<ApiKeyQuerySecuritySchemeTypeGenerator>(
             [
-                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+                typeof(ILocatedOpenApiElement<IOpenApiSecurityScheme>)
             ]);
 
         private static ObjectFactory<BasicSecuritySchemeTypeGenerator>? _basicFactory;
         private static ObjectFactory<BasicSecuritySchemeTypeGenerator> BasicFactory => _basicFactory ??=
             ActivatorUtilities.CreateFactory<BasicSecuritySchemeTypeGenerator>(
             [
-                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+                typeof(ILocatedOpenApiElement<IOpenApiSecurityScheme>)
             ]);
 
         private static ObjectFactory<BearerSecuritySchemeTypeGenerator>? _bearerFactory;
         private static ObjectFactory<BearerSecuritySchemeTypeGenerator> BearerFactory => _bearerFactory ??=
             ActivatorUtilities.CreateFactory<BearerSecuritySchemeTypeGenerator>(
             [
-                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+                typeof(ILocatedOpenApiElement<IOpenApiSecurityScheme>)
             ]);
 
         private static ObjectFactory<NoopSecuritySchemeTypeGenerator>? _noopFactory;
         private static ObjectFactory<NoopSecuritySchemeTypeGenerator> NoopFactory => _noopFactory ??=
             ActivatorUtilities.CreateFactory<NoopSecuritySchemeTypeGenerator>(
             [
-                typeof(ILocatedOpenApiElement<OpenApiSecurityScheme>)
+                typeof(ILocatedOpenApiElement<IOpenApiSecurityScheme>)
             ]);
 
-        public ITypeGenerator Create(ILocatedOpenApiElement<OpenApiSecurityScheme> element, ITypeGenerator? parent)
+        public ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiSecurityScheme> element, ITypeGenerator? parent)
         {
             return element.Element.Type switch
             {

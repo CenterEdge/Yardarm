@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Spec;
@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Response
             _mediaTypeSelector = mediaTypeSelector;
         }
 
-        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiResponse> response, string className)
+        public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<IOpenApiResponse> response, string className)
         {
             var bodyType = GetBodyType(response);
             if (bodyType is not null)
@@ -91,15 +91,15 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<OpenApiResponse> response)
+        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response)
         {
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = _mediaTypeSelector.Select(response);
+            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = _mediaTypeSelector.Select(response);
             if (mediaType == null)
             {
                 return null;
             }
 
-            ILocatedOpenApiElement<OpenApiSchema>? schemaElement = mediaType.GetSchema();
+            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetSchema();
             if (schemaElement == null)
             {
                 return null;

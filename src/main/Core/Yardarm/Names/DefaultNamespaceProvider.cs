@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Names
@@ -40,44 +40,44 @@ namespace Yardarm.Names
         public NameSyntax GetNamespace(ILocatedOpenApiElement element) =>
             element switch
             {
-                ILocatedOpenApiElement<OpenApiHeader> header => GetHeaderNamespace(header),
-                ILocatedOpenApiElement<OpenApiMediaType> mediaType => GetMediaTypeNamespace(mediaType),
+                ILocatedOpenApiElement<IOpenApiHeader> header => GetHeaderNamespace(header),
+                ILocatedOpenApiElement<IOpenApiMediaType> mediaType => GetMediaTypeNamespace(mediaType),
                 ILocatedOpenApiElement<OpenApiOperation> operation => GetOperationNamespace(operation),
-                ILocatedOpenApiElement<OpenApiParameter> parameter => GetParameterNamespace(parameter),
+                ILocatedOpenApiElement<IOpenApiParameter> parameter => GetParameterNamespace(parameter),
                 ILocatedOpenApiElement<OpenApiUnknownResponse> response => GetUnknownResponseNamespace(response),
-                ILocatedOpenApiElement<OpenApiResponse> response => GetResponseNamespace(response),
+                ILocatedOpenApiElement<IOpenApiResponse> response => GetResponseNamespace(response),
                 ILocatedOpenApiElement<OpenApiResponses> responses => GetResponsesNamespace(responses),
-                ILocatedOpenApiElement<OpenApiSchema> schema => GetSchemaNamespace(schema),
-                ILocatedOpenApiElement<OpenApiSecurityScheme> securityScheme => GetSecuritySchemeNamespace(securityScheme),
-                ILocatedOpenApiElement<OpenApiTag> tag => GetTagNamespace(tag),
+                ILocatedOpenApiElement<IOpenApiSchema> schema => GetSchemaNamespace(schema),
+                ILocatedOpenApiElement<IOpenApiSecurityScheme> securityScheme => GetSecuritySchemeNamespace(securityScheme),
+                ILocatedOpenApiElement<IOpenApiTag> tag => GetTagNamespace(tag),
                 _ => throw new InvalidOperationException($"Element type {element.Element.GetType()} doesn't have a namespace.")
             };
 
-        protected virtual NameSyntax GetHeaderNamespace(ILocatedOpenApiElement<OpenApiHeader> header) =>
+        protected virtual NameSyntax GetHeaderNamespace(ILocatedOpenApiElement<IOpenApiHeader> header) =>
             _headersNamespace;
 
-        protected virtual NameSyntax GetMediaTypeNamespace(ILocatedOpenApiElement<OpenApiMediaType> mediaType) =>
+        protected virtual NameSyntax GetMediaTypeNamespace(ILocatedOpenApiElement<IOpenApiMediaType> mediaType) =>
             _requestsNamespace.Name;
 
         protected virtual NameSyntax GetOperationNamespace(ILocatedOpenApiElement<OpenApiOperation> operation) =>
             _requestsNamespace.Name;
 
-        protected virtual NameSyntax GetParameterNamespace(ILocatedOpenApiElement<OpenApiParameter> operation) =>
+        protected virtual NameSyntax GetParameterNamespace(ILocatedOpenApiElement<IOpenApiParameter> operation) =>
             _parametersNamespace;
 
-        protected virtual NameSyntax GetResponseNamespace(ILocatedOpenApiElement<OpenApiResponse> response) =>
+        protected virtual NameSyntax GetResponseNamespace(ILocatedOpenApiElement<IOpenApiResponse> response) =>
             _responsesNamespace.Name;
 
         protected virtual NameSyntax GetResponsesNamespace(ILocatedOpenApiElement<OpenApiResponses> responses) =>
             _responsesNamespace.Name;
 
-        protected virtual NameSyntax GetSchemaNamespace(ILocatedOpenApiElement<OpenApiSchema> schema) =>
+        protected virtual NameSyntax GetSchemaNamespace(ILocatedOpenApiElement<IOpenApiSchema> schema) =>
             _modelsNamespace;
 
-        protected virtual NameSyntax GetSecuritySchemeNamespace(ILocatedOpenApiElement<OpenApiSecurityScheme> schema) =>
+        protected virtual NameSyntax GetSecuritySchemeNamespace(ILocatedOpenApiElement<IOpenApiSecurityScheme> schema) =>
             _authenticationNamespace.Name;
 
-        protected virtual NameSyntax GetTagNamespace(ILocatedOpenApiElement<OpenApiTag> tag) =>
+        protected virtual NameSyntax GetTagNamespace(ILocatedOpenApiElement<IOpenApiTag> tag) =>
             _apiNamespace.Name;
 
         protected virtual NameSyntax GetUnknownResponseNamespace(ILocatedOpenApiElement<OpenApiUnknownResponse> responses) =>

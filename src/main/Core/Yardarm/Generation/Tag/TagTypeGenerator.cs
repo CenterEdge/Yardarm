@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -15,7 +15,7 @@ namespace Yardarm.Generation.Tag
     {
         private readonly IApiNamespace _apiNamespace;
 
-        public TagTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+        public TagTypeGenerator(ILocatedOpenApiElement<IOpenApiTag> tagElement, GenerationContext context,
             IApiNamespace apiNamespace, IOperationNameProvider operationNameProvider)
             : base(tagElement, context, operationNameProvider)
         {
@@ -55,6 +55,6 @@ namespace Yardarm.Generation.Tag
             return declaration;
         }
 
-        private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Tag.Name);
+        private string GetInterfaceName() => Context.NameFormatterSelector.GetFormatter(NameKind.Interface).Format(Tag.Name ?? string.Empty);
     }
 }

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -26,7 +26,7 @@ public class BuildUriMethodGenerator(
     protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         if (mediaType is not null)
         {
@@ -57,7 +57,7 @@ public class BuildUriMethodGenerator(
     }
 
     private Func<PathSegment, InterpolationSyntax> CreateLegacyParameterInterpolationBuilder(
-        Dictionary<string, OpenApiParameter> allParameters,
+        Dictionary<string, IOpenApiParameter> allParameters,
         INameFormatter propertyNameFormatter)
     {
         // Uses less performant string interpolation that generates intermediate strings
@@ -67,7 +67,7 @@ public class BuildUriMethodGenerator(
         {
             allParameters.TryGetValue(pathSegment.Value, out var parameter);
 
-            if (parameter?.Schema?.Type == "array")
+            if (parameter?.Schema?.IsType(JsonSchemaType.Array) == true)
             {
                 return Interpolation(InvocationExpression(
                     MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
@@ -99,7 +99,7 @@ public class BuildUriMethodGenerator(
     }
 
     private static Func<PathSegment, InterpolationSyntax> CreateModernParameterInterpolationBuilder(
-        Dictionary<string, OpenApiParameter> allParameters,
+        Dictionary<string, IOpenApiParameter> allParameters,
         INameFormatter propertyNameFormatter)
     {
         // Uses more performant string interpolation, passing explode, style, and name via the
@@ -144,15 +144,16 @@ public class BuildUriMethodGenerator(
     }
 
     public IEnumerable<StatementSyntax> GenerateBody(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         var propertyNameFormatter = Context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-        var path = (LocatedOpenApiElement<OpenApiPathItem>)operation.Parent!;
+        var path = (LocatedOpenApiElement<IOpenApiPathItem>)operation.Parent!;
 
         var allParameters = operation.GetAllParameters()
             .Select(p => p.Element)
-            .ToDictionary(p => p.Name, p => p);
+            .Where(p => p.Name is not null)
+            .ToDictionary(p => p.Name!, p => p);
 
         PathSegment[] parsedPath = PathParser.Parse(path.Key);
 
@@ -201,7 +202,7 @@ public class BuildUriMethodGenerator(
                 CreateLegacyParameterInterpolationBuilder(allParameters, propertyNameFormatter));
         }
 
-        OpenApiParameter[] queryParameters = allParameters.Values
+        IOpenApiParameter[] queryParameters = allParameters.Values
             .Where(p => (p.In ?? ParameterLocation.Query) == ParameterLocation.Query)
             .ToArray();
 
@@ -219,9 +220,9 @@ public class BuildUriMethodGenerator(
                             Argument(pathExpression))),
                         null))))));
 
-            foreach (OpenApiParameter queryParameter in queryParameters)
+            foreach (IOpenApiParameter queryParameter in queryParameters)
             {
-                if (queryParameter.Schema.Type == "array")
+                if (queryParameter.Schema?.IsType(JsonSchemaType.Array) == true)
                 {
                     yield return ExpressionStatement(InvocationExpression(MemberAccessExpression(
                             SyntaxKind.SimpleMemberAccessExpression,
@@ -229,8 +230,8 @@ public class BuildUriMethodGenerator(
                             IdentifierName("AppendList")),
                         ArgumentList(SeparatedList(
                         [
-                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
-                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
+                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name!))),
+                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name!))),
                             Argument(LiteralExpression(queryParameter.Explode ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
                             Argument(queryParameter.Style switch
                             {
@@ -239,7 +240,7 @@ public class BuildUriMethodGenerator(
                                 _ => SyntaxHelpers.StringLiteral(",")
                             }),
                             Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
-                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema.Format))
+                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema?.Format))
                         ]))));
                 }
                 else
@@ -250,10 +251,10 @@ public class BuildUriMethodGenerator(
                             IdentifierName("AppendPrimitive")),
                         ArgumentList(SeparatedList(
                         [
-                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name))),
-                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name))),
+                            Argument(SyntaxHelpers.StringLiteral(Uri.EscapeDataString(queryParameter.Name!))),
+                            Argument(IdentifierName(propertyNameFormatter.Format(queryParameter.Name!))),
                             Argument(LiteralExpression(queryParameter.AllowReserved ? SyntaxKind.TrueLiteralExpression: SyntaxKind.FalseLiteralExpression)),
-                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema.Format))
+                            Argument(SyntaxHelpers.StringLiteral(queryParameter.Schema?.Format))
                         ]))));
                 }
             }
@@ -289,7 +290,7 @@ public class BuildUriMethodGenerator(
                     IdentifierName(BuildUriMethodName)))
             .AddArgumentListArguments(Argument(contextInstance));
 
-    protected ExpressionSyntax GetStyleExpression(OpenApiParameter? parameter) =>
+    protected ExpressionSyntax GetStyleExpression(IOpenApiParameter? parameter) =>
         MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
             SerializationNamespace.PathSegmentStyle,
             parameter?.Style switch
@@ -299,7 +300,7 @@ public class BuildUriMethodGenerator(
                 _ => IdentifierName("Simple")
             });
 
-    protected ExpressionSyntax GetExplodeExpression(OpenApiParameter parameter) =>
+    protected ExpressionSyntax GetExplodeExpression(IOpenApiParameter parameter) =>
         parameter.Explode
             ? LiteralExpression(SyntaxKind.TrueLiteralExpression)
             : LiteralExpression(SyntaxKind.FalseLiteralExpression);

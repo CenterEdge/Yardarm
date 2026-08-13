@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Yardarm.Spec
 {
@@ -35,18 +34,21 @@ namespace Yardarm.Spec
             }
 
             if (IsReferenceEqual &&
-                x.Element is IOpenApiReferenceable referenceableX &&
-                y.Element is IOpenApiReferenceable referenceableY)
+                x.Element is IOpenApiReferenceHolder &&
+                y.Element is IOpenApiReferenceHolder)
             {
-                if (referenceableX.Reference != null)
+                var refX = x.Element.GetReferenceV3();
+                var refY = y.Element.GetReferenceV3();
+
+                if (refX != null)
                 {
-                    if (referenceableY.Reference == null)
+                    if (refY == null)
                     {
                         // Can't be equal if one is a reference and the other is not
                         return false;
                     }
 
-                    return referenceableX.Reference.ReferenceV3 == referenceableY.Reference.ReferenceV3;
+                    return refX == refY;
                 }
             }
 
@@ -62,9 +64,10 @@ namespace Yardarm.Spec
 
         public int GetHashCode(ILocatedOpenApiElement<T> obj)
         {
-            if (obj.Element is IOpenApiReferenceable referenceable && referenceable.Reference != null)
+            var refV3 = obj.Element.GetReferenceV3();
+            if (refV3 != null)
             {
-                return referenceable.Reference.ReferenceV3.GetHashCode();
+                return refV3.GetHashCode();
             }
             else
             {
@@ -78,10 +81,13 @@ namespace Yardarm.Spec
             }
         }
 
-        // For OpenApiResponse and OpenApiRequestBody, treat the element in the components section
+        // For response and request body element types, treat the element in the components section
         // as unequal to an element referencing it in an operation, allowing us to define a separate
         // class for each case.
         public static bool IsReferenceEqualDefault { get; } =
-            typeof(T) != typeof(OpenApiResponse) && typeof(T) != typeof(OpenApiRequestBody);
+            typeof(T) != typeof(IOpenApiResponse) &&
+            typeof(T) != typeof(OpenApiResponse) &&
+            typeof(T) != typeof(IOpenApiRequestBody) &&
+            typeof(T) != typeof(OpenApiRequestBody);
     }
 }

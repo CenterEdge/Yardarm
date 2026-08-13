@@ -1,5 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi;
+using Microsoft.CodeAnalysis;
 using Yardarm.Spec;
 
 namespace Yardarm.Enrichment

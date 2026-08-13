@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation;
 using Yardarm.Names;
 using Yardarm.NodaTime.Helpers;
@@ -12,10 +12,10 @@ using Yardarm.Spec;
 namespace Yardarm.NodaTime.Internal;
 
 internal sealed class NodaTimeSchemaGenerator(
-    ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+    ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
     GenerationContext context,
     ITypeGenerator? parent)
-    : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
+    : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
 {
     public static FrozenSet<string> SupportedFormats { get; } = new[]
     {

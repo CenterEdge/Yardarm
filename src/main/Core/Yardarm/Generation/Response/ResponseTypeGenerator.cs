@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -7,7 +7,7 @@ using System.Net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
@@ -18,7 +18,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Response
 {
     internal class ResponseTypeGenerator(
-        ILocatedOpenApiElement<OpenApiResponse> responseElement,
+        ILocatedOpenApiElement<IOpenApiResponse> responseElement,
         GenerationContext context,
         IMediaTypeSelector mediaTypeSelector,
         IHttpResponseCodeNameProvider httpResponseCodeNameProvider,
@@ -26,7 +26,7 @@ namespace Yardarm.Generation.Response
         IResponsesNamespace responsesNamespace,
         IEnumerable<IResponseMethodGenerator> methodGenerators,
         IOperationNameProvider operationNameProvider)
-        : TypeGeneratorBase<OpenApiResponse>(responseElement, context, null)
+        : TypeGeneratorBase<IOpenApiResponse>(responseElement, context, null)
     {
         public const string BodyFieldName = "_body";
 
@@ -36,7 +36,7 @@ namespace Yardarm.Generation.Response
         protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
         protected IResponseMethodGenerator[] MethodGenerators { get; } = methodGenerators.ToArray();
 
-        protected OpenApiResponse Response => Element.Element;
+        protected IOpenApiResponse Response => Element.Element;
 
         public override QualifiedNameSyntax GetTypeName()
             => QualifiedName(
@@ -53,14 +53,33 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
-            bool isPrimaryImplementation = Element.IsRoot || Response.Reference == null;
+            var responseReference = Response as IOpenApiReferenceHolder<OpenApiResponse, IOpenApiResponse, OpenApiReferenceWithDescriptionAndSummary>;
+            bool isPrimaryImplementation = Element.IsRoot || responseReference is null;
 
             // For non-primary implementations (referencing a response in the components section),
             // inherit from the primary implementation
-            TypeSyntax baseType = isPrimaryImplementation
-                ? ResponsesNamespace.OperationResponse
-                : Context.TypeGeneratorRegistry.Get(
-                    Context.Document.ResolveComponentReference<OpenApiResponse>(Response.Reference!)).TypeInfo.Name;
+            TypeSyntax baseType;
+            if (isPrimaryImplementation)
+            {
+                baseType = ResponsesNamespace.OperationResponse;
+            }
+            else
+            {
+                var target = responseReference!.Target;
+                if (target is null)
+                {
+                    ThrowHelpers.ThrowInvalidOperationException("Response reference target was not resolved.");
+                }
+
+                var referenceId = Response.GetReferenceId();
+                if (referenceId is null)
+                {
+                    ThrowHelpers.ThrowInvalidOperationException("Response reference ID is missing.");
+                }
+
+                var rootElement = target.CreateRoot(referenceId);
+                baseType = Context.TypeGeneratorRegistry.Get(rootElement).TypeInfo.Name;
+            }
 
             var bodyType = GetSchemaGenerator().schemaGenerator?.TypeInfo.Name;
 
@@ -168,7 +187,7 @@ namespace Yardarm.Generation.Response
 
                 if (!header.IsReference)
                 {
-                    ILocatedOpenApiElement<OpenApiSchema> schemaElement = header.GetSchemaOrDefault();
+                    ILocatedOpenApiElement<IOpenApiSchema> schemaElement = header.GetSchemaOrDefault();
                     if (!schemaElement.IsReference)
                     {
                         foreach (var memberDeclaration in headerGenerator.Generate())
@@ -198,19 +217,19 @@ namespace Yardarm.Generation.Response
 
         private (ITypeGenerator? schemaGenerator, bool isReference) GetSchemaGenerator()
         {
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
+            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
             if (mediaType == null)
             {
                 return (null, false);
             }
 
-            ILocatedOpenApiElement<OpenApiSchema>? schemaElement = mediaType.GetSchema();
+            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetSchema();
             if (schemaElement == null)
             {
                 return (null, false);
             }
 
-            return (Context.TypeGeneratorRegistry.Get(schemaElement), schemaElement.Element.Reference != null);
+            return (Context.TypeGeneratorRegistry.Get(schemaElement), schemaElement.Element is IOpenApiReferenceHolder);
         }
 
         private string GetClassName()
@@ -221,7 +240,7 @@ namespace Yardarm.Generation.Response
             {
                 // We're in the components section
 
-                return formatter.Format(Response.Reference.Id + "Response");
+                return formatter.Format(Element.Key + "Response");
             }
             else
             {

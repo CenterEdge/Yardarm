@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.SystemTextJson.Helpers;
@@ -10,9 +10,9 @@ namespace Yardarm.SystemTextJson;
 
 public class JsonExtensibleEnumEnricher(
     IJsonSerializationNamespace jsonNamespace)
-    : IOpenApiSyntaxNodeEnricher<RecordDeclarationSyntax, OpenApiSchema>
+    : IOpenApiSyntaxNodeEnricher<RecordDeclarationSyntax, IOpenApiSchema>
 {
-    public RecordDeclarationSyntax Enrich(RecordDeclarationSyntax target, OpenApiEnrichmentContext<OpenApiSchema> context)
+    public RecordDeclarationSyntax Enrich(RecordDeclarationSyntax target, OpenApiEnrichmentContext<IOpenApiSchema> context)
         => target.IsExtensibleEnumeration()
             ? EnrichEnum(target)
             : target;

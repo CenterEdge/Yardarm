@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Spec;
 
@@ -64,13 +63,23 @@ internal class TypeGeneratorRegistry<TElement> : ITypeGeneratorRegistry<TElement
     private static ITypeGenerator CreateTypeGenerator(ILocatedOpenApiElement<TElement> element, TypeGeneratorRegistry<TElement> registry)
     {
         if (LocatedElementEqualityComparer<TElement>.IsReferenceEqualDefault &&
-            element.Element is IOpenApiReferenceable referenceable && referenceable.Reference != null)
+            element.Element is IOpenApiReferenceHolder)
         {
             // When making the new type generator with the factory for a reference, we must ensure
             // that we are using the referenced component path for the ILocatedOpenApiElement.
 
-            var referencedElement = (TElement)registry._document.ResolveReference(referenceable.Reference);
-            element = LocatedOpenApiElement.CreateRoot(referencedElement, referenceable.Reference.Id);
+            var referenceId = element.Element.GetReferenceId();
+            if (referenceId != null)
+            {
+                // TODO: This is a bit of a hack, but it works for now. We should do this without using reflection.
+
+                // Get the resolved target via the Target property on the reference holder
+                var targetProp = element.Element.GetType().GetProperty("Target");
+                if (targetProp?.GetValue(element.Element) is TElement resolvedTarget)
+                {
+                    element = LocatedOpenApiElement.CreateRoot(resolvedTarget, referenceId);
+                }
+            }
         }
 
         ITypeGenerator? parent = element.Parent is not null

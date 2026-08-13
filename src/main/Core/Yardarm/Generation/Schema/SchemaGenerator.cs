@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Schema
@@ -9,9 +9,9 @@ namespace Yardarm.Generation.Schema
     public class SchemaGenerator : ISyntaxTreeGenerator
     {
         private readonly OpenApiDocument _document;
-        private readonly ITypeGeneratorRegistry<OpenApiSchema> _typeGeneratorRegistry;
+        private readonly ITypeGeneratorRegistry<IOpenApiSchema> _typeGeneratorRegistry;
 
-        public SchemaGenerator(OpenApiDocument document, ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry)
+        public SchemaGenerator(OpenApiDocument document, ITypeGeneratorRegistry<IOpenApiSchema> typeGeneratorRegistry)
         {
             ArgumentNullException.ThrowIfNull(document);
             ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
@@ -22,7 +22,7 @@ namespace Yardarm.Generation.Schema
 
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var schema in _document.Components.Schemas)
+            foreach (var schema in (IEnumerable<KeyValuePair<string, IOpenApiSchema>>?)_document.Components?.Schemas ?? [])
             {
                 var element = schema.Value.CreateRoot(schema.Key);
 

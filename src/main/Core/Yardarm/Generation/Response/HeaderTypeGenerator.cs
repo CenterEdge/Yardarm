@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Response;
 
-public class HeaderTypeGenerator : TypeGeneratorBase<OpenApiHeader>
+public class HeaderTypeGenerator : TypeGeneratorBase<IOpenApiHeader>
 {
-    public HeaderTypeGenerator(ILocatedOpenApiElement<OpenApiHeader> element, GenerationContext context,
+    public HeaderTypeGenerator(ILocatedOpenApiElement<IOpenApiHeader> element, GenerationContext context,
         ITypeGenerator? parent) : base(element, context, parent)
     {
     }

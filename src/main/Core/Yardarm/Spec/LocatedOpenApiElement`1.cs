@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi;
+using System;
 
 namespace Yardarm.Spec
 {

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using NuGet.Frameworks;
 using Yardarm.Generation;
 using Yardarm.Names;

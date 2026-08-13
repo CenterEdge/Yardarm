@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Names;
 using Yardarm.Spec;
 
@@ -17,7 +17,7 @@ namespace Yardarm.Generation.Schema
 
         protected override NameKind NameKind => NameKind.Enum;
 
-        public EnumSchemaGenerator(ILocatedOpenApiElement<OpenApiSchema> schemaElement, GenerationContext context,
+        public EnumSchemaGenerator(ILocatedOpenApiElement<IOpenApiSchema> schemaElement, GenerationContext context,
             ITypeGenerator? parent)
             : base(schemaElement, context, parent)
         {
@@ -36,36 +36,30 @@ namespace Yardarm.Generation.Schema
             yield return SyntaxFactory.EnumDeclaration(enumName)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
                 .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                .AddMembers(Schema.Enum
-                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter, namingContext)!)
+                .AddMembers(Schema.Enum!
+                    .OfType<JsonValue>()
+                    .Select(p => CreateEnumMember(Element, p, memberNameFormatter, namingContext))
                     .Where(p => p != null)
+                    .Select(p => p!)
                     .ToArray());
         }
 
         protected virtual EnumMemberDeclarationSyntax? CreateEnumMember(
-            ILocatedOpenApiElement<OpenApiSchema> schemaElement,
-            IOpenApiAny value,
+            ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
+            JsonValue value,
             INameFormatter nameFormatter,
             NamingContext namingContext)
         {
-            if (value.AnyType != AnyType.Primitive)
+            if (!value.TryGetValue<string>(out var stringValue) || stringValue is null)
             {
                 return null;
             }
 
-            var primitive = (IOpenApiPrimitive) value;
-            if (primitive.PrimitiveType != PrimitiveType.String)
-            {
-                return null;
-            }
-
-            var stringPrimitive = (OpenApiPrimitive<string>)primitive;
-
-            string memberName = namingContext.RegisterName(nameFormatter.Format(stringPrimitive.Value));
+            string memberName = namingContext.RegisterName(nameFormatter.Format(stringValue));
 
             return SyntaxFactory.EnumMemberDeclaration(memberName)
                 .AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(
-                    CreateEnumMemberAttribute(stringPrimitive.Value))
+                    CreateEnumMemberAttribute(stringValue))
                     .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed));
         }
 

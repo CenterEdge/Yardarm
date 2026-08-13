@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -25,7 +25,7 @@ namespace Yardarm.Generation.Tag
         private readonly IAuthenticationNamespace _authenticationNamespace;
         private readonly IOperationMethodGenerator _operationMethodGenerator;
 
-        public TagImplementationTypeGenerator(ILocatedOpenApiElement<OpenApiTag> tagElement, GenerationContext context,
+        public TagImplementationTypeGenerator(ILocatedOpenApiElement<IOpenApiTag> tagElement, GenerationContext context,
             ISerializationNamespace serializationNamespace, IAuthenticationNamespace authenticationNamespace,
             IOperationMethodGenerator operationMethodGenerator, IOperationNameProvider operationNameProvider)
             : base(tagElement, context, operationNameProvider)
@@ -50,7 +50,7 @@ namespace Yardarm.Generation.Tag
         {
             string className = GetClassName();
 
-            var baseType = Context.TypeGeneratorRegistry.Get<OpenApiTag>(Element);
+            var baseType = Context.TypeGeneratorRegistry.Get<IOpenApiTag>(Element);
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
@@ -121,6 +121,6 @@ namespace Yardarm.Generation.Tag
                         IdentifierName("authenticators")))));
         }
 
-        private string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(Tag.Name);
+        private string GetClassName() => Context.NameFormatterSelector.GetFormatter(NameKind.Class).Format(Tag.Name ?? string.Empty);
     }
 }

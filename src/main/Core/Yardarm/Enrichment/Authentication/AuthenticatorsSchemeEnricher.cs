@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -49,7 +50,8 @@ namespace Yardarm.Enrichment.Authentication
         {
             var nameFormatter = _context.NameFormatterSelector.GetFormatter(NameKind.Property);
 
-            foreach (var scheme in _context.Document.Components.SecuritySchemes.Select(p => p.Value.CreateRoot(p.Key)))
+            foreach (var scheme in _context.Document.Components?.SecuritySchemes?
+                .Select(p => p.Value.CreateRoot(p.Key)) ?? [])
             {
                 TypeSyntax typeName = _context.TypeGeneratorRegistry.Get(scheme).TypeInfo.Name;
 

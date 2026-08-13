@@ -1,6 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
@@ -11,10 +11,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
 
-public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+public class JsonPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
 {
     public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context)
+        OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         if (!context.LocatedElement.IsJsonSchema)
         {

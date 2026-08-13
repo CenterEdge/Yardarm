@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -28,7 +28,7 @@ public class AddHeadersMethodGenerator(
 
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType)
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
     {
         if (mediaType is not null)
         {
@@ -70,12 +70,12 @@ public class AddHeadersMethodGenerator(
         ILocatedOpenApiElement<OpenApiOperation> operation)
     {
         ILocatedOpenApiElement<OpenApiResponses> responseSet = operation.GetResponseSet();
-        ILocatedOpenApiElement<OpenApiResponse> primaryResponse = responseSet
+        ILocatedOpenApiElement<IOpenApiResponse> primaryResponse = responseSet
             .GetResponses()
             .OrderBy(p => p.Key)
             .First();
 
-        ILocatedOpenApiElement<OpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
         if (mediaType != null)
         {
             yield return ExpressionStatement(InvocationExpression(
@@ -91,10 +91,10 @@ public class AddHeadersMethodGenerator(
             .Where(p => p.Element.In == ParameterLocation.Header)
             .Select(p => p.Element))
         {
-            string propertyName = propertyNameFormatter.Format(headerParameter.Name);
+            string propertyName = propertyNameFormatter.Format(headerParameter.Name ?? string.Empty);
 
             ExpressionSyntax valueExpression;
-            if (headerParameter is {Schema.Type: "array"})
+            if (headerParameter.Schema?.IsType(JsonSchemaType.Array) == true)
             {
                 valueExpression = InvocationExpression(
                     MemberAccessExpression(
@@ -104,7 +104,7 @@ public class AddHeadersMethodGenerator(
                     ArgumentList(SeparatedList(
                     [
                         Argument(IdentifierName(propertyName)),
-                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema.Format))
+                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema?.Format))
                     ])));
             }
             else
@@ -117,7 +117,7 @@ public class AddHeadersMethodGenerator(
                     ArgumentList(SeparatedList(
                     [
                         Argument(IdentifierName(propertyName)),
-                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema.Format))
+                        Argument(SyntaxHelpers.StringLiteral(headerParameter.Schema?.Format))
                     ])));
             }
 

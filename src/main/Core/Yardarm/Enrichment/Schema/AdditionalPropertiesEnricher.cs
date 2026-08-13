@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -16,7 +16,7 @@ namespace Yardarm.Enrichment.Schema
     /// Adds AdditionalProperties to object schemas, but runs after the <see cref="BaseTypeEnricher"/>. This allows
     /// property shadowing with the new keyword or dropping of unnecessary duplicates.
     /// </summary>
-    public class AdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
+    public class AdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSchema>
     {
         private readonly GenerationContext _context;
 
@@ -33,7 +33,7 @@ namespace Yardarm.Enrichment.Schema
         }
 
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-            OpenApiEnrichmentContext<OpenApiSchema> context)
+            OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             if (!context.Element.AdditionalPropertiesAllowed)
             {
@@ -60,7 +60,7 @@ namespace Yardarm.Enrichment.Schema
                     {
                         var parentSchema = typeInfo.Type
                             .DeclaringSyntaxReferences.FirstOrDefault()?
-                            .GetSyntax().GetElementAnnotation<OpenApiSchema>(_context.ElementRegistry);
+                            .GetSyntax().GetElementAnnotation<IOpenApiSchema>(_context.ElementRegistry);
 
                         if (parentSchema is not null && parentSchema.Element.AdditionalPropertiesAllowed)
                         {
@@ -89,9 +89,9 @@ namespace Yardarm.Enrichment.Schema
                 propertyName, isShadowing));
         }
 
-        private (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) GetDictionaryType(OpenApiEnrichmentContext<OpenApiSchema> context)
+        private (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) GetDictionaryType(OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            ILocatedOpenApiElement<OpenApiSchema> additionalProperties =
+            ILocatedOpenApiElement<IOpenApiSchema> additionalProperties =
                 context.LocatedElement.GetAdditionalPropertiesOrDefault();
             ITypeGenerator schemaGenerator = _context.TypeGeneratorRegistry.Get(additionalProperties);
 

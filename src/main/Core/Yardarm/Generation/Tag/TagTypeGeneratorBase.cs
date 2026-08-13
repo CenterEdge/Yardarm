@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -12,12 +12,12 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Tag
 {
     public abstract class TagTypeGeneratorBase(
-        ILocatedOpenApiElement<OpenApiTag> tagElement,
+        ILocatedOpenApiElement<IOpenApiTag> tagElement,
         GenerationContext context,
         IOperationNameProvider operationNameProvider)
-        : TypeGeneratorBase<OpenApiTag>(tagElement, context, null)
+        : TypeGeneratorBase<IOpenApiTag>(tagElement, context, null)
     {
-        protected OpenApiTag Tag => Element.Element;
+        protected IOpenApiTag Tag => Element.Element;
 
         protected virtual IEnumerable<MethodDeclarationSyntax> GenerateOperationMethodHeader(
             ILocatedOpenApiElement<OpenApiOperation> operation)
@@ -46,6 +46,6 @@ namespace Yardarm.Generation.Tag
             Context.Document.Paths.ToLocatedElements()
                 .GetOperations()
                 .WhereOperationHasName(operationNameProvider)
-                .Where(p => p.Element.Tags.Any(q => q.Name == Tag.Name));
+                .Where(p => p.Element.Tags?.Any(q => q.Name == Tag.Name) == true);
     }
 }

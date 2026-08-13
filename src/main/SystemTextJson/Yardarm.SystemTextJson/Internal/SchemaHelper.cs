@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.SystemTextJson.Internal;
@@ -13,7 +13,7 @@ internal static class SchemaHelper
     {
         public bool IsJsonSchema(ClassDeclarationSyntax classDeclaration)
         {
-            var element = classDeclaration.GetElementAnnotation<OpenApiSchema>(elementRegistry);
+            var element = classDeclaration.GetElementAnnotation<IOpenApiSchema>(elementRegistry);
             if (element is null)
             {
                 return false;
@@ -23,14 +23,14 @@ internal static class SchemaHelper
         }
     }
 
-    extension(ILocatedOpenApiElement<OpenApiSchema> element)
+    extension(ILocatedOpenApiElement<IOpenApiSchema> element)
     {
         public bool IsJsonSchema
         {
             get
             {
                 // Find the top-most schema
-                while (element.Parent is ILocatedOpenApiElement<OpenApiSchema> schemaParent)
+                while (element.Parent is ILocatedOpenApiElement<IOpenApiSchema> schemaParent)
                 {
                     element = schemaParent;
                 }
@@ -41,7 +41,7 @@ internal static class SchemaHelper
                     return true;
                 }
 
-                if (element.Parent is ILocatedOpenApiElement<OpenApiMediaType> mediaTypeElement)
+                if (element.Parent is ILocatedOpenApiElement<IOpenApiMediaType> mediaTypeElement)
                 {
                     return IsJsonMediaType(mediaTypeElement.Key);
                 }
@@ -52,7 +52,7 @@ internal static class SchemaHelper
         }
     }
 
-    public static bool IsPolymorphic(OpenApiSchema schema) =>
+    public static bool IsPolymorphic(IOpenApiSchema schema) =>
         schema is {Discriminator.PropertyName: not null} or {OneOf.Count: > 0};
 
 
@@ -63,7 +63,7 @@ internal static class SchemaHelper
     /// Collects a list of all discriminator keys and their relevant C# type.
     /// </summary>
     public static IEnumerable<(string key, TypeSyntax typeName)> GetDiscriminatorMappings(GenerationContext context,
-        ILocatedOpenApiElement<OpenApiSchema> element) =>
+        ILocatedOpenApiElement<IOpenApiSchema> element) =>
         GetMappings(context, element)
             .Select(p => (p.Key, context.TypeGeneratorRegistry.Get(p.Schema).TypeInfo.Name))
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
@@ -78,24 +78,22 @@ internal static class SchemaHelper
     /// missing it will fallback all oneOf's defined on the type. If that is not the case, it will
     /// look for cases of allOf inheritance from schemas defined in the components section.
     /// </remarks>
-    private static IEnumerable<(string Key, ILocatedOpenApiElement<OpenApiSchema> Schema)> GetMappings(
+    private static IEnumerable<(string Key, ILocatedOpenApiElement<IOpenApiSchema> Schema)> GetMappings(
         GenerationContext context,
-        ILocatedOpenApiElement<OpenApiSchema> element)
+        ILocatedOpenApiElement<IOpenApiSchema> element)
     {
         if (element.Element.Discriminator is {Mapping.Count: > 0})
         {
-            // Use specifically listed mappings
+            // Use specifically listed mappings — Mapping values are now OpenApiSchemaReference objects
             return element.Element.Discriminator.Mapping
                 .Select(p =>
                 {
-                    // TODO: We should really be parsing this rather than just checking a prefix, but the OpenAPI parser isn't exposed
-                    if (p.Value.StartsWith("#/components/schemas/"))
+                    // p.Value is an OpenApiSchemaReference which implements IOpenApiSchema
+                    var referenceId = p.Value.GetReferenceId();
+                    if (referenceId is not null &&
+                        (context.Document.Components?.Schemas?.TryGetValue(referenceId, out var schema) ?? false))
                     {
-                        string schemaName = p.Value.Substring("#/components/schemas/".Length);
-                        if (context.Document.Components.Schemas.TryGetValue(schemaName, out var schema))
-                        {
-                            return (p.Key, Schema: schema.CreateRoot(p.Key));
-                        }
+                        return (p.Key, Schema: schema.CreateRoot(referenceId));
                     }
 
                     return (p.Key, Schema: null!);
@@ -108,19 +106,20 @@ internal static class SchemaHelper
         {
             // Gather mappings from "oneOf" that get a default mapping based on the schema name
             return element.Element.OneOf
-                .Where(p => p.Reference is not null)
-                .Select(p => (p.Reference.Id, p.CreateRoot(p.Reference.Id)));
+                .Where(p => p is IOpenApiReferenceHolder)
+                .Select(p => (p.GetReferenceId()!, p.CreateRoot(p.GetReferenceId()!)));
         }
 
         // Find other schemas that reference this one using allOf. This only applies to base
         // classes, don't try this with interfaces.
-        return context.Document.Components.Schemas
+        return context.Document.Components?.Schemas?
             .Where(p =>
             {
                 var firstAllOf = p.Value.AllOf?.FirstOrDefault();
-                return firstAllOf?.Reference is not null &&
-                       firstAllOf.Reference.Id == element.Key;
+                return firstAllOf is IOpenApiReferenceHolder &&
+                       firstAllOf.GetReferenceId() == element.Key;
             })
-            .Select(p => (p.Key, p.Value.CreateRoot(p.Key)));
+            .Select(p => (p.Key, p.Value.CreateRoot(p.Key)))
+            ?? [];
     }
 }

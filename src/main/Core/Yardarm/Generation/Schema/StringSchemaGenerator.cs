@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -11,10 +11,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Schema;
 
 public class StringSchemaGenerator(
-    ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+    ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
     GenerationContext context,
     ITypeGenerator? parent)
-    : TypeGeneratorBase<OpenApiSchema>(schemaElement, context, parent)
+    : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
 {
     private static YardarmTypeInfo? s_string;
     private static YardarmTypeInfo String => s_string ??= new YardarmTypeInfo(

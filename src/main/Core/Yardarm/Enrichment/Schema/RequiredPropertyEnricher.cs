@@ -1,19 +1,19 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Enrichment.Schema
 {
-    public class RequiredPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class RequiredPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
             bool isRequired =
-                context.LocatedElement.Parent is LocatedOpenApiElement<OpenApiSchema> parentSchema &&
-                parentSchema.Element.Required.Contains(context.LocatedElement.Key);
+                context.LocatedElement.Parent is LocatedOpenApiElement<IOpenApiSchema> parentSchema &&
+                parentSchema.Element.Required?.Contains(context.LocatedElement.Key) == true;
 
             if (!isRequired || context.Element.Nullable)
             {

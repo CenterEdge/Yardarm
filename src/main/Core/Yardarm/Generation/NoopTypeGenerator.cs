@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using Microsoft.OpenApi;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Interfaces;
 using Yardarm.Names;
 using Yardarm.Spec;
 

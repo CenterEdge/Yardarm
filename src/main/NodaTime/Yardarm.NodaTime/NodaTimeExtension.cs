@@ -1,6 +1,6 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.NodaTime.Internal;
@@ -17,7 +17,7 @@ public sealed class NodaTimeExtension : YardarmExtension
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
         services
-            .AddTypeGeneratorFactory<OpenApiSchema, NodaTimeSchemaGeneratorFactory>()
+            .AddTypeGeneratorFactory<IOpenApiSchema, NodaTimeSchemaGeneratorFactory>()
             .AddRegistrationEnricher<JsonSerializerSettingsEnricher>("JsonSerializerSettings")
             .AddKeyedTransient<IEnricher<AttributeSyntax>, NodaTimeJsonSourceGenerationOptionsEnricher>("JsonSourceGenerationOptions")
             .AddSingleton<ISyntaxTreeGenerator, ClientGenerator>()

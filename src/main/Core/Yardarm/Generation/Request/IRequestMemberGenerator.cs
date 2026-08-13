@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Request
@@ -8,6 +8,6 @@ namespace Yardarm.Generation.Request
     public interface IRequestMemberGenerator
     {
         IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-            ILocatedOpenApiElement<OpenApiMediaType>? mediaType);
+            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType);
     }
 }

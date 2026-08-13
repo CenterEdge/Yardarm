@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Spec;
 using Yardarm.NewtonsoftJson.Helpers;
@@ -10,7 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.NewtonsoftJson
 {
-    public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, OpenApiSchema>
+    public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyDeclarationSyntax, IOpenApiSchema>
     {
         private readonly IOpenApiElementRegistry _elementRegistry;
         private readonly IJsonSerializationNamespace _serializationNamespace;
@@ -24,15 +24,15 @@ namespace Yardarm.NewtonsoftJson
             _serializationNamespace = serializationNamespace;
         }
 
-        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<OpenApiSchema> context)
+        public PropertyDeclarationSyntax Enrich(PropertyDeclarationSyntax syntax, OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            if (context.Element.Type != "string" || context.Element.Format is not "date" and not "full-date")
+            if (!context.Element.IsType(JsonSchemaType.String) || context.Element.Format is not "date" and not "full-date")
             {
                 // Only applies to date-only strings
                 return syntax;
             }
 
-            if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(_elementRegistry) is null)
+            if (syntax.Parent?.GetElementAnnotation<IOpenApiSchema>(_elementRegistry) is null)
             {
                 // We don't need to apply this to properties of request classes, only schemas
                 return syntax;

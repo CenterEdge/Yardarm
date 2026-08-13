@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Operation;
 using Yardarm.Generation.Request.Internal;
@@ -97,7 +97,7 @@ namespace Yardarm.Generation.Request
 
                 yield return CreatePropertyDeclaration(parameter, schema, GetPropertyName(parameter.Key, className));
 
-                if (parameter.Element.Reference == null && schema.Element.Reference == null)
+                if (parameter.Element is not IOpenApiReferenceHolder && schema.Element is not IOpenApiReferenceHolder)
                 {
                     foreach (var member in Context.TypeGeneratorRegistry.Get(schema).Generate())
                     {
@@ -106,7 +106,7 @@ namespace Yardarm.Generation.Request
                 }
             }
 
-            if (Element.Parent is ILocatedOpenApiElement<OpenApiPathItem> pathItemElement)
+            if (Element.Parent is ILocatedOpenApiElement<IOpenApiPathItem> pathItemElement)
             {
                 // Generate properties for route parameters not explicitly defined in the parameters list.
                 // Assume they are required strings with a default value of "".
@@ -151,8 +151,8 @@ namespace Yardarm.Generation.Request
             }
         }
 
-        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<OpenApiParameter> parameter,
-            ILocatedOpenApiElement<OpenApiSchema> schema, string propertyName)
+        protected virtual PropertyDeclarationSyntax CreatePropertyDeclaration(ILocatedOpenApiElement<IOpenApiParameter> parameter,
+            ILocatedOpenApiElement<IOpenApiSchema> schema, string propertyName)
         {
             TypeSyntax typeName = Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name;
 

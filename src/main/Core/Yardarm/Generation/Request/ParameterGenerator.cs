@@ -1,20 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Spec;
 
 namespace Yardarm.Generation.Request
 {
     public class ParameterGenerator(
         OpenApiDocument document,
-        ITypeGeneratorRegistry<OpenApiParameter> parameterGeneratorRegistry)
+        ITypeGeneratorRegistry<IOpenApiParameter> parameterGeneratorRegistry)
         : ISyntaxTreeGenerator
     {
         public IEnumerable<SyntaxTree> Generate()
         {
-            foreach (var syntaxTree in document.Components.Parameters
+            foreach (var syntaxTree in (document.Components?.Parameters ?? (IEnumerable<KeyValuePair<string, IOpenApiParameter>>)[])
                 .Select(p => p.Value.CreateRoot(p.Key))
                 .Select(Generate)
                 .Where(p => p != null))
@@ -23,7 +23,7 @@ namespace Yardarm.Generation.Request
             }
         }
 
-        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<OpenApiParameter> parameter) =>
+        protected virtual SyntaxTree? Generate(ILocatedOpenApiElement<IOpenApiParameter> parameter) =>
             parameterGeneratorRegistry.Get(parameter).GenerateSyntaxTree();
     }
 }

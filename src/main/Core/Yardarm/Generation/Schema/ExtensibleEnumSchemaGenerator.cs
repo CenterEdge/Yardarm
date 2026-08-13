@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
@@ -17,7 +17,7 @@ namespace Yardarm.Generation.Schema;
 internal class ExtensibleEnumSchemaGenerator(
     GenerationContext context,
     IRootNamespace rootNamespace,
-    ILocatedOpenApiElement<OpenApiSchema> schemaElement,
+    ILocatedOpenApiElement<IOpenApiSchema> schemaElement,
     ITypeGenerator? parent,
     List<string> wellKnownValues)
     : SchemaGeneratorBase(schemaElement, context, parent)

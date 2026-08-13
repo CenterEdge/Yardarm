@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Generation;
 using Yardarm.SystemTextJson.Helpers;
@@ -12,14 +12,14 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.SystemTextJson;
 
-public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, OpenApiSchema>,
-    IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiSchema>
+public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDeclarationSyntax, IOpenApiSchema>,
+    IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSchema>
 {
     protected GenerationContext GenerationContext { get; }
-    protected ITypeGeneratorRegistry<OpenApiSchema> TypeGeneratorRegistry { get; }
+    protected ITypeGeneratorRegistry<IOpenApiSchema> TypeGeneratorRegistry { get; }
 
     public JsonDiscriminatorEnricher(GenerationContext generationContext,
-        [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<OpenApiSchema> typeGeneratorRegistry)
+        [FromKeyedServices(DiscriminatorConverterTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<IOpenApiSchema> typeGeneratorRegistry)
     {
         ArgumentNullException.ThrowIfNull(generationContext);
         ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
@@ -29,19 +29,19 @@ public class JsonDiscriminatorEnricher : IOpenApiSyntaxNodeEnricher<InterfaceDec
     }
 
     public InterfaceDeclarationSyntax Enrich(InterfaceDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context) =>
+        OpenApiEnrichmentContext<IOpenApiSchema> context) =>
         SchemaHelper.IsPolymorphic(context.Element) && context.LocatedElement.IsJsonSchema
             ? (InterfaceDeclarationSyntax) AddJsonConverter(target, context)
             : target;
 
     public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context) =>
+        OpenApiEnrichmentContext<IOpenApiSchema> context) =>
         SchemaHelper.IsPolymorphic(context.Element) && context.LocatedElement.IsJsonSchema
             ? (ClassDeclarationSyntax) AddJsonConverter(target, context)
             : target;
 
     protected virtual TypeDeclarationSyntax AddJsonConverter(TypeDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context)
+        OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
         var converter = TypeGeneratorRegistry.Get(context.LocatedElement);
 

@@ -1,7 +1,7 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Yardarm.Enrichment;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Generation;
@@ -33,7 +33,7 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
             .AddSingleton<ISyntaxTreeGenerator, DiscriminatorConverterGenerator>()
             .AddSingleton<ISyntaxTreeGenerator, JsonSerializerContextGenerator>()
             .AddSingleton<ICompilationEnricher, JsonSerializableEnricher>()
-            .AddTypeGeneratorFactory<OpenApiSchema, DiscriminatorConverterTypeGeneratorFactory>(DiscriminatorConverterTypeGenerator.GeneratorCategory);
+            .AddTypeGeneratorFactory<IOpenApiSchema, DiscriminatorConverterTypeGeneratorFactory>(DiscriminatorConverterTypeGenerator.GeneratorCategory);
 
         services
             .TryAddSingleton<IJsonSerializationNamespace, JsonSerializationNamespace>();

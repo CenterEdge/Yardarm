@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using Microsoft.Build.Framework;
 
 namespace Yardarm.Build.Tasks
@@ -17,6 +18,9 @@ namespace Yardarm.Build.Tasks
         public string? TargetFramework { get; set; }
 
         public string? BaseIntermediateOutputPath { get; set; }
+
+        [Required]
+        public string? YardarmToolPath { get; set; }
 
         public string? AdditionalProperties { get; set; }
 
@@ -42,12 +46,21 @@ namespace Yardarm.Build.Tasks
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(YardarmToolPath))
+            {
+                Log.LogError("YardarmToolPath is required.");
+                return false;
+            }
+
             return true;
         }
 
         protected override string GenerateCommandLineCommands()
         {
-            var builder = new StringBuilder(Verb);
+            var builder = new StringBuilder();
+            builder.AppendQuoted(Path.Combine(YardarmToolPath!, "Yardarm.CommandLine.dll"));
+            builder.Append(' ');
+            builder.Append(Verb);
             builder.AppendFormat(" -n {0}", AssemblyName);
             builder.AppendFormat(" --root-namespace {0}", RootNamespace);
             builder.AppendFormat(" -f {0}", TargetFramework);

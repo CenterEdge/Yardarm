@@ -6066,7 +6066,7 @@
   },
   "components": {
     "schemas": {
-      "Action": {
+      "ActionBase": {
         "required": [
           "actionType"
         ],
@@ -6076,9 +6076,25 @@
             "$ref": "#/components/schemas/ActionType"
           }
         },
+        "additionalProperties": false
+      },
+      "Action": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CustomerAction"
+          },
+          {
+            "$ref": "#/components/schemas/MediaAction"
+          }
+        ],
         "additionalProperties": false,
         "discriminator": {
-          "propertyName": "actionType"
+          "propertyName": "actionType",
+          "mapping": {
+            "CustomerAction": "#/components/schemas/CustomerAction",
+            "MediaAction": "#/components/schemas/MediaAction"
+          }
         }
       },
       "ActionType": {
@@ -7050,7 +7066,7 @@
         "type": "object",
         "allOf": [
           {
-            "$ref": "#/components/schemas/Action"
+            "$ref": "#/components/schemas/ActionBase"
           }
         ],
         "properties": {
@@ -8240,7 +8256,7 @@
         "type": "object",
         "allOf": [
           {
-            "$ref": "#/components/schemas/Action"
+            "$ref": "#/components/schemas/ActionBase"
           }
         ],
         "properties": {

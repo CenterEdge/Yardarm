@@ -13,7 +13,7 @@ internal static class SchemaHelper
     {
         public bool IsJsonSchema(ClassDeclarationSyntax classDeclaration)
         {
-            var element = classDeclaration.GetElementAnnotation<OpenApiSchema>(elementRegistry);
+            var element = classDeclaration.GetElementAnnotation<IOpenApiSchema>(elementRegistry);
             if (element is null)
             {
                 return false;

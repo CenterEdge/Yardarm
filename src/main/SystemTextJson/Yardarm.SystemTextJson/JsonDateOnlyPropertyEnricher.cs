@@ -39,7 +39,7 @@ public class JsonDateOnlyPropertyEnricher : IOpenApiSyntaxNodeEnricher<PropertyD
             return syntax;
         }
 
-        if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(_elementRegistry) is null)
+        if (syntax.Parent?.GetElementAnnotation<IOpenApiSchema>(_elementRegistry) is null)
         {
             // We don't need to apply this to properties of request classes, only schemas
             return syntax;

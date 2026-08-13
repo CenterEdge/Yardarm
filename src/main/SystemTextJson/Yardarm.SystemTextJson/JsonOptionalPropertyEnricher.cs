@@ -23,7 +23,7 @@ public class JsonOptionalPropertyEnricher(
             return syntax;
         }
 
-        if (syntax.Parent?.GetElementAnnotation<OpenApiSchema>(elementRegistry) is null)
+        if (syntax.Parent?.GetElementAnnotation<IOpenApiSchema>(elementRegistry) is null)
         {
             // We don't need to apply this to properties of request classes, only schemas
             return syntax;

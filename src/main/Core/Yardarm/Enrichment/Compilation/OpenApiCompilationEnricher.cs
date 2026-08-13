@@ -45,7 +45,7 @@ namespace Yardarm.Enrichment.Compilation
         private CSharpCompilation Enrich(CSharpCompilation compilation, IOpenApiSyntaxNodeEnricher enricher)
         {
             var genericEnrichCompilationMethod = s_genericEnrichCompilationMethod ??=
-                ((Func<CSharpCompilation, IOpenApiSyntaxNodeEnricher<SyntaxNode, OpenApiSchema>, CSharpCompilation>)Enrich)
+                ((Func<CSharpCompilation, IOpenApiSyntaxNodeEnricher<SyntaxNode, IOpenApiSchema>, CSharpCompilation>)Enrich)
                     .GetMethodInfo().GetGenericMethodDefinition();
 
             foreach (Type interfaceType in enricher.GetType().GetInterfaces()

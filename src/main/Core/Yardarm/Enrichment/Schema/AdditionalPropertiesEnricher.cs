@@ -60,7 +60,7 @@ namespace Yardarm.Enrichment.Schema
                     {
                         var parentSchema = typeInfo.Type
                             .DeclaringSyntaxReferences.FirstOrDefault()?
-                            .GetSyntax().GetElementAnnotation<OpenApiSchema>(_context.ElementRegistry);
+                            .GetSyntax().GetElementAnnotation<IOpenApiSchema>(_context.ElementRegistry);
 
                         if (parentSchema is not null && parentSchema.Element.AdditionalPropertiesAllowed)
                         {

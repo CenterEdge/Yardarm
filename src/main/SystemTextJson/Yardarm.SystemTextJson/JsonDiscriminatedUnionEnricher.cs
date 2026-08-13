@@ -10,10 +10,10 @@ namespace Yardarm.SystemTextJson;
 
 public sealed class JsonDiscriminatedUnionEnricher(
     IJsonSerializationNamespace jsonSerializationNamespace)
-    : IOpenApiSyntaxNodeEnricher<StructDeclarationSyntax, OpenApiSchema>
+    : IOpenApiSyntaxNodeEnricher<StructDeclarationSyntax, IOpenApiSchema>
 {
     public StructDeclarationSyntax Enrich(StructDeclarationSyntax target,
-        OpenApiEnrichmentContext<OpenApiSchema> context) =>
+        OpenApiEnrichmentContext<IOpenApiSchema> context) =>
         target.IsExternallyDiscriminatedUnion()
             ? AddJsonConverter(target)
             : target;

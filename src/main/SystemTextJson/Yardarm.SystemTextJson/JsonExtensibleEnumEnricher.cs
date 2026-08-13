@@ -10,9 +10,9 @@ namespace Yardarm.SystemTextJson;
 
 public class JsonExtensibleEnumEnricher(
     IJsonSerializationNamespace jsonNamespace)
-    : IOpenApiSyntaxNodeEnricher<RecordDeclarationSyntax, OpenApiSchema>
+    : IOpenApiSyntaxNodeEnricher<RecordDeclarationSyntax, IOpenApiSchema>
 {
-    public RecordDeclarationSyntax Enrich(RecordDeclarationSyntax target, OpenApiEnrichmentContext<OpenApiSchema> context)
+    public RecordDeclarationSyntax Enrich(RecordDeclarationSyntax target, OpenApiEnrichmentContext<IOpenApiSchema> context)
         => target.IsExtensibleEnumeration()
             ? EnrichEnum(target)
             : target;

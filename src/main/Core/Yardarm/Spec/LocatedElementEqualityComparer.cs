@@ -81,10 +81,13 @@ namespace Yardarm.Spec
             }
         }
 
-        // For OpenApiResponse and OpenApiRequestBody, treat the element in the components section
+        // For response and request body element types, treat the element in the components section
         // as unequal to an element referencing it in an operation, allowing us to define a separate
         // class for each case.
         public static bool IsReferenceEqualDefault { get; } =
-            typeof(T) != typeof(OpenApiResponse) && typeof(T) != typeof(OpenApiRequestBody);
+            typeof(T) != typeof(IOpenApiResponse) &&
+            typeof(T) != typeof(OpenApiResponse) &&
+            typeof(T) != typeof(IOpenApiRequestBody) &&
+            typeof(T) != typeof(OpenApiRequestBody);
     }
 }

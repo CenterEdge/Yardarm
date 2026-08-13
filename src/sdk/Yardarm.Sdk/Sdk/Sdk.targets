@@ -141,7 +141,7 @@
           DependsOnTargets="CollectYardarmExtensions;_ResolveYardarmProperties"
           Returns="@(PackageReference);@(PackageDownload)">
     <YardarmCollectDependencies
-      ToolPath="$(YardarmToolPath)"
+      YardarmToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
       RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"
@@ -203,7 +203,7 @@
     </PropertyGroup>
 
     <YardarmGenerate
-      ToolPath="$(YardarmToolPath)"
+      YardarmToolPath="$(YardarmToolPath)"
       AssemblyName="$(AssemblyName)"
       RootNamespace="$(RootNamespace)"
       TargetFramework="$(TargetFramework)"

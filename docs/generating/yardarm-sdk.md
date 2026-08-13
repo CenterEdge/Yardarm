@@ -16,6 +16,11 @@ managed much like any other C# project.
 - Reference the project as a `PackageReference` from other .NET projects
 - `dotnet restore`, `dotnet build`, and `dotnet pack` support
 
+## Requirements
+
+Yardarm SDK runs its bundled command-line generator with the installed .NET runtime. It supports
+Windows, Linux, and macOS on x64 and ARM64 when a compatible .NET runtime is available.
+
 ## Example Project
 
 Create the below as a `.csproj` file and include a `.yaml` or `.json` OpenAPI specification

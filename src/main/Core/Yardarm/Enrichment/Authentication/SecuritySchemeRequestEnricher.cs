@@ -52,14 +52,14 @@ namespace Yardarm.Enrichment.Authentication
                     .ToArray();
 
                 bool isDeprecated = securitySchemes.Any(p => p.Element.Deprecated);
-                attributes.Add((
-                    AttributeList(SingletonSeparatedList(
+                var attribute = AttributeList(SingletonSeparatedList(
                         Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
                             .AddArgumentListArguments(
                                 securitySchemes.Select(securityScheme =>
                                         AttributeArgument(TypeOfExpression(_context.TypeGeneratorRegistry.Get(securityScheme).TypeInfo.Name)))
-                                    .ToArray()))),
-                    isDeprecated));
+                                    .ToArray())))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
+                attributes.Add((attribute, isDeprecated));
 
                 if (securitySchemes.Length == 1)
                 {

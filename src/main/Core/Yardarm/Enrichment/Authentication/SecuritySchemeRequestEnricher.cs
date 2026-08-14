@@ -19,7 +19,7 @@ namespace Yardarm.Enrichment.Authentication
             ParseLeadingTrivia("#pragma warning disable CS0618\n");
 
         private static readonly SyntaxTriviaList s_restoreObsoleteWarningTrivia =
-            ParseTrailingTrivia("\n#pragma warning restore CS0618\n");
+            ParseLeadingTrivia("#pragma warning restore CS0618\n");
 
         private readonly GenerationContext _context;
         private readonly IAuthenticationNamespace _authenticationNamespace;
@@ -98,20 +98,26 @@ namespace Yardarm.Enrichment.Authentication
 
             if (attributes.Count > 0)
             {
-                target = target.AddAttributeLists(attributes.ToArray());
+                target = RestoreObsoleteWarning(target.AddAttributeLists(attributes.ToArray()));
             }
 
             return target;
         }
 
         private static AttributeListSyntax SuppressObsoleteWarning(AttributeListSyntax attributeList) =>
-            attributeList
-                .WithLeadingTrivia(s_disableObsoleteWarningTrivia)
-                .WithTrailingTrivia(s_restoreObsoleteWarningTrivia);
+            attributeList.WithLeadingTrivia(s_disableObsoleteWarningTrivia);
 
         private static MethodDeclarationSyntax SuppressObsoleteWarning(MethodDeclarationSyntax method) =>
             method
                 .WithLeadingTrivia(s_disableObsoleteWarningTrivia)
-                .WithTrailingTrivia(s_restoreObsoleteWarningTrivia);
+                .WithBody(method.Body!.WithOpenBraceToken(method.Body.OpenBraceToken.WithLeadingTrivia(
+                    s_restoreObsoleteWarningTrivia.AddRange(method.Body.OpenBraceToken.LeadingTrivia))));
+
+        private static ClassDeclarationSyntax RestoreObsoleteWarning(ClassDeclarationSyntax declaration)
+        {
+            SyntaxToken firstModifier = declaration.Modifiers.First();
+            return declaration.WithModifiers(declaration.Modifiers.Replace(firstModifier,
+                firstModifier.WithLeadingTrivia(s_restoreObsoleteWarningTrivia.AddRange(firstModifier.LeadingTrivia))));
+        }
     }
 }

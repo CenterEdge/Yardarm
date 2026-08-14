@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.2.0",
   "info": {
     "title": "Advantage API",
     "version": "v1"
@@ -68,7 +68,8 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": [],
+            "Basic": []
           }
         ]
       }
@@ -11537,6 +11538,11 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      },
+      "Basic": {
+        "type": "http",
+        "scheme": "basic",
+        "deprecated": true
       }
     }
   }

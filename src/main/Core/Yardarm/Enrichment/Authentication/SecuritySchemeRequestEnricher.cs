@@ -15,6 +15,12 @@ namespace Yardarm.Enrichment.Authentication
 {
     public class SecuritySchemeRequestEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, OpenApiOperation>
     {
+        private static readonly SyntaxTriviaList s_disableObsoleteWarningTrivia =
+            ParseLeadingTrivia("#pragma warning disable CS0618\n");
+
+        private static readonly SyntaxTriviaList s_restoreObsoleteWarningTrivia =
+            ParseTrailingTrivia("\n#pragma warning restore CS0618\n");
+
         private readonly GenerationContext _context;
         private readonly IAuthenticationNamespace _authenticationNamespace;
 
@@ -37,7 +43,7 @@ namespace Yardarm.Enrichment.Authentication
         {
             var className = IdentifierName(target.Identifier);
 
-            var attributes = new List<AttributeSyntax>();
+            var attributes = new List<AttributeListSyntax>();
 
             foreach (var securityRequirement in operation.GetSecurityRequirements())
             {
@@ -45,17 +51,19 @@ namespace Yardarm.Enrichment.Authentication
                     .Select(p => p.Key)
                     .ToArray();
 
-                attributes.Add(Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
-                    .AddArgumentListArguments(
-                        securitySchemes.Select(securityScheme =>
-                                AttributeArgument(TypeOfExpression(_context.TypeGeneratorRegistry.Get(securityScheme).TypeInfo.Name)))
-                            .ToArray()));
+                attributes.Add(SuppressObsoleteWarning(
+                    AttributeList(SingletonSeparatedList(
+                        Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
+                            .AddArgumentListArguments(
+                                securitySchemes.Select(securityScheme =>
+                                        AttributeArgument(TypeOfExpression(_context.TypeGeneratorRegistry.Get(securityScheme).TypeInfo.Name)))
+                                    .ToArray())))));
 
                 if (securitySchemes.Length == 1)
                 {
                     TypeSyntax schemeTypeName = _context.TypeGeneratorRegistry.Get(securitySchemes[0]).TypeInfo.Name;
 
-                    target = target.AddMembers(MethodDeclaration(className, "WithAuthenticator")
+                    target = target.AddMembers(SuppressObsoleteWarning(MethodDeclaration(className, "WithAuthenticator")
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddParameterListParameters(
                             Parameter(Identifier("authenticator"))
@@ -64,11 +72,11 @@ namespace Yardarm.Enrichment.Authentication
                             ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                                 IdentifierName("Authenticator"),
                                 IdentifierName("authenticator"))),
-                            ReturnStatement(ThisExpression()))));
+                            ReturnStatement(ThisExpression())))));
                 }
                 else if (securitySchemes.Length > 1)
                 {
-                    target = target.AddMembers(MethodDeclaration(className, "WithAuthenticator")
+                    target = target.AddMembers(SuppressObsoleteWarning(MethodDeclaration(className, "WithAuthenticator")
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddParameterListParameters(
                             securitySchemes
@@ -84,18 +92,26 @@ namespace Yardarm.Enrichment.Authentication
                                         securitySchemes
                                             .Select((_, index) => Argument(IdentifierName($"authenticator{index}")))
                                             .ToArray()))),
-                            ReturnStatement(ThisExpression()))));
+                            ReturnStatement(ThisExpression())))));
                 }
             }
 
             if (attributes.Count > 0)
             {
-                target = target.AddAttributeLists(
-                    AttributeList(null, SeparatedList(attributes))
-                        .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
+                target = target.AddAttributeLists(attributes.ToArray());
             }
 
             return target;
         }
+
+        private static AttributeListSyntax SuppressObsoleteWarning(AttributeListSyntax attributeList) =>
+            attributeList
+                .WithLeadingTrivia(s_disableObsoleteWarningTrivia)
+                .WithTrailingTrivia(s_restoreObsoleteWarningTrivia);
+
+        private static MethodDeclarationSyntax SuppressObsoleteWarning(MethodDeclarationSyntax method) =>
+            method
+                .WithLeadingTrivia(s_disableObsoleteWarningTrivia)
+                .WithTrailingTrivia(s_restoreObsoleteWarningTrivia);
     }
 }

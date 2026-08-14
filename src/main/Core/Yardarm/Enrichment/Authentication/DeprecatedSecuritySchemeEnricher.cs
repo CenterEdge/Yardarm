@@ -18,7 +18,7 @@ namespace Yardarm.Enrichment.Authentication
                 ? MarkObsolete(target, context.LocatedElement.Key)
                 : target;
 
-        private static ClassDeclarationSyntax MarkObsolete(ClassDeclarationSyntax target, string? schemeName) =>
+        private static ClassDeclarationSyntax MarkObsolete(ClassDeclarationSyntax target, string schemeName) =>
             target.AddAttributeLists(AttributeList(SingletonSeparatedList(
                 Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
                     AttributeArgumentList(SingletonSeparatedList(AttributeArgument(

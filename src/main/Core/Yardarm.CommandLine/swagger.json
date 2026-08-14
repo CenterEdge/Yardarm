@@ -1,14 +1,198 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.2.0",
   "info": {
     "title": "Advantage API",
     "version": "v1"
   },
+  "tags": [
+    {
+      "name": "Activities",
+      "kind": "nav"
+    },
+    {
+      "name": "Auth",
+      "kind": "nav"
+    },
+    {
+      "name": "Authentication",
+      "kind": "nav"
+    },
+    {
+      "name": "BulkWaiverImport",
+      "kind": "nav"
+    },
+    {
+      "name": "BusinessEntity",
+      "kind": "nav"
+    },
+    {
+      "name": "CardLayout",
+      "kind": "nav"
+    },
+    {
+      "name": "CatalogEntries",
+      "kind": "nav"
+    },
+    {
+      "name": "Categories",
+      "kind": "nav"
+    },
+    {
+      "name": "CustomerCards",
+      "kind": "nav"
+    },
+    {
+      "name": "Customers",
+      "kind": "nav"
+    },
+    {
+      "name": "CustomerWaivers",
+      "kind": "nav"
+    },
+    {
+      "name": "Divisions",
+      "kind": "nav"
+    },
+    {
+      "name": "Fingerprints",
+      "kind": "nav"
+    },
+    {
+      "name": "GroupEvents",
+      "kind": "nav"
+    },
+    {
+      "name": "Jobs",
+      "kind": "nav"
+    },
+    {
+      "name": "Media",
+      "kind": "nav"
+    },
+    {
+      "name": "MediaBalance",
+      "kind": "nav"
+    },
+    {
+      "name": "MediaPlayPrivilege",
+      "kind": "nav"
+    },
+    {
+      "name": "MediaTimePlay",
+      "kind": "nav"
+    },
+    {
+      "name": "ModifierSets",
+      "kind": "nav"
+    },
+    {
+      "name": "Passes",
+      "kind": "nav"
+    },
+    {
+      "name": "PassType",
+      "kind": "nav"
+    },
+    {
+      "name": "PassUseOptions",
+      "kind": "nav"
+    },
+    {
+      "name": "PassUses",
+      "kind": "nav"
+    },
+    {
+      "name": "PayrollExport",
+      "kind": "nav"
+    },
+    {
+      "name": "Price",
+      "kind": "nav"
+    },
+    {
+      "name": "PriceLists",
+      "kind": "nav"
+    },
+    {
+      "name": "Products",
+      "kind": "nav"
+    },
+    {
+      "name": "Refresh",
+      "kind": "nav"
+    },
+    {
+      "name": "Reservations",
+      "kind": "nav"
+    },
+    {
+      "name": "SalesTax",
+      "kind": "nav"
+    },
+    {
+      "name": "Station",
+      "kind": "nav"
+    },
+    {
+      "name": "TicketFormats",
+      "kind": "nav"
+    },
+    {
+      "name": "Tills",
+      "kind": "nav"
+    },
+    {
+      "name": "Transactions",
+      "kind": "nav"
+    },
+    {
+      "name": "Updates",
+      "kind": "nav"
+    },
+    {
+      "name": "UrlToPay",
+      "kind": "nav"
+    },
+    {
+      "name": "Version",
+      "kind": "nav"
+    },
+    {
+      "name": "WaiverDocument",
+      "kind": "nav"
+    },
+    {
+      "name": "Waivers",
+      "kind": "nav"
+    },
+    {
+      "name": "WaiverSignature",
+      "kind": "nav"
+    },
+    {
+      "name": "WaiverText",
+      "kind": "nav"
+    },
+    {
+      "name": "WaiverTypes",
+      "kind": "nav"
+    },
+    {
+      "name": "Badge",
+      "kind": "badge"
+    },
+    {
+      "name": "Audience",
+      "kind": "audience"
+    }
+  ],
   "paths": {
     "/api/v1/activities": {
       "get": {
         "tags": [
-          "Activities"
+          "Activities",
+          "Badge",
+          "Audience"
         ],
         "operationId": "getActivities",
         "parameters": [

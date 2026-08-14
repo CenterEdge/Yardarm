@@ -38,7 +38,8 @@ namespace Yardarm.Generation.Tag
             .GetOperations()
             .WhereOperationHasName(operationNameProvider)
             .GetTags()
-            .Distinct(TagComparer.Instance);
+            .Distinct(TagComparer.Instance)
+            .FilterDocumentationTags(document);
 
     }
 }

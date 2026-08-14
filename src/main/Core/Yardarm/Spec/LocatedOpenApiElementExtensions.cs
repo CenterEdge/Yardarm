@@ -73,6 +73,17 @@ public static class LocatedOpenApiElementExtensions
                 .Concat(document.Components?.Responses?.CreateRoot().GetAllSchemas() ?? []);
     }
 
+    extension(IEnumerable<ILocatedOpenApiElement<IOpenApiTag>> tags)
+    {
+        internal IEnumerable<ILocatedOpenApiElement<IOpenApiTag>> FilterDocumentationTags(OpenApiDocument document)
+        {
+            bool hasNavigationTags = document.Tags?.Any(p => p.Kind == "nav") == true;
+
+            return tags.Where(tag => tag.Element.Kind is not "badge" and not "audience"
+                && (!hasNavigationTags || tag.Element.Kind == "nav"));
+        }
+    }
+
 
 
     public static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas(

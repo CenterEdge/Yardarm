@@ -21,7 +21,7 @@ public class TagFilteringTests
                 new() { Name = "Documentation", Kind = kind }
             }
         };
-        var tags = new[] { new OpenApiTag { Name = "Documentation" }.CreateRoot("0") };
+        var tags = new[] { new OpenApiTag { Name = "Documentation", Kind = kind }.CreateRoot("0") };
 
         IEnumerable<ILocatedOpenApiElement<IOpenApiTag>> result = tags.FilterDocumentationTags(document);
 
@@ -41,8 +41,8 @@ public class TagFilteringTests
         };
         var tags = new ILocatedOpenApiElement<IOpenApiTag>[]
         {
-            new OpenApiTag { Name = "API" }.CreateRoot("0"),
-            new OpenApiTag { Name = "Other" }.CreateRoot("1"),
+            new OpenApiTag { Name = "API", Kind = "nav" }.CreateRoot("0"),
+            new OpenApiTag { Name = "Other", Kind = "other" }.CreateRoot("1"),
             new OpenApiTag { Name = "Unspecified" }.CreateRoot("2")
         };
 
@@ -63,7 +63,7 @@ public class TagFilteringTests
         };
         var tags = new ILocatedOpenApiElement<IOpenApiTag>[]
         {
-            new OpenApiTag { Name = "Other" }.CreateRoot("0"),
+            new OpenApiTag { Name = "Other", Kind = "other" }.CreateRoot("0"),
             new OpenApiTag { Name = "Unspecified" }.CreateRoot("1")
         };
 

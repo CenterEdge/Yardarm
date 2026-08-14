@@ -77,23 +77,10 @@ public static class LocatedOpenApiElementExtensions
     {
         internal IEnumerable<ILocatedOpenApiElement<IOpenApiTag>> FilterDocumentationTags(OpenApiDocument document)
         {
-            IEnumerable<OpenApiTag> topLevelTags = document.Tags ?? Enumerable.Empty<OpenApiTag>();
-            var kindsByName = topLevelTags
-                .Where(p => p.Name is not null)
-                .ToDictionary(p => p.Name!, p => p.Kind, StringComparer.Ordinal);
-            bool hasNavigationTags = kindsByName.Values.Any(p => p == "nav");
+            bool hasNavigationTags = document.Tags?.Any(p => p.Kind == "nav") == true;
 
-            return tags.Where(tag =>
-            {
-                string? kind = null;
-                if (tag.Element.Name is { } name)
-                {
-                    kindsByName.TryGetValue(name, out kind);
-                }
-
-                return kind is not "badge" and not "audience"
-                    && (!hasNavigationTags || kind == "nav");
-            });
+            return tags.Where(tag => tag.Element.Kind is not "badge" and not "audience"
+                && (!hasNavigationTags || tag.Element.Kind == "nav"));
         }
     }
 

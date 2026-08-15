@@ -68,7 +68,9 @@
         },
         "security": [
           {
-            "Bearer": [],
+            "Bearer": []
+          },
+          {
             "Basic": []
           }
         ]

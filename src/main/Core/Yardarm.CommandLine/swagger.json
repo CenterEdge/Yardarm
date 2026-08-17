@@ -252,7 +252,10 @@
         },
         "security": [
           {
-            "Bearer": [ ]
+            "Bearer": []
+          },
+          {
+            "Basic": []
           }
         ]
       }
@@ -11721,6 +11724,11 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      },
+      "Basic": {
+        "type": "http",
+        "scheme": "basic",
+        "deprecated": true
       }
     }
   }

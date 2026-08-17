@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Generation;
 using Yardarm.Generation.Request;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -51,7 +52,10 @@ namespace Yardarm.Enrichment.Authentication
                     .Select(p => p.Key)
                     .ToArray();
 
-                bool isDeprecated = securitySchemes.Any(p => p.Element.Deprecated);
+                string? deprecatedSecuritySchemeName = securitySchemes
+                    .FirstOrDefault(p => p.Element.Deprecated)
+                    ?.Key;
+                bool isDeprecated = deprecatedSecuritySchemeName is not null;
                 var attribute = AttributeList(SingletonSeparatedList(
                         Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
                             .AddArgumentListArguments(
@@ -76,7 +80,7 @@ namespace Yardarm.Enrichment.Authentication
                                 IdentifierName("authenticator"))),
                             ReturnStatement(ThisExpression())));
 
-                    target = target.AddMembers(isDeprecated ? SuppressObsoleteWarning(method) : method);
+                    target = target.AddMembers(MarkObsolete(method, deprecatedSecuritySchemeName));
                 }
                 else if (securitySchemes.Length > 1)
                 {
@@ -98,7 +102,7 @@ namespace Yardarm.Enrichment.Authentication
                                             .ToArray()))),
                             ReturnStatement(ThisExpression())));
 
-                    target = target.AddMembers(isDeprecated ? SuppressObsoleteWarning(method) : method);
+                    target = target.AddMembers(MarkObsolete(method, deprecatedSecuritySchemeName));
                 }
             }
 
@@ -139,11 +143,14 @@ namespace Yardarm.Enrichment.Authentication
             return attributeList.WithLeadingTrivia(leadingTrivia);
         }
 
-        private static MethodDeclarationSyntax SuppressObsoleteWarning(MethodDeclarationSyntax method) =>
-            method
-                .WithLeadingTrivia(s_disableObsoleteWarningTrivia)
-                .WithBody(method.Body!.WithOpenBraceToken(method.Body.OpenBraceToken.WithLeadingTrivia(
-                    s_restoreObsoleteWarningTrivia.AddRange(method.Body.OpenBraceToken.LeadingTrivia))));
+        private static MethodDeclarationSyntax MarkObsolete(MethodDeclarationSyntax method, string? securitySchemeName) =>
+            securitySchemeName is not null
+                ? method.AddAttributeLists(AttributeList(SingletonSeparatedList(
+                    Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
+                        AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
+                            SyntaxHelpers.StringLiteral($"Security scheme {securitySchemeName} has been marked deprecated.")))))))
+                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed))
+                : method;
 
         private static ClassDeclarationSyntax RestoreObsoleteWarning(ClassDeclarationSyntax declaration)
         {

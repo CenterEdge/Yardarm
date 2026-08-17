@@ -143,14 +143,21 @@ namespace Yardarm.Enrichment.Authentication
             return attributeList.WithLeadingTrivia(leadingTrivia);
         }
 
-        private static MethodDeclarationSyntax MarkObsolete(MethodDeclarationSyntax method, string? securitySchemeName) =>
-            securitySchemeName is not null
-                ? method.AddAttributeLists(AttributeList(SingletonSeparatedList(
+        private static MethodDeclarationSyntax MarkObsolete(MethodDeclarationSyntax method, string? securitySchemeName)
+        {
+            if (securitySchemeName is null)
+            {
+                return method;
+            }
+
+            var argument = AttributeArgument(SyntaxHelpers.StringLiteral("Security scheme has been deprecated."));
+            var attribute = AttributeList(SingletonSeparatedList(
                     Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
-                        AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
-                            SyntaxHelpers.StringLiteral($"Security scheme {securitySchemeName} has been marked deprecated.")))))))
-                    .WithTrailingTrivia(ElasticCarriageReturnLineFeed))
-                : method;
+                        AttributeArgumentList(SingletonSeparatedList(argument)))))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
+
+            return method.AddAttributeLists(attribute);
+        }
 
         private static ClassDeclarationSyntax RestoreObsoleteWarning(ClassDeclarationSyntax declaration)
         {

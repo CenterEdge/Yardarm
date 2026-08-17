@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RootNamespace.Internal;
 using RootNamespace.Models;
 
@@ -40,6 +41,7 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConvert
 
         object? result = null;
         string? firstPropertyName = null;
+        JToken? firstPropertyValue = null;
 
         while (reader.TokenType != JsonToken.EndObject)
         {
@@ -78,8 +80,22 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConvert
             }
             else
             {
-                // Skip the property if it is an unknown case or we have already found a matching case
-                reader.Skip();
+                // Advance to the value token
+                if (!reader.Read())
+                {
+                    JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                }
+
+                if (firstPropertyValue is null)
+                {
+                    // Parse and save the first property's content in case we need it for the unknown case
+                    firstPropertyValue = JToken.ReadFrom(reader);
+                }
+                else
+                {
+                    // Skip the property if we have already found a matching case
+                    reader.Skip();
+                }
 
                 // Read to the next property or EndObject token
                 if (!reader.Read())
@@ -89,7 +105,7 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConvert
             }
         }
 
-        return result ?? CreateUnknownCase(firstPropertyName);
+        return result ?? CreateUnknownCase(firstPropertyName, firstPropertyValue);
     }
 
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
@@ -114,9 +130,23 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConvert
         {
             writer.WriteStartObject();
 
-            if (innerValue is UnknownCase)
+            if (innerValue is UnknownCase unknownCase)
             {
-                // Support round-trip serialization of the unknown case by serializing it as an empty object
+                // Support round-trip serialization of the unknown case.
+                if (unknownCase.CaseName is not null)
+                {
+                    writer.WritePropertyName(unknownCase.CaseName);
+
+                    if (unknownCase.Value is JToken unknownValue)
+                    {
+                        unknownValue.WriteTo(writer);
+                    }
+                    else
+                    {
+                        writer.WriteNull();
+                    }
+                }
+
                 writer.WriteEndObject();
                 return;
             }
@@ -144,14 +174,14 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<T> : JsonConvert
         JsonDiscriminatedUnionConverter.ThrowUnknownUnionCaseType(typeof(T), innerValue?.GetType());
     }
 
-    private static T CreateUnknownCase(string? caseName = null)
+    private static T CreateUnknownCase(string? caseName = null, object? value = null)
     {
         if (ExternallyDiscriminatedUnion<T>.UnknownCaseFactory is null)
         {
             JsonDiscriminatedUnionConverter.ThrowUnknownUnionCase(typeof(T), caseName);
         }
 
-        return ExternallyDiscriminatedUnion<T>.UnknownCaseFactory(UnknownCase.Value);
+        return ExternallyDiscriminatedUnion<T>.UnknownCaseFactory(new UnknownCase(caseName, value));
     }
 }
 

@@ -52,11 +52,8 @@ namespace Yardarm.Enrichment.Authentication
                     .Select(p => p.Key)
                     .ToArray();
 
-                string? deprecatedSecuritySchemeName = securitySchemes
-                    .FirstOrDefault(p => p.Element.Deprecated)
-                    ?.Key;
-                bool isDeprecated = deprecatedSecuritySchemeName is not null;
-                var attribute = AttributeList(SingletonSeparatedList(
+                bool isDeprecated = securitySchemes.Any(p => p.Element.Deprecated);
+                AttributeListSyntax attribute = AttributeList(SingletonSeparatedList(
                         Attribute(_authenticationNamespace.SecuritySchemeSetAttribute)
                             .AddArgumentListArguments(
                                 securitySchemes.Select(securityScheme =>
@@ -69,7 +66,7 @@ namespace Yardarm.Enrichment.Authentication
                 {
                     TypeSyntax schemeTypeName = _context.TypeGeneratorRegistry.Get(securitySchemes[0]).TypeInfo.Name;
 
-                    var method = MethodDeclaration(className, "WithAuthenticator")
+                    MethodDeclarationSyntax method = MethodDeclaration(className, "WithAuthenticator")
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddParameterListParameters(
                             Parameter(Identifier("authenticator"))
@@ -80,11 +77,13 @@ namespace Yardarm.Enrichment.Authentication
                                 IdentifierName("authenticator"))),
                             ReturnStatement(ThisExpression())));
 
-                    target = target.AddMembers(MarkObsolete(method, deprecatedSecuritySchemeName));
+                    target = target.AddMembers(isDeprecated
+                        ? MarkObsolete(method)
+                        : method);
                 }
                 else if (securitySchemes.Length > 1)
                 {
-                    var method = MethodDeclaration(className, "WithAuthenticator")
+                    MethodDeclarationSyntax method = MethodDeclaration(className, "WithAuthenticator")
                         .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddParameterListParameters(
                             securitySchemes
@@ -102,22 +101,39 @@ namespace Yardarm.Enrichment.Authentication
                                             .ToArray()))),
                             ReturnStatement(ThisExpression())));
 
-                    target = target.AddMembers(MarkObsolete(method, deprecatedSecuritySchemeName));
+                    target = target.AddMembers(isDeprecated ?
+                        MarkObsolete(method)
+                        : method);
                 }
             }
 
             if (attributes.Count > 0)
             {
-                bool restoreWarning = false;
+                bool isSuppressed = false;
                 var attributeLists = new List<AttributeListSyntax>(attributes.Count);
+
                 foreach ((AttributeListSyntax attribute, bool isDeprecated) in attributes)
                 {
-                    attributeLists.Add(ApplyObsoleteWarningDirectives(attribute, restoreWarning, isDeprecated));
-                    restoreWarning = isDeprecated;
+                    if (isDeprecated)
+                    {
+                        attributeLists.Add(!isSuppressed
+                            ? ApplyObsoleteWarningDirectives(attribute, restoreWarning: false)
+                            : attribute);
+
+                        isSuppressed = true;
+                    }
+                    else
+                    {
+                        attributeLists.Add(isSuppressed
+                            ? ApplyObsoleteWarningDirectives(attribute, restoreWarning: true)
+                            : attribute);
+                    }
                 }
 
-                target = target.AddAttributeLists(attributeLists.ToArray());
-                if (restoreWarning)
+                target = target.AddAttributeLists([..attributeLists]);
+
+                // Final warning restore
+                if (isSuppressed)
                 {
                     target = RestoreObsoleteWarning(target);
                 }
@@ -127,36 +143,19 @@ namespace Yardarm.Enrichment.Authentication
         }
 
         private static AttributeListSyntax ApplyObsoleteWarningDirectives(AttributeListSyntax attributeList,
-            bool restoreWarning, bool suppressWarning)
+            bool restoreWarning)
         {
             SyntaxTriviaList leadingTrivia = attributeList.GetLeadingTrivia();
-            if (suppressWarning)
-            {
-                leadingTrivia = s_disableObsoleteWarningTrivia.AddRange(leadingTrivia);
-            }
-
             if (restoreWarning)
             {
                 leadingTrivia = s_restoreObsoleteWarningTrivia.AddRange(leadingTrivia);
             }
-
-            return attributeList.WithLeadingTrivia(leadingTrivia);
-        }
-
-        private static MethodDeclarationSyntax MarkObsolete(MethodDeclarationSyntax method, string? securitySchemeName)
-        {
-            if (securitySchemeName is null)
+            else
             {
-                return method;
+                leadingTrivia = s_disableObsoleteWarningTrivia.AddRange(leadingTrivia);
             }
 
-            var argument = AttributeArgument(SyntaxHelpers.StringLiteral("Security scheme has been deprecated."));
-            var attribute = AttributeList(SingletonSeparatedList(
-                    Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
-                        AttributeArgumentList(SingletonSeparatedList(argument)))))
-                .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
-
-            return method.AddAttributeLists(attribute);
+            return attributeList.WithLeadingTrivia(leadingTrivia);
         }
 
         private static ClassDeclarationSyntax RestoreObsoleteWarning(ClassDeclarationSyntax declaration)
@@ -164,6 +163,17 @@ namespace Yardarm.Enrichment.Authentication
             SyntaxToken firstModifier = declaration.Modifiers.First();
             return declaration.WithModifiers(declaration.Modifiers.Replace(firstModifier,
                 firstModifier.WithLeadingTrivia(s_restoreObsoleteWarningTrivia.AddRange(firstModifier.LeadingTrivia))));
+        }
+
+        private static MethodDeclarationSyntax MarkObsolete(MethodDeclarationSyntax method)
+        {
+            AttributeArgumentSyntax argument = AttributeArgument(SyntaxHelpers.StringLiteral("Security scheme has been deprecated."));
+            AttributeListSyntax attribute = AttributeList(SingletonSeparatedList(
+                    Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
+                        AttributeArgumentList(SingletonSeparatedList(argument)))))
+                .WithTrailingTrivia(ElasticCarriageReturnLineFeed);
+
+            return method.AddAttributeLists(attribute);
         }
     }
 }

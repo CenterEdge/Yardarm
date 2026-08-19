@@ -3,12 +3,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Helpers;
+using Yardarm.Packaging;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Yardarm.Generation.Request;
 
-internal class HttpMethodPropertyGenerator : IRequestMemberGenerator
+internal class HttpMethodPropertyGenerator(GenerationContext context) : IRequestMemberGenerator
 {
     public const string MethodPropertyName = "Method";
 
@@ -27,19 +28,28 @@ internal class HttpMethodPropertyGenerator : IRequestMemberGenerator
                 Token(SyntaxKind.SemicolonToken))
         ];
 
-    private static ExpressionSyntax GetRequestMethod(ILocatedOpenApiElement<OpenApiOperation> operation) =>
+    private ExpressionSyntax GetRequestMethod(ILocatedOpenApiElement<OpenApiOperation> operation) =>
         operation.Key switch
         {
-            "Delete" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Delete")),
-            "Get" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Get")),
-            "Head" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Head")),
-            "Options" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Options")),
-            "Post" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Post")),
-            "Put" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Put")),
-            "Trace" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Trace")),
+            "CONNECT" when SupportsQueryAndConnect() =>
+                QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Connect")),
+            "DELETE" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Delete")),
+            "GET" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Get")),
+            "HEAD" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Head")),
+            "OPTIONS" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Options")),
+            "PATCH" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Patch")),
+            "POST" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Post")),
+            "PUT" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Put")),
+            "QUERY" when SupportsQueryAndConnect() =>
+                QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Query")),
+            "TRACE" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Trace")),
             _ => ObjectCreationExpression(WellKnownTypes.System.Net.Http.HttpMethod.Name,
                 ArgumentList(SingletonSeparatedList(
-                    Argument(SyntaxHelpers.StringLiteral(operation.Key.ToUpperInvariant())))),
+                    Argument(SyntaxHelpers.StringLiteral(operation.Key)))),
                 initializer: null)
         };
+
+    private bool SupportsQueryAndConnect() =>
+        context.CurrentTargetFramework.Framework == NuGetFrameworkConstants.NetCoreApp &&
+        context.CurrentTargetFramework.Version.Major >= 10;
 }

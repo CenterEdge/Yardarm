@@ -70,6 +70,22 @@ internal static class SchemaHelper
             .Where(p => p.Name != null);
 
     /// <summary>
+    /// Gets the generated C# type for the default discriminator mapping.
+    /// </summary>
+    public static TypeSyntax? GetDefaultDiscriminatorMapping(GenerationContext context,
+        ILocatedOpenApiElement<IOpenApiSchema> element)
+    {
+        string? referenceId = element.Element.Discriminator?.DefaultMapping?.GetReferenceId();
+        if (referenceId is null ||
+            !(context.Document.Components?.Schemas?.TryGetValue(referenceId, out var schema) ?? false))
+        {
+            return null;
+        }
+
+        return context.TypeGeneratorRegistry.Get(schema.CreateRoot(referenceId)).TypeInfo.Name;
+    }
+
+    /// <summary>
     /// Collects the list of value to schema mappings defined for the type, choosing from the
     /// best source for various kinds of mappings and polymorphism.
     /// </summary>

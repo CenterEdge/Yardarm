@@ -12,6 +12,7 @@ namespace RootNamespace.Serialization.Json
         private readonly string _propertyName;
         private readonly Type _interfaceType;
         private readonly IDictionary<string, Type> _mappings;
+        private readonly Type? _defaultMapping;
 
         public override bool CanRead => true;
         public override bool CanWrite => false;
@@ -22,6 +23,17 @@ namespace RootNamespace.Serialization.Json
         }
 
         public DiscriminatorConverter(string propertyName, Type interfaceType, IEnumerable<KeyValuePair<string, Type>> mappings)
+            : this(propertyName, interfaceType, mappings, null)
+        {
+        }
+
+        public DiscriminatorConverter(string propertyName, Type interfaceType, object[] mappings, Type defaultMapping)
+            : this(propertyName, interfaceType, Pair(mappings), defaultMapping)
+        {
+        }
+
+        private DiscriminatorConverter(string propertyName, Type interfaceType,
+            IEnumerable<KeyValuePair<string, Type>> mappings, Type? defaultMapping)
         {
             ArgumentNullException.ThrowIfNull(propertyName);
             ArgumentNullException.ThrowIfNull(interfaceType);
@@ -29,6 +41,7 @@ namespace RootNamespace.Serialization.Json
 
             _propertyName = propertyName;
             _interfaceType = interfaceType;
+            _defaultMapping = defaultMapping;
 
             _mappings = new Dictionary<string, Type>();
             foreach (var mapping in mappings)
@@ -48,14 +61,11 @@ namespace RootNamespace.Serialization.Json
 
             var json = JObject.Load(reader);
             var discriminator = json.Property(_propertyName)?.Value?.ToString();
-            if (discriminator is null)
+            if (discriminator is null || !_mappings.TryGetValue(discriminator, out var type))
             {
-                throw new JsonSerializationException($"Could not find discriminator attribute '{_propertyName}'.");
-            }
-
-            if (!_mappings.TryGetValue(discriminator, out var type))
-            {
-                throw new JsonSerializationException($"Could not find discriminator mapping '{discriminator}'.");
+                type = _defaultMapping ?? throw new JsonSerializationException(discriminator is null
+                    ? $"Could not find discriminator attribute '{_propertyName}'."
+                    : $"Could not find discriminator mapping '{discriminator}'.");
             }
 
             if (type != objectType)

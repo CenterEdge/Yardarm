@@ -6425,7 +6425,8 @@
           "mapping": {
             "CustomerAction": "#/components/schemas/CustomerAction",
             "MediaAction": "#/components/schemas/MediaAction"
-          }
+          },
+          "defaultMapping": "#/components/schemas/CustomerAction"
         }
       },
       "ActionType": {

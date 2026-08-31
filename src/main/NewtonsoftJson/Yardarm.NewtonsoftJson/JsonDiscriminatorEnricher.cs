@@ -46,7 +46,12 @@ namespace Yardarm.NewtonsoftJson
                 SyntaxFactory.AttributeArgument(
                     SyntaxFactory.TypeOfExpression(Context.TypeGeneratorRegistry.Get(context.LocatedElement).TypeInfo.Name)));
 
-            if (discriminator?.Mapping != null)
+            var defaultMappingReferenceId = discriminator?.DefaultMapping?.GetReferenceId();
+            IOpenApiSchema? defaultMappingSchema = null;
+            bool hasDefaultMapping = defaultMappingReferenceId is not null &&
+                (Context.Document.Components?.Schemas?.TryGetValue(defaultMappingReferenceId, out defaultMappingSchema) ?? false);
+
+            if (discriminator?.Mapping != null || hasDefaultMapping)
             {
                 var paramArray = SyntaxFactory.ArrayCreationExpression(
                         SyntaxFactory
@@ -57,28 +62,34 @@ namespace Yardarm.NewtonsoftJson
                                         SyntaxFactory.OmittedArraySizeExpression())))))
                     .WithInitializer(SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression,
                         SyntaxFactory.SeparatedList<ExpressionSyntax>(
-                            discriminator.Mapping
-                                .SelectMany(mapping =>
-                                {
-                                    // Add two parameters to the object array for each mapping
-                                    // First is the string key of the mapping, second is the Type to deserialize
+                            (discriminator?.Mapping?.SelectMany(mapping =>
+                            {
+                                // Add two parameters to the object array for each mapping
+                                // First is the string key of the mapping, second is the Type to deserialize
 
-                                    // mapping.Value is now an OpenApiSchemaReference
-                                    var mappingReferenceId = mapping.Value.GetReferenceId();
-                                    IOpenApiSchema? referencedSchema = schema.OneOf?
-                                        .FirstOrDefault(p => p is IOpenApiReferenceHolder && p.GetReferenceId() == mappingReferenceId);
+                                // mapping.Value is now an OpenApiSchemaReference
+                                var mappingReferenceId = mapping.Value.GetReferenceId();
+                                IOpenApiSchema? referencedSchema = schema.OneOf?
+                                    .FirstOrDefault(p => p is IOpenApiReferenceHolder && p.GetReferenceId() == mappingReferenceId);
 
-                                    return referencedSchema != null
-                                        ? new ExpressionSyntax[]
-                                        {
-                                            SyntaxHelpers.StringLiteral(mapping.Key), SyntaxFactory.TypeOfExpression(
-                                                Context.TypeGeneratorRegistry.Get(
-                                                    referencedSchema.CreateRoot(referencedSchema.GetReferenceId()!)).TypeInfo.Name)
-                                        }
-                                        : Enumerable.Empty<ExpressionSyntax>();
-                                }))));
+                                return referencedSchema != null
+                                    ? new ExpressionSyntax[]
+                                    {
+                                        SyntaxHelpers.StringLiteral(mapping.Key), SyntaxFactory.TypeOfExpression(
+                                            Context.TypeGeneratorRegistry.Get(
+                                                referencedSchema.CreateRoot(referencedSchema.GetReferenceId()!)).TypeInfo.Name)
+                                    }
+                                    : Enumerable.Empty<ExpressionSyntax>();
+                            }) ?? Enumerable.Empty<ExpressionSyntax>()))));
 
                 attribute = attribute.AddArgumentListArguments(SyntaxFactory.AttributeArgument(paramArray));
+            }
+
+            if (hasDefaultMapping)
+            {
+                attribute = attribute.AddArgumentListArguments(SyntaxFactory.AttributeArgument(
+                    SyntaxFactory.TypeOfExpression(Context.TypeGeneratorRegistry.Get(
+                        defaultMappingSchema!.CreateRoot(defaultMappingReferenceId!)).TypeInfo.Name)));
             }
 
             return target.AddAttributeLists(SyntaxFactory.AttributeList().AddAttributes(attribute)

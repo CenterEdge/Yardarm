@@ -39,17 +39,24 @@ public abstract class JsonDiscriminatedObjectConverter<T> : JsonConverter<T>
     {
         if (UnknownDiscriminatorHandling == UnknownDiscriminatorHandling.ReturnNull)
         {
-            reader.Skip();
+            if (!reader.TrySkip())
+            {
+                ThrowJsonException();
+            }
         }
         else
         {
-            ThrowJsonException(discriminator);
+            ThrowDiscriminatorJsonException(discriminator);
         }
 
         return null;
     }
 
     [DoesNotReturn]
-    private static void ThrowJsonException(string? discriminator) =>
-        throw new JsonException($"Unrecognized type discriminator '{discriminator}'.");
+    private static void ThrowJsonException(string? message = null) =>
+        throw new JsonException(message);
+
+    [DoesNotReturn]
+    private static void ThrowDiscriminatorJsonException(string? discriminator) =>
+        ThrowJsonException($"Unrecognized type discriminator '{discriminator}'.");
 }

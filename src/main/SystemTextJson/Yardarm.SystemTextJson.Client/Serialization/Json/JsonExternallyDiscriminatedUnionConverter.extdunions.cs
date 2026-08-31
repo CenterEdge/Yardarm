@@ -93,7 +93,10 @@ internal sealed class JsonExternallyDiscriminatedUnionConverter<[DynamicallyAcce
                 else
                 {
                     // Skip the property if we have already found a matching case
-                    reader.Skip();
+                    if (!reader.TrySkip())
+                    {
+                        JsonDiscriminatedUnionConverter.ThrowInvalidUnionJson(typeof(T));
+                    }
                 }
 
                 // Read to the next property or EndObject token

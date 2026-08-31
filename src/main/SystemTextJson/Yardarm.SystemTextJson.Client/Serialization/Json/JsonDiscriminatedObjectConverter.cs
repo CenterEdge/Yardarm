@@ -41,7 +41,7 @@ public abstract class JsonDiscriminatedObjectConverter<T> : JsonConverter<T>
         {
             if (!reader.TrySkip())
             {
-                ThrowJsonException();
+                ThrowJsonException("Incomplete JSON data.");
             }
         }
         else

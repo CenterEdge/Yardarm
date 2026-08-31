@@ -95,6 +95,34 @@ public class JsonExternallyDiscriminatedUnionConverterTests
     [Theory]
     [InlineData("""
         {
+            "caseB": {
+                "id": 123
+            }
+        }
+        """)]
+    [InlineData("""
+        {
+            "caseB": {
+                "type": "unknown",
+                "id": 123
+            }
+        }
+        """)]
+    public void Deserialize_CaseB_UsesDefaultDiscriminatorMapping(string json)
+    {
+        // Act
+
+        var result = JsonConvert.DeserializeObject<TestUnion>(json, s_settings);
+
+        // Assert
+
+        var value = Assert.IsType<DefaultCaseB>(result.Value);
+        Assert.Equal(123, value.Id);
+    }
+
+    [Theory]
+    [InlineData("""
+        {
             "caseA": {
                 "name": "Test"
             },
@@ -464,7 +492,8 @@ public class JsonExternallyDiscriminatedUnionConverterTests
             new object[] {
                 "caseB", typeof(CaseB),
                 "caseBChild", typeof(CaseBChild)
-            }
+            },
+            typeof(DefaultCaseB)
         ])]
     private class CaseB : ICaseB
     {
@@ -480,6 +509,10 @@ public class JsonExternallyDiscriminatedUnionConverterTests
     private class CaseBChild : CaseB
     {
         public string? Name { get; set; }
+    }
+
+    private class DefaultCaseB : CaseB
+    {
     }
 
     [Union]

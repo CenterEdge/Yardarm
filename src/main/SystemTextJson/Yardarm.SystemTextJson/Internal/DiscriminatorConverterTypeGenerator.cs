@@ -180,6 +180,7 @@ internal class DiscriminatorConverterTypeGenerator(
 
         if (!string.IsNullOrEmpty(Element.Element.Discriminator?.PropertyName))
         {
+            TypeSyntax? defaultMapping = SchemaHelper.GetDefaultDiscriminatorMapping(Context, Element);
             IEnumerable<SwitchExpressionArmSyntax> mappings =
             [
                 ..SchemaHelper.GetDiscriminatorMappings(Context, Element)
@@ -198,11 +199,22 @@ internal class DiscriminatorConverterTypeGenerator(
                                     Argument(IdentifierName("options"))
                                 ])))))),
                 SwitchExpressionArm(DiscardPattern(),
-                    InvocationExpression(IdentifierName("HandleUnknownDiscriminator"),
-                    ArgumentList(SeparatedList([
-                        Argument(nameColon: null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
-                        Argument(IdentifierName("discriminator")),
-                    ]))))
+                    defaultMapping is not null
+                        ? PostfixUnaryExpression(SyntaxKind.SuppressNullableWarningExpression, InvocationExpression(
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                SystemTextJsonTypes.JsonSerializer,
+                                GenericName(Identifier("Deserialize"),
+                                    TypeArgumentList(SingletonSeparatedList(defaultMapping)))),
+                            ArgumentList(SeparatedList(
+                            [
+                                Argument(null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
+                                Argument(IdentifierName("options"))
+                            ]))))
+                        : InvocationExpression(IdentifierName("HandleUnknownDiscriminator"),
+                            ArgumentList(SeparatedList([
+                                Argument(nameColon: null, Token(SyntaxKind.RefKeyword), IdentifierName("reader")),
+                                Argument(IdentifierName("discriminator")),
+                            ]))))
             ];
 
             body = Block(default,

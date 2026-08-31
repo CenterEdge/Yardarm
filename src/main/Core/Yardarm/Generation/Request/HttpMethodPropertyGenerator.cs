@@ -14,8 +14,15 @@ internal class HttpMethodPropertyGenerator(GenerationContext context) : IRequest
     public const string MethodPropertyName = "Method";
 
     public IEnumerable<MemberDeclarationSyntax> Generate(ILocatedOpenApiElement<OpenApiOperation> operation,
-        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType) =>
-        [
+        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType)
+    {
+        if (mediaType is not null)
+        {
+            // No need to override on every media type, the base type has the correct value.
+            return [];
+        }
+
+        return [
             PropertyDeclaration(
                 attributeLists: default,
                 TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)),
@@ -27,6 +34,7 @@ internal class HttpMethodPropertyGenerator(GenerationContext context) : IRequest
                 initializer: null,
                 Token(SyntaxKind.SemicolonToken))
         ];
+    }
 
     private ExpressionSyntax GetRequestMethod(ILocatedOpenApiElement<OpenApiOperation> operation) =>
         operation.Key switch

@@ -188,77 +188,221 @@
   ],
   "paths": {
     "/api/v1/activities": {
-      "get": {
-        "tags": [
-          "Activities",
-          "Badge",
-          "Audience"
-        ],
-        "operationId": "getActivities",
-        "parameters": [
-          {
-            "name": "Name",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "skip",
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "type": "integer",
-              "format": "int64",
-              "default": 0
-            }
-          },
-          {
-            "name": "take",
-            "in": "query",
-            "schema": {
-              "maximum": 100,
-              "minimum": 1,
-              "type": "integer",
-              "format": "int64",
-              "default": 20
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Total-Count": {
-                "description": "Total number of activities with given filter",
-                "schema": {
-                  "type": "integer",
-                  "description": "Total number of activities with given filter",
-                  "format": ""
+        "get": {
+            "tags": [
+                "Activities",
+                "Badge",
+                "Audience"
+            ],
+            "operationId": "getActivities",
+            "parameters": [
+                {
+                    "name": "Name",
+                    "in": "query",
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "skip",
+                    "in": "query",
+                    "schema": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 0
+                    }
+                },
+                {
+                    "name": "take",
+                    "in": "query",
+                    "schema": {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 20
+                    }
                 }
-              }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Success",
+                    "headers": {
+                        "X-Total-Count": {
+                            "description": "Total number of activities with given filter",
+                            "schema": {
+                                "type": "integer",
+                                "description": "Total number of activities with given filter",
+                                "format": ""
+                            }
+                        }
+                    },
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    }
+                }
             },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Activity"
-                  }
+            "security": [
+                {
+                    "Bearer": []
+                },
+                {
+                    "Basic": []
                 }
-              }
-            }
-          }
+            ]
         },
-        "security": [
-          {
-            "Bearer": []
-          },
-          {
-            "Basic": []
-          }
-        ]
-      }
+        "query": {
+            "tags": [
+                "Activities",
+                "Badge",
+                "Audience"
+            ],
+            "operationId": "queryActivities",
+            "parameters": [
+                {
+                    "name": "Name",
+                    "in": "query",
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "name": "skip",
+                    "in": "query",
+                    "schema": {
+                        "minimum": 0,
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 0
+                    }
+                },
+                {
+                    "name": "take",
+                    "in": "query",
+                    "schema": {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "format": "int64",
+                        "default": 20
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Success",
+                    "headers": {
+                        "X-Total-Count": {
+                            "description": "Total number of activities with given filter",
+                            "schema": {
+                                "type": "integer",
+                                "description": "Total number of activities with given filter",
+                                "format": ""
+                            }
+                        }
+                    },
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Activity"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "security": [
+                {
+                    "Bearer": []
+                },
+                {
+                    "Basic": []
+                }
+            ]
+        },
+        "additionalOperations": {
+            "FOOBAR": {
+                "tags": [
+                    "Activities",
+                    "Badge",
+                    "Audience"
+                ],
+                "operationId": "foobarActivities",
+                "parameters": [
+                    {
+                        "name": "Name",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "skip",
+                        "in": "query",
+                        "schema": {
+                            "minimum": 0,
+                            "type": "integer",
+                            "format": "int64",
+                            "default": 0
+                        }
+                    },
+                    {
+                        "name": "take",
+                        "in": "query",
+                        "schema": {
+                            "maximum": 100,
+                            "minimum": 1,
+                            "type": "integer",
+                            "format": "int64",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "headers": {
+                            "X-Total-Count": {
+                                "description": "Total number of activities with given filter",
+                                "schema": {
+                                    "type": "integer",
+                                    "description": "Total number of activities with given filter",
+                                    "format": ""
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Activity"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "Bearer": []
+                    },
+                    {
+                        "Basic": []
+                    }
+                ]
+            }
+        }
     },
     "/api/v1/activities/{id}/starttimes": {
       "get": {

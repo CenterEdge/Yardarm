@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.OpenApi.YamlReader" />
-    <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
+    <ProjectReference Include="..\Yardarm.MicrosoftExtensionsHttp\Yardarm.MicrosoftExtensionsHttp.csproj" />
   </ItemGroup>
 
 </Project>

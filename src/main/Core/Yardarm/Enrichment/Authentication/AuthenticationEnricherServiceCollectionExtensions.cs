@@ -10,6 +10,7 @@ public static class AuthenticationEnricherServiceCollectionExtensions
         public IServiceCollection AddDefaultAuthenticationEnrichers() =>
             services
                 .AddOpenApiSyntaxNodeEnricher<SecuritySchemeDocumentationEnricher>()
+                .AddOpenApiSyntaxNodeEnricher<DeprecatedSecuritySchemeEnricher>()
                 .AddOpenApiSyntaxNodeEnricher<SecuritySchemeRequestEnricher>()
                 .AddResourceFileEnricher<AuthenticatorsSchemeEnricher>();
     }

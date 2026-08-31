@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Enrichment.Compilation;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -57,13 +58,24 @@ namespace Yardarm.Enrichment.Authentication
 
                 string propertyName = nameFormatter.Format(scheme.Key);
 
-                yield return PropertyDeclaration(NullableType(typeName), propertyName)
+                var property = PropertyDeclaration(NullableType(typeName), propertyName)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .AddAccessorListAccessors(
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                         AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
                             .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
+
+                if (scheme.Element.Deprecated)
+                {
+                    property = property.AddAttributeLists(AttributeList(SingletonSeparatedList(
+                        Attribute(WellKnownTypes.System.ObsoleteAttribute.Name,
+                            AttributeArgumentList(SingletonSeparatedList(AttributeArgument(
+                                SyntaxHelpers.StringLiteral($"Security scheme {scheme.Key} has been marked deprecated.")))))))
+                        .WithTrailingTrivia(ElasticCarriageReturnLineFeed));
+                }
+
+                yield return property;
             }
         }
     }

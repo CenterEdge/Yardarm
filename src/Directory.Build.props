@@ -22,5 +22,7 @@
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
 
     <IsClientProject Condition=" '$(IsClientProject)' == '' And $(MSBuildProjectName.EndsWith('.Client'))">true</IsClientProject>
+    <IsYardarmUnitTestProject Condition=" '$(IsYardarmUnitTestProject)' == '' And '$(IsClientProject)' != 'true' And $(MSBuildProjectName.EndsWith('.UnitTests'))">true</IsYardarmUnitTestProject>
+    <IsClientUnitTestProject Condition=" '$(IsClientUnitTestProject)' == '' And '$(IsClientProject)' == 'true' And $(MSBuildProjectName.EndsWith('.UnitTests'))">true</IsClientUnitTestProject>
   </PropertyGroup>
 </Project>

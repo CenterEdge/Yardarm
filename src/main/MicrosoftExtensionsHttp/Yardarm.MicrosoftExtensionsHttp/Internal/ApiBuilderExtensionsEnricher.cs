@@ -10,7 +10,6 @@ using Yardarm.Spec;
 using Yardarm.Generation;
 using Yardarm.Generation.Tag;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-using Yardarm.Generation.Operation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Yardarm.MicrosoftExtensionsHttp.Internal;
@@ -19,10 +18,9 @@ namespace Yardarm.MicrosoftExtensionsHttp.Internal;
 /// Adds statements to register all APIs to the "AddAllApisInternal" method.
 /// </summary>
 internal class ApiBuilderExtensionsEnricher(
-    OpenApiDocument document,
     ITypeGeneratorRegistry<IOpenApiTag> tagGeneratorRegistry,
     [FromKeyedServices(TagImplementationTypeGenerator.GeneratorCategory)] ITypeGeneratorRegistry<IOpenApiTag> tagImplementationGeneratorRegistry,
-    IOperationNameProvider operationNameProvider)
+    IOpenApiElementRegistry elementRegistry)
     : IResourceFileEnricher
 {
     public bool ShouldEnrich(string resourceName) =>
@@ -35,18 +33,17 @@ internal class ApiBuilderExtensionsEnricher(
             .OfType<MethodDeclarationSyntax>()
             .Single(p => p.Identifier.ValueText == "AddAllApisInternal");
 
-        var newMethod = method.WithBody(Block(GenerateApiStatements().ToArray()));
+        var newMethod = method.WithBody(Block(GenerateApiStatements(context).ToArray()));
 
         return target.ReplaceNode(method, newMethod);
     }
 
-    private IEnumerable<StatementSyntax> GenerateApiStatements()
+    private IEnumerable<StatementSyntax> GenerateApiStatements(ResourceFileEnrichmentContext context)
     {
-        var tags = document.Paths.ToLocatedElements()
-            .GetOperations()
-            .WhereOperationHasName(operationNameProvider)
-            .GetTags()
-            .Distinct(TagComparer.Instance);
+        var tags = context.Compilation.SyntaxTrees
+            .SelectMany(p => p.GetRoot().DescendantNodes().OfType<InterfaceDeclarationSyntax>())
+            .Select(p => p.GetElementAnnotation<IOpenApiTag>(elementRegistry))
+            .OfType<ILocatedOpenApiElement<IOpenApiTag>>();
 
         foreach (var tag in tags)
         {

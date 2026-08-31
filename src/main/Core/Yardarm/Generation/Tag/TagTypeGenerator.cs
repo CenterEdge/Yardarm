@@ -50,7 +50,8 @@ namespace Yardarm.Generation.Tag
                         .SelectMany(GenerateOperationMethodHeader,
                             (operation, method) => new {operation, method})
                         .Select(p => p.method
-                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))));
+                            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))))
+                .AddElementAnnotation(Element, Context.ElementRegistry);
 
             return declaration;
         }

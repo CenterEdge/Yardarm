@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RootNamespace.Internal;
 using RootNamespace.Models;
 using RootNamespace.Serialization.Json;
@@ -205,27 +206,51 @@ public class JsonExternallyDiscriminatedUnionConverterTests
         Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<TestUnion>(json, s_settings));
     }
 
-    [Theory]
-    [InlineData("""
+    [Fact]
+    public void Deserialize_HasUnknownCase_WithCaseNameAndValue_Returned()
+    {
+        // Arrange
+
+        const string json = """
         {
             "caseC": {
                 "value": "unknown"
             }
         }
-        """)]
-    [InlineData("""
-        {
-        }
-        """)]
-    public void Deserialize_HasUnknownCase_Returned(string json)
-    {
+        """;
+
         // Act
 
         var result = JsonConvert.DeserializeObject<TestUnionWithUnknown>(json, s_settings);
 
         // Assert
 
-        Assert.IsType<UnknownCase>(result.Value);
+        var unknownCase = Assert.IsType<UnknownCase>(result.Value);
+        Assert.Equal("caseC", unknownCase.CaseName);
+
+        var value = Assert.IsType<JObject>(unknownCase.Value);
+        Assert.Equal("unknown", value["value"]?.Value<string>());
+    }
+
+    [Fact]
+    public void Deserialize_HasUnknownCase_EmptyObject_Returned()
+    {
+        // Arrange
+
+        const string json = """
+        {
+        }
+        """;
+
+        // Act
+
+        var result = JsonConvert.DeserializeObject<TestUnionWithUnknown>(json, s_settings);
+
+        // Assert
+
+        var unknownCase = Assert.IsType<UnknownCase>(result.Value);
+        Assert.Null(unknownCase.CaseName);
+        Assert.Null(unknownCase.Value);
     }
 
     [Fact]
@@ -345,7 +370,7 @@ public class JsonExternallyDiscriminatedUnionConverterTests
     {
         // Arrange
 
-        var union = new TestUnionWithUnknown(UnknownCase.Value);
+        var union = new TestUnionWithUnknown(new UnknownCase());
 
         // Act
 
@@ -354,6 +379,60 @@ public class JsonExternallyDiscriminatedUnionConverterTests
         // Assert
 
         Assert.Equal("{}", result);
+    }
+
+    [Fact]
+    public void Serialize_UnknownCase_WithCaseNameAndJObject()
+    {
+        // Arrange
+
+        var payload = JObject.Parse("""
+        {
+            "value": "unknown",
+            "metadata": {
+                "source": "api"
+            }
+        }
+        """);
+
+        var union = new TestUnionWithUnknown(new UnknownCase("caseC", payload));
+
+        // Act
+
+        string result = JsonConvert.SerializeObject(union, s_settings);
+
+        // Assert
+
+        Assert.Equal("{\"caseC\":{\"value\":\"unknown\",\"metadata\":{\"source\":\"api\"}}}", result);
+    }
+
+    [Fact]
+    public void RoundTrip_UnknownCase_WithCaseNameAndJObject()
+    {
+        // Arrange
+
+        const string json = """
+        {
+            "caseC": {
+                "value": "unknown",
+                "metadata": {
+                    "source": "api"
+                }
+            }
+        }
+        """;
+
+        // Act
+
+        var deserialized = JsonConvert.DeserializeObject<TestUnionWithUnknown>(json, s_settings);
+        string serialized = JsonConvert.SerializeObject(deserialized, s_settings);
+
+        // Assert
+
+        var unknownCase = Assert.IsType<UnknownCase>(deserialized.Value);
+        Assert.Equal("caseC", unknownCase.CaseName);
+        Assert.IsType<JObject>(unknownCase.Value);
+        Assert.Equal("{\"caseC\":{\"value\":\"unknown\",\"metadata\":{\"source\":\"api\"}}}", serialized);
     }
 
     [Fact]

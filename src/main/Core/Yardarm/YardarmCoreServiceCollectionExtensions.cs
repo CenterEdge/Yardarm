@@ -112,6 +112,10 @@ public static class YardarmCoreServiceCollectionExtensions
             // Serialization
             services.TryAddSingleton<ISerializerSelector, DefaultSerializerSelector>();
             services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
+                ImmutableHashSet.Create(new SerializerMediaType("application/octet-stream", 1.0)),
+                "Binary",
+                serviceProvider.GetRequiredService<ISerializationNamespace>().BinaryStreamSerializer));
+            services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
                 ImmutableHashSet.Create(new SerializerMediaType("multipart/form-data", 0.9)),
                 "Multipart",
                 serviceProvider.GetRequiredService<ISerializationNamespace>().MultipartFormDataSerializer));

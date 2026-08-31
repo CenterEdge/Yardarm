@@ -5,6 +5,7 @@ namespace Yardarm.Names
     // ReSharper disable InconsistentNaming
     public interface ISerializationNamespace : IKnownNamespace
     {
+        NameSyntax BinaryStreamSerializer { get; }
         NameSyntax HeaderSerializer { get; }
         NameSyntax ISerializationData { get; }
         NameSyntax ITypeSerializer { get; }

@@ -1,6 +1,8 @@
-using System.Linq;
+using System;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.OpenApi;
@@ -117,6 +119,37 @@ namespace Yardarm.UnitTests.Spec
             operations.Select(p => (p.Key, p.Element.OperationId)).Should().Equal(
                 ("QUERY", "queryThings"),
                 ("LINK", "linkThings"));
+
+            await using var serializedStream = new MemoryStream();
+            await document.SerializeAsJsonAsync(
+                serializedStream,
+                specificationVersion.StartsWith("3.0", StringComparison.Ordinal)
+                    ? OpenApiSpecVersion.OpenApi3_0
+                    : OpenApiSpecVersion.OpenApi3_1,
+                TestContext.Current.CancellationToken);
+
+            var reader = new Utf8JsonReader(serializedStream.ToArray());
+            var additionalOperationsPropertyCount = 0;
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.PropertyName &&
+                    reader.GetString() == "x-oai-additionalOperations")
+                {
+                    additionalOperationsPropertyCount++;
+                }
+            }
+
+            additionalOperationsPropertyCount.Should().Be(1);
+
+            await using var roundTripStream = new MemoryStream(serializedStream.ToArray());
+            OpenApiDocument roundTripDocument = await YardarmOpenApiDocument.LoadAsync(
+                roundTripStream,
+                TestContext.Current.CancellationToken);
+
+            roundTripDocument.Paths.ToLocatedElements().GetOperations()
+                .Select(p => (p.Key, p.Element.OperationId)).Should().Equal(
+                    ("QUERY", "queryThings"),
+                    ("LINK", "linkThings"));
         }
     }
 }

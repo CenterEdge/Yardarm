@@ -39,6 +39,12 @@ internal static class OpenApiAdditionalOperationsConverter
                     $"The {ExtensionName} extension on path '{path}' must be an object.");
             }
 
+            if (pathItem is not OpenApiPathItem mutablePathItem)
+            {
+                throw new InvalidDataException(
+                    $"Path '{path}' does not support additional operations.");
+            }
+
             foreach ((string method, JsonNode? node) in additionalOperations)
             {
                 if (string.IsNullOrWhiteSpace(method) || node is not JsonObject)
@@ -67,12 +73,6 @@ internal static class OpenApiAdditionalOperationsConverter
                         $"The {ExtensionName} operation '{method}' on path '{path}' could not be read.");
                 }
 
-                if (pathItem is not OpenApiPathItem mutablePathItem)
-                {
-                    throw new InvalidDataException(
-                        $"Path '{path}' does not support additional operations.");
-                }
-
                 var operations = mutablePathItem.Operations ??= [];
                 if (!operations.TryAdd(new HttpMethod(method), operation))
                 {
@@ -80,6 +80,8 @@ internal static class OpenApiAdditionalOperationsConverter
                         $"The {ExtensionName} operation '{method}' on path '{path}' duplicates an existing operation.");
                 }
             }
+
+            mutablePathItem.Extensions?.Remove(ExtensionName);
         }
     }
 }

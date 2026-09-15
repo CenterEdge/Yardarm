@@ -8,7 +8,7 @@ using Microsoft.OpenApi.Reader;
 namespace Yardarm.Spec;
 
 /// <summary>
-/// Converts the OpenAI additional operations extension into path item operations.
+/// Converts the OpenAPI additional operations extension into path item operations.
 /// </summary>
 internal static class OpenApiAdditionalOperationsConverter
 {

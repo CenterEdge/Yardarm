@@ -18,4 +18,7 @@ for extension in "Yardarm.SystemTextJson" "Yardarm.NewtonsoftJson"; do
 
     dotnet run --no-build --no-launch-profile -c Release --project src/main/Core/Yardarm.CommandLine -- \
     generate --no-restore -n TestSTJ -x $jsonext $httpext -p ExternallyDiscriminatedUnions=true -f netstandard2.0 net8.0 net9.0 net10.0 --embed --intermediate-dir ./obj/ --nupkg ./bin/ -v 1.0.0 -i ./src/main/Core/Yardarm.CommandLine/swagger.json
+
+    dotnet run --no-build --no-launch-profile -c Release --project src/main/Core/Yardarm.CommandLine -- \
+    generate --no-restore -n TestSTJ -x $jsonext $httpext -p ExternallyDiscriminatedUnions=true -f netstandard2.0 net8.0 net9.0 net10.0 --embed --intermediate-dir ./obj/ --nupkg ./bin/ -v 1.0.0 -i ./src/main/Core/Yardarm.CommandLine/swagger.3.1.json
 done

@@ -42,6 +42,7 @@ public class NullableOneOfSchemaTests
         schema.Element.Nullable.Should().BeTrue();
         schema.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema).Should().BeTrue();
         underlyingSchema.Should().NotBeNull();
+        schema.UnwrapUnderlyingNullableSchema().Element.Should().BeSameAs(underlyingSchema);
         generator.TypeInfo.Name.ToString().Should().Be("System.DateTime");
         generator.TypeInfo.IsGenerated.Should().BeFalse();
     }

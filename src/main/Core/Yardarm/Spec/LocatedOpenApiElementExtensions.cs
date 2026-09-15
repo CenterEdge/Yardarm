@@ -399,6 +399,14 @@ public static class LocatedOpenApiElementExtensions
 
     extension(ILocatedOpenApiElement<IOpenApiSchema> schema)
     {
+        /// <summary>
+        /// Replaces nullable <c>oneOf</c> wrappers with their non-null alternatives.
+        /// </summary>
+        public ILocatedOpenApiElement<IOpenApiSchema> UnwrapUnderlyingNullableSchema() =>
+            schema.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema)
+                ? new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, schema.Key, schema.Parent)
+                : schema;
+
         public ILocatedOpenApiElement<IOpenApiSchema>? GetAdditionalProperties() =>
             schema.Element.AdditionalProperties != null
                 ? schema.CreateChild(schema.Element.AdditionalProperties, "additionalProperties")
@@ -419,6 +427,15 @@ public static class LocatedOpenApiElementExtensions
             schema.Element.Properties?
                 .Select(p => schema.CreateChild(p.Value, p.Key))
             ?? [];
+    }
+
+    extension(IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> schemas)
+    {
+        /// <summary>
+        /// Replaces nullable <c>oneOf</c> wrappers with their non-null alternatives.
+        /// </summary>
+        public IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> UnwrapUnderlyingNullableSchemas() =>
+            schemas.Select(UnwrapUnderlyingNullableSchema);
     }
 
     #endregion

@@ -44,10 +44,9 @@ public static class OpenApiSchemaTypeExtensions
             }
 
             underlyingSchema = oneOf[0].Type == JsonSchemaType.Null
-                ? oneOf[1]
+                ? oneOf[1].Type != JsonSchemaType.Null ? oneOf[1] : null
                 : oneOf[1].Type == JsonSchemaType.Null ? oneOf[0] : null;
-            return underlyingSchema?.Type is { } underlyingType
-                && (underlyingType & JsonSchemaType.Null) == 0;
+            return underlyingSchema is not null;
         }
     }
 }

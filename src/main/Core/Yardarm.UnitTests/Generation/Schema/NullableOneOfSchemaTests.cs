@@ -146,35 +146,6 @@ public class NullableOneOfSchemaTests
     }
 
     [Theory]
-    [InlineData(JsonSchemaType.String | JsonSchemaType.Null)]
-    [InlineData(null)]
-    public void Get_NullableOneOfWithNullAcceptingAlternative_RemainsUnion(JsonSchemaType? alternativeType)
-    {
-        // Arrange
-
-        var propertySchema = new OpenApiSchema
-        {
-            OneOf =
-            [
-                new OpenApiSchema { Type = JsonSchemaType.Null },
-                new OpenApiSchema { Type = alternativeType }
-            ]
-        };
-        var document = CreateDocument(propertySchema);
-        var registry = document.CreateRegistry();
-        var property = document.Components.Schemas["Parent"].CreateRoot("Parent").GetProperties().Single();
-
-        // Act
-
-        var generator = registry.Get(property);
-
-        // Assert
-
-        property.Element.Nullable.Should().BeFalse();
-        generator.TypeInfo.IsGenerated.Should().BeTrue();
-    }
-
-    [Theory]
     [MemberData(nameof(InlineNullableSchemas))]
     public void Get_InlineNullableOneOfComponent_GeneratesUnderlyingDeclaration(IOpenApiSchema underlyingSchema)
     {

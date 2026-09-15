@@ -133,13 +133,9 @@ namespace Yardarm.CommandLine
 
         protected async Task<OpenApiDocument> ReadDocumentAsync()
         {
-            var settings = new OpenApiReaderSettings();
-            settings.AddYamlReader();
-
             await using var stream = File.OpenRead(_options.InputFile);
 
-            var result = await OpenApiDocument.LoadAsync(stream, settings: settings);
-            return result.Document;
+            return await YardarmOpenApiDocument.LoadAsync(stream);
         }
 
         private void ApplyVersion(YardarmGenerationSettings settings)

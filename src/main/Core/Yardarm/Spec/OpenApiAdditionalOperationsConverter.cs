@@ -39,7 +39,14 @@ internal static class OpenApiAdditionalOperationsConverter
                     $"The {ExtensionName} extension on path '{path}' must be an object.");
             }
 
-            if (pathItem is not OpenApiPathItem mutablePathItem)
+            OpenApiPathItem? mutablePathItem = pathItem switch
+            {
+                OpenApiPathItem concretePathItem => concretePathItem,
+                OpenApiPathItemReference { RecursiveTarget: OpenApiPathItem referencedPathItem } => referencedPathItem,
+                _ => null
+            };
+
+            if (mutablePathItem is null)
             {
                 throw new InvalidDataException(
                     $"Path '{path}' does not support additional operations.");

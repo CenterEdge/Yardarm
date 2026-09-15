@@ -151,5 +151,66 @@ namespace Yardarm.UnitTests.Spec
                     ("QUERY", "queryThings"),
                     ("LINK", "linkThings"));
         }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task LoadAsync_AdditionalOperationsExtension_OnReferencedPathItem_ExpectedResult(
+            bool chainedReference)
+        {
+            // Arrange
+
+            string pathItem = chainedReference
+                    ? """
+                        "Things": {
+                          "$ref": "#/components/pathItems/AdditionalOperations"
+                        },
+                        """
+                    : string.Empty;
+            string pathReference = chainedReference ? "Things" : "AdditionalOperations";
+            string documentText = $$"""
+                    {
+                      "openapi": "3.1.1",
+                      "info": {
+                        "title": "Test",
+                        "version": "1.0"
+                      },
+                      "paths": {
+                        "/things": {
+                          "$ref": "#/components/pathItems/{{pathReference}}"
+                        }
+                      },
+                      "components": {
+                        "pathItems": {
+                          {{pathItem}}
+                          "AdditionalOperations": {
+                            "x-oai-additionalOperations": {
+                              "QUERY": {
+                                "operationId": "queryThings",
+                                "responses": {
+                                  "200": {
+                                    "description": "OK"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                    """;
+
+            // Act
+
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(documentText));
+            OpenApiDocument document = await YardarmOpenApiDocument.LoadAsync(
+                    stream,
+                    TestContext.Current.CancellationToken);
+
+            // Assert
+
+            document.Paths.ToLocatedElements().GetOperations()
+                    .Select(p => (p.Key, p.Element.OperationId)).Should().Equal(("QUERY", "queryThings"));
+        }
     }
 }

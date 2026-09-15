@@ -53,8 +53,8 @@ internal static class SchemaHelper
     }
 
     public static bool IsPolymorphic(IOpenApiSchema schema) =>
-        schema is {Discriminator.PropertyName: not null}
-        || (schema.OneOf is { Count: > 0 } && !schema.TryGetNullableUnderlyingSchema(out _));
+        !schema.TryGetNullableUnderlyingSchema(out _)
+        && schema is {Discriminator.PropertyName: not null} or {OneOf.Count: > 0};
 
 
     private static bool IsJsonMediaType(string mediaType) =>

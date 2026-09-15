@@ -18,6 +18,9 @@ internal class DiscriminatorConverterGenerator(
     {
         var schemas = document
             .GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider)
+            .Select(schema => schema.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema)
+                ? new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, schema.Key, schema.Parent)
+                : schema)
             .Where(schema => SchemaHelper.IsPolymorphic(schema.Element));
 
         foreach (var schema in schemas)

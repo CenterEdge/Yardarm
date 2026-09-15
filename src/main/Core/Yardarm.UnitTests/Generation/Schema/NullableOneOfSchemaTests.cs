@@ -145,6 +145,61 @@ public class NullableOneOfSchemaTests
         generator.TypeInfo.IsGenerated.Should().BeTrue();
     }
 
+    [Theory]
+    [MemberData(nameof(InlineNullableSchemas))]
+    public void Get_InlineNullableOneOfComponent_GeneratesUnderlyingDeclaration(IOpenApiSchema underlyingSchema)
+    {
+        // Arrange
+
+        var document = new OpenApiDocument
+        {
+            Components = new OpenApiComponents
+            {
+                Schemas = new Dictionary<string, IOpenApiSchema>
+                {
+                    ["Nullable"] = new OpenApiSchema
+                    {
+                        OneOf =
+                        [
+                            new OpenApiSchema { Type = JsonSchemaType.Null },
+                            underlyingSchema
+                        ]
+                    }
+                }
+            }
+        };
+        var registry = document.CreateRegistry();
+
+        // Act
+
+        var generator = registry.Get(document.Components.Schemas["Nullable"].CreateRoot("Nullable"));
+
+        // Assert
+
+        generator.GenerateSyntaxTree().Should().NotBeNull();
+    }
+
+    public static IEnumerable<object[]> InlineNullableSchemas =>
+    [
+        [new OpenApiSchema
+        {
+            Type = JsonSchemaType.Object,
+            Properties = new Dictionary<string, IOpenApiSchema>
+            {
+                ["value"] = new OpenApiSchema { Type = JsonSchemaType.String }
+            }
+        }],
+        [new OpenApiSchema { Type = JsonSchemaType.String, Enum = ["first"] }],
+        [new OpenApiSchema
+        {
+            OneOf =
+            [
+                new OpenApiSchema { Type = JsonSchemaType.String },
+                new OpenApiSchema { Type = JsonSchemaType.Integer }
+            ]
+        }]
+    ];
+
     private static OpenApiDocument CreateDocument(IOpenApiSchema propertySchema) =>
         new()
         {

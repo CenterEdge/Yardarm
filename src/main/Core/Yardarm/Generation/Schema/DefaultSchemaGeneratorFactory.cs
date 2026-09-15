@@ -33,7 +33,9 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
             ITypeGenerator underlyingGenerator = context.TypeGeneratorRegistry.Get(
                 new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
 
-            return new TypeInfoAliasGenerator(underlyingGenerator, parent);
+            return underlyingSchema is IOpenApiReferenceHolder
+                ? new TypeInfoAliasGenerator(underlyingGenerator, parent)
+                : underlyingGenerator;
         }
 
         if (element.Element.OneOf is { Count: > 0 })

@@ -6397,6 +6397,73 @@
   },
   "components": {
     "schemas": {
+      "LocalDate": {
+        "type": "string",
+        "format": "date"
+      },
+      "NullableOneOfInlineReference": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LocalDate"
+              }
+            ]
+          }
+        }
+      },
+      "NullableOneOfComponentReference": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "$ref": "#/components/schemas/LocalDate"
+          }
+        ]
+      },
+      "NullableOneOfInlineValue": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "format": "date"
+              }
+            ]
+          }
+        }
+      },
+      "NullableOneOfComponentValue": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "string",
+            "format": "date"
+          }
+        ]
+      },
+      "NullableOneOfReferences": {
+        "type": "object",
+        "properties": {
+          "componentReference": {
+            "$ref": "#/components/schemas/NullableOneOfComponentReference"
+          },
+          "componentValue": {
+            "$ref": "#/components/schemas/NullableOneOfComponentValue"
+          }
+        }
+      },
       "ActionBase": {
         "required": [
           "actionType"

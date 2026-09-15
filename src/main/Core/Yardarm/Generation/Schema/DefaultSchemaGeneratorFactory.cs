@@ -28,6 +28,12 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
             return new AllOfSchemaGenerator(element, context, parent);
         }
 
+        if (element.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema))
+        {
+            return context.TypeGeneratorRegistry.Get(
+                new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
+        }
+
         if (element.Element.OneOf is { Count: > 0 })
         {
             return new OneOfSchemaGenerator(element, context, parent);

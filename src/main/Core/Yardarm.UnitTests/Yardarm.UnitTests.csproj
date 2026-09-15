@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\Yardarm.CommandLine\swagger.json"
+          Link="swagger.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

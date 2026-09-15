@@ -18,7 +18,9 @@ internal class DiscriminatorConverterGenerator(
     {
         var schemas = document
             .GetAllSchemasExcludingOperationsWithoutNames(operationNameProvider)
-            .Where(schema => SchemaHelper.IsPolymorphic(schema.Element));
+            .UnwrapUnderlyingNullableSchemas()
+            .Where(schema => schema.Element is not IOpenApiReferenceHolder
+                && SchemaHelper.IsPolymorphic(schema.Element));
 
         foreach (var schema in schemas)
         {

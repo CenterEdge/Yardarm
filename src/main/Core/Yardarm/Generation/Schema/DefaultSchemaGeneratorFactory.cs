@@ -28,6 +28,17 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
             return new AllOfSchemaGenerator(element, context, parent);
         }
 
+        if (element.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema))
+        {
+            ITypeGenerator underlyingGenerator = context.TypeGeneratorRegistry.Get(
+                new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
+
+            // Component references are generated independently; inline schemas must generate their declarations here.
+            return underlyingSchema is IOpenApiReferenceHolder
+                ? new TypeInfoAliasGenerator(underlyingGenerator, parent)
+                : underlyingGenerator;
+        }
+
         if (element.Element.OneOf is { Count: > 0 })
         {
             return new OneOfSchemaGenerator(element, context, parent);

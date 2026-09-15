@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Xunit;
 using Yardarm.Generation;
@@ -65,6 +66,28 @@ public class NullableOneOfSchemaTests
         references.Should().Equal(
             "NullableOneOfComponentReference",
             "NullableOneOfComponentValue");
+    }
+
+    [Fact]
+    public async Task Generate_NullableOneOfObjectReferences_DoesNotRepeatReferencedDeclarations()
+    {
+        // Arrange
+
+        await using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "swagger.json"));
+        OpenApiDocument document = await YardarmOpenApiDocument.LoadAsync(stream, TestContext.Current.CancellationToken);
+        var registry = document.CreateRegistry();
+        var generator = new Yardarm.Generation.Schema.SchemaGenerator(document, registry);
+
+        // Act
+
+        var declarations = generator.Generate()
+            .SelectMany(p => p.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+            .Select(p => p.Identifier.ValueText);
+
+        // Assert
+
+        declarations.Should().ContainSingle(p => p == "NullableOneOfReferencedObject");
+        declarations.Should().ContainSingle(p => p == "NullableOneOfInlineObjectReference");
     }
 
     [Fact]

@@ -6426,6 +6426,39 @@
           }
         ]
       },
+      "NullableOneOfReferencedObject": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "NullableOneOfComponentObjectReference": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "$ref": "#/components/schemas/NullableOneOfReferencedObject"
+          }
+        ]
+      },
+      "NullableOneOfInlineObjectReference": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/NullableOneOfReferencedObject"
+              }
+            ]
+          }
+        }
+      },
       "NullableOneOfInlineValue": {
         "type": "object",
         "properties": {

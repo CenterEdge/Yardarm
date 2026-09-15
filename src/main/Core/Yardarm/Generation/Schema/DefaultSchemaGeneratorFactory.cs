@@ -30,8 +30,10 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 
         if (element.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema))
         {
-            return context.TypeGeneratorRegistry.Get(
+            ITypeGenerator underlyingGenerator = context.TypeGeneratorRegistry.Get(
                 new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
+
+            return new TypeInfoAliasGenerator(underlyingGenerator, parent);
         }
 
         if (element.Element.OneOf is { Count: > 0 })

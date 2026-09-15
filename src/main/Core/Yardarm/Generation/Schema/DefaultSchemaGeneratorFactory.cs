@@ -33,6 +33,7 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
             ITypeGenerator underlyingGenerator = context.TypeGeneratorRegistry.Get(
                 new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
 
+            // Component references are generated independently; inline schemas must generate their declarations here.
             return underlyingSchema is IOpenApiReferenceHolder
                 ? new TypeInfoAliasGenerator(underlyingGenerator, parent)
                 : underlyingGenerator;

@@ -5,7 +5,7 @@ namespace Yardarm.Generation.Schema;
 
 internal sealed class NullableSchemaGeneratorFactory(GenerationContext context) : ITypeGeneratorFactory<IOpenApiSchema>
 {
-    public int Priority => -100;
+    public int Priority => -1000;
 
     public ITypeGenerator? Create(ILocatedOpenApiElement<IOpenApiSchema> element, ITypeGenerator? parent) =>
         TryCreate(context, element, parent);

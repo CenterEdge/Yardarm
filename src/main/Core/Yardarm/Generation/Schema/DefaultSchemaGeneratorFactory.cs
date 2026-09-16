@@ -9,7 +9,7 @@ namespace Yardarm.Generation.Schema;
 
 public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGeneratorFactory<IOpenApiSchema>
 {
-    public virtual int Priority => 100;
+    public virtual int Priority => 1000;
 
     private ObjectFactory<ExternallyDiscriminatedUnionSchemaGenerator> ExternallyDiscriminatedUnionFactory => field ??=
         ActivatorUtilities.CreateFactory<ExternallyDiscriminatedUnionSchemaGenerator>([ typeof(ILocatedOpenApiElement<IOpenApiSchema>), typeof(GenerationContext), typeof(ITypeGenerator) ]);

@@ -6,6 +6,8 @@ namespace Yardarm.NodaTime.Internal;
 
 public sealed class NodaTimeSchemaGeneratorFactory(GenerationContext context) : ITypeGeneratorFactory<IOpenApiSchema>
 {
+    public int Priority => 0;
+
     public ITypeGenerator? Create(ILocatedOpenApiElement<IOpenApiSchema> element, ITypeGenerator? parent)
     {
         if (element.Element is { Format: not null } && element.Element.IsType(JsonSchemaType.String)

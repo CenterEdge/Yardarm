@@ -64,6 +64,7 @@ public static class YardarmCoreServiceCollectionExtensions
 
             services.AddTypeGeneratorFactory<IOpenApiHeader, HeaderTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<IOpenApiMediaType, MediaTypeGeneratorFactory>();
+            services.AddTypeGeneratorFactory<IOpenApiSchema, NullableSchemaGeneratorFactory>();
             services.AddTypeGeneratorFactory<IOpenApiSchema, DefaultSchemaGeneratorFactory>();
             services.AddTypeGeneratorFactory<IOpenApiSecurityScheme, SecuritySchemeTypeGeneratorFactory>();
             services.AddTypeGeneratorFactory<IOpenApiResponse, ResponseTypeGeneratorFactory>();

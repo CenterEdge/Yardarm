@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Xunit;
 using Yardarm.Generation;
+using Yardarm.NodaTime;
 using Yardarm.Spec;
 
 namespace Yardarm.UnitTests.Generation.Schema;
@@ -44,6 +45,30 @@ public class NullableOneOfSchemaTests
         underlyingSchema.Should().NotBeNull();
         schema.UnwrapUnderlyingNullableSchema().Element.Should().BeSameAs(underlyingSchema);
         generator.TypeInfo.Name.ToString().Should().Be("System.DateTime");
+        generator.TypeInfo.IsGenerated.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Get_NullableOneOfNodaTimeSchema_UsesNodaTimeType()
+    {
+        // Arrange
+
+        await using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "swagger.json"));
+        OpenApiDocument document = await YardarmOpenApiDocument.LoadAsync(stream, TestContext.Current.CancellationToken);
+        var settings = new YardarmGenerationSettings().AddExtension<NodaTimeExtension>();
+        var registry = document.CreateRegistry(settings);
+        ILocatedOpenApiElement<IOpenApiSchema> schema = document.Components.Schemas["NullableOneOfInlineValue"]
+            .CreateRoot("NullableOneOfInlineValue")
+            .GetProperties()
+            .Single();
+
+        // Act
+
+        var generator = registry.Get(schema);
+
+        // Assert
+
+        generator.TypeInfo.Name.ToString().Should().Be("global::NodaTime.LocalDate");
         generator.TypeInfo.IsGenerated.Should().BeFalse();
     }
 
@@ -223,9 +248,13 @@ public class NullableOneOfSchemaTests
 
 file static class OpenApiDocumentExtensions
 {
-    public static ITypeGeneratorRegistry<IOpenApiSchema> CreateRegistry(this OpenApiDocument document)
+    public static ITypeGeneratorRegistry<IOpenApiSchema> CreateRegistry(this OpenApiDocument document) =>
+        document.CreateRegistry(new YardarmGenerationSettings());
+
+    public static ITypeGeneratorRegistry<IOpenApiSchema> CreateRegistry(
+        this OpenApiDocument document,
+        YardarmGenerationSettings settings)
     {
-        var settings = new YardarmGenerationSettings();
         return settings.BuildServiceProvider(document)
             .GetRequiredService<ITypeGeneratorRegistry<IOpenApiSchema>>();
     }

@@ -9,6 +9,8 @@ namespace Yardarm.Generation.Schema;
 
 public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGeneratorFactory<IOpenApiSchema>
 {
+    public virtual int Priority => 1000;
+
     private ObjectFactory<ExternallyDiscriminatedUnionSchemaGenerator> ExternallyDiscriminatedUnionFactory => field ??=
         ActivatorUtilities.CreateFactory<ExternallyDiscriminatedUnionSchemaGenerator>([ typeof(ILocatedOpenApiElement<IOpenApiSchema>), typeof(GenerationContext), typeof(ITypeGenerator) ]);
 
@@ -26,17 +28,6 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
         if (element.Element.AllOf is { Count: > 0 })
         {
             return new AllOfSchemaGenerator(element, context, parent);
-        }
-
-        if (element.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema))
-        {
-            ITypeGenerator underlyingGenerator = context.TypeGeneratorRegistry.Get(
-                new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
-
-            // Component references are generated independently; inline schemas must generate their declarations here.
-            return underlyingSchema is IOpenApiReferenceHolder
-                ? new TypeInfoAliasGenerator(underlyingGenerator, parent)
-                : underlyingGenerator;
         }
 
         if (element.Element.OneOf is { Count: > 0 })

@@ -9,6 +9,8 @@ namespace Yardarm.Generation.Schema;
 
 public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGeneratorFactory<IOpenApiSchema>
 {
+    public virtual int Priority => 100;
+
     private ObjectFactory<ExternallyDiscriminatedUnionSchemaGenerator> ExternallyDiscriminatedUnionFactory => field ??=
         ActivatorUtilities.CreateFactory<ExternallyDiscriminatedUnionSchemaGenerator>([ typeof(ILocatedOpenApiElement<IOpenApiSchema>), typeof(GenerationContext), typeof(ITypeGenerator) ]);
 
@@ -17,6 +19,12 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 
     public virtual ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiSchema> element, ITypeGenerator? parent)
     {
+        // Retain nullable handling for consumers that register this legacy factory directly.
+        if (NullableSchemaGeneratorFactory.TryCreate(context, element, parent) is { } nullableGenerator)
+        {
+            return nullableGenerator;
+        }
+
         if (context.Options.ExternallyDiscriminatedUnions
             && ExternallyDiscriminatedUnionSchemaGenerator.IsEligible(element, context.TypeGeneratorRegistry))
         {
@@ -26,17 +34,6 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
         if (element.Element.AllOf is { Count: > 0 })
         {
             return new AllOfSchemaGenerator(element, context, parent);
-        }
-
-        if (element.Element.TryGetNullableUnderlyingSchema(out var underlyingSchema))
-        {
-            ITypeGenerator underlyingGenerator = context.TypeGeneratorRegistry.Get(
-                new LocatedOpenApiElement<IOpenApiSchema>(underlyingSchema, element.Key, element.Parent));
-
-            // Component references are generated independently; inline schemas must generate their declarations here.
-            return underlyingSchema is IOpenApiReferenceHolder
-                ? new TypeInfoAliasGenerator(underlyingGenerator, parent)
-                : underlyingGenerator;
         }
 
         if (element.Element.OneOf is { Count: > 0 })

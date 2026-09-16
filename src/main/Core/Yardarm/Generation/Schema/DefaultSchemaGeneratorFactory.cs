@@ -19,12 +19,6 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
 
     public virtual ITypeGenerator Create(ILocatedOpenApiElement<IOpenApiSchema> element, ITypeGenerator? parent)
     {
-        // Retain nullable handling for consumers that register this legacy factory directly.
-        if (NullableSchemaGeneratorFactory.TryCreate(context, element, parent) is { } nullableGenerator)
-        {
-            return nullableGenerator;
-        }
-
         if (context.Options.ExternallyDiscriminatedUnions
             && ExternallyDiscriminatedUnionSchemaGenerator.IsEligible(element, context.TypeGeneratorRegistry))
         {

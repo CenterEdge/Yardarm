@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using Microsoft.OpenApi;
@@ -26,6 +27,17 @@ internal static class OpenApiAdditionalOperationsConverter
         }
 
         var reader = new OpenApiJsonReader();
+
+        // Build a validation rule set that excludes the path parameter rule, since additional operations will not have path
+        // information as they are read within the extension.
+        var operationRuleSet = ValidationRuleSet.GetDefaultRuleSet();
+        operationRuleSet.Remove(OpenApiParameterRules.PathParameterShouldBeInThePath.Name);
+
+        var operationReaderSettings = new OpenApiReaderSettings
+        {
+            RuleSet = operationRuleSet,
+        };
+
         foreach ((string path, IOpenApiPathItem pathItem) in document.Paths)
         {
             if (pathItem.Extensions?.TryGetValue(ExtensionName, out IOpenApiExtension? extension) != true)
@@ -65,7 +77,7 @@ internal static class OpenApiAdditionalOperationsConverter
                     specificationVersion,
                     document,
                     out OpenApiDiagnostic diagnostic,
-                    settings);
+                    operationReaderSettings);
 
                 if (diagnostic.Errors.Count > 0)
                 {
@@ -89,6 +101,18 @@ internal static class OpenApiAdditionalOperationsConverter
             }
 
             mutablePathItem.Extensions?.Remove(ExtensionName);
+        }
+
+        // Run a focused validation of path items on the document once all additional operations have been added.
+        var pathParameterRuleSet = ValidationRuleSet.GetEmptyRuleSet();
+        pathParameterRuleSet.Add(
+            typeof(IOpenApiParameter),
+            OpenApiParameterRules.PathParameterShouldBeInThePath);
+
+        var validationErrors = document.Validate(pathParameterRuleSet).ToList();
+        if (validationErrors.Count > 0)
+        {
+            throw new InvalidDataException(validationErrors[0].Message);
         }
     }
 }

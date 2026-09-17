@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -61,8 +62,33 @@ public class StringSchemaGenerator(
 
     public override QualifiedNameSyntax? GetTypeName() => null;
 
-    protected override YardarmTypeInfo CreateTypeInfo() =>
-        Element.Element.Format switch
+    internal static bool HasContentSchema(ILocatedOpenApiElement<IOpenApiSchema> schema) =>
+        schema.Element.Type is null &&
+        (!string.IsNullOrEmpty(GetContentEncoding(schema)) ||
+         !string.IsNullOrEmpty(GetContentMediaType(schema)));
+
+    private static string? GetContentEncoding(ILocatedOpenApiElement<IOpenApiSchema> schema) =>
+        (schema.Element as IOpenApiSchemaMissingProperties)?.ContentEncoding;
+
+    private static string? GetContentMediaType(ILocatedOpenApiElement<IOpenApiSchema> schema) =>
+        (schema.Element as IOpenApiSchemaMissingProperties)?.ContentMediaType ??
+        (schema.Parent?.Element is IOpenApiMediaType ? schema.Parent.Key : null);
+
+    protected override YardarmTypeInfo CreateTypeInfo()
+    {
+        if (GetContentEncoding(Element) is string contentEncoding)
+        {
+            return string.Equals(contentEncoding, "base64", StringComparison.OrdinalIgnoreCase)
+                ? ByteArray
+                : String;
+        }
+
+        if (Element.Element.Type is null && !string.IsNullOrEmpty(GetContentMediaType(Element)))
+        {
+            return Binary;
+        }
+
+        return Element.Element.Format switch
         {
             "date" or "full-date" => Context.Options.LegacyDateTimeHandling ? DateTime : DateOnly,
             "partial-time" => Context.Options.LegacyDateTimeHandling ? TimeSpan : TimeOnly,
@@ -74,6 +100,7 @@ public class StringSchemaGenerator(
             "binary" => Binary,
             _ => String
         };
+    }
 
     public override SyntaxTree? GenerateSyntaxTree() => null;
 

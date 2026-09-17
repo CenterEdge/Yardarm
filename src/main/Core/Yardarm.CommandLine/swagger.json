@@ -6393,6 +6393,74 @@
           }
         ]
       }
+    },
+    "/binary-content-base64": {
+      "post": {
+        "operationId": "binaryContentBase64",
+        "responses": {
+          "200": {
+            "description": "Base64-encoded binary content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "contentEncoding": "base64"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/binary-content-raw-inferred": {
+      "get": {
+        "operationId": "binaryContentRawInferred",
+        "responses": {
+          "200": {
+            "description": "Raw binary content with inferred media type",
+            "content": {
+              "application/octet-stream": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/binary-content-raw-explicit": {
+      "get": {
+        "operationId": "binaryContentRawExplicit",
+        "responses": {
+          "200": {
+            "description": "Raw binary content with explicit media type",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/binary-content-unsupported-encoding": {
+      "get": {
+        "operationId": "binaryContentUnsupportedEncoding",
+        "responses": {
+          "200": {
+            "description": "Content with an unsupported encoding",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "contentEncoding": "base64url"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

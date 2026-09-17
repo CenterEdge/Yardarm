@@ -153,6 +153,154 @@ namespace Yardarm.UnitTests.Spec
         }
 
         [Theory]
+        [InlineData("3.0.4")]
+        [InlineData("3.1.1")]
+        public async Task LoadAsync_AdditionalOperationsExtension_WithPathParameter_ExpectedResult(
+            string specificationVersion)
+        {
+            // Arrange
+
+            string documentText = $$"""
+                    {
+                      "openapi": "{{specificationVersion}}",
+                      "info": {
+                        "title": "Test",
+                        "version": "1.0"
+                      },
+                      "paths": {
+                        "/org/{businessEntityId}/pricelists/default/entries": {
+                          "x-oai-additionalOperations": {
+                            "QUERY": {
+                              "operationId": "getEntriesWithPrices",
+                              "parameters": [
+                                {
+                                  "name": "businessEntityId",
+                                  "in": "path",
+                                  "required": true,
+                                  "schema": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                  }
+                                }
+                              ],
+                              "responses": {
+                                "200": {
+                                  "description": "OK"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                    """;
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(documentText));
+
+            // Act
+
+            OpenApiDocument document = await YardarmOpenApiDocument.LoadAsync(
+                    stream,
+                    TestContext.Current.CancellationToken);
+            var operation = document.Paths.ToLocatedElements().GetOperations().Single();
+
+            // Assert
+
+            operation.Key.Should().Be("QUERY");
+            operation.Element.OperationId.Should().Be("getEntriesWithPrices");
+            operation.GetAllParameters().Select(p => p.Element.Name).Should().Equal("businessEntityId");
+        }
+
+        [Fact]
+        public async Task LoadAsync_AdditionalOperationsExtension_WithMismatchedPathParameter_Throws()
+        {
+            // Arrange
+
+            const string documentText = """
+                {
+                  "openapi": "3.1.1",
+                  "info": {
+                    "title": "Test",
+                    "version": "1.0"
+                  },
+                  "paths": {
+                    "/org/{businessEntityId}": {
+                      "x-oai-additionalOperations": {
+                        "QUERY": {
+                          "operationId": "getEntriesWithPrices",
+                          "parameters": [
+                            {
+                              "name": "organizationId",
+                              "in": "path",
+                              "required": true,
+                              "schema": {
+                                "type": "integer",
+                                "format": "int64"
+                              }
+                            }
+                          ],
+                          "responses": {
+                            "200": {
+                              "description": "OK"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(documentText));
+
+            // Act
+
+            Func<Task> act = () => YardarmOpenApiDocument.LoadAsync(
+                stream,
+                TestContext.Current.CancellationToken);
+
+            // Assert
+
+            await act.Should().ThrowAsync<InvalidDataException>()
+                .WithMessage("*organizationId*");
+        }
+
+        [Fact]
+        public async Task LoadAsync_AdditionalOperationsExtension_WithoutResponses_Throws()
+        {
+            // Arrange
+
+            const string documentText = """
+                {
+                  "openapi": "3.1.1",
+                  "info": {
+                    "title": "Test",
+                    "version": "1.0"
+                  },
+                  "paths": {
+                    "/things": {
+                      "x-oai-additionalOperations": {
+                        "QUERY": {
+                          "operationId": "queryThings"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(documentText));
+
+            // Act
+
+            Func<Task> act = () => YardarmOpenApiDocument.LoadAsync(
+                stream,
+                TestContext.Current.CancellationToken);
+
+            // Assert
+
+            await act.Should().ThrowAsync<InvalidDataException>()
+                .WithMessage("*Responses*");
+        }
+
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task LoadAsync_AdditionalOperationsExtension_OnReferencedPathItem_ExpectedResult(

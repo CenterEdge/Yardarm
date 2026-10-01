@@ -33,6 +33,7 @@ public static class YardarmOpenApiDocument
             document,
             diagnostic.SpecificationVersion,
             settings);
+        OpenApiItemSchemaConverter.Convert(document, diagnostic.SpecificationVersion);
 
         return document;
     }

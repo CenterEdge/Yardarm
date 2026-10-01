@@ -119,6 +119,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/ActivitiesResponse"
                 }
+              },
+              "application/jsonl": {
+                "x-oai-itemSchema": {
+                  "$ref": "#/components/schemas/ActivitiesResponse"
+                }
               }
             }
           },

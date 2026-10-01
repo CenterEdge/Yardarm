@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.OpenApi;
@@ -63,6 +66,154 @@ namespace Yardarm.UnitTests.Spec
                 ("QUERY", "queryThings"),
                 ("LINK", "linkThings"));
         }
+
+        [Theory]
+        [InlineData("3.0.4")]
+        [InlineData("3.1.1")]
+        public async Task LoadAsync_ItemSchemaExtension_ExpectedResult(string specificationVersion)
+        {
+            // Arrange
+
+            string documentText = $$"""
+                {
+                  "openapi": "{{specificationVersion}}",
+                  "info": {
+                    "title": "Test",
+                    "version": "1.0"
+                  },
+                  "paths": {
+                    "/things": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "content": {
+                              "application/jsonl": {
+                                "x-oai-itemSchema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "components": {
+                    "responses": {
+                      "Things": {
+                        "description": "OK",
+                        "content": {
+                          "application/jsonl": {
+                            "x-oai-itemSchema": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(documentText));
+
+            // Act
+
+            OpenApiDocument document = await YardarmOpenApiDocument.LoadAsync(
+                stream,
+                TestContext.Current.CancellationToken);
+            IOpenApiResponse response = document.Paths["/things"].Operations[HttpMethod.Get].Responses["200"];
+            IOpenApiMediaType jsonLinesMediaType = response.Content["application/jsonl"];
+            IOpenApiMediaType componentJsonLinesMediaType =
+                document.Components!.Responses["Things"].Content["application/jsonl"];
+
+            // Assert
+
+            jsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Properties.Should().ContainKey("id");
+            jsonLinesMediaType.Extensions?.Should().NotContainKey("x-oai-itemSchema");
+            componentJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.String);
+        }
+
+        [Fact]
+        public void OpenApiItemSchemaConverter_ConvertsAllResponseContent()
+        {
+            // Arrange
+
+            var responseJsonLinesMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "string" })
+            };
+            var responseJsonMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "integer" })
+            };
+            var requestJsonLinesMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "boolean" })
+            };
+            var document = new OpenApiDocument
+            {
+                Paths = new OpenApiPaths
+                {
+                    ["/things"] = new OpenApiPathItem
+                    {
+                        Operations = new Dictionary<HttpMethod, OpenApiOperation>
+                        {
+                            [HttpMethod.Get] = new OpenApiOperation
+                            {
+                                RequestBody = new OpenApiRequestBody
+                                {
+                                    Content = new Dictionary<string, IOpenApiMediaType>
+                                    {
+                                        ["application/jsonl"] = requestJsonLinesMediaType
+                                    }
+                                },
+                                Responses = new OpenApiResponses
+                                {
+                                    ["200"] = new OpenApiResponse
+                                    {
+                                        Description = "OK",
+                                        Content = new Dictionary<string, IOpenApiMediaType>
+                                        {
+                                            ["application/jsonl"] = responseJsonLinesMediaType,
+                                            ["application/json"] = responseJsonMediaType
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Act
+
+            OpenApiItemSchemaConverter.Convert(document, OpenApiSpecVersion.OpenApi3_1);
+
+            // Assert
+
+            responseJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.String);
+            responseJsonLinesMediaType.Extensions.Should().NotContainKey("x-oai-itemSchema");
+            responseJsonMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Integer);
+            responseJsonMediaType.Extensions.Should().NotContainKey("x-oai-itemSchema");
+            requestJsonLinesMediaType.ItemSchema.Should().BeNull();
+            requestJsonLinesMediaType.Extensions.Should().ContainKey("x-oai-itemSchema");
+        }
+
+        private static Dictionary<string, IOpenApiExtension> CreateItemSchemaExtension(JsonNode node) =>
+            new()
+            {
+                ["x-oai-itemSchema"] = new JsonNodeExtension(node)
+            };
 
         [Theory]
         [InlineData("3.0.4")]

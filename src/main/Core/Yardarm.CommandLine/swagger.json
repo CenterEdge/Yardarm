@@ -246,6 +246,11 @@
                                     "$ref": "#/components/schemas/Activity"
                                 }
                             }
+                        },
+                        "application/jsonl": {
+                            "itemSchema": {
+                                "$ref": "#/components/schemas/Activity"
+                            }
                         }
                     }
                 }

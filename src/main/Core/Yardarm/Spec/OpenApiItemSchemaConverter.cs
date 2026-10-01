@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Reader;
@@ -22,29 +23,26 @@ internal static class OpenApiItemSchemaConverter
         }
 
         var reader = new OpenApiJsonReader();
+        var visitedPathItems = new HashSet<OpenApiPathItem>(ReferenceEqualityComparer.Instance);
 
         foreach (IOpenApiPathItem pathItem in document.Paths.Values)
         {
-            var operations = pathItem switch
-            {
-                OpenApiPathItem concretePathItem => concretePathItem.Operations,
-                OpenApiPathItemReference { RecursiveTarget: OpenApiPathItem referencedPathItem } =>
-                    referencedPathItem.Operations,
-                _ => null
-            };
+            ConvertPathItem(pathItem, specificationVersion, document, reader, visitedPathItems);
+        }
 
-            if (operations is null)
+        if (document.Webhooks is { } webhooks)
+        {
+            foreach (IOpenApiPathItem pathItem in webhooks.Values)
             {
-                continue;
+                ConvertPathItem(pathItem, specificationVersion, document, reader, visitedPathItems);
             }
+        }
 
-            foreach (OpenApiOperation operation in operations.Values)
+        if (document.Components?.PathItems is { } componentPathItems)
+        {
+            foreach (IOpenApiPathItem pathItem in componentPathItems.Values)
             {
-                ConvertResponseItemSchemas(
-                    operation.Responses,
-                    specificationVersion,
-                    document,
-                    reader);
+                ConvertPathItem(pathItem, specificationVersion, document, reader, visitedPathItems);
             }
         }
 
@@ -57,6 +55,58 @@ internal static class OpenApiItemSchemaConverter
                     specificationVersion,
                     document,
                     reader);
+            }
+        }
+    }
+
+    private static void ConvertPathItem(
+        IOpenApiPathItem pathItem,
+        OpenApiSpecVersion specificationVersion,
+        OpenApiDocument document,
+        OpenApiJsonReader reader,
+        HashSet<OpenApiPathItem> visitedPathItems)
+    {
+        OpenApiPathItem? mutablePathItem = pathItem switch
+        {
+            OpenApiPathItem concretePathItem => concretePathItem,
+            OpenApiPathItemReference { RecursiveTarget: OpenApiPathItem referencedPathItem } => referencedPathItem,
+            _ => null
+        };
+
+        if (mutablePathItem?.Operations is not { } operations || !visitedPathItems.Add(mutablePathItem))
+        {
+            return;
+        }
+
+        foreach (OpenApiOperation operation in operations.Values)
+        {
+            ConvertResponseItemSchemas(
+                operation.Responses,
+                specificationVersion,
+                document,
+                reader);
+
+            if (operation.Callbacks is not { } callbacks)
+            {
+                continue;
+            }
+
+            foreach (IOpenApiCallback callback in callbacks.Values)
+            {
+                if (callback.PathItems is not { } callbackPathItems)
+                {
+                    continue;
+                }
+
+                foreach (IOpenApiPathItem callbackPathItem in callbackPathItems.Values)
+                {
+                    ConvertPathItem(
+                        callbackPathItem,
+                        specificationVersion,
+                        document,
+                        reader,
+                        visitedPathItems);
+                }
             }
         }
     }

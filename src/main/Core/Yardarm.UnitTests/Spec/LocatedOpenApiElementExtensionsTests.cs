@@ -209,6 +209,96 @@ namespace Yardarm.UnitTests.Spec
             requestJsonLinesMediaType.Extensions.Should().ContainKey("x-oai-itemSchema");
         }
 
+        [Fact]
+        public void OpenApiItemSchemaConverter_ConvertsNestedReusableAndCyclicPathItemResponses()
+        {
+            // Arrange
+
+            var callbackMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "string" })
+            };
+            var webhookMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "integer" })
+            };
+            var componentPathItemMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "boolean" })
+            };
+            var callbackPathItem = CreatePathItem(callbackMediaType);
+            var document = new OpenApiDocument
+            {
+                Paths = new OpenApiPaths
+                {
+                    ["/things"] = new OpenApiPathItem
+                    {
+                        Operations = new Dictionary<HttpMethod, OpenApiOperation>
+                        {
+                            [HttpMethod.Get] = new OpenApiOperation()
+                        }
+                    }
+                },
+                Webhooks = new Dictionary<string, IOpenApiPathItem>
+                {
+                    ["thingChanged"] = CreatePathItem(webhookMediaType)
+                },
+                Components = new OpenApiComponents
+                {
+                    PathItems = new Dictionary<string, IOpenApiPathItem>
+                    {
+                        ["ThingEvents"] = CreatePathItem(componentPathItemMediaType)
+                    }
+                }
+            };
+            var callback = new OpenApiCallback
+            {
+                PathItems = []
+            };
+            callback.PathItems.Add(
+                RuntimeExpression.Build("$request.body#/callbackUrl"),
+                callbackPathItem);
+            document.Paths["/things"].Operations[HttpMethod.Get].Callbacks =
+                new Dictionary<string, IOpenApiCallback> { ["onThingChanged"] = callback };
+            callbackPathItem.Operations[HttpMethod.Post].Callbacks =
+                new Dictionary<string, IOpenApiCallback> { ["onThingChanged"] = callback };
+
+            // Act
+
+            OpenApiItemSchemaConverter.Convert(document, OpenApiSpecVersion.OpenApi3_1);
+
+            // Assert
+
+            callbackMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.String);
+            webhookMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Integer);
+            componentPathItemMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Boolean);
+        }
+
+        private static OpenApiPathItem CreatePathItem(OpenApiMediaType mediaType) =>
+            new()
+            {
+                Operations = new Dictionary<HttpMethod, OpenApiOperation>
+                {
+                    [HttpMethod.Post] = new OpenApiOperation
+                    {
+                        Responses = new OpenApiResponses
+                        {
+                            ["200"] = new OpenApiResponse
+                            {
+                                Description = "OK",
+                                Content = new Dictionary<string, IOpenApiMediaType>
+                                {
+                                    ["application/jsonl"] = mediaType
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
         private static Dictionary<string, IOpenApiExtension> CreateItemSchemaExtension(JsonNode node) =>
             new()
             {

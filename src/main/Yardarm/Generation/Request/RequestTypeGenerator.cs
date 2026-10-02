@@ -72,12 +72,8 @@ namespace Yardarm.Generation.Request
 
             if (Element.GetRequestBody()?.GetMediaTypes().Any(p => SerializerSelector.Select(p) == null) ?? false)
             {
-                var buildContentMethod = declaration.Members
-                    .OfType<MethodDeclarationSyntax>()
-                    .First(p => p.Identifier.Text == BuildContentMethodGenerator.BuildContentMethodName);
-
                 var httpContentGenerator =
-                    new HttpContentRequestTypeGenerator(Element, Context, this, buildContentMethod, operationNameProvider);
+                    new HttpContentRequestTypeGenerator(Element, Context, this, RequestsNamespace, operationNameProvider);
 
                 foreach (var otherMember in httpContentGenerator.Generate())
                 {

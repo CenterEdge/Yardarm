@@ -729,6 +729,44 @@
         ]
       }
     },
+    "/api/v1/activities/{id}/notes": {
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "operationId": "addActivityNote",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/bulkwaiverimport": {
       "post": {
         "tags": [

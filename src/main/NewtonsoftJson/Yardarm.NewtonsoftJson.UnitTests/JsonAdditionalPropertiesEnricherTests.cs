@@ -96,6 +96,7 @@ public class JsonAdditionalPropertiesEnricherTests
         public NameSyntax DiscriminatorConverter { get; } = IdentifierName("DiscriminatorConverter");
         public NameSyntax DynamicAdditionalPropertiesDictionary { get; } = IdentifierName("DynamicAdditionalPropertiesDictionary");
         public NameSyntax JsonTypeSerializer { get; } = IdentifierName("JsonTypeSerializer");
+        public NameSyntax JsonLinesTypeSerializer { get; } = IdentifierName("JsonLinesTypeSerializer");
         public NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; } = IdentifierName("NullableDynamicAdditionalPropertiesDictionary");
         public NameSyntax OpenApiDateConverter { get; } = IdentifierName("OpenApiDateConverter");
 

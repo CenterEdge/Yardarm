@@ -7,6 +7,7 @@ public interface IJsonSerializationNamespace
     NameSyntax Name { get; }
     NameSyntax JsonDateConverter { get; }
     NameSyntax JsonTypeSerializer { get; }
+    NameSyntax JsonLinesTypeSerializer { get; }
     NameSyntax UnknownDiscriminatorHandling { get; }
 
     InvocationExpressionSyntax GetDiscriminator(ExpressionSyntax reader, ExpressionSyntax utf8PropertyName);

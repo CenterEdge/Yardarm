@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.OpenApi.YamlReader" />
     <ProjectReference Include="..\Yardarm\Yardarm.csproj" />
     <ProjectReference Include="..\..\NodaTime\Yardarm.NodaTime\Yardarm.NodaTime.csproj" />
+    <ProjectReference Include="..\..\SystemTextJson\Yardarm.SystemTextJson\Yardarm.SystemTextJson.csproj" />
   </ItemGroup>
 
   <ItemGroup>

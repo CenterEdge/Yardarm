@@ -11,6 +11,7 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
     public NameSyntax Name { get; }
     public NameSyntax JsonDateConverter { get; }
     public NameSyntax JsonTypeSerializer { get; }
+    public NameSyntax JsonLinesTypeSerializer { get; }
     public NameSyntax JsonHelpers { get; }
     public NameSyntax UnknownDiscriminatorHandling { get; }
 
@@ -29,6 +30,10 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
         JsonTypeSerializer = QualifiedName(
             Name,
             IdentifierName("JsonTypeSerializer"));
+
+        JsonLinesTypeSerializer = QualifiedName(
+            Name,
+            IdentifierName("JsonLinesTypeSerializer"));
 
         JsonHelpers = QualifiedName(
             Name,

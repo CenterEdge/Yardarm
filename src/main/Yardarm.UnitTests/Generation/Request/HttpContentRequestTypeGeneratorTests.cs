@@ -3,8 +3,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Reader;
+using Microsoft.OpenApi.Models;
 using Xunit;
 using Yardarm.Generation;
 using Yardarm.Generation.Request;
@@ -19,38 +18,37 @@ public class HttpContentRequestTypeGeneratorTests
     {
         // Arrange
 
-        const string documentText = """
+        var document = new OpenApiDocument
+        {
+            Info = new OpenApiInfo { Title = "Test", Version = "1.0" },
+            Paths = new OpenApiPaths
             {
-              "openapi": "3.0.4",
-              "info": {
-                "title": "Test",
-                "version": "1.0"
-              },
-              "paths": {
-                "/things": {
-                  "post": {
-                    "operationId": "addThing",
-                    "requestBody": {
-                      "content": {
-                        "application/xml": {
-                          "schema": {
-                            "type": "string"
-                          }
+                ["/things"] = new OpenApiPathItem
+                {
+                    Operations =
+                    {
+                        [OperationType.Post] = new OpenApiOperation
+                        {
+                            OperationId = "addThing",
+                            RequestBody = new OpenApiRequestBody
+                            {
+                                Content =
+                                {
+                                    ["application/xml"] = new OpenApiMediaType
+                                    {
+                                        Schema = new OpenApiSchema { Type = "string" }
+                                    }
+                                }
+                            },
+                            Responses = new OpenApiResponses
+                            {
+                                ["204"] = new OpenApiResponse { Description = "No Content" }
+                            }
                         }
-                      }
-                    },
-                    "responses": {
-                      "204": {
-                        "description": "No Content"
-                      }
                     }
-                  }
                 }
-              }
             }
-            """;
-
-        OpenApiDocument document = OpenApiDocument.Parse(documentText, "json", new OpenApiReaderSettings()).Document;
+        };
         var registry = new YardarmGenerationSettings()
             .BuildServiceProvider(document)
             .GetRequiredService<ITypeGeneratorRegistry>();

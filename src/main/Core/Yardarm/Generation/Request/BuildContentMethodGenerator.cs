@@ -11,6 +11,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Yardarm.Generation.Request;
 
 public class BuildContentMethodGenerator(
+    GenerationContext context,
     IRequestsNamespace requestsNamespace,
     ISerializationNamespace serializationNamespace,
     IMediaTypeSelector mediaTypeSelector)
@@ -20,6 +21,7 @@ public class BuildContentMethodGenerator(
 
     private const string ContextParameterName = "context";
 
+    protected GenerationContext Context { get; } = context;
     protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
     protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
 
@@ -60,10 +62,15 @@ public class BuildContentMethodGenerator(
         ExpressionSyntax serializationDataExpression =
             SerializationDataPropertyGenerator.GetSerializationData();
 
+        // Sequential media types, such as JSON Lines, serialize the items with the item type known at compile time
+        SimpleNameSyntax serializeMethod = mediaType.GetItemType(Context.TypeGeneratorRegistry) is { } itemType
+            ? GenericName(Identifier("SerializeSequence"), TypeArgumentList(SingletonSeparatedList(itemType)))
+            : IdentifierName("Serialize");
+
         var createContentExpression =
             InvocationExpression(MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
                     SerializationNamespace.TypeSerializerRegistryExtensions,
-                    IdentifierName("Serialize")))
+                    serializeMethod))
                 .AddArgumentListArguments(
                     Argument(MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,

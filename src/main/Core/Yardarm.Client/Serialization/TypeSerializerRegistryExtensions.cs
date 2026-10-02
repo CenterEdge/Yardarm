@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,34 +73,123 @@ public static class TypeSerializerRegistryExtensions
 
         public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
             // ReSharper disable once MethodOverloadWithOptionalParameter
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default) =>
+            GetDeserializer(typeSerializerRegistry, content, typeof(T))
+                .DeserializeAsync<T>(content, serializationData, cancellationToken);
+
+        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
+            GetSerializer(typeSerializerRegistry, mediaType, typeof(T))
+                .Serialize(value, mediaType, serializationData);
+
+        /// <summary>
+        /// Serializes a sequence of items. If the serializer does not implement <see cref="ISequenceTypeSerializer"/>,
+        /// the items are serialized as a <see cref="List{T}"/>.
+        /// </summary>
+        public HttpContent SerializeSequence<TItem>(IEnumerable<TItem> items, string mediaType,
+            ISerializationData? serializationData = null)
         {
-            string? mediaType = content.Headers.ContentType?.MediaType;
+            ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, mediaType, typeof(List<TItem>));
 
-            if (mediaType is null || !typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
-            {
-                // If there is no exact match by media type, fallback to find a match by schema type
-                if (!typeSerializerRegistry.TryGet(typeof(T), out typeSerializer))
-                {
-                    throw new UnknownMediaTypeException(mediaType, content);
-                }
-            }
-
-            return typeSerializer.DeserializeAsync<T>(content, serializationData, cancellationToken);
+            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
+                ? sequenceTypeSerializer.SerializeSequence(SequenceHelpers.FromEnumerable(items), mediaType, serializationData)
+                : typeSerializer.Serialize(items as List<TItem> ?? [.. items], mediaType, serializationData);
         }
 
-        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
+        /// <summary>
+        /// Serializes an asynchronous sequence of items.
+        /// </summary>
+        /// <exception cref="NotSupportedException">The serializer does not implement <see cref="ISequenceTypeSerializer"/>.</exception>
+        [OverloadResolutionPriority(1)]
+        public HttpContent SerializeSequence<TItem>(IAsyncEnumerable<TItem> items, string mediaType,
+            ISerializationData? serializationData = null)
         {
-            if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
-            {
-                // If there is no exact match by media type, fallback to find a match by schema type
-                if (!typeSerializerRegistry.TryGet(typeof(T), out typeSerializer))
-                {
-                    throw new UnknownMediaTypeException(mediaType);
-                }
-            }
+            ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, mediaType, typeof(List<TItem>));
 
-            return typeSerializer.Serialize(value, mediaType, serializationData);
+            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
+                ? sequenceTypeSerializer.SerializeSequence(items, mediaType, serializationData)
+                : throw new NotSupportedException(
+                    $"The serializer for media type '{mediaType}' does not support asynchronous sequences.");
+        }
+
+        /// <summary>
+        /// Deserializes a sequence of items. If the serializer does not implement <see cref="ISequenceTypeSerializer"/>,
+        /// the content is deserialized as a <see cref="List{T}"/> before the first item is returned.
+        /// </summary>
+        public IAsyncEnumerable<TItem> DeserializeSequenceAsync<TItem>(HttpContent content,
+            ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+        {
+            ITypeSerializer typeSerializer = GetDeserializer(typeSerializerRegistry, content, typeof(List<TItem>));
+
+            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
+                ? sequenceTypeSerializer.DeserializeSequenceAsync<TItem>(content, serializationData, cancellationToken)
+                : DeserializeListAsSequence<TItem>(typeSerializer, content, serializationData, cancellationToken);
+        }
+
+        /// <summary>
+        /// Deserializes a sequence of items into a <see cref="List{T}"/>.
+        /// </summary>
+        public ValueTask<List<TItem>> DeserializeSequenceToListAsync<TItem>(HttpContent content,
+            ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+        {
+            ITypeSerializer typeSerializer = GetDeserializer(typeSerializerRegistry, content, typeof(List<TItem>));
+
+            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
+                ? SequenceHelpers.ToListAsync(
+                    sequenceTypeSerializer.DeserializeSequenceAsync<TItem>(content, serializationData, cancellationToken),
+                    cancellationToken)
+                : typeSerializer.DeserializeAsync<List<TItem>>(content, serializationData, cancellationToken);
+        }
+    }
+
+    private static ITypeSerializer GetDeserializer(ITypeSerializerRegistry typeSerializerRegistry, HttpContent content,
+        Type schemaType)
+    {
+        string? mediaType = content.Headers.ContentType?.MediaType;
+
+        if (mediaType is null || !typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
+        {
+            // If there is no exact match by media type, fallback to find a match by schema type
+            if (!typeSerializerRegistry.TryGet(schemaType, out typeSerializer))
+            {
+                throw new UnknownMediaTypeException(mediaType, content);
+            }
+        }
+
+        return typeSerializer;
+    }
+
+    private static ITypeSerializer GetSerializer(ITypeSerializerRegistry typeSerializerRegistry, string mediaType,
+        Type schemaType)
+    {
+        if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
+        {
+            // If there is no exact match by media type, fallback to find a match by schema type
+            if (!typeSerializerRegistry.TryGet(schemaType, out typeSerializer))
+            {
+                throw new UnknownMediaTypeException(mediaType);
+            }
+        }
+
+        return typeSerializer;
+    }
+
+    private static async IAsyncEnumerable<TItem> DeserializeListAsSequence<TItem>(ITypeSerializer typeSerializer,
+        HttpContent content, ISerializationData? serializationData,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        List<TItem>? items = await typeSerializer
+            .DeserializeAsync<List<TItem>>(content, serializationData, cancellationToken)
+            .ConfigureAwait(false);
+        if (items is null)
+        {
+            yield break;
+        }
+
+        foreach (TItem item in items)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            yield return item;
         }
     }
 }

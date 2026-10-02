@@ -150,9 +150,11 @@ public class ItemSchemaBodyTests
         declaration.Members.OfType<ClassDeclarationSyntax>()
             .Select(p => p.Identifier.ValueText)
             .Should().Contain("ItemSchemaModel");
-        declaration.Members.OfType<MethodDeclarationSyntax>()
-            .Single(p => p.Identifier.ValueText == "GetBodyAsync")
-            .ReturnType.ToString().Should().Contain(listType);
+        var getBodyMethod = declaration.Members.OfType<MethodDeclarationSyntax>()
+            .Single(p => p.Identifier.ValueText == "GetBodyAsync");
+        getBodyMethod.ReturnType.ToString().Should().Contain(listType);
+        getBodyMethod.Body!.ToString().Should().Contain(
+            "TypeSerializerRegistryExtensions.DeserializeSequenceToListAsync<Yardarm.Sdk.Responses.ListThingsOkResponse.ItemSchemaModel>(");
         declaration.Members.OfType<FieldDeclarationSyntax>()
             .Single(p => p.Declaration.Variables.Single().Identifier.ValueText == "_body")
             .Declaration.Type.ToString().Should().Be(listType + "?");
@@ -195,6 +197,11 @@ public class ItemSchemaBodyTests
         bodySchema!.Key.Should().Be("schema");
         bodySchema.Parent!.Key.Should().Be("application/jsonl");
         bodySchema.Element.Should().NotBeSameAs(mediaType.Element.ItemSchema);
+
+        declaration.Members.OfType<MethodDeclarationSyntax>()
+            .Single(p => p.Identifier.ValueText == "BuildContent")
+            .Body!.ToString().Should().Contain(
+                "TypeSerializerRegistryExtensions.SerializeSequence<Yardarm.Sdk.Requests.AddThingsJsonLinesRequest.ItemSchemaBody>(");
     }
 
     [Fact]

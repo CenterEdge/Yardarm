@@ -69,7 +69,8 @@ jobs:
         --report-github-summary-include-passed
         --report-github-summary-include-skipped
     - name: Test Generate
-      run: ./scripts/generate.sh
+      shell: pwsh
+      run: ./scripts/generate.ps1
 
     - name: Pack
       working-directory: ./src/main
@@ -128,7 +129,8 @@ jobs:
       working-directory: ./src/sdk
       run: dotnet build --configuration Release -p:Version=${{ needs.version.outputs.version  }} --no-restore Yardarm.Sdk.slnx
     - name: Test Generate
-      run: ./scripts/generate-sdk.sh
+      shell: pwsh
+      run: ./scripts/generate-sdk.ps1
 
     # Note: SDK is packed by build above, doesn't need to be packed here
     - name: NuGet Login

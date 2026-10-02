@@ -8,6 +8,7 @@ namespace Yardarm.Names.Internal
     // ReSharper disable InconsistentNaming
     internal class SerializationNamespace : ISerializationNamespace
     {
+        public NameSyntax BinaryStreamSerializer { get; }
         public NameSyntax HeaderSerializer { get; }
         public NameSyntax Name { get; }
         public NameSyntax ISerializationData { get; }
@@ -26,6 +27,10 @@ namespace Yardarm.Names.Internal
             ArgumentNullException.ThrowIfNull(rootNamespace);
 
             Name = QualifiedName(rootNamespace.Name, IdentifierName("Serialization"));
+
+            BinaryStreamSerializer = QualifiedName(
+                Name,
+                IdentifierName("BinaryStreamSerializer"));
 
             HeaderSerializer = QualifiedName(
                 Name,

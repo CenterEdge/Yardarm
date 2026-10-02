@@ -98,7 +98,7 @@ public static class LocatedOpenApiElementExtensions
         {
             var requestSchemas = requestBody
                 .GetMediaTypes()
-                .Select(p => p.GetSchema())
+                .SelectMany(GetBodySchemas)
                 .Where(p => p is not null && !p.IsReference)
                 .SelectMany(p => p!.GetAllSchemas());
 
@@ -121,16 +121,23 @@ public static class LocatedOpenApiElementExtensions
     public static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas(
         this IEnumerable<ILocatedOpenApiElement<IOpenApiRequestBody>> requestBody) =>
         requestBody.GetMediaTypes()
-            .Select(p => p.GetSchema())
+            .SelectMany(GetBodySchemas)
             .Where(p => p is not null && !p.IsReference)!
             .SelectMany(p => p!.GetAllSchemas());
 
     public static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas(
         this IEnumerable<ILocatedOpenApiElement<IOpenApiResponse>> requestBody) =>
         requestBody.GetMediaTypes()
-            .Select(p => p.GetSchema())
+            .SelectMany(GetBodySchemas)
             .Where(p => p is not null && !p.IsReference)!
             .SelectMany(p => p!.GetAllSchemas());
+
+    private static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>?> GetBodySchemas(
+        ILocatedOpenApiElement<IOpenApiMediaType> mediaType)
+    {
+        yield return mediaType.GetSchema();
+        yield return mediaType.GetItemSchema();
+    }
 
     public static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas(
         this ILocatedOpenApiElement<IOpenApiSchema> schema)
@@ -376,6 +383,14 @@ public static class LocatedOpenApiElementExtensions
 
         public ILocatedOpenApiElement<IOpenApiSchema> GetSchemaOrDefault() =>
             mediaType.GetSchema() ?? mediaType.CreateChild(_defaultSchema, "schema");
+
+        /// <summary>
+        /// Gets the schema of each item in a sequential media type, such as JSON Lines.
+        /// </summary>
+        public ILocatedOpenApiElement<IOpenApiSchema>? GetItemSchema() =>
+            mediaType.Element.ItemSchema != null
+                ? mediaType.CreateChild(mediaType.Element.ItemSchema, "itemSchema")
+                : null;
     }
 
     #endregion

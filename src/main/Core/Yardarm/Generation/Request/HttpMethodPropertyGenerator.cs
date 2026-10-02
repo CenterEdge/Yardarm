@@ -45,7 +45,7 @@ internal class HttpMethodPropertyGenerator(GenerationContext context) : IRequest
             "GET" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Get")),
             "HEAD" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Head")),
             "OPTIONS" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Options")),
-            "PATCH" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Patch")),
+            "PATCH" when SupportsPatch() => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Patch")),
             "POST" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Post")),
             "PUT" => QualifiedName(WellKnownTypes.System.Net.Http.HttpMethod.Name, IdentifierName("Put")),
             "QUERY" when SupportsQueryAndConnect() =>
@@ -56,6 +56,12 @@ internal class HttpMethodPropertyGenerator(GenerationContext context) : IRequest
                     Argument(SyntaxHelpers.StringLiteral(operation.Key)))),
                 initializer: null)
         };
+
+    // HttpMethod.Patch was added in .NET Core 2.1 and .NET Standard 2.1
+    private bool SupportsPatch() =>
+        context.CurrentTargetFramework.Framework is NuGetFrameworkConstants.NetCoreApp
+            or NuGetFrameworkConstants.NetStandardFramework &&
+        context.CurrentTargetFramework.Version >= NuGetFrameworkConstants.NetStandard21;
 
     private bool SupportsQueryAndConnect() =>
         context.CurrentTargetFramework.Framework == NuGetFrameworkConstants.NetCoreApp &&

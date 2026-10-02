@@ -87,8 +87,10 @@ namespace Yardarm.Generation.MediaType
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
-            var schema = Element.GetSchemaOrDefault();
-            declaration = declaration.AddMembers(CreateBodyPropertyDeclaration(schema));
+            var schema = Element.GetBodySchema() ?? Element.GetSchemaOrDefault();
+            declaration = declaration.AddMembers(CreateBodyPropertyDeclaration(
+                Element.GetBodyType(Context.TypeGeneratorRegistry) ?? Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name,
+                Element.GetSchemaOrDefault()));
 
             if (schema.Element is not IOpenApiReferenceHolder)
             {
@@ -106,10 +108,17 @@ namespace Yardarm.Generation.MediaType
                     .ToArray());
         }
 
-        protected virtual PropertyDeclarationSyntax CreateBodyPropertyDeclaration(ILocatedOpenApiElement<IOpenApiSchema> schema)
+        /// <summary>
+        /// Creates the body property.
+        /// </summary>
+        /// <param name="typeName">The body type.</param>
+        /// <param name="schema">
+        /// The media type's <c>schema</c>, which property enrichers use for nullability and documentation.
+        /// For a media type with only an <c>itemSchema</c>, such as JSON Lines, this is the default schema.
+        /// </param>
+        protected virtual PropertyDeclarationSyntax CreateBodyPropertyDeclaration(TypeSyntax typeName,
+            ILocatedOpenApiElement<IOpenApiSchema> schema)
         {
-            var typeName = Context.TypeGeneratorRegistry.Get(schema).TypeInfo.Name;
-
             var propertyDeclaration = PropertyDeclaration(typeName, BodyPropertyName)
                 .AddElementAnnotation(schema, Context.ElementRegistry)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))

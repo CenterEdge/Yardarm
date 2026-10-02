@@ -409,6 +409,55 @@
             }
         }
     },
+    "/api/v1/activities/stream": {
+      "get": {
+        "tags": [
+          "Activities"
+        ],
+        "operationId": "streamActivities",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/jsonl": {
+                "itemSchema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "activity": {
+                      "$ref": "#/components/schemas/Activity"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "operationId": "importActivities",
+        "requestBody": {
+          "content": {
+            "application/x-ndjson": {
+              "itemSchema": {
+                "$ref": "#/components/schemas/Activity"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/activities/{id}/starttimes": {
       "get": {
         "tags": [

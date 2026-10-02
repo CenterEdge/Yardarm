@@ -11,6 +11,7 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
     public NameSyntax DiscriminatorConverter { get; }
     public NameSyntax DynamicAdditionalPropertiesDictionary { get; }
     public NameSyntax JsonTypeSerializer { get; }
+    public NameSyntax JsonLinesTypeSerializer { get; }
     public NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; }
     public NameSyntax OpenApiDateConverter { get; }
 
@@ -33,6 +34,10 @@ internal class JsonSerializationNamespace : IKnownNamespace, IJsonSerializationN
         JsonTypeSerializer = QualifiedName(
             Name,
             IdentifierName("JsonTypeSerializer"));
+
+        JsonLinesTypeSerializer = QualifiedName(
+            Name,
+            IdentifierName("JsonLinesTypeSerializer"));
 
         NullableDynamicAdditionalPropertiesDictionary = QualifiedName(
             Name,

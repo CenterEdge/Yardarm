@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Generation.Operation;
 using Yardarm.Generation.Request;
+using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Serialization;
 using Yardarm.Spec;
@@ -87,8 +88,18 @@ namespace Yardarm.Generation.MediaType
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
-            var schema = Element.GetSchemaOrDefault();
-            declaration = declaration.AddMembers(CreateBodyPropertyDeclaration(schema));
+            ILocatedOpenApiElement<IOpenApiSchema> schema;
+            if (Element.GetItemSchema() is { } itemSchema)
+            {
+                schema = itemSchema;
+                declaration = declaration.AddMembers(CreateItemSchemaBodyPropertyDeclaration(
+                    Element.GetBodyType(Context.TypeGeneratorRegistry)!));
+            }
+            else
+            {
+                schema = Element.GetSchemaOrDefault();
+                declaration = declaration.AddMembers(CreateBodyPropertyDeclaration(schema));
+            }
 
             if (schema.Element is not IOpenApiReferenceHolder)
             {
@@ -121,5 +132,21 @@ namespace Yardarm.Generation.MediaType
 
             return propertyDeclaration;
         }
+
+        /// <summary>
+        /// Creates the body property for a media type with an <c>itemSchema</c>, such as JSON Lines.
+        /// </summary>
+        /// <remarks>
+        /// The property is not annotated with the item schema, because schema enrichers would apply
+        /// item-level changes to the collection property.
+        /// </remarks>
+        protected virtual PropertyDeclarationSyntax CreateItemSchemaBodyPropertyDeclaration(TypeSyntax bodyType) =>
+            PropertyDeclaration(bodyType.MakeNullable(), BodyPropertyName)
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddAccessorListAccessors(
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
     }
 }

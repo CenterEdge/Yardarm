@@ -147,21 +147,7 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response)
-        {
-            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = _mediaTypeSelector.Select(response);
-            if (mediaType == null)
-            {
-                return null;
-            }
-
-            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetSchema();
-            if (schemaElement == null)
-            {
-                return null;
-            }
-
-            return _context.TypeGeneratorRegistry.Get(schemaElement).TypeInfo.Name;
-        }
+        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response) =>
+            _mediaTypeSelector.Select(response)?.GetBodyType(_context.TypeGeneratorRegistry);
     }
 }

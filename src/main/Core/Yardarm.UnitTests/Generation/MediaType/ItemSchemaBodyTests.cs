@@ -183,10 +183,18 @@ public class ItemSchemaBodyTests
         declaration.Members.OfType<ClassDeclarationSyntax>()
             .Select(p => p.Identifier.ValueText)
             .Should().Contain("ItemSchemaBody");
-        declaration.Members.OfType<PropertyDeclarationSyntax>()
-            .Single(p => p.Identifier.ValueText == RequestMediaTypeGenerator.BodyPropertyName)
-            .Type.ToString().Should().Be(
-                "global::System.Collections.Generic.List<Yardarm.Sdk.Requests.AddThingsJsonLinesRequest.ItemSchemaBody>?");
+        var bodyProperty = declaration.Members.OfType<PropertyDeclarationSyntax>()
+            .Single(p => p.Identifier.ValueText == RequestMediaTypeGenerator.BodyPropertyName);
+        bodyProperty.Type.ToString().Should().Be(
+            "global::System.Collections.Generic.List<Yardarm.Sdk.Requests.AddThingsJsonLinesRequest.ItemSchemaBody>");
+
+        // Annotated with the default schema, not the item schema, so enrichers make it nullable without
+        // applying item documentation
+        var bodySchema = bodyProperty.GetElementAnnotation<IOpenApiSchema>(
+            serviceProvider.GetRequiredService<IOpenApiElementRegistry>());
+        bodySchema!.Key.Should().Be("schema");
+        bodySchema.Parent!.Key.Should().Be("application/jsonl");
+        bodySchema.Element.Should().NotBeSameAs(mediaType.Element.ItemSchema);
     }
 
     [Fact]

@@ -1,13 +1,16 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 // ReSharper disable once CheckNamespace
@@ -17,7 +20,7 @@ namespace RootNamespace.Serialization.Json
     /// Serializes JSON Lines (newline-delimited JSON) bodies. Collections are written and read as one JSON
     /// value per line; other values are written and read as a single line.
     /// </summary>
-    public class JsonLinesTypeSerializer : ITypeSerializer
+    public class JsonLinesTypeSerializer : ISequenceTypeSerializer
     {
         private static readonly UTF8Encoding s_utf8NoBomEncoding = new(false);
 
@@ -94,6 +97,100 @@ namespace RootNamespace.Serialization.Json
             }
 
             return (T)list;
+        }
+
+        public HttpContent SerializeSequence<TItem>(IAsyncEnumerable<TItem> items, string mediaType,
+            ISerializationData? serializationData = null)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+
+            return new JsonLinesSequenceContent<TItem>(items, _serializer,
+                new MediaTypeHeaderValue(mediaType) { CharSet = s_utf8NoBomEncoding.WebName });
+        }
+
+        public async IAsyncEnumerable<TItem> DeserializeSequenceAsync<TItem>(HttpContent content,
+            ISerializationData? serializationData = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(content);
+
+#if NET5_0_OR_GREATER
+            Stream stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#else
+            cancellationToken.ThrowIfCancellationRequested();
+            Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+#endif
+
+            using var streamReader = new StreamReader(stream, Encoding.UTF8);
+            using var reader = new JsonTextReader(streamReader);
+            reader.SupportMultipleContent = true;
+
+            // Match the reader settings JsonSerializer.Deserialize applies, since each record is read into
+            // a JToken before it is converted
+            reader.Culture = _serializer.Culture;
+            reader.DateFormatString = _serializer.DateFormatString;
+            reader.DateParseHandling = _serializer.DateParseHandling;
+            reader.DateTimeZoneHandling = _serializer.DateTimeZoneHandling;
+            reader.FloatParseHandling = _serializer.FloatParseHandling;
+            reader.MaxDepth = _serializer.MaxDepth;
+
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (reader.TokenType == JsonToken.Comment)
+                {
+                    continue;
+                }
+
+                // JsonSerializer cannot read asynchronously, so read each record into a JToken asynchronously first
+                JToken token = await JToken.ReadFromAsync(reader, cancellationToken).ConfigureAwait(false);
+
+                yield return token.ToObject<TItem>(_serializer)!;
+            }
+        }
+
+        private sealed class JsonLinesSequenceContent<TItem> : HttpContent
+        {
+            private readonly IAsyncEnumerable<TItem> _items;
+            private readonly JsonSerializer _serializer;
+
+            public JsonLinesSequenceContent(IAsyncEnumerable<TItem> items, JsonSerializer serializer,
+                MediaTypeHeaderValue mediaType)
+            {
+                _items = items;
+                _serializer = serializer;
+
+                Headers.ContentType = mediaType;
+            }
+
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) =>
+                SerializeToStreamAsync(stream, CancellationToken.None);
+
+#if NET5_0_OR_GREATER
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context,
+                CancellationToken cancellationToken) =>
+                SerializeToStreamAsync(stream, cancellationToken);
+#endif
+
+            private async Task SerializeToStreamAsync(Stream stream, CancellationToken cancellationToken)
+            {
+                using var streamWriter = new StreamWriter(stream, s_utf8NoBomEncoding, 1024, leaveOpen: true);
+                using var jsonWriter = new JsonTextWriter(streamWriter);
+                jsonWriter.Formatting = Formatting.None;
+                jsonWriter.CloseOutput = false;
+
+                await foreach (TItem item in _items.WithCancellation(cancellationToken).ConfigureAwait(false))
+                {
+                    _serializer.Serialize(jsonWriter, item, typeof(TItem));
+                    jsonWriter.WriteRaw("\n");
+                    await jsonWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = 0;
+                return false;
+            }
         }
 
         private sealed class JsonLinesContent : HttpContent

@@ -5582,6 +5582,70 @@
         ]
       }
     },
+    "/api/v1/version/details": {
+      "get": {
+        "tags": [
+          "Version"
+        ],
+        "summary": "Get version details using an inline response schema.",
+        "operationId": "getDetails",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Version"
+        ],
+        "summary": "Compare version details using inline request and response schemas.",
+        "operationId": "compareDetails",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isCurrent": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/waivers/{waiverId}/document": {
       "get": {
         "tags": [

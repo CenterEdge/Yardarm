@@ -20,7 +20,7 @@ namespace Yardarm.Generation.Request.Internal
         ILocatedOpenApiElement<OpenApiOperation> element,
         GenerationContext context,
         RequestTypeGenerator parent,
-        MethodDeclarationSyntax buildContentMethod,
+        IRequestsNamespace requestsNamespace,
         IOperationNameProvider operationNameProvider)
         : TypeGeneratorBase<OpenApiOperation>(element, context, parent)
     {
@@ -53,10 +53,23 @@ namespace Yardarm.Generation.Request.Internal
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithBody(Block()));
 
-            var method = buildContentMethod
-                .WithModifiers(TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)))
-                .WithExpressionBody(ArrowExpressionClause(
-                    IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)))
+            var method = MethodDeclaration(
+                    attributeLists: default,
+                    TokenList(Token(SyntaxKind.ProtectedKeyword), Token(SyntaxKind.OverrideKeyword)),
+                    NullableType(WellKnownTypes.System.Net.Http.HttpContent.Name),
+                    explicitInterfaceSpecifier: null,
+                    Identifier(BuildContentMethodGenerator.BuildContentMethodName),
+                    typeParameterList: default,
+                    ParameterList(SingletonSeparatedList(
+                        Parameter(
+                            attributeLists: default,
+                            modifiers: default,
+                            requestsNamespace.BuildRequestContext,
+                            Identifier("context"),
+                            @default: null))),
+                    constraintClauses: default,
+                    body: null,
+                    ArrowExpressionClause(IdentifierName(RequestMediaTypeGenerator.BodyPropertyName)))
                 .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
 
             declaration = declaration.AddMembers(

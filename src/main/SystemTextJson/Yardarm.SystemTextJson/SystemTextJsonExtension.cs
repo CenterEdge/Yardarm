@@ -19,6 +19,7 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
     {
         services
             .AddCreateDefaultRegistryEnricher<JsonCreateDefaultRegistryEnricher>()
+            .AddCreateDefaultRegistryEnricher<JsonLinesCreateDefaultRegistryEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()
@@ -54,6 +55,15 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
             ImmutableHashSet.Create(new SerializerMediaType("application/json-patch+json", 1.0)),
             "JsonPatch",
             serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
+        ));
+
+        services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
+            ImmutableHashSet.Create(
+                // Lower priority than application/json and text/json so that JSON is preferred when both are offered
+                new SerializerMediaType("application/jsonl", 0.8),
+                new SerializerMediaType("application/x-ndjson", 0.7)),
+            "JsonLines",
+            serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonLinesTypeSerializer
         ));
 
         services.Configure<JsonOptions>(options => options.ApplySettings(settings));

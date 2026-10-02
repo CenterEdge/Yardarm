@@ -24,6 +24,23 @@
         },
         "FOOBAR": {
           "operationId": "foobarThings",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Thing"
+                  }
+                }
+              },
+              "application/jsonl": {
+                "x-oai-itemSchema": {
+                  "$ref": "#/components/schemas/Thing"
+                }
+              }
+            }
+          },
           "responses": {
             "200": {
               "description": "Success",

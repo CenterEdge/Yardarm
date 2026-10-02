@@ -101,10 +101,42 @@ namespace Yardarm.UnitTests.Spec
                             }
                           }
                         }
+                      },
+                      "post": {
+                        "requestBody": {
+                          "content": {
+                            "application/jsonl": {
+                              "x-oai-itemSchema": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
+                          }
+                        }
                       }
                     }
                   },
                   "components": {
+                    "requestBodies": {
+                      "Things": {
+                        "content": {
+                          "application/jsonl": {
+                            "x-oai-itemSchema": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    },
                     "responses": {
                       "Things": {
                         "description": "OK",
@@ -131,6 +163,10 @@ namespace Yardarm.UnitTests.Spec
             IOpenApiMediaType jsonLinesMediaType = response.Content["application/jsonl"];
             IOpenApiMediaType componentJsonLinesMediaType =
                 document.Components!.Responses["Things"].Content["application/jsonl"];
+            IOpenApiMediaType requestJsonLinesMediaType =
+                document.Paths["/things"].Operations[HttpMethod.Post].RequestBody!.Content["application/jsonl"];
+            IOpenApiMediaType componentRequestJsonLinesMediaType =
+                document.Components!.RequestBodies["Things"].Content["application/jsonl"];
 
             // Assert
 
@@ -139,10 +175,15 @@ namespace Yardarm.UnitTests.Spec
             jsonLinesMediaType.Extensions?.Should().NotContainKey("x-oai-itemSchema");
             componentJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
                 .Which.Type.Should().Be(JsonSchemaType.String);
+            requestJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Properties.Should().ContainKey("name");
+            requestJsonLinesMediaType.Extensions?.Should().NotContainKey("x-oai-itemSchema");
+            componentRequestJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Boolean);
         }
 
         [Fact]
-        public void OpenApiItemSchemaConverter_ConvertsAllResponseContent()
+        public void OpenApiItemSchemaConverter_ConvertsAllRequestAndResponseContent()
         {
             // Arrange
 
@@ -158,8 +199,25 @@ namespace Yardarm.UnitTests.Spec
             {
                 Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "boolean" })
             };
+            var componentRequestJsonLinesMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "number" })
+            };
             var document = new OpenApiDocument
             {
+                Components = new OpenApiComponents
+                {
+                    RequestBodies = new Dictionary<string, IOpenApiRequestBody>
+                    {
+                        ["Things"] = new OpenApiRequestBody
+                        {
+                            Content = new Dictionary<string, IOpenApiMediaType>
+                            {
+                                ["application/jsonl"] = componentRequestJsonLinesMediaType
+                            }
+                        }
+                    }
+                },
                 Paths = new OpenApiPaths
                 {
                     ["/things"] = new OpenApiPathItem
@@ -205,12 +263,16 @@ namespace Yardarm.UnitTests.Spec
             responseJsonMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
                 .Which.Type.Should().Be(JsonSchemaType.Integer);
             responseJsonMediaType.Extensions.Should().NotContainKey("x-oai-itemSchema");
-            requestJsonLinesMediaType.ItemSchema.Should().BeNull();
-            requestJsonLinesMediaType.Extensions.Should().ContainKey("x-oai-itemSchema");
+            requestJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Boolean);
+            requestJsonLinesMediaType.Extensions.Should().NotContainKey("x-oai-itemSchema");
+            componentRequestJsonLinesMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Number);
+            componentRequestJsonLinesMediaType.Extensions.Should().NotContainKey("x-oai-itemSchema");
         }
 
         [Fact]
-        public void OpenApiItemSchemaConverter_ConvertsNestedReusableAndCyclicPathItemResponses()
+        public void OpenApiItemSchemaConverter_ConvertsNestedReusableAndCyclicPathItemContent()
         {
             // Arrange
 
@@ -226,7 +288,19 @@ namespace Yardarm.UnitTests.Spec
             {
                 Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "boolean" })
             };
-            var callbackPathItem = CreatePathItem(callbackMediaType);
+            var callbackRequestMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "string" })
+            };
+            var webhookRequestMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "integer" })
+            };
+            var componentPathItemRequestMediaType = new OpenApiMediaType
+            {
+                Extensions = CreateItemSchemaExtension(new JsonObject { ["type"] = "boolean" })
+            };
+            var callbackPathItem = CreatePathItem(callbackMediaType, callbackRequestMediaType);
             var document = new OpenApiDocument
             {
                 Paths = new OpenApiPaths
@@ -241,13 +315,13 @@ namespace Yardarm.UnitTests.Spec
                 },
                 Webhooks = new Dictionary<string, IOpenApiPathItem>
                 {
-                    ["thingChanged"] = CreatePathItem(webhookMediaType)
+                    ["thingChanged"] = CreatePathItem(webhookMediaType, webhookRequestMediaType)
                 },
                 Components = new OpenApiComponents
                 {
                     PathItems = new Dictionary<string, IOpenApiPathItem>
                     {
-                        ["ThingEvents"] = CreatePathItem(componentPathItemMediaType)
+                        ["ThingEvents"] = CreatePathItem(componentPathItemMediaType, componentPathItemRequestMediaType)
                     }
                 }
             };
@@ -275,15 +349,30 @@ namespace Yardarm.UnitTests.Spec
                 .Which.Type.Should().Be(JsonSchemaType.Integer);
             componentPathItemMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
                 .Which.Type.Should().Be(JsonSchemaType.Boolean);
+            callbackRequestMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.String);
+            webhookRequestMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Integer);
+            componentPathItemRequestMediaType.ItemSchema.Should().BeOfType<OpenApiSchema>()
+                .Which.Type.Should().Be(JsonSchemaType.Boolean);
         }
 
-        private static OpenApiPathItem CreatePathItem(OpenApiMediaType mediaType) =>
+        private static OpenApiPathItem CreatePathItem(
+            OpenApiMediaType mediaType,
+            OpenApiMediaType requestMediaType) =>
             new()
             {
                 Operations = new Dictionary<HttpMethod, OpenApiOperation>
                 {
                     [HttpMethod.Post] = new OpenApiOperation
                     {
+                        RequestBody = new OpenApiRequestBody
+                        {
+                            Content = new Dictionary<string, IOpenApiMediaType>
+                            {
+                                ["application/jsonl"] = requestMediaType
+                            }
+                        },
                         Responses = new OpenApiResponses
                         {
                             ["200"] = new OpenApiResponse

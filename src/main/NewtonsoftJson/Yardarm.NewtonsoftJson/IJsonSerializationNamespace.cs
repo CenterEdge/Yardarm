@@ -8,6 +8,7 @@ public interface IJsonSerializationNamespace
     NameSyntax DiscriminatorConverter { get; }
     NameSyntax DynamicAdditionalPropertiesDictionary { get; }
     NameSyntax JsonTypeSerializer { get; }
+    NameSyntax JsonLinesTypeSerializer { get; }
     NameSyntax NullableDynamicAdditionalPropertiesDictionary { get; }
     public NameSyntax OpenApiDateConverter { get; }
 

@@ -57,6 +57,18 @@ internal static class OpenApiItemSchemaConverter
                     reader);
             }
         }
+
+        if (document.Components?.RequestBodies is { } requestBodies)
+        {
+            foreach (IOpenApiRequestBody requestBody in requestBodies.Values)
+            {
+                ConvertRequestBodyItemSchema(
+                    requestBody,
+                    specificationVersion,
+                    document,
+                    reader);
+            }
+        }
     }
 
     private static void ConvertPathItem(
@@ -80,6 +92,15 @@ internal static class OpenApiItemSchemaConverter
 
         foreach (OpenApiOperation operation in operations.Values)
         {
+            if (operation.RequestBody is { } requestBody)
+            {
+                ConvertRequestBodyItemSchema(
+                    requestBody,
+                    specificationVersion,
+                    document,
+                    reader);
+            }
+
             ConvertResponseItemSchemas(
                 operation.Responses,
                 specificationVersion,
@@ -139,6 +160,27 @@ internal static class OpenApiItemSchemaConverter
         OpenApiJsonReader reader)
     {
         if (response is not OpenApiResponse { Content: { } content })
+        {
+            return;
+        }
+
+        foreach (IOpenApiMediaType mediaType in content.Values)
+        {
+            ConvertMediaTypeItemSchema(
+                mediaType,
+                specificationVersion,
+                document,
+                reader);
+        }
+    }
+
+    private static void ConvertRequestBodyItemSchema(
+        IOpenApiRequestBody requestBody,
+        OpenApiSpecVersion specificationVersion,
+        OpenApiDocument document,
+        OpenApiJsonReader reader)
+    {
+        if (requestBody.Content is not { } content)
         {
             return;
         }

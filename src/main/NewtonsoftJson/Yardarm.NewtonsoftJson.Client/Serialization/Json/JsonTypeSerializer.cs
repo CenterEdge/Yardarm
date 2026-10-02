@@ -73,7 +73,7 @@ namespace RootNamespace.Serialization.Json
             return _serializer.Deserialize<T>(reader)!;
         }
 
-        private static JsonSerializerSettings CreateDefaultSettings()
+        internal static JsonSerializerSettings CreateDefaultSettings()
         {
             var settings = new JsonSerializerSettings();
             // Enrichment point

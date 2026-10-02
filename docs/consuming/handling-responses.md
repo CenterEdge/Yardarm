@@ -140,7 +140,7 @@ Different schemas based on the status code are fully supported.
 ## JSON Lines
 
 Media types that use `itemSchema`, such as `application/jsonl` and `application/x-ndjson`, are supported
-with the System.Text.Json extension. The body is a `List<T>` of the item type, the same type an array schema
+with the System.Text.Json and Newtonsoft.Json extensions. The body is a `List<T>` of the item type, the same type an array schema
 produces. Each line is one item.
 
 ```cs

@@ -458,6 +458,56 @@
         }
       }
     },
+    "/api/v1/activities/ratings": {
+      "post": {
+        "tags": [
+          "Activities"
+        ],
+        "operationId": "rateActivities",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "activityId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "rating": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              }
+            },
+            "application/jsonl": {
+              "itemSchema": {
+                "type": "object",
+                "properties": {
+                  "activityId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/v1/activities/{id}/starttimes": {
       "get": {
         "tags": [

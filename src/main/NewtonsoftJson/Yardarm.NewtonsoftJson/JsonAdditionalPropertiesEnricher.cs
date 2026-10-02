@@ -20,7 +20,12 @@ namespace Yardarm.NewtonsoftJson
     /// Also wires up a private field to use <see cref="JsonExtensionDataAttribute"/> to serializer/deserialize
     /// the properties.
     /// </summary>
-    public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, IOpenApiSchema>
+    /// <remarks>
+    /// This enriches class declarations rather than compilation units. Compilation units are only annotated with the
+    /// element of their root type, so schemas nested within other types, such as inline request and response body
+    /// schemas, are not reachable from a compilation unit enricher.
+    /// </remarks>
+    public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSchema>
     {
         private const string BackingFieldName = "_additionalProperties";
         private const string WrapperFieldName = "_additionalPropertiesWrapper";
@@ -55,11 +60,14 @@ namespace Yardarm.NewtonsoftJson
             _jsonSerializationNamespace = jsonSerializationNamespace;
         }
 
-        public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
+        public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            var members = target.GetSpecialMembers(SpecialMembers.AdditionalProperties)
-                .OfType<PropertyDeclarationSyntax>().ToArray();
+            // Only direct members, nested schema classes are enriched separately
+            var members = target.Members
+                .OfType<PropertyDeclarationSyntax>()
+                .Where(p => p.GetSpecialMemberAnnotation() == SpecialMembers.AdditionalProperties)
+                .ToArray();
 
             target = target.TrackNodes((IEnumerable<PropertyDeclarationSyntax>) members);
 

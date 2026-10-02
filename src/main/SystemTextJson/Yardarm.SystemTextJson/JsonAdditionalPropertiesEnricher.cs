@@ -20,28 +20,30 @@ namespace Yardarm.SystemTextJson;
 /// <summary>
 /// Updates additional properties members with the <see cref="JsonExtensionDataAttribute" />.
 /// </summary>
-public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<CompilationUnitSyntax, IOpenApiSchema>
+/// <remarks>
+/// This enriches class declarations rather than compilation units. Compilation units are only annotated with the
+/// element of their root type, so schemas nested within other types, such as inline request and response body
+/// schemas, are not reachable from a compilation unit enricher.
+/// </remarks>
+public class JsonAdditionalPropertiesEnricher : IOpenApiSyntaxNodeEnricher<ClassDeclarationSyntax, IOpenApiSchema>
 {
     public Type[] ExecuteAfter { get; } =
     [
         typeof(AdditionalPropertiesEnricher)
     ];
 
-    private readonly IOpenApiElementRegistry _elementRegistry;
-
-    public JsonAdditionalPropertiesEnricher(IOpenApiElementRegistry elementRegistry)
-    {
-        ArgumentNullException.ThrowIfNull(elementRegistry);
-        _elementRegistry = elementRegistry;
-    }
-
-    public CompilationUnitSyntax Enrich(CompilationUnitSyntax target,
+    public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
         OpenApiEnrichmentContext<IOpenApiSchema> context)
     {
-        var members = target
-            .GetSpecialMembers(SpecialMembers.AdditionalProperties)
+        if (!context.LocatedElement.IsJsonSchema)
+        {
+            return target;
+        }
+
+        // Only direct members, nested schema classes are enriched separately
+        var members = target.Members
             .OfType<PropertyDeclarationSyntax>()
-            .Where(p => p.Parent is ClassDeclarationSyntax classDeclaration && _elementRegistry.IsJsonSchema(classDeclaration))
+            .Where(p => p.GetSpecialMemberAnnotation() == SpecialMembers.AdditionalProperties)
             .ToArray();
 
         if (members.Length == 0)

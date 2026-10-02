@@ -16,6 +16,8 @@ namespace Yardarm.UnitTests.Generation.Request
         [Theory]
         [InlineData("net10.0", "QUERY", "global::System.Net.Http.HttpMethod.Query")]
         [InlineData("netstandard2.0", "QUERY", "new global::System.Net.Http.HttpMethod(\"QUERY\")")]
+        [InlineData("net8.0", "PATCH", "global::System.Net.Http.HttpMethod.Patch")]
+        [InlineData("netstandard2.0", "PATCH", "new global::System.Net.Http.HttpMethod(\"PATCH\")")]
         [InlineData("net10.0", "LINK", "new global::System.Net.Http.HttpMethod(\"LINK\")")]
         public void Generate_ExtendedMethod_ExpectedHttpMethod(string targetFramework, string method, string expectedExpression)
         {

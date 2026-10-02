@@ -24,6 +24,7 @@
   <Folder Name="/NewtonsoftJson/">
     <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson.Client.UnitTests/Yardarm.NewtonsoftJson.Client.UnitTests.csproj" />
     <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson.Client/Yardarm.NewtonsoftJson.Client.csproj" />
+    <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson.UnitTests/Yardarm.NewtonsoftJson.UnitTests.csproj" />
     <Project Path="NewtonsoftJson/Yardarm.NewtonsoftJson/Yardarm.NewtonsoftJson.csproj" />
   </Folder>
   <Folder Name="/NodaTime/">
@@ -34,6 +35,7 @@
   <Folder Name="/SystemTextJson/">
     <Project Path="SystemTextJson/Yardarm.SystemTextJson.Client.UnitTests/Yardarm.SystemTextJson.Client.UnitTests.csproj" />
     <Project Path="SystemTextJson/Yardarm.SystemTextJson.Client/Yardarm.SystemTextJson.Client.csproj" />
+    <Project Path="SystemTextJson/Yardarm.SystemTextJson.UnitTests/Yardarm.SystemTextJson.UnitTests.csproj" />
     <Project Path="SystemTextJson/Yardarm.SystemTextJson/Yardarm.SystemTextJson.csproj" />
   </Folder>
 </Solution>

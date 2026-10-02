@@ -8,21 +8,6 @@ namespace Yardarm.SystemTextJson.Internal;
 
 internal static class SchemaHelper
 {
-
-    extension(IOpenApiElementRegistry elementRegistry)
-    {
-        public bool IsJsonSchema(ClassDeclarationSyntax classDeclaration)
-        {
-            var element = classDeclaration.GetElementAnnotation<IOpenApiSchema>(elementRegistry);
-            if (element is null)
-            {
-                return false;
-            }
-
-            return element.IsJsonSchema;
-        }
-    }
-
     extension(ILocatedOpenApiElement<IOpenApiSchema> element)
     {
         public bool IsJsonSchema

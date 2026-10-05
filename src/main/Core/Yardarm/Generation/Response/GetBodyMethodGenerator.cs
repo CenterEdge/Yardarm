@@ -84,7 +84,7 @@ namespace Yardarm.Generation.Response
                 // Sequential media types, such as JSON Lines, deserialize the items with the item type known at compile time
                 SimpleNameSyntax deserializeMethod =
                     MediaTypeSelector.Select(response)?.GetItemType(Context.TypeGeneratorRegistry) is { } itemType
-                        ? GenericName(Identifier("DeserializeSequenceToListAsync"),
+                        ? GenericName(Identifier("DeserializeListAsync"),
                             TypeArgumentList(SingletonSeparatedList(itemType)))
                         : GenericName(Identifier("DeserializeAsync"),
                             TypeArgumentList(SingletonSeparatedList(returnType)));

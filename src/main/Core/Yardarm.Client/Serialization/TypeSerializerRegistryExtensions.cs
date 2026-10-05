@@ -148,7 +148,7 @@ public static class TypeSerializerRegistryExtensions
         /// <summary>
         /// Deserializes a sequence of items into a <see cref="List{T}"/>.
         /// </summary>
-        public ValueTask<List<TItem>> DeserializeSequenceToListAsync<TItem>(HttpContent content,
+        public ValueTask<List<TItem>> DeserializeListAsync<TItem>(HttpContent content,
             ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
         {
             ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, content, typeof(List<TItem>));

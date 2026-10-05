@@ -372,10 +372,10 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
-        #region DeserializeSequenceToListAsync
+        #region DeserializeListAsync
 
         [Fact]
-        public async Task DeserializeSequenceToListAsync_SequenceSerializer_CollectsItems()
+        public async Task DeserializeListAsync_SequenceSerializer_CollectsItems()
         {
             // Arrange
 
@@ -385,7 +385,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            var result = await registry.DeserializeSequenceToListAsync<int>(CreateContent(), cancellationToken: cts.Token);
+            var result = await registry.DeserializeListAsync<int>(CreateContent(), cancellationToken: cts.Token);
 
             // Assert
 
@@ -394,7 +394,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
-        public async Task DeserializeSequenceToListAsync_ListSerializer_ReturnsDeserializedList()
+        public async Task DeserializeListAsync_ListSerializer_ReturnsDeserializedList()
         {
             // Arrange
 
@@ -405,7 +405,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            var result = await registry.DeserializeSequenceToListAsync<int>(CreateContent(), cancellationToken: cts.Token);
+            var result = await registry.DeserializeListAsync<int>(CreateContent(), cancellationToken: cts.Token);
 
             // Assert
 
@@ -415,7 +415,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
-        public async Task DeserializeSequenceToListAsync_SchemaTypeFallback_UsesListSchemaType()
+        public async Task DeserializeListAsync_SchemaTypeFallback_UsesListSchemaType()
         {
             // Arrange
 
@@ -425,7 +425,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            var result = await registry.DeserializeSequenceToListAsync<int>(CreateContent("application/unknown"), cancellationToken: TestContext.Current.CancellationToken);
+            var result = await registry.DeserializeListAsync<int>(CreateContent("application/unknown"), cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 

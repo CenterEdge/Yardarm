@@ -20,12 +20,25 @@ internal static class SequenceHelpers
         source as IAsyncEnumerable<T> ?? new SyncAsyncEnumerable<T>(source);
 
     /// <summary>
+    /// Copies an <see cref="IReadOnlyCollection{T}"/> into a <see cref="List{T}"/>.
+    /// </summary>
+    public static List<T> ToList<T>(IReadOnlyCollection<T> source)
+    {
+        var list = new List<T>(source.Count);
+        list.AddRange(source);
+
+        return list;
+    }
+
+    /// <summary>
     /// Collects an <see cref="IAsyncEnumerable{T}"/> into a <see cref="List{T}"/>.
     /// </summary>
     public static async ValueTask<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source,
         CancellationToken cancellationToken = default)
     {
-        var list = new List<T>();
+        var list = source is IReadOnlyCollection<T> collection
+            ? new List<T>(collection.Count)
+            : new List<T>();
 
         await foreach (T item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {

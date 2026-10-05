@@ -360,6 +360,29 @@ public static class LocatedOpenApiElementExtensions
             response.Element.Content?
                 .Select(p => response.CreateChild(p.Value, p.Key))
             ?? [];
+
+        /// <summary>
+        /// Gets the response which owns the content and headers. For a response which references a component,
+        /// this is the root element of the component, otherwise it is the response itself.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The reference is unresolved or has no ID.</exception>
+        public ILocatedOpenApiElement<IOpenApiResponse> GetPrimaryResponse()
+        {
+            if (response.Element is not IOpenApiReferenceHolder referenceHolder)
+            {
+                return response;
+            }
+
+            if (OpenApiReferenceHolderAccessor.GetTarget(referenceHolder) is not IOpenApiResponse target)
+            {
+                throw new InvalidOperationException("Response reference target was not resolved.");
+            }
+
+            string referenceId = response.Element.GetReferenceId()
+                ?? throw new InvalidOperationException("Response reference ID is missing.");
+
+            return target.CreateRoot(referenceId);
+        }
     }
 
     #endregion

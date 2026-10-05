@@ -54,33 +54,13 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
-            var responseReference = Response as IOpenApiReferenceHolder<OpenApiResponse, IOpenApiResponse, OpenApiReferenceWithDescriptionAndSummary>;
-            bool isPrimaryImplementation = Element.IsRoot || responseReference is null;
+            bool isPrimaryImplementation = Element.IsRoot || !Element.IsReference;
 
             // For non-primary implementations (referencing a response in the components section),
             // inherit from the primary implementation
-            TypeSyntax baseType;
-            if (isPrimaryImplementation)
-            {
-                baseType = ResponsesNamespace.OperationResponse;
-            }
-            else
-            {
-                var target = responseReference!.Target;
-                if (target is null)
-                {
-                    ThrowHelpers.ThrowInvalidOperationException("Response reference target was not resolved.");
-                }
-
-                var referenceId = Response.GetReferenceId();
-                if (referenceId is null)
-                {
-                    ThrowHelpers.ThrowInvalidOperationException("Response reference ID is missing.");
-                }
-
-                var rootElement = target.CreateRoot(referenceId);
-                baseType = Context.TypeGeneratorRegistry.Get(rootElement).TypeInfo.Name;
-            }
+            TypeSyntax baseType = isPrimaryImplementation
+                ? ResponsesNamespace.OperationResponse
+                : Context.TypeGeneratorRegistry.Get(Element.GetPrimaryResponse()).TypeInfo.Name;
 
             (TypeSyntax? bodyType, ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
 
@@ -112,7 +92,9 @@ namespace Yardarm.Generation.Response
                 }
             }
 
-            if (schemaGenerator != null && !schemaIsReference)
+            // Inline body schemas are generated as nested models on the primary implementation only,
+            // non-primary implementations inherit the model from the component
+            if (isPrimaryImplementation && schemaGenerator != null && !schemaIsReference)
             {
                 declaration = declaration.WithMembers(declaration.Members.AddRange(schemaGenerator.Generate()));
             }

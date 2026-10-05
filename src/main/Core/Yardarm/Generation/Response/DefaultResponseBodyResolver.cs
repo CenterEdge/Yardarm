@@ -30,6 +30,9 @@ internal class DefaultResponseBodyResolver(
     {
         ArgumentNullException.ThrowIfNull(response);
 
+        // A response which references a component uses the body of the component, not an operation-local copy
+        response = response.GetPrimaryResponse();
+
         ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = mediaTypeSelector.Select(response);
         if (mediaType is null)
         {
@@ -64,6 +67,8 @@ internal class DefaultResponseBodyResolver(
         ILocatedOpenApiElement<IOpenApiResponse> response)
     {
         ArgumentNullException.ThrowIfNull(response);
+
+        response = response.GetPrimaryResponse();
 
         var compatible = response.GetCompatibleMediaTypes(mediaTypeSelector, serializerSelector, context.TypeGeneratorRegistry);
 

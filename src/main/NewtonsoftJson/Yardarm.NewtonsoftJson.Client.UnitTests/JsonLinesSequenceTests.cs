@@ -178,7 +178,7 @@ public class JsonLinesSequenceTests
         var content = registry.SerializeSequence(items, "application/x-ndjson");
         var buffered = new ByteArrayContent(await content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken));
         buffered.Headers.ContentType = content.Headers.ContentType;
-        var result = await registry.DeserializeSequenceToListAsync<Item>(buffered,
+        var result = await registry.DeserializeListAsync<Item>(buffered,
             cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert

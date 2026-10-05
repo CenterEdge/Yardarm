@@ -40,8 +40,13 @@ internal static class SequenceHelpers
             ? new List<T>(collection.Count)
             : new List<T>();
 
+        // Check the token directly, since the source may not observe the token passed to its enumerator
+        cancellationToken.ThrowIfCancellationRequested();
+
         await foreach (T item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             list.Add(item);
         }
 

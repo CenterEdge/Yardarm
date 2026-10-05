@@ -125,25 +125,19 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
-        public async Task SerializeSequence_ListSerializerWithAsyncEnumerable_SerializesListWhenSent()
+        public void SerializeSequence_ListSerializerWithAsyncEnumerable_Throws()
         {
             // Arrange
 
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
 
             // Act
 
-            var content = registry.SerializeSequence(AsyncItems(1, 2), MediaType);
-            object serializedBeforeSend = serializer.SerializedValue;
-            string body = await content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            Action action = () => registry.SerializeSequence(AsyncItems(1, 2), MediaType);
 
             // Assert
 
-            serializedBeforeSend.Should().BeNull();
-            content.Headers.ContentType!.MediaType.Should().Be(MediaType);
-            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
-            body.Should().Be(ListSerializer.SerializedBody);
+            action.Should().Throw<NotSupportedException>().WithMessage("*SerializeSequenceAsync*");
         }
 
         [Fact]
@@ -204,21 +198,40 @@ namespace Yardarm.Client.UnitTests.Serialization
         {
             // Arrange
 
-            // The IEnumerable<T> overload serializes immediately, the IAsyncEnumerable<T> overload defers until sent
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            // The IEnumerable<T> overload would succeed with a List<T>, the IAsyncEnumerable<T> overload throws
+            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
 
             // Act
 
-            registry.SerializeSequence(new DualSequence(), MediaType);
+            Action action = () => registry.SerializeSequence(new DualSequence(), MediaType);
 
             // Assert
 
-            serializer.SerializedValue.Should().BeNull();
+            action.Should().Throw<NotSupportedException>();
         }
 
         [Fact]
         public void SerializeSequence_BothInterfacesStaticCall_PrefersAsyncEnumerableOverload()
+        {
+            // Arrange
+
+            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
+
+            // Act
+
+            Action action = () => TypeSerializerRegistryExtensions.SerializeSequence(registry, new DualSequence(), MediaType);
+
+            // Assert
+
+            action.Should().Throw<NotSupportedException>();
+        }
+
+        #endregion
+
+        #region SerializeSequenceAsync
+
+        [Fact]
+        public async Task SerializeSequenceAsync_ListSerializer_ReturnsSerializerContent()
         {
             // Arrange
 
@@ -227,10 +240,52 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            TypeSerializerRegistryExtensions.SerializeSequence(registry, new DualSequence(), MediaType);
+            var content = await registry.SerializeSequenceAsync(AsyncItems(1, 2), MediaType,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
+            // The serializer's own content is returned, so its headers are preserved
+            content.Should().BeSameAs(serializer.SerializedContent);
+            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
+        }
+
+        [Fact]
+        public async Task SerializeSequenceAsync_SequenceSerializer_PassesSameSequence()
+        {
+            // Arrange
+
+            var serializer = new SequenceSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            var items = AsyncItems(1, 2);
+
+            // Act
+
+            await registry.SerializeSequenceAsync(items, MediaType, cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            serializer.SerializedItems.Should().BeSameAs(items);
+        }
+
+        [Fact]
+        public async Task SerializeSequenceAsync_ListSerializerCanceled_Throws()
+        {
+            // Arrange
+
+            var serializer = new ListSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            cts.Cancel();
+
+            // Act
+
+            Func<Task> action = async () => await registry.SerializeSequenceAsync(AsyncItems(1, 2), MediaType,
+                cancellationToken: cts.Token);
+
+            // Assert
+
+            await action.Should().ThrowAsync<OperationCanceledException>();
             serializer.SerializedValue.Should().BeNull();
         }
 
@@ -421,8 +476,11 @@ namespace Yardarm.Client.UnitTests.Serialization
             public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null)
             {
                 SerializedValue = value;
-                return new StringContent(SerializedBody);
+                SerializedContent = new StringContent(SerializedBody);
+                return SerializedContent;
             }
+
+            public HttpContent SerializedContent { get; private set; }
 
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData) =>
                 DeserializeAsync<T>(content, serializationData, default);

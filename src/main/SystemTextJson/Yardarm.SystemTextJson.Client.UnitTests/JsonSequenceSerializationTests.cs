@@ -208,7 +208,7 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             var content = registry.SerializeSequence(items, "application/jsonl");
             content = await BufferAsync(content);
-            var result = await registry.DeserializeSequenceToListAsync<Item>(content,
+            var result = await registry.DeserializeListAsync<Item>(content,
                 cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert

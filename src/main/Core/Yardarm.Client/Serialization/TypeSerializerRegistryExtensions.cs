@@ -82,23 +82,23 @@ public static class TypeSerializerRegistryExtensions
                 .Serialize(value, mediaType, serializationData);
 
         /// <summary>
-        /// Serializes a sequence of items. Collections that are already in memory, and all items when the serializer
-        /// does not implement <see cref="ISequenceTypeSerializer"/>, are serialized as a <see cref="List{T}"/>.
+        /// Serializes a sequence of items. If the serializer does not implement <see cref="ISequenceTypeSerializer"/>,
+        /// the items are serialized as a <see cref="List{T}"/>.
         /// </summary>
         public HttpContent SerializeSequence<TItem>(IEnumerable<TItem> items, string mediaType,
             ISerializationData? serializationData = null)
         {
             ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, mediaType, typeof(List<TItem>));
 
-            // Collections already in memory are faster to serialize synchronously than through an asynchronous sequence
+            if (typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer)
+            {
+                return sequenceTypeSerializer.SerializeSequence(SequenceHelpers.FromEnumerable(items), mediaType,
+                    serializationData);
+            }
+
+            // Serializers without sequence support require a List<TItem>
             if (!SequenceHelpers.TryGetInMemoryList(items, out List<TItem>? list))
             {
-                if (typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer)
-                {
-                    return sequenceTypeSerializer.SerializeSequence(SequenceHelpers.FromEnumerable(items), mediaType,
-                        serializationData);
-                }
-
                 list = [.. items];
             }
 
@@ -106,7 +106,8 @@ public static class TypeSerializerRegistryExtensions
         }
 
         /// <summary>
-        /// Serializes an asynchronous sequence of items. Collections that are already in memory are serialized as a
+        /// Serializes an asynchronous sequence of items. If the serializer does not implement
+        /// <see cref="ISequenceTypeSerializer"/>, collections that are already in memory are serialized as a
         /// <see cref="List{T}"/>.
         /// </summary>
         /// <exception cref="NotSupportedException">The items are not a collection that is already in memory, and the
@@ -117,14 +118,15 @@ public static class TypeSerializerRegistryExtensions
         {
             ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, mediaType, typeof(List<TItem>));
 
-            // Collections already in memory are faster to serialize synchronously, and work with any serializer
-            if (SequenceHelpers.TryGetInMemoryList(items, out List<TItem>? list))
+            if (typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer)
             {
-                return typeSerializer.Serialize(list, mediaType, serializationData);
+                return sequenceTypeSerializer.SerializeSequence(items, mediaType, serializationData);
             }
 
-            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
-                ? sequenceTypeSerializer.SerializeSequence(items, mediaType, serializationData)
+            // Serializers without sequence support require a List<TItem>, which is only possible synchronously
+            // for collections already in memory
+            return SequenceHelpers.TryGetInMemoryList(items, out List<TItem>? list)
+                ? typeSerializer.Serialize(list, mediaType, serializationData)
                 : throw new NotSupportedException(
                     $"The serializer for media type '{mediaType}' does not support asynchronous sequences.");
         }

@@ -36,26 +36,25 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
-        public void SerializeSequence_SequenceSerializerWithList_SerializesSameList()
+        public async Task SerializeSequence_SequenceSerializerWithList_PassesItemsAsSequence()
         {
             // Arrange
 
             var serializer = new SequenceSerializer();
             var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            var items = new List<int> { 1, 2 };
 
             // Act
 
-            registry.SerializeSequence(items, MediaType);
+            registry.SerializeSequence(new List<int> { 1, 2 }, MediaType);
 
             // Assert
 
-            serializer.SerializedItems.Should().BeNull();
-            serializer.SerializedValue.Should().BeSameAs(items);
+            serializer.SerializedValue.Should().BeNull();
+            (await ToListAsync((IAsyncEnumerable<int>)serializer.SerializedItems)).Should().Equal(1, 2);
         }
 
         [Fact]
-        public void SerializeSequence_SequenceSerializerWithReadOnlyCollection_SerializesList()
+        public async Task SerializeSequence_SequenceSerializerWithReadOnlyCollection_PassesItemsAsSequence()
         {
             // Arrange
 
@@ -68,8 +67,8 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Assert
 
-            serializer.SerializedItems.Should().BeNull();
-            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
+            serializer.SerializedValue.Should().BeNull();
+            (await ToListAsync((IAsyncEnumerable<int>)serializer.SerializedItems)).Should().Equal(1, 2);
         }
 
         [Fact]
@@ -279,7 +278,7 @@ namespace Yardarm.Client.UnitTests.Serialization
         }
 
         [Fact]
-        public void SerializeSequence_SequenceSerializerWithAsyncList_SerializesSameList()
+        public void SerializeSequence_SequenceSerializerWithAsyncList_PassesSameSequence()
         {
             // Arrange
 
@@ -293,8 +292,8 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Assert
 
-            serializer.SerializedItems.Should().BeNull();
-            serializer.SerializedValue.Should().BeSameAs(items);
+            serializer.SerializedValue.Should().BeNull();
+            serializer.SerializedItems.Should().BeSameAs(items);
         }
 
         #endregion

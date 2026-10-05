@@ -137,7 +137,7 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Assert
 
-            action.Should().Throw<NotSupportedException>().WithMessage("*SerializeSequenceAsync*");
+            action.Should().Throw<NotSupportedException>();
         }
 
         [Fact]
@@ -226,12 +226,26 @@ namespace Yardarm.Client.UnitTests.Serialization
             action.Should().Throw<NotSupportedException>();
         }
 
-        #endregion
+        [Fact]
+        public void SerializeSequence_ListSerializerWithAsyncList_SerializesSameList()
+        {
+            // Arrange
 
-        #region SerializeSequenceAsync
+            var serializer = new ListSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            var items = new AsyncList { 1, 2 };
+
+            // Act
+
+            registry.SerializeSequence(items, MediaType);
+
+            // Assert
+
+            serializer.SerializedValue.Should().BeSameAs(items);
+        }
 
         [Fact]
-        public async Task SerializeSequenceAsync_ListSerializer_ReturnsSerializerContent()
+        public void SerializeSequence_ListSerializerWithAsyncCollection_SerializesList()
         {
             // Arrange
 
@@ -240,53 +254,47 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            var content = await registry.SerializeSequenceAsync(AsyncItems(1, 2), MediaType,
-                cancellationToken: TestContext.Current.CancellationToken);
+            registry.SerializeSequence(new AsyncCollection { 1, 2 }, MediaType);
 
             // Assert
 
-            // The serializer's own content is returned, so its headers are preserved
-            content.Should().BeSameAs(serializer.SerializedContent);
             serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
         }
 
         [Fact]
-        public async Task SerializeSequenceAsync_SequenceSerializer_PassesSameSequence()
+        public void SerializeSequence_ListSerializerWithAsyncReadOnlyCollection_SerializesList()
+        {
+            // Arrange
+
+            var serializer = new ListSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+
+            // Act
+
+            registry.SerializeSequence(new AsyncReadOnlyCollection(1, 2), MediaType);
+
+            // Assert
+
+            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
+        }
+
+        [Fact]
+        public void SerializeSequence_SequenceSerializerWithAsyncList_SerializesSameList()
         {
             // Arrange
 
             var serializer = new SequenceSerializer();
             var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            var items = AsyncItems(1, 2);
+            var items = new AsyncList { 1, 2 };
 
             // Act
 
-            await registry.SerializeSequenceAsync(items, MediaType, cancellationToken: TestContext.Current.CancellationToken);
+            registry.SerializeSequence(items, MediaType);
 
             // Assert
 
-            serializer.SerializedItems.Should().BeSameAs(items);
-        }
-
-        [Fact]
-        public async Task SerializeSequenceAsync_ListSerializerCanceled_Throws()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-            cts.Cancel();
-
-            // Act
-
-            Func<Task> action = async () => await registry.SerializeSequenceAsync(AsyncItems(1, 2), MediaType,
-                cancellationToken: cts.Token);
-
-            // Assert
-
-            await action.Should().ThrowAsync<OperationCanceledException>();
-            serializer.SerializedValue.Should().BeNull();
+            serializer.SerializedItems.Should().BeNull();
+            serializer.SerializedValue.Should().BeSameAs(items);
         }
 
         #endregion
@@ -476,11 +484,8 @@ namespace Yardarm.Client.UnitTests.Serialization
             public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null)
             {
                 SerializedValue = value;
-                SerializedContent = new StringContent(SerializedBody);
-                return SerializedContent;
+                return new StringContent(SerializedBody);
             }
-
-            public HttpContent SerializedContent { get; private set; }
 
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData) =>
                 DeserializeAsync<T>(content, serializationData, default);
@@ -530,6 +535,51 @@ namespace Yardarm.Client.UnitTests.Serialization
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null,
                 CancellationToken cancellationToken = default) =>
                 throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// A <see cref="List{T}"/> that also implements <see cref="IAsyncEnumerable{T}"/>.
+        /// </summary>
+        private sealed class AsyncList : List<int>, IAsyncEnumerable<int>
+        {
+            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+                throw new InvalidOperationException("In-memory collections must be enumerated synchronously.");
+        }
+
+        /// <summary>
+        /// An <see cref="ICollection{T}"/>, but not an <see cref="IReadOnlyCollection{T}"/>, that also implements
+        /// <see cref="IAsyncEnumerable{T}"/>.
+        /// </summary>
+        private sealed class AsyncCollection : ICollection<int>, IAsyncEnumerable<int>
+        {
+            private readonly List<int> _items = [];
+
+            public int Count => _items.Count;
+            public bool IsReadOnly => false;
+            public void Add(int item) => _items.Add(item);
+            public void Clear() => _items.Clear();
+            public bool Contains(int item) => _items.Contains(item);
+            public void CopyTo(int[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+            public bool Remove(int item) => _items.Remove(item);
+            public IEnumerator<int> GetEnumerator() => _items.GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+                throw new InvalidOperationException("In-memory collections must be enumerated synchronously.");
+        }
+
+        /// <summary>
+        /// An <see cref="IReadOnlyCollection{T}"/>, but not an <see cref="ICollection{T}"/>, that also implements
+        /// <see cref="IAsyncEnumerable{T}"/>.
+        /// </summary>
+        private sealed class AsyncReadOnlyCollection(params int[] items) : IReadOnlyCollection<int>, IAsyncEnumerable<int>
+        {
+            public int Count => items.Length;
+            public IEnumerator<int> GetEnumerator() => ((IEnumerable<int>)items).GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
+                throw new InvalidOperationException("In-memory collections must be enumerated synchronously.");
         }
 
         /// <summary>

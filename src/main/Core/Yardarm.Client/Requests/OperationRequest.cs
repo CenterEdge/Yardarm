@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using RootNamespace.Authentication;
 
 #if NET5_0_OR_GREATER
@@ -65,83 +63,11 @@ public abstract class OperationRequest : IOperationRequest
     protected virtual HttpContent? BuildContent(BuildRequestContext context) => null;
 
     /// <summary>
-    /// Create the content of the HTTP request message asynchronously.
-    /// </summary>
-    /// <param name="context">Context of the request.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns><see cref="HttpContent"/> or <c>null</c> if no content.</returns>
-    /// <remarks>
-    /// The default implementation forwards to <see cref="BuildContent"/>. This is only called by
-    /// <see cref="BuildRequestWithAsyncContentAsync"/>.
-    /// </remarks>
-    protected virtual ValueTask<HttpContent?> BuildContentAsync(BuildRequestContext context,
-        CancellationToken cancellationToken = default)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return FromCanceled<HttpContent?>(cancellationToken);
-        }
-
-        return new ValueTask<HttpContent?>(BuildContent(context));
-    }
-
-    /// <summary>
     /// Builds the HTTP request message.
     /// </summary>
     /// <param name="context">Context of the request.</param>
     /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
     public virtual HttpRequestMessage BuildRequest(BuildRequestContext context)
-    {
-        var requestMessage = CreateRequestMessage(context);
-        requestMessage.Content = BuildContent(context);
-        return requestMessage;
-    }
-
-    /// <summary>
-    /// Builds the HTTP request message asynchronously.
-    /// </summary>
-    /// <param name="context">Context of the request.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
-    /// <remarks>
-    /// The default implementation forwards to <see cref="BuildRequest"/>. Requests whose content must be built
-    /// asynchronously override this method to call <see cref="BuildRequestWithAsyncContentAsync"/>.
-    /// </remarks>
-    public virtual ValueTask<HttpRequestMessage> BuildRequestAsync(BuildRequestContext context,
-        CancellationToken cancellationToken = default)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return FromCanceled<HttpRequestMessage>(cancellationToken);
-        }
-
-        return new ValueTask<HttpRequestMessage>(BuildRequest(context));
-    }
-
-    /// <summary>
-    /// Builds the HTTP request message with content from <see cref="BuildContentAsync"/>.
-    /// </summary>
-    /// <param name="context">Context of the request.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The <see cref="HttpRequestMessage"/>.</returns>
-    protected async ValueTask<HttpRequestMessage> BuildRequestWithAsyncContentAsync(BuildRequestContext context,
-        CancellationToken cancellationToken = default)
-    {
-        var requestMessage = CreateRequestMessage(context);
-        try
-        {
-            requestMessage.Content = await BuildContentAsync(context, cancellationToken).ConfigureAwait(false);
-        }
-        catch
-        {
-            requestMessage.Dispose();
-            throw;
-        }
-
-        return requestMessage;
-    }
-
-    private HttpRequestMessage CreateRequestMessage(BuildRequestContext context)
     {
         var requestMessage = new HttpRequestMessage(Method, BuildUri(context));
         ApplyHttpVersion(requestMessage);
@@ -151,15 +77,9 @@ public abstract class OperationRequest : IOperationRequest
 #endif
 
         AddHeaders(context, requestMessage);
+        requestMessage.Content = BuildContent(context);
         return requestMessage;
     }
-
-    private static ValueTask<T> FromCanceled<T>(CancellationToken cancellationToken) =>
-#if NET5_0_OR_GREATER
-        ValueTask.FromCanceled<T>(cancellationToken);
-#else
-        new(Task.FromCanceled<T>(cancellationToken));
-#endif
 
     protected void ApplyHttpVersion(HttpRequestMessage message)
     {

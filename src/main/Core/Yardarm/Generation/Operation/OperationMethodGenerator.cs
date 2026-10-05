@@ -120,14 +120,13 @@ public class OperationMethodGenerator : IOperationMethodGenerator
     protected virtual StatementSyntax GenerateRequestMessageVariable(
         ILocatedOpenApiElement<OpenApiOperation> operation) =>
         MethodHelpers.LocalVariableDeclarationWithInitializer(RequestMessageVariableName,
-            SyntaxHelpers.AwaitConfiguredFalse(BuildRequestMethodGenerator.InvokeBuildRequestAsync(
+            BuildRequestMethodGenerator.InvokeBuildRequest(
                 IdentifierName(RequestParameterName),
                 ObjectCreationExpression(
                     RequestsNamespace.BuildRequestContext,
                     ArgumentList(SingletonSeparatedList(
                         Argument(IdentifierName(TagImplementationTypeGenerator.TypeSerializerRegistryFieldName)))),
-                    initializer: null),
-                IdentifierName(MethodHelpers.CancellationTokenParameterName))));
+                    initializer: null)));
 
     protected virtual ExpressionSyntax GenerateResponse(
         ILocatedOpenApiElement<OpenApiOperation> operation, ExpressionSyntax responseMessage) =>

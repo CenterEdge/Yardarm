@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,14 +21,34 @@ internal static class SequenceHelpers
         source as IAsyncEnumerable<T> ?? new SyncAsyncEnumerable<T>(source);
 
     /// <summary>
-    /// Copies an <see cref="IReadOnlyCollection{T}"/> into a <see cref="List{T}"/>.
+    /// Gets a <see cref="List{T}"/> for a sequence that is a collection already in memory, which can be enumerated
+    /// synchronously. A <see cref="List{T}"/> is returned as is, other collections are copied.
     /// </summary>
-    public static List<T> ToList<T>(IReadOnlyCollection<T> source)
+    /// <param name="source">The sequence, which may be an <see cref="IEnumerable{T}"/> or an
+    /// <see cref="IAsyncEnumerable{T}"/>.</param>
+    /// <param name="list">The list, or <c>null</c> if the sequence is not a collection already in memory.</param>
+    /// <returns><c>true</c> if the sequence is a collection already in memory.</returns>
+    public static bool TryGetInMemoryList<T>(object source, [NotNullWhen(true)] out List<T>? list)
     {
-        var list = new List<T>(source.Count);
-        list.AddRange(source);
+        switch (source)
+        {
+            case List<T> sourceList:
+                list = sourceList;
+                return true;
 
-        return list;
+            case ICollection<T> collection:
+                list = new List<T>(collection);
+                return true;
+
+            case IReadOnlyCollection<T> readOnlyCollection:
+                list = new List<T>(readOnlyCollection.Count);
+                list.AddRange(readOnlyCollection);
+                return true;
+
+            default:
+                list = null;
+                return false;
+        }
     }
 
     /// <summary>

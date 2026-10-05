@@ -20,7 +20,6 @@ public class BuildRequestMethodGenerator(
     : IRequestMemberGenerator
 {
     public const string BuildRequestMethodName = "BuildRequest";
-    public const string BuildRequestAsyncMethodName = "BuildRequestAsync";
     protected const string RequestMessageVariableName = "requestMessage";
 
     private const string TypeSerializerRegistryParameterName = "typeSerializerRegistry";
@@ -78,16 +77,4 @@ public class BuildRequestMethodGenerator(
                 IdentifierName(BuildRequestMethodName)),
             ArgumentList(SingletonSeparatedList(
                 Argument(buildRequestContext))));
-
-    public static InvocationExpressionSyntax InvokeBuildRequestAsync(ExpressionSyntax requestInstance,
-        ExpressionSyntax buildRequestContext, ExpressionSyntax cancellationToken) =>
-        InvocationExpression(
-            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                requestInstance,
-                IdentifierName(BuildRequestAsyncMethodName)),
-            ArgumentList(SeparatedList(
-            [
-                Argument(buildRequestContext),
-                Argument(cancellationToken)
-            ])));
 }

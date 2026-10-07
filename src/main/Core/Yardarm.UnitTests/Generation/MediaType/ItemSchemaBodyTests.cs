@@ -154,7 +154,7 @@ public class ItemSchemaBodyTests
             .Single(p => p.Identifier.ValueText == "GetBodyAsync");
         getBodyMethod.ReturnType.ToString().Should().Contain(listType);
         getBodyMethod.Body!.ToString().Should().Contain(
-            "TypeSerializerRegistryExtensions.DeserializeListAsync<Yardarm.Sdk.Responses.ListThingsOkResponse.ItemSchemaModel>(");
+            "TypeSerializerRegistryExtensions.DeserializeSequenceAsync<global::System.Collections.Generic.List<Yardarm.Sdk.Responses.ListThingsOkResponse.ItemSchemaModel>,Yardarm.Sdk.Responses.ListThingsOkResponse.ItemSchemaModel>(");
         declaration.Members.OfType<FieldDeclarationSyntax>()
             .Single(p => p.Declaration.Variables.Single().Identifier.ValueText == "_body")
             .Declaration.Type.ToString().Should().Be(listType + "?");
@@ -201,7 +201,7 @@ public class ItemSchemaBodyTests
         declaration.Members.OfType<MethodDeclarationSyntax>()
             .Single(p => p.Identifier.ValueText == "BuildContent")
             .Body!.ToString().Should().Contain(
-                "TypeSerializerRegistryExtensions.SerializeSequence<Yardarm.Sdk.Requests.AddThingsJsonLinesRequest.ItemSchemaBody>(");
+                "TypeSerializerRegistryExtensions.SerializeSequence<global::System.Collections.Generic.List<Yardarm.Sdk.Requests.AddThingsJsonLinesRequest.ItemSchemaBody>,Yardarm.Sdk.Requests.AddThingsJsonLinesRequest.ItemSchemaBody>(");
     }
 
     [Fact]

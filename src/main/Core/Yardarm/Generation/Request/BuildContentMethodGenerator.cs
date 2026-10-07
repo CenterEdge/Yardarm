@@ -64,7 +64,11 @@ public class BuildContentMethodGenerator(
 
         // Sequential media types, such as JSON Lines, serialize the items with the item type known at compile time
         SimpleNameSyntax serializeMethod = mediaType.GetItemType(Context.TypeGeneratorRegistry) is { } itemType
-            ? GenericName(Identifier("SerializeSequence"), TypeArgumentList(SingletonSeparatedList(itemType)))
+            ? GenericName(Identifier("SerializeSequence"), TypeArgumentList(SeparatedList(
+            [
+                mediaType.GetBodyType(Context.TypeGeneratorRegistry)!,
+                itemType
+            ])))
             : IdentifierName("Serialize");
 
         var createContentExpression =

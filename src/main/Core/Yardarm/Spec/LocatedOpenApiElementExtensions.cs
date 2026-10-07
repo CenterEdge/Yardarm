@@ -99,8 +99,8 @@ public static class LocatedOpenApiElementExtensions
             var requestSchemas = requestBody
                 .GetMediaTypes()
                 .SelectMany(GetBodySchemas)
-                .Where(p => p is not null && !p.IsReference)
-                .SelectMany(p => p!.GetAllSchemas());
+                .Where(p => !p.IsReference)
+                .SelectMany(p => p.GetAllSchemas());
 
             foreach (var schema in requestSchemas)
             {
@@ -122,21 +122,28 @@ public static class LocatedOpenApiElementExtensions
         this IEnumerable<ILocatedOpenApiElement<IOpenApiRequestBody>> requestBody) =>
         requestBody.GetMediaTypes()
             .SelectMany(GetBodySchemas)
-            .Where(p => p is not null && !p.IsReference)!
-            .SelectMany(p => p!.GetAllSchemas());
+            .Where(p => !p.IsReference)
+            .SelectMany(p => p.GetAllSchemas());
 
     public static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas(
         this IEnumerable<ILocatedOpenApiElement<IOpenApiResponse>> requestBody) =>
         requestBody.GetMediaTypes()
             .SelectMany(GetBodySchemas)
-            .Where(p => p is not null && !p.IsReference)!
-            .SelectMany(p => p!.GetAllSchemas());
+            .Where(p => !p.IsReference)
+            .SelectMany(p => p.GetAllSchemas());
 
-    private static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>?> GetBodySchemas(
+    private static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetBodySchemas(
         ILocatedOpenApiElement<IOpenApiMediaType> mediaType)
     {
-        yield return mediaType.GetSchema();
-        yield return mediaType.GetItemSchema();
+        if (mediaType.GetSchema() is { } schema)
+        {
+            yield return schema;
+        }
+
+        if (mediaType.GetItemSchema() is { } itemSchema)
+        {
+            yield return itemSchema;
+        }
     }
 
     public static IEnumerable<ILocatedOpenApiElement<IOpenApiSchema>> GetAllSchemas(
@@ -387,8 +394,8 @@ public static class LocatedOpenApiElementExtensions
         /// <summary>
         /// Gets the schema of each item in a sequential media type, such as JSON Lines.
         /// </summary>
-        public ILocatedOpenApiElement<IOpenApiSchema>? GetItemSchema() =>
-            mediaType.Element.ItemSchema != null
+        public ILocatedOpenApiElement<IOpenApiSchema>? GetItemSchema()
+            => mediaType.Element.ItemSchema != null
                 ? mediaType.CreateChild(mediaType.Element.ItemSchema, "itemSchema")
                 : null;
     }

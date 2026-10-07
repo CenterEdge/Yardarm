@@ -16,15 +16,15 @@ public static class MediaTypeBodyExtensions
         /// Gets the schema whose type generator emits nested body models. For media types with an
         /// <c>itemSchema</c>, such as JSON Lines, this is the item schema. Otherwise it is the <c>schema</c>.
         /// </summary>
-        public ILocatedOpenApiElement<IOpenApiSchema>? GetBodySchema() =>
-            mediaType.GetItemSchema() ?? mediaType.GetSchema();
+        public ILocatedOpenApiElement<IOpenApiSchema>? GetBodySchema()
+            => mediaType.GetItemSchema() ?? mediaType.GetSchema();
 
         /// <summary>
         /// Gets the C# type of each item for media types with an <c>itemSchema</c>, such as JSON Lines.
         /// </summary>
         /// <returns>The item type, or <c>null</c> if the media type has no <c>itemSchema</c>.</returns>
-        public TypeSyntax? GetItemType(ITypeGeneratorRegistry typeGeneratorRegistry) =>
-            mediaType.GetItemSchema() is { } itemSchema
+        public TypeSyntax? GetItemType(ITypeGeneratorRegistry typeGeneratorRegistry)
+            => mediaType.GetItemSchema() is { } itemSchema
                 ? typeGeneratorRegistry.Get(itemSchema).TypeInfo.Name
                 : null;
 

@@ -233,8 +233,8 @@ public class ItemSchemaBodyTests
 
     private static ILocatedOpenApiElement<IOpenApiResponse> GetResponse(
         OpenApiDocument document,
-        System.Net.Http.HttpMethod method) =>
-        document.Paths.ToLocatedElements()
+        System.Net.Http.HttpMethod method)
+        => document.Paths.ToLocatedElements()
             .GetOperations()
             .Single(p => p.Key == method.Method)
             .GetResponseSet()
@@ -243,8 +243,8 @@ public class ItemSchemaBodyTests
 
     private static ILocatedOpenApiElement<IOpenApiMediaType> GetResponseMediaType(
         OpenApiDocument document,
-        System.Net.Http.HttpMethod method) =>
-        GetResponse(document, method).GetMediaTypes().Single();
+        System.Net.Http.HttpMethod method)
+        => GetResponse(document, method).GetMediaTypes().Single();
 }
 
 /// <summary>
@@ -252,8 +252,8 @@ public class ItemSchemaBodyTests
 /// </summary>
 public sealed class JsonLinesTestExtension : YardarmExtension
 {
-    public override IServiceCollection ConfigureServices(IServiceCollection services) =>
-        services.AddSerializerDescriptor(new SerializerDescriptor(
+    public override IServiceCollection ConfigureServices(IServiceCollection services)
+        => services.AddSerializerDescriptor(new SerializerDescriptor(
             ImmutableHashSet.Create(new SerializerMediaType("application/jsonl", 0.8)),
             "JsonLines",
             SyntaxFactory.ParseTypeName("global::Test.JsonLinesTypeSerializer")));

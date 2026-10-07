@@ -147,7 +147,7 @@ namespace Yardarm.Generation.Response
             }
         }
 
-        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response) =>
-            _mediaTypeSelector.Select(response)?.GetBodyType(_context.TypeGeneratorRegistry);
+        private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response)
+            => _mediaTypeSelector.Select(response)?.GetBodyType(_context.TypeGeneratorRegistry);
     }
 }

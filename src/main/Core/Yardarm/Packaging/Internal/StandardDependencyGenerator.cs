@@ -58,17 +58,6 @@ namespace Yardarm.Packaging.Internal
                     }
                 };
 
-                // IAsyncEnumerable<T> for sequence serialization
-                yield return new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "Microsoft.Bcl.AsyncInterfaces",
-                        TypeConstraint = LibraryDependencyTarget.Package,
-                        VersionRange = VersionRange.Parse("10.0.10")
-                    }
-                };
-
                 yield return new LibraryDependency
                 {
                     LibraryRange = new LibraryRange

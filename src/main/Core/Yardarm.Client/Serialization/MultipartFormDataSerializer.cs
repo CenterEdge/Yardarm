@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,4 +64,14 @@ public class MultipartFormDataSerializer : ITypeSerializer
         // ReSharper disable once MethodOverloadWithOptionalParameter
         CancellationToken cancellationToken = default) =>
         throw new NotImplementedException();
+
+    public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
+        ISerializationData? serializationData = null)
+        where TSequence : IEnumerable<TElement> =>
+        ((ITypeSerializer)this).Serialize(value, mediaType, serializationData);
+
+    public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
+        ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+        where TSequence : IEnumerable<TElement> =>
+        DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,83 +81,26 @@ public static class TypeSerializerRegistryExtensions
                 .Serialize(value, mediaType, serializationData);
 
         /// <summary>
-        /// Serializes a sequence of items. If the serializer does not implement <see cref="ISequenceTypeSerializer"/>,
-        /// the items are serialized as a <see cref="List{T}"/>.
+        /// Serializes a sequence of elements with the serializer for the media type.
         /// </summary>
-        public HttpContent SerializeSequence<TItem>(IEnumerable<TItem> items, string mediaType,
+        /// <typeparam name="TSequence">The type of the sequence.</typeparam>
+        /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
+        public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
             ISerializationData? serializationData = null)
-        {
-            ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, mediaType, typeof(List<TItem>));
-
-            if (typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer)
-            {
-                return sequenceTypeSerializer.SerializeSequence(SequenceHelpers.FromEnumerable(items), mediaType,
-                    serializationData);
-            }
-
-            // Serializers without sequence support require a List<TItem>
-            if (!SequenceHelpers.TryGetInMemoryList(items, out List<TItem>? list))
-            {
-                list = [.. items];
-            }
-
-            return typeSerializer.Serialize(list, mediaType, serializationData);
-        }
+            where TSequence : IEnumerable<TElement> =>
+            GetSerializer(typeSerializerRegistry, mediaType, typeof(TSequence))
+                .SerializeSequence<TSequence, TElement>(value, mediaType, serializationData);
 
         /// <summary>
-        /// Serializes an asynchronous sequence of items. If the serializer does not implement
-        /// <see cref="ISequenceTypeSerializer"/>, collections that are already in memory are serialized as a
-        /// <see cref="List{T}"/>.
+        /// Deserializes a sequence of elements with the serializer for the media type of the content.
         /// </summary>
-        /// <exception cref="NotSupportedException">The items are not a collection that is already in memory, and the
-        /// serializer does not implement <see cref="ISequenceTypeSerializer"/>.</exception>
-        [OverloadResolutionPriority(1)]
-        public HttpContent SerializeSequence<TItem>(IAsyncEnumerable<TItem> items, string mediaType,
-            ISerializationData? serializationData = null)
-        {
-            ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, mediaType, typeof(List<TItem>));
-
-            if (typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer)
-            {
-                return sequenceTypeSerializer.SerializeSequence(items, mediaType, serializationData);
-            }
-
-            // Serializers without sequence support require a List<TItem>, which is only possible synchronously
-            // for collections already in memory
-            return SequenceHelpers.TryGetInMemoryList(items, out List<TItem>? list)
-                ? typeSerializer.Serialize(list, mediaType, serializationData)
-                : throw new NotSupportedException(
-                    $"The serializer for media type '{mediaType}' does not support asynchronous sequences.");
-        }
-
-        /// <summary>
-        /// Deserializes a sequence of items. If the serializer does not implement <see cref="ISequenceTypeSerializer"/>,
-        /// the content is deserialized as a <see cref="List{T}"/> before the first item is returned.
-        /// </summary>
-        public IAsyncEnumerable<TItem> DeserializeSequenceAsync<TItem>(HttpContent content,
+        /// <typeparam name="TSequence">The type of the sequence.</typeparam>
+        /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
+        public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
             ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        {
-            ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, content, typeof(List<TItem>));
-
-            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
-                ? sequenceTypeSerializer.DeserializeSequenceAsync<TItem>(content, serializationData, cancellationToken)
-                : DeserializeListAsSequence<TItem>(typeSerializer, content, serializationData, cancellationToken);
-        }
-
-        /// <summary>
-        /// Deserializes a sequence of items into a <see cref="List{T}"/>.
-        /// </summary>
-        public ValueTask<List<TItem>> DeserializeListAsync<TItem>(HttpContent content,
-            ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        {
-            ITypeSerializer typeSerializer = GetSerializer(typeSerializerRegistry, content, typeof(List<TItem>));
-
-            return typeSerializer is ISequenceTypeSerializer sequenceTypeSerializer
-                ? SequenceHelpers.ToListAsync(
-                    sequenceTypeSerializer.DeserializeSequenceAsync<TItem>(content, serializationData, cancellationToken),
-                    cancellationToken)
-                : typeSerializer.DeserializeAsync<List<TItem>>(content, serializationData, cancellationToken);
-        }
+            where TSequence : IEnumerable<TElement> =>
+            GetSerializer(typeSerializerRegistry, content, typeof(TSequence))
+                .DeserializeSequenceAsync<TSequence, TElement>(content, serializationData, cancellationToken);
     }
 
     private static ITypeSerializer GetSerializer(ITypeSerializerRegistry typeSerializerRegistry, HttpContent content,
@@ -178,25 +120,5 @@ public static class TypeSerializerRegistryExtensions
         }
 
         return typeSerializer;
-    }
-
-    private static async IAsyncEnumerable<TItem> DeserializeListAsSequence<TItem>(ITypeSerializer typeSerializer,
-        HttpContent content, ISerializationData? serializationData,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        List<TItem>? items = await typeSerializer
-            .DeserializeAsync<List<TItem>>(content, serializationData, cancellationToken)
-            .ConfigureAwait(false);
-        if (items is null)
-        {
-            yield break;
-        }
-
-        foreach (TItem item in items)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            yield return item;
-        }
     }
 }

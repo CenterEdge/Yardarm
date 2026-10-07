@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -72,6 +73,16 @@ namespace RootNamespace.Serialization.Json
 
             return _serializer.Deserialize<T>(reader)!;
         }
+
+        public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
+            ISerializationData? serializationData = null)
+            where TSequence : IEnumerable<TElement> =>
+            Serialize(value, mediaType, serializationData);
+
+        public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
+            ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+            where TSequence : IEnumerable<TElement> =>
+            DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 
         private static JsonSerializerSettings CreateDefaultSettings()
         {

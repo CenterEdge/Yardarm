@@ -1,8 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -15,165 +16,212 @@ namespace Yardarm.Client.UnitTests.Serialization
     {
         private const string MediaType = "application/jsonl";
 
-        #region SerializeSequence
+        #region Default implementation
 
         [Fact]
-        public async Task SerializeSequence_SequenceSerializerWithEnumerable_PassesItemsAsSequence()
+        public void SerializeSequence_DefaultImplementationWithList_SerializesSequenceType()
         {
             // Arrange
 
-            var serializer = new SequenceSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            registry.SerializeSequence(EnumerableItems(1, 2), MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeNull();
-            (await ToListAsync((IAsyncEnumerable<int>)serializer.SerializedItems)).Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public async Task SerializeSequence_SequenceSerializerWithList_PassesItemsAsSequence()
-        {
-            // Arrange
-
-            var serializer = new SequenceSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            registry.SerializeSequence(new List<int> { 1, 2 }, MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeNull();
-            (await ToListAsync((IAsyncEnumerable<int>)serializer.SerializedItems)).Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public async Task SerializeSequence_SequenceSerializerWithReadOnlyCollection_PassesItemsAsSequence()
-        {
-            // Arrange
-
-            var serializer = new SequenceSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            registry.SerializeSequence(new[] { 1, 2 }, MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeNull();
-            (await ToListAsync((IAsyncEnumerable<int>)serializer.SerializedItems)).Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public void SerializeSequence_ListSerializerWithEnumerable_SerializesList()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            registry.SerializeSequence(EnumerableItems(1, 2), MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public void SerializeSequence_ListSerializerWithList_PassesSameList()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer();
+            var serializer = new RecordingSerializer();
             var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
             var items = new List<int> { 1, 2 };
 
             // Act
 
-            registry.SerializeSequence(items, MediaType);
+            registry.SerializeSequence<List<int>, int>(items, MediaType);
 
             // Assert
 
+            serializer.SerializedType.Should().Be(typeof(List<int>));
             serializer.SerializedValue.Should().BeSameAs(items);
         }
 
         [Fact]
-        public void SerializeSequence_ListSerializerWithArray_CopiesToList()
+        public void SerializeSequence_DefaultImplementationWithHashSet_SerializesSequenceType()
         {
             // Arrange
 
-            var serializer = new ListSerializer();
+            var serializer = new RecordingSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            var items = new HashSet<int> { 1, 2 };
+
+            // Act
+
+            registry.SerializeSequence<HashSet<int>, int>(items, MediaType);
+
+            // Assert
+
+            serializer.SerializedType.Should().Be(typeof(HashSet<int>));
+            serializer.SerializedValue.Should().BeSameAs(items);
+        }
+
+        [Fact]
+        public void SerializeSequence_DefaultImplementationWithArray_SerializesSequenceType()
+        {
+            // Arrange
+
+            var serializer = new RecordingSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            int[] items = [1, 2];
+
+            // Act
+
+            registry.SerializeSequence<int[], int>(items, MediaType);
+
+            // Assert
+
+            serializer.SerializedType.Should().Be(typeof(int[]));
+            serializer.SerializedValue.Should().BeSameAs(items);
+        }
+
+        [Fact]
+        public void SerializeSequence_DefaultImplementationWithImmutableArray_SerializesSequenceType()
+        {
+            // Arrange
+
+            var serializer = new RecordingSerializer();
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            ImmutableArray<int> items = [1, 2];
+
+            // Act
+
+            registry.SerializeSequence<ImmutableArray<int>, int>(items, MediaType);
+
+            // Assert
+
+            serializer.SerializedType.Should().Be(typeof(ImmutableArray<int>));
+            serializer.SerializedValue.Should().BeOfType<ImmutableArray<int>>().Which.Should().Equal(1, 2);
+        }
+
+        [Fact]
+        public async Task DeserializeSequenceAsync_DefaultImplementationWithList_DeserializesSequenceType()
+        {
+            // Arrange
+
+            var items = new List<int> { 1, 2 };
+            var serializer = new RecordingSerializer { DeserializedValue = items };
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+            // Act
+
+            var result = await registry.DeserializeSequenceAsync<List<int>, int>(CreateContent(),
+                cancellationToken: cts.Token);
+
+            // Assert
+
+            serializer.DeserializedType.Should().Be(typeof(List<int>));
+            serializer.CancellationToken.Should().Be(cts.Token);
+            result.Should().BeSameAs(items);
+        }
+
+        [Fact]
+        public async Task DeserializeSequenceAsync_DefaultImplementationWithHashSet_DeserializesSequenceType()
+        {
+            // Arrange
+
+            var items = new HashSet<int> { 1, 2 };
+            var serializer = new RecordingSerializer { DeserializedValue = items };
             var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
 
             // Act
 
-            registry.SerializeSequence(new[] { 1, 2 }, MediaType);
+            var result = await registry.DeserializeSequenceAsync<HashSet<int>, int>(CreateContent(),
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
-            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
+            serializer.DeserializedType.Should().Be(typeof(HashSet<int>));
+            result.Should().BeSameAs(items);
         }
 
+        #endregion
+
+        #region Overridden implementation
+
         [Fact]
-        public void SerializeSequence_ListSerializerWithAsyncEnumerable_Throws()
+        public void SerializeSequence_OverriddenImplementation_PassesSequenceAndElementTypes()
         {
             // Arrange
 
-            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
-
-            // Act
-
-            Action action = () => registry.SerializeSequence(AsyncItems(1, 2), MediaType);
-
-            // Assert
-
-            action.Should().Throw<NotSupportedException>();
-        }
-
-        [Fact]
-        public async Task SerializeSequence_SequenceSerializerWithAsyncEnumerable_PassesSameSequence()
-        {
-            // Arrange
-
-            var serializer = new SequenceSerializer();
+            var serializer = new SequenceRecordingSerializer();
             var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            var items = AsyncItems(1, 2);
+            var items = new List<int> { 1, 2 };
 
             // Act
 
-            registry.SerializeSequence(items, MediaType);
+            registry.SerializeSequence<List<int>, int>(items, MediaType);
 
             // Assert
 
-            serializer.SerializedItems.Should().BeSameAs(items);
-            (await ToListAsync(items)).Should().Equal(1, 2);
+            serializer.SequenceType.Should().Be(typeof(List<int>));
+            serializer.ElementType.Should().Be(typeof(int));
+            serializer.SerializedValue.Should().BeSameAs(items);
         }
 
         [Fact]
-        public void SerializeSequence_SchemaTypeFallback_UsesListSchemaType()
+        public async Task DeserializeSequenceAsync_OverriddenImplementation_PassesSequenceAndElementTypes()
         {
             // Arrange
 
-            var serializer = new ListSerializer();
+            var items = new List<int> { 1, 2 };
+            var serializer = new SequenceRecordingSerializer { DeserializedValue = items };
+            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+
+            // Act
+
+            var result = await registry.DeserializeSequenceAsync<List<int>, int>(CreateContent(),
+                cancellationToken: cts.Token);
+
+            // Assert
+
+            serializer.SequenceType.Should().Be(typeof(List<int>));
+            serializer.ElementType.Should().Be(typeof(int));
+            serializer.CancellationToken.Should().Be(cts.Token);
+            result.Should().BeSameAs(items);
+        }
+
+        #endregion
+
+        #region Lookup
+
+        [Fact]
+        public void SerializeSequence_SchemaTypeFallback_UsesSequenceType()
+        {
+            // Arrange
+
+            var serializer = new RecordingSerializer();
             var registry = new TypeSerializerRegistry().Add([typeof(List<int>)], serializer);
             var items = new List<int> { 1 };
 
             // Act
 
-            registry.SerializeSequence(items, "application/unknown");
+            registry.SerializeSequence<List<int>, int>(items, "application/unknown");
 
             // Assert
 
             serializer.SerializedValue.Should().BeSameAs(items);
+        }
+
+        [Fact]
+        public async Task DeserializeSequenceAsync_SchemaTypeFallback_UsesSequenceType()
+        {
+            // Arrange
+
+            var items = new List<int> { 1 };
+            var registry = new TypeSerializerRegistry()
+                .Add([typeof(List<int>)], new RecordingSerializer { DeserializedValue = items });
+
+            // Act
+
+            var result = await registry.DeserializeSequenceAsync<List<int>, int>(CreateContent("application/unknown"),
+                cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            result.Should().BeSameAs(items);
         }
 
         [Fact]
@@ -185,173 +233,11 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            Action action = () => registry.SerializeSequence(new List<int>(), MediaType);
+            Action action = () => registry.SerializeSequence<List<int>, int>([], MediaType);
 
             // Assert
 
             action.Should().Throw<UnknownMediaTypeException>();
-        }
-
-        [Fact]
-        public void SerializeSequence_BothInterfaces_PrefersAsyncEnumerableOverload()
-        {
-            // Arrange
-
-            // The IEnumerable<T> overload would succeed with a List<T>, the IAsyncEnumerable<T> overload throws
-            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
-
-            // Act
-
-            Action action = () => registry.SerializeSequence(new DualSequence(), MediaType);
-
-            // Assert
-
-            action.Should().Throw<NotSupportedException>();
-        }
-
-        [Fact]
-        public void SerializeSequence_BothInterfacesStaticCall_PrefersAsyncEnumerableOverload()
-        {
-            // Arrange
-
-            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
-
-            // Act
-
-            Action action = () => TypeSerializerRegistryExtensions.SerializeSequence(registry, new DualSequence(), MediaType);
-
-            // Assert
-
-            action.Should().Throw<NotSupportedException>();
-        }
-
-        [Fact]
-        public void SerializeSequence_ListSerializerWithAsyncList_SerializesSameList()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            var items = new AsyncList { 1, 2 };
-
-            // Act
-
-            registry.SerializeSequence(items, MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeSameAs(items);
-        }
-
-        [Fact]
-        public void SerializeSequence_ListSerializerWithAsyncCollection_SerializesList()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            registry.SerializeSequence(new AsyncCollection { 1, 2 }, MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public void SerializeSequence_ListSerializerWithAsyncReadOnlyCollection_SerializesList()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            registry.SerializeSequence(new AsyncReadOnlyCollection(1, 2), MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeOfType<List<int>>().Which.Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public void SerializeSequence_SequenceSerializerWithAsyncList_PassesSameSequence()
-        {
-            // Arrange
-
-            var serializer = new SequenceSerializer();
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            var items = new AsyncList { 1, 2 };
-
-            // Act
-
-            registry.SerializeSequence(items, MediaType);
-
-            // Assert
-
-            serializer.SerializedValue.Should().BeNull();
-            serializer.SerializedItems.Should().BeSameAs(items);
-        }
-
-        #endregion
-
-        #region DeserializeSequenceAsync
-
-        [Fact]
-        public async Task DeserializeSequenceAsync_SequenceSerializer_ReturnsItems()
-        {
-            // Arrange
-
-            var serializer = new SequenceSerializer { DeserializedItems = [1, 2] };
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            var result = await ToListAsync(registry.DeserializeSequenceAsync<int>(CreateContent(), cancellationToken: TestContext.Current.CancellationToken));
-
-            // Assert
-
-            result.Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public async Task DeserializeSequenceAsync_ListSerializer_DeserializesListOnce()
-        {
-            // Arrange
-
-            var serializer = new ListSerializer { DeserializedValue = new List<int> { 1, 2 } };
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-
-            // Act
-
-            var sequence = registry.DeserializeSequenceAsync<int>(CreateContent(), cancellationToken: TestContext.Current.CancellationToken);
-            int callsBeforeEnumeration = serializer.DeserializeCalls;
-            var result = await ToListAsync(sequence);
-
-            // Assert
-
-            callsBeforeEnumeration.Should().Be(0);
-            serializer.DeserializeCalls.Should().Be(1);
-            result.Should().Equal(1, 2);
-        }
-
-        [Fact]
-        public async Task DeserializeSequenceAsync_ListSerializerReturnsNull_Empty()
-        {
-            // Arrange
-
-            var registry = new TypeSerializerRegistry().Add([MediaType], new ListSerializer());
-
-            // Act
-
-            var result = await ToListAsync(registry.DeserializeSequenceAsync<int>(CreateContent(), cancellationToken: TestContext.Current.CancellationToken));
-
-            // Assert
-
-            result.Should().BeEmpty();
         }
 
         [Fact]
@@ -363,7 +249,8 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             // Act
 
-            Action action = () => registry.DeserializeSequenceAsync<int>(CreateContent(), cancellationToken: TestContext.Current.CancellationToken);
+            Action action = () => registry.DeserializeSequenceAsync<List<int>, int>(CreateContent(),
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
@@ -372,64 +259,80 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #endregion
 
-        #region DeserializeListAsync
+        #region Built-in serializers
 
         [Fact]
-        public async Task DeserializeListAsync_SequenceSerializer_CollectsItems()
+        public async Task PlainTextSerializer_SequenceMethods_ForwardToSerializeAndDeserialize()
         {
             // Arrange
 
-            var serializer = new SequenceSerializer { DeserializedItems = [1, 2] };
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            // A string is a sequence of chars
+            var serializer = new PlainTextSerializer();
 
             // Act
 
-            var result = await registry.DeserializeListAsync<int>(CreateContent(), cancellationToken: cts.Token);
+            var content = serializer.SerializeSequence<string, char>("abc", "text/plain");
+            var result = await serializer.DeserializeSequenceAsync<string, char>(content,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
-            result.Should().Equal(1, 2);
-            serializer.CancellationToken.Should().Be(cts.Token);
+            result.Should().Be("abc");
         }
 
         [Fact]
-        public async Task DeserializeListAsync_ListSerializer_ReturnsDeserializedList()
+        public async Task BinaryStreamSerializer_SequenceMethods_ForwardToSerializeAndDeserialize()
         {
             // Arrange
 
-            var list = new List<int> { 1, 2 };
-            var serializer = new ListSerializer { DeserializedValue = list };
-            var registry = new TypeSerializerRegistry().Add([MediaType], serializer);
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            // A byte array is a sequence of bytes
+            var serializer = new BinaryStreamSerializer();
+            byte[] bytes = [1, 2, 3];
 
             // Act
 
-            var result = await registry.DeserializeListAsync<int>(CreateContent(), cancellationToken: cts.Token);
+            var content = serializer.SerializeSequence<byte[], byte>(bytes, "application/octet-stream");
+            var result = await serializer.DeserializeSequenceAsync<byte[], byte>(content,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
-            result.Should().BeSameAs(list);
-            serializer.DeserializeCalls.Should().Be(1);
-            serializer.CancellationToken.Should().Be(cts.Token);
+            result.Should().Equal(bytes);
         }
 
         [Fact]
-        public async Task DeserializeListAsync_SchemaTypeFallback_UsesListSchemaType()
+        public void MultipartFormDataSerializer_SerializeSequenceWithoutMultipartData_Throws()
         {
             // Arrange
 
-            var list = new List<int> { 1 };
-            var registry = new TypeSerializerRegistry()
-                .Add([typeof(List<int>)], new ListSerializer { DeserializedValue = list });
+            var serializer = new MultipartFormDataSerializer(new TypeSerializerRegistry());
 
             // Act
 
-            var result = await registry.DeserializeListAsync<int>(CreateContent("application/unknown"), cancellationToken: TestContext.Current.CancellationToken);
+            Action action = () => serializer.SerializeSequence<List<int>, int>([1], "multipart/form-data");
 
             // Assert
 
-            result.Should().BeSameAs(list);
+            // Forwards to Serialize, which requires MultipartFormDataSerializationData
+            action.Should().Throw<ArgumentException>();
+        }
+
+        [Fact]
+        public void MultipartFormDataSerializer_DeserializeSequenceAsync_Throws()
+        {
+            // Arrange
+
+            var serializer = new MultipartFormDataSerializer(new TypeSerializerRegistry());
+
+            // Act
+
+            Action action = () => serializer.DeserializeSequenceAsync<List<int>, int>(CreateContent(),
+                cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            // Forwards to DeserializeAsync, which multipart does not support
+            action.Should().Throw<NotImplementedException>();
         }
 
         #endregion
@@ -437,53 +340,29 @@ namespace Yardarm.Client.UnitTests.Serialization
         #region Helpers
 
         private static HttpContent CreateContent(string mediaType = MediaType) =>
-            new ByteArrayContent([]) { Headers = { ContentType = new MediaTypeHeaderValue(mediaType) } };
+            new ByteArrayContent(Encoding.UTF8.GetBytes("")) { Headers = { ContentType = new MediaTypeHeaderValue(mediaType) } };
 
-        private static async IAsyncEnumerable<int> AsyncItems(params int[] items)
+        /// <summary>
+        /// Implements only <see cref="ITypeSerializer.Serialize{T}"/> and <see cref="ITypeSerializer.DeserializeAsync{T}(HttpContent, ISerializationData?, CancellationToken)"/>,
+        /// so the sequence methods use the default implementation.
+        /// </summary>
+        private sealed class RecordingSerializer : ITypeSerializer
         {
-            foreach (int item in items)
-            {
-                await Task.Yield();
-                yield return item;
-            }
-        }
+            public Type SerializedType { get; private set; }
 
-        // An enumerable that is not a collection
-        private static IEnumerable<int> EnumerableItems(params int[] items)
-        {
-            foreach (int item in items)
-            {
-                yield return item;
-            }
-        }
-
-        private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source)
-        {
-            var list = new List<T>();
-            await foreach (T item in source)
-            {
-                list.Add(item);
-            }
-
-            return list;
-        }
-
-        private sealed class ListSerializer : ITypeSerializer
-        {
             public object SerializedValue { get; private set; }
+
+            public Type DeserializedType { get; private set; }
 
             public object DeserializedValue { get; set; }
 
-            public int DeserializeCalls { get; private set; }
-
             public CancellationToken CancellationToken { get; private set; }
-
-            public const string SerializedBody = "serialized";
 
             public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null)
             {
+                SerializedType = typeof(T);
                 SerializedValue = value;
-                return new StringContent(SerializedBody);
+                return new ByteArrayContent([]);
             }
 
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData) =>
@@ -492,41 +371,49 @@ namespace Yardarm.Client.UnitTests.Serialization
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null,
                 CancellationToken cancellationToken = default)
             {
-                DeserializeCalls++;
+                DeserializedType = typeof(T);
                 CancellationToken = cancellationToken;
                 return new ValueTask<T>((T)DeserializedValue);
             }
         }
 
-        private sealed class SequenceSerializer : ISequenceTypeSerializer
+        /// <summary>
+        /// Implements the sequence methods.
+        /// </summary>
+        private sealed class SequenceRecordingSerializer : ITypeSerializer
         {
-            public object SerializedItems { get; private set; }
+            public Type SequenceType { get; private set; }
+
+            public Type ElementType { get; private set; }
 
             public object SerializedValue { get; private set; }
 
-            public int[] DeserializedItems { get; set; } = [];
+            public object DeserializedValue { get; set; }
 
             public CancellationToken CancellationToken { get; private set; }
 
-            public HttpContent SerializeSequence<TItem>(IAsyncEnumerable<TItem> items, string mediaType,
+            public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
                 ISerializationData serializationData = null)
+                where TSequence : IEnumerable<TElement>
             {
-                SerializedItems = items;
-                return new ByteArrayContent([]);
-            }
-
-            public IAsyncEnumerable<TItem> DeserializeSequenceAsync<TItem>(HttpContent content,
-                ISerializationData serializationData = null, CancellationToken cancellationToken = default)
-            {
-                CancellationToken = cancellationToken;
-                return (IAsyncEnumerable<TItem>)AsyncItems(DeserializedItems);
-            }
-
-            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null)
-            {
+                SequenceType = typeof(TSequence);
+                ElementType = typeof(TElement);
                 SerializedValue = value;
                 return new ByteArrayContent([]);
             }
+
+            public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
+                ISerializationData serializationData = null, CancellationToken cancellationToken = default)
+                where TSequence : IEnumerable<TElement>
+            {
+                SequenceType = typeof(TSequence);
+                ElementType = typeof(TElement);
+                CancellationToken = cancellationToken;
+                return new ValueTask<TSequence>((TSequence)DeserializedValue);
+            }
+
+            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null) =>
+                throw new NotSupportedException();
 
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData) =>
                 throw new NotSupportedException();
@@ -534,64 +421,6 @@ namespace Yardarm.Client.UnitTests.Serialization
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null,
                 CancellationToken cancellationToken = default) =>
                 throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// A <see cref="List{T}"/> that also implements <see cref="IAsyncEnumerable{T}"/>.
-        /// </summary>
-        private sealed class AsyncList : List<int>, IAsyncEnumerable<int>
-        {
-            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-                throw new InvalidOperationException("In-memory collections must be enumerated synchronously.");
-        }
-
-        /// <summary>
-        /// An <see cref="ICollection{T}"/>, but not an <see cref="IReadOnlyCollection{T}"/>, that also implements
-        /// <see cref="IAsyncEnumerable{T}"/>.
-        /// </summary>
-        private sealed class AsyncCollection : ICollection<int>, IAsyncEnumerable<int>
-        {
-            private readonly List<int> _items = [];
-
-            public int Count => _items.Count;
-            public bool IsReadOnly => false;
-            public void Add(int item) => _items.Add(item);
-            public void Clear() => _items.Clear();
-            public bool Contains(int item) => _items.Contains(item);
-            public void CopyTo(int[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
-            public bool Remove(int item) => _items.Remove(item);
-            public IEnumerator<int> GetEnumerator() => _items.GetEnumerator();
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-                throw new InvalidOperationException("In-memory collections must be enumerated synchronously.");
-        }
-
-        /// <summary>
-        /// An <see cref="IReadOnlyCollection{T}"/>, but not an <see cref="ICollection{T}"/>, that also implements
-        /// <see cref="IAsyncEnumerable{T}"/>.
-        /// </summary>
-        private sealed class AsyncReadOnlyCollection(params int[] items) : IReadOnlyCollection<int>, IAsyncEnumerable<int>
-        {
-            public int Count => items.Length;
-            public IEnumerator<int> GetEnumerator() => ((IEnumerable<int>)items).GetEnumerator();
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-                throw new InvalidOperationException("In-memory collections must be enumerated synchronously.");
-        }
-
-        /// <summary>
-        /// Implements both <see cref="IEnumerable{T}"/> and <see cref="IAsyncEnumerable{T}"/>.
-        /// </summary>
-        private sealed class DualSequence : IEnumerable<int>, IAsyncEnumerable<int>
-        {
-            public IEnumerator<int> GetEnumerator() => new List<int> { 1 }.GetEnumerator();
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) =>
-                AsyncItems(1).GetAsyncEnumerator(cancellationToken);
         }
 
         #endregion

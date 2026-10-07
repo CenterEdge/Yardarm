@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(ClientSystemPackageVersion)" />
     <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ClientSystemPackageVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />

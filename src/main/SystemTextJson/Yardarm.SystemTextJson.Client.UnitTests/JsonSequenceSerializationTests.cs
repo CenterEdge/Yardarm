@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -17,7 +17,7 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
     {
         private static readonly JsonSerializerOptions s_options = new(JsonSerializerDefaults.Web);
 
-        #region JsonLinesTypeSerializer
+        #region JsonLinesTypeSerializer.SerializeSequence
 
         [Fact]
         public async Task JsonLines_SerializeSequence_WritesOneRecordPerLine()
@@ -25,11 +25,11 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
             // Arrange
 
             var serializer = new JsonLinesTypeSerializer(s_options);
+            var items = new List<Item> { new() { Id = 1, Name = "a" }, new() { Id = 2, Name = "b" } };
 
             // Act
 
-            var content = serializer.SerializeSequence(AsyncItems(new Item { Id = 1, Name = "a" }, new Item { Id = 2, Name = "b" }),
-                "application/jsonl");
+            var content = serializer.SerializeSequence<List<Item>, Item>(items, "application/jsonl");
 
             // Assert
 
@@ -47,11 +47,11 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
             {
                 WriteIndented = true
             });
+            Item[] items = [new() { Id = 1 }, new() { Id = 2 }];
 
             // Act
 
-            var content = serializer.SerializeSequence(AsyncItems(new Item { Id = 1 }, new Item { Id = 2 }),
-                "application/jsonl");
+            var content = serializer.SerializeSequence<Item[], Item>(items, "application/jsonl");
 
             // Assert
 
@@ -60,7 +60,7 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
         }
 
         [Fact]
-        public async Task JsonLines_SerializeSequenceEmpty_WritesNothing()
+        public async Task JsonLines_SerializeSequenceEnumerable_WritesOneRecordPerLine()
         {
             // Arrange
 
@@ -68,20 +68,60 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             // Act
 
-            var content = serializer.SerializeSequence(AsyncItems<Item>(), "application/jsonl");
+            var content = serializer.SerializeSequence<IEnumerable<int>, int>(Enumerable.Range(1, 3), "application/jsonl");
 
             // Assert
 
-            (await content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).Should().BeEmpty();
+            (await content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Be("1\n2\n3\n");
         }
+
+        [Fact]
+        public async Task JsonLines_SerializeSequenceEmptyOrNull_WritesNothing()
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+
+            // Act
+
+            var empty = serializer.SerializeSequence<List<Item>, Item>([], "application/jsonl");
+            var nullValue = serializer.SerializeSequence<List<Item>, Item>(null!, "application/jsonl");
+
+            // Assert
+
+            (await empty.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).Should().BeEmpty();
+            (await nullValue.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task JsonLines_SerializeSequence_Utf8WithoutBom()
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+
+            // Act
+
+            var content = serializer.SerializeSequence<List<Item>, Item>([new() { Id = 1, Name = "é" }],
+                "application/jsonl");
+
+            // Assert
+
+            (await content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).Should()
+                .Equal(Encoding.UTF8.GetBytes("{\"id\":1,\"name\":\"\\u00E9\"}\n"));
+        }
+
+        #endregion
+
+        #region JsonLinesTypeSerializer.DeserializeSequenceAsync
 
         [Theory]
         [InlineData("{\"id\":1}\n{\"id\":2}\n")]
         [InlineData("{\"id\":1}\n{\"id\":2}")]
         [InlineData("{\"id\":1}\r\n{\"id\":2}\r\n")]
         [InlineData("\n{\"id\":1}\n\n\r\n{\"id\":2}\n\n")]
-        [InlineData("﻿{\"id\":1}\n{\"id\":2}\n")]
-        public async Task JsonLines_DeserializeSequenceAsync_ReadsEachRecord(string body)
+        [InlineData("\uFEFF{\"id\":1}\n{\"id\":2}\n")]
+        public async Task JsonLines_DeserializeSequenceAsyncList_ReadsEachRecord(string body)
         {
             // Arrange
 
@@ -89,16 +129,18 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             // Act
 
-            var result = await ToListAsync(serializer.DeserializeSequenceAsync<Item>(
-                new StringContent(body, new UTF8Encoding(true)), cancellationToken: TestContext.Current.CancellationToken));
+            var result = await serializer.DeserializeSequenceAsync<List<Item>, Item>(
+                new StringContent(body, new UTF8Encoding(false)),
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
+            result.Should().BeOfType<List<Item>>();
             result.Should().BeEquivalentTo([new Item { Id = 1 }, new Item { Id = 2 }]);
         }
 
         [Fact]
-        public async Task JsonLines_DeserializeSequenceAsyncPrimitives_ReadsEachRecord()
+        public async Task JsonLines_DeserializeSequenceAsyncArray_ReadsEachRecord()
         {
             // Arrange
 
@@ -106,19 +148,16 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             // Act
 
-            var ints = await ToListAsync(serializer.DeserializeSequenceAsync<int>(new StringContent("1\n2\n3\n"),
-                cancellationToken: TestContext.Current.CancellationToken));
-            var strings = await ToListAsync(serializer.DeserializeSequenceAsync<string>(new StringContent("\"a\"\nnull\n"),
-                cancellationToken: TestContext.Current.CancellationToken));
+            var result = await serializer.DeserializeSequenceAsync<int[], int>(new StringContent("1\n2\n3\n"),
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
-            ints.Should().Equal(1, 2, 3);
-            strings.Should().Equal("a", null);
+            result.Should().Equal(1, 2, 3);
         }
 
         [Fact]
-        public async Task JsonLines_DeserializeSequenceAsyncEmpty_NoItems()
+        public async Task JsonLines_DeserializeSequenceAsyncEnumerable_ReadsEachRecord()
         {
             // Arrange
 
@@ -126,12 +165,49 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             // Act
 
-            var result = await ToListAsync(serializer.DeserializeSequenceAsync<Item>(new StringContent(""),
-                cancellationToken: TestContext.Current.CancellationToken));
+            var result = await serializer.DeserializeSequenceAsync<IEnumerable<string>, string>(
+                new StringContent("\"a\"\nnull\n"), cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            result.Should().Equal("a", null);
+        }
+
+        [Fact]
+        public async Task JsonLines_DeserializeSequenceAsyncEmpty_ReturnsEmpty()
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+
+            // Act
+
+            var result = await serializer.DeserializeSequenceAsync<List<Item>, Item>(new StringContent(""),
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
             result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void JsonLines_DeserializeSequenceAsyncUnsupportedType_ThrowsNotSupportedException()
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+
+            // Act
+
+            Action hashSet = () => serializer.DeserializeSequenceAsync<HashSet<int>, int>(new StringContent("1\n"),
+                cancellationToken: TestContext.Current.CancellationToken);
+            Action readOnlyList = () => serializer.DeserializeSequenceAsync<IReadOnlyList<int>, int>(
+                new StringContent("1\n"), cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            hashSet.Should().Throw<NotSupportedException>();
+            readOnlyList.Should().Throw<NotSupportedException>();
         }
 
         [Fact]
@@ -143,8 +219,8 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             // Act
 
-            Func<Task> action = () => ToListAsync(serializer.DeserializeSequenceAsync<Item>(
-                new StringContent("{\"id\":1}\n{\"id\":\n"), cancellationToken: TestContext.Current.CancellationToken));
+            Func<Task> action = async () => await serializer.DeserializeSequenceAsync<List<Item>, Item>(
+                new StringContent("{\"id\":1}\n{\"id\":\n"), cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
@@ -158,154 +234,67 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
 
             var serializer = new JsonLinesTypeSerializer(s_options);
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            cts.Cancel();
 
             // Act
 
-            Func<Task> action = async () =>
-            {
-                await foreach (var _ in serializer.DeserializeSequenceAsync<Item>(
-                                   new StringContent("{\"id\":1}\n{\"id\":2}\n"), cancellationToken: cts.Token))
-                {
-                    cts.Cancel();
-                }
-            };
+            Func<Task> action = async () => await serializer.DeserializeSequenceAsync<List<Item>, Item>(
+                new StringContent("{\"id\":1}\n{\"id\":2}\n"), cancellationToken: cts.Token);
 
             // Assert
 
             await action.Should().ThrowAsync<OperationCanceledException>();
         }
 
-        [Fact]
-        public async Task JsonLines_SequenceRoundTrip_ReturnsItems()
-        {
-            // Arrange
+        #endregion
 
-            var serializer = new JsonLinesTypeSerializer(s_options);
-            var items = new[] { new Item { Id = 1, Name = "a" }, new Item { Id = 2, Name = "b" } };
-
-            // Act
-
-            var content = serializer.SerializeSequence(AsyncItems(items), "application/x-ndjson");
-            content = await BufferAsync(content);
-            var result = await ToListAsync(serializer.DeserializeSequenceAsync<Item>(content,
-                cancellationToken: TestContext.Current.CancellationToken));
-
-            // Assert
-
-            result.Should().BeEquivalentTo(items);
-        }
+        #region Round trips
 
         [Fact]
-        public async Task JsonLines_RegistrySequenceMethods_UseSequenceSerializer()
+        public async Task JsonLines_RegistrySequenceRoundTrip_ReturnsItems()
         {
             // Arrange
 
             var registry = new TypeSerializerRegistry().Add(JsonLinesTypeSerializer.SupportedMediaTypes,
                 new JsonLinesTypeSerializer(s_options));
-            var items = new List<Item> { new() { Id = 1 }, new() { Id = 2 } };
+            var items = new List<Item> { new() { Id = 1, Name = "a" }, new() { Id = 2, Name = "b" } };
 
             // Act
 
-            var content = registry.SerializeSequence(items, "application/jsonl");
-            content = await BufferAsync(content);
-            var result = await registry.DeserializeListAsync<Item>(content,
+            var content = await BufferAsync(registry.SerializeSequence<List<Item>, Item>(items, "application/x-ndjson"));
+            var result = await registry.DeserializeSequenceAsync<List<Item>, Item>(content,
                 cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
-            (await content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should()
-                .Be("{\"id\":1,\"name\":null}\n{\"id\":2,\"name\":null}\n");
             result.Should().BeEquivalentTo(items);
         }
 
-        #endregion
-
-        #region JsonTypeSerializer
-
         [Fact]
-        public async Task Json_SerializeSequence_WritesArray()
+        public async Task Json_RegistrySequenceRoundTrip_UsesJsonArray()
         {
             // Arrange
 
-            var serializer = new JsonTypeSerializer(s_options);
+            var registry = new TypeSerializerRegistry().Add(JsonTypeSerializer.SupportedMediaTypes,
+                new JsonTypeSerializer(s_options));
+            var items = new List<Item> { new() { Id = 1, Name = "a" }, new() { Id = 2, Name = "b" } };
 
             // Act
 
-            var content = serializer.SerializeSequence(AsyncItems(new Item { Id = 1, Name = "a" }, new Item { Id = 2 }),
-                "application/json");
+            var content = await BufferAsync(registry.SerializeSequence<List<Item>, Item>(items, "application/json"));
+            string body = await content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+            var result = await registry.DeserializeSequenceAsync<List<Item>, Item>(content,
+                cancellationToken: TestContext.Current.CancellationToken);
 
             // Assert
 
-            content.Headers.ContentType!.ToString().Should().Be("application/json; charset=utf-8");
-            (await content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should()
-                .Be("[{\"id\":1,\"name\":\"a\"},{\"id\":2,\"name\":null}]");
-        }
-
-        [Fact]
-        public async Task Json_SerializeSequenceEmpty_WritesEmptyArray()
-        {
-            // Arrange
-
-            var serializer = new JsonTypeSerializer(s_options);
-
-            // Act
-
-            var content = serializer.SerializeSequence(AsyncItems<Item>(), "application/json");
-
-            // Assert
-
-            (await content.ReadAsStringAsync(TestContext.Current.CancellationToken)).Should().Be("[]");
-        }
-
-        [Fact]
-        public async Task Json_DeserializeSequenceAsync_ReadsArrayElements()
-        {
-            // Arrange
-
-            var serializer = new JsonTypeSerializer(s_options);
-
-            // Act
-
-            var result = await ToListAsync(serializer.DeserializeSequenceAsync<Item>(
-                new StringContent("[{\"id\":1},{\"id\":2}]"), cancellationToken: TestContext.Current.CancellationToken));
-
-            // Assert
-
-            result.Should().BeEquivalentTo([new Item { Id = 1 }, new Item { Id = 2 }]);
-        }
-
-        [Fact]
-        public async Task Json_SequenceRoundTrip_ReturnsItems()
-        {
-            // Arrange
-
-            var serializer = new JsonTypeSerializer(s_options);
-            var items = new[] { new Item { Id = 1, Name = "a" }, new Item { Id = 2, Name = "b" } };
-
-            // Act
-
-            var content = serializer.SerializeSequence(AsyncItems(items), "application/json");
-            content = await BufferAsync(content);
-            var result = await ToListAsync(serializer.DeserializeSequenceAsync<Item>(content,
-                cancellationToken: TestContext.Current.CancellationToken));
-
-            // Assert
-
+            body.Should().Be("[{\"id\":1,\"name\":\"a\"},{\"id\":2,\"name\":\"b\"}]");
             result.Should().BeEquivalentTo(items);
         }
 
         #endregion
 
         #region Helpers
-
-        private static async IAsyncEnumerable<T> AsyncItems<T>(params T[] items)
-        {
-            foreach (T item in items)
-            {
-                await Task.Yield();
-                yield return item;
-            }
-        }
 
         // Simulates a response, whose content is buffered before it is read
         private static async Task<HttpContent> BufferAsync(HttpContent content)
@@ -314,17 +303,6 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
                 await content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken));
             buffered.Headers.ContentType = content.Headers.ContentType;
             return buffered;
-        }
-
-        private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source)
-        {
-            var list = new List<T>();
-            await foreach (T item in source)
-            {
-                list.Add(item);
-            }
-
-            return list;
         }
 
         public class Item

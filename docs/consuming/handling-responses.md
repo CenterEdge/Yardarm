@@ -155,6 +155,10 @@ When a response offers both JSON and JSON Lines, Yardarm uses JSON. JSON Lines r
 The whole body is held in memory: responses are read fully before they are deserialized.
 For OpenAPI 3.0 and 3.1, use the `x-oai-itemSchema` extension in place of `itemSchema`.
 
+The Newtonsoft.Json extension does not support JSON Lines. JSON Lines media types are not selected, so
+responses that only offer JSON Lines have no typed body, and JSON Lines requests use an
+`{Operation}HttpContentRequest` class with an `HttpContent` `Body` property.
+
 ## Disposing
 
 It is recommended  to use a `using` clause or some other means of calling `Dispose` on each response.

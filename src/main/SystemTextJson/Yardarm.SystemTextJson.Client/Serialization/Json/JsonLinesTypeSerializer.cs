@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -17,10 +17,11 @@ using System.Threading.Tasks;
 namespace RootNamespace.Serialization.Json;
 
 /// <summary>
-/// Serializes JSON Lines (newline-delimited JSON) bodies. Collections are written and read as one JSON
-/// value per line; other values are written and read as a single line.
+/// Serializes JSON Lines (newline-delimited JSON) bodies. Sequences are written and read as one JSON value per
+/// line with <see cref="SerializeSequence{TSequence,TElement}"/> and
+/// <see cref="DeserializeSequenceAsync{TSequence,TElement}"/>; other values are a single line.
 /// </summary>
-public class JsonLinesTypeSerializer : ISequenceTypeSerializer
+public class JsonLinesTypeSerializer : ITypeSerializer
 {
     public static string[] SupportedMediaTypes =>
     [
@@ -80,132 +81,117 @@ public class JsonLinesTypeSerializer : ISequenceTypeSerializer
     public static JsonLinesTypeSerializer CreateDefault(Action<JsonSerializerOptions>? configureOptions = null) =>
         new(ModelSerializerContext.Default, configureOptions);
 
-    public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
-    {
-        JsonTypeInfo typeInfo = _options.GetTypeInfo(typeof(T));
-
-        return new JsonLinesContent(value, typeInfo, GetItemTypeInfo(typeInfo), _options,
-            new MediaTypeHeaderValue(mediaType) { CharSet = Encoding.UTF8.WebName });
-    }
+    /// <summary>
+    /// Serializes a single value as one JSON Lines record.
+    /// </summary>
+    public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
+        new JsonLinesContent<T[], T>([value], GetTypeInfo<T>(), _options, CreateMediaType(mediaType));
 
     public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData) =>
         DeserializeAsync<T>(content, serializationData, default);
 
+    /// <summary>
+    /// Deserializes a single JSON Lines record. Whitespace, including a trailing newline, is allowed after the
+    /// record, but additional records are not.
+    /// </summary>
     public async ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
         // ReSharper disable once MethodOverloadWithOptionalParameter
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(content);
 
-#if NET5_0_OR_GREATER
-        byte[] utf8Json = await content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-#else
-        byte[] utf8Json = await content.ReadAsByteArrayAsync().ConfigureAwait(false);
-#endif
+        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
 
-        return Deserialize<T>(utf8Json, cancellationToken);
+        return (await JsonSerializer.DeserializeAsync(stream, GetTypeInfo<T>(), cancellationToken)
+            .ConfigureAwait(false))!;
     }
 
-    private T Deserialize<T>(ReadOnlySpan<byte> utf8Json, CancellationToken cancellationToken)
-    {
-        // Utf8JsonReader does not skip a byte order mark
-        ReadOnlySpan<byte> utf8Bom = [0xEF, 0xBB, 0xBF];
-        if (utf8Json.StartsWith(utf8Bom))
-        {
-            utf8Json = utf8Json.Slice(utf8Bom.Length);
-        }
-
-        var reader = new Utf8JsonReader(utf8Json, new JsonReaderOptions
-        {
-            AllowMultipleValues = true,
-            AllowTrailingCommas = _options.AllowTrailingCommas,
-            CommentHandling = _options.ReadCommentHandling,
-            MaxDepth = _options.MaxDepth
-        });
-
-        JsonTypeInfo typeInfo = _options.GetTypeInfo(typeof(T));
-        JsonTypeInfo? itemTypeInfo = GetItemTypeInfo(typeInfo);
-        if (itemTypeInfo is null)
-        {
-            if (!reader.Read())
-            {
-                return default!;
-            }
-
-            return (T)JsonSerializer.Deserialize(ref reader, typeInfo)!;
-        }
-
-        if (typeInfo.CreateObject?.Invoke() is not IList list)
-        {
-            throw new NotSupportedException($"JSON Lines deserialization of {typeof(T)} requires a type that implements {nameof(IList)} with a default constructor.");
-        }
-
-        while (reader.Read())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            list.Add(JsonSerializer.Deserialize(ref reader, itemTypeInfo));
-        }
-
-        return (T)list;
-    }
-
-    public HttpContent SerializeSequence<TItem>(IAsyncEnumerable<TItem> items, string mediaType,
+    /// <summary>
+    /// Serializes each element of a sequence as a JSON Lines record.
+    /// </summary>
+    public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
         ISerializationData? serializationData = null)
-    {
-        ArgumentNullException.ThrowIfNull(items);
+        where TSequence : IEnumerable<TElement> =>
+        new JsonLinesContent<TSequence, TElement>(value, GetTypeInfo<TElement>(), _options, CreateMediaType(mediaType));
 
-        return new JsonLinesSequenceContent<TItem>(items, GetTypeInfo<TItem>(), CreateWriterOptions(_options),
-            new MediaTypeHeaderValue(mediaType) { CharSet = Encoding.UTF8.WebName });
-    }
-
-    public IAsyncEnumerable<TItem> DeserializeSequenceAsync<TItem>(HttpContent content,
+    /// <summary>
+    /// Deserializes each JSON Lines record as an element of a sequence.
+    /// </summary>
+    /// <exception cref="NotSupportedException"><typeparamref name="TSequence"/> is not
+    /// <see cref="List{T}"/>, an array or <see cref="IEnumerable{T}"/> of <typeparamref name="TElement"/>.</exception>
+    public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+        where TSequence : IEnumerable<TElement>
     {
         ArgumentNullException.ThrowIfNull(content);
 
-        return JsonSequenceReader.ReadAsync(content, GetTypeInfo<TItem>(), topLevelValues: true, cancellationToken);
+        if (typeof(TSequence) != typeof(List<TElement>)
+            && typeof(TSequence) != typeof(TElement[])
+            && typeof(TSequence) != typeof(IEnumerable<TElement>))
+        {
+            throw new NotSupportedException(
+                $"JSON Lines deserialization of {typeof(TSequence)} is not supported. Use List<T>, T[] or IEnumerable<T>.");
+        }
+
+        return DeserializeSequenceCoreAsync<TSequence, TElement>(content, cancellationToken);
     }
 
-    private JsonTypeInfo<TItem> GetTypeInfo<TItem>() => (JsonTypeInfo<TItem>)_options.GetTypeInfo(typeof(TItem));
+    private async ValueTask<TSequence> DeserializeSequenceCoreAsync<TSequence, TElement>(HttpContent content,
+        CancellationToken cancellationToken)
+        where TSequence : IEnumerable<TElement>
+    {
+        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
 
-    private JsonTypeInfo? GetItemTypeInfo(JsonTypeInfo typeInfo) =>
-        typeInfo is { Kind: JsonTypeInfoKind.Enumerable, ElementType: { } elementType }
-            ? _options.GetTypeInfo(elementType)
-            : null;
+        IAsyncEnumerable<TElement?> elements = JsonSerializer.DeserializeAsyncEnumerable(stream,
+            GetTypeInfo<TElement>(), topLevelValues: true, cancellationToken);
 
-    // Records must not span lines, so the writer is never indented regardless of the serializer options
-    private static JsonWriterOptions CreateWriterOptions(JsonSerializerOptions options) =>
-        new()
-        {
-            Encoder = options.Encoder,
-            Indented = false,
-            MaxDepth = options.MaxDepth
-        };
+        object result = typeof(TSequence) == typeof(TElement[])
+            ? await elements.ToArrayAsync(cancellationToken).ConfigureAwait(false)
+            : await elements.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-    private static async Task WriteNewLineAsync(Stream stream, CancellationToken cancellationToken)
+        return (TSequence)result;
+    }
+
+    private JsonTypeInfo<T> GetTypeInfo<T>() => (JsonTypeInfo<T>)_options.GetTypeInfo(typeof(T));
+
+    private static MediaTypeHeaderValue CreateMediaType(string mediaType) =>
+        new(mediaType) { CharSet = Encoding.UTF8.WebName };
+
+    private static Task<Stream> ReadAsStreamAsync(HttpContent content, CancellationToken cancellationToken)
     {
 #if NET5_0_OR_GREATER
-        await stream.WriteAsync(s_newLine, cancellationToken).ConfigureAwait(false);
+        return content.ReadAsStreamAsync(cancellationToken);
 #else
-        await stream.WriteAsync(s_newLine, 0, s_newLine.Length, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        return content.ReadAsStreamAsync();
 #endif
     }
 
-    private static readonly byte[] s_newLine = [(byte)'\n'];
-
-    private sealed class JsonLinesSequenceContent<TItem> : HttpContent
+    /// <summary>
+    /// Writes each element of a sequence as a JSON Lines record as the content is sent.
+    /// </summary>
+    private sealed class JsonLinesContent<TSequence, TElement> : HttpContent
+        where TSequence : IEnumerable<TElement>
     {
-        private readonly IAsyncEnumerable<TItem> _items;
-        private readonly JsonTypeInfo<TItem> _typeInfo;
+        private static readonly byte[] s_newLine = [(byte)'\n'];
+
+        private readonly TSequence _value;
+        private readonly JsonTypeInfo<TElement> _typeInfo;
         private readonly JsonWriterOptions _writerOptions;
 
-        public JsonLinesSequenceContent(IAsyncEnumerable<TItem> items, JsonTypeInfo<TItem> typeInfo,
-            JsonWriterOptions writerOptions, MediaTypeHeaderValue mediaType)
+        public JsonLinesContent(TSequence value, JsonTypeInfo<TElement> typeInfo, JsonSerializerOptions options,
+            MediaTypeHeaderValue mediaType)
         {
-            _items = items;
+            _value = value;
             _typeInfo = typeInfo;
-            _writerOptions = writerOptions;
+
+            // Records must not span lines, so the writer is never indented regardless of the serializer options
+            _writerOptions = new JsonWriterOptions
+            {
+                Encoder = options.Encoder,
+                Indented = false,
+                MaxDepth = options.MaxDepth
+            };
 
             Headers.ContentType = mediaType;
         }
@@ -221,79 +207,25 @@ public class JsonLinesTypeSerializer : ISequenceTypeSerializer
 
         private async Task SerializeToStreamAsync(Stream stream, CancellationToken cancellationToken)
         {
+            if (_value is null)
+            {
+                return;
+            }
+
             using var writer = new Utf8JsonWriter(stream, _writerOptions);
 
-            await foreach (TItem item in _items.WithCancellation(cancellationToken).ConfigureAwait(false))
+            foreach (TElement item in _value)
             {
                 JsonSerializer.Serialize(writer, item, _typeInfo);
                 await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 writer.Reset();
 
-                await WriteNewLineAsync(stream, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        protected override bool TryComputeLength(out long length)
-        {
-            length = 0;
-            return false;
-        }
-    }
-
-    private sealed class JsonLinesContent : HttpContent
-    {
-        private readonly object? _value;
-        private readonly JsonTypeInfo _typeInfo;
-        private readonly JsonTypeInfo? _itemTypeInfo;
-        private readonly JsonWriterOptions _writerOptions;
-
-        public JsonLinesContent(object? value, JsonTypeInfo typeInfo, JsonTypeInfo? itemTypeInfo,
-            JsonSerializerOptions options, MediaTypeHeaderValue mediaType)
-        {
-            _value = value;
-            _typeInfo = typeInfo;
-            _itemTypeInfo = itemTypeInfo;
-            _writerOptions = CreateWriterOptions(options);
-
-            Headers.ContentType = mediaType;
-        }
-
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) =>
-            SerializeToStreamAsync(stream, CancellationToken.None);
-
 #if NET5_0_OR_GREATER
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context,
-            CancellationToken cancellationToken) =>
-            SerializeToStreamAsync(stream, cancellationToken);
+                await stream.WriteAsync(s_newLine, cancellationToken).ConfigureAwait(false);
+#else
+                await stream.WriteAsync(s_newLine, 0, s_newLine.Length, cancellationToken).ConfigureAwait(false);
 #endif
-
-        private async Task SerializeToStreamAsync(Stream stream, CancellationToken cancellationToken)
-        {
-            using var writer = new Utf8JsonWriter(stream, _writerOptions);
-
-            if (_itemTypeInfo is null)
-            {
-                await WriteLineAsync(stream, writer, _value, _typeInfo, cancellationToken).ConfigureAwait(false);
-                return;
             }
-
-            if (_value is IEnumerable items)
-            {
-                foreach (object? item in items)
-                {
-                    await WriteLineAsync(stream, writer, item, _itemTypeInfo, cancellationToken).ConfigureAwait(false);
-                }
-            }
-        }
-
-        private static async Task WriteLineAsync(Stream stream, Utf8JsonWriter writer, object? value,
-            JsonTypeInfo typeInfo, CancellationToken cancellationToken)
-        {
-            JsonSerializer.Serialize(writer, value, typeInfo);
-            await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
-            writer.Reset();
-
-            await WriteNewLineAsync(stream, cancellationToken).ConfigureAwait(false);
         }
 
         protected override bool TryComputeLength(out long length)

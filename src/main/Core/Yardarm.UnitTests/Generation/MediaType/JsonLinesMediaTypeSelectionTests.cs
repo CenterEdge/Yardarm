@@ -151,13 +151,13 @@ public class JsonLinesMediaTypeSelectionTests
         return (document, serviceProvider);
     }
 
-    private static ILocatedOpenApiElement<OpenApiOperation> GetOperation(OpenApiDocument document, string operationId) =>
-        document.Paths.ToLocatedElements()
+    private static ILocatedOpenApiElement<OpenApiOperation> GetOperation(OpenApiDocument document, string operationId)
+        => document.Paths.ToLocatedElements()
             .GetOperations()
             .Single(p => p.Element.OperationId == operationId);
 
-    private static ILocatedOpenApiElement<IOpenApiResponse> GetResponse(OpenApiDocument document, string operationId) =>
-        GetOperation(document, operationId)
+    private static ILocatedOpenApiElement<IOpenApiResponse> GetResponse(OpenApiDocument document, string operationId)
+        => GetOperation(document, operationId)
             .GetResponseSet()
             .GetResponses()
             .Single();

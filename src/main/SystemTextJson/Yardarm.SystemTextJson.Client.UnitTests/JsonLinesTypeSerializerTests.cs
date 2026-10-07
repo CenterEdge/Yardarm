@@ -121,8 +121,8 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
             jsonLinesOptions.Should().BeSameAs(jsonOptions);
         }
 
-        private static JsonSerializerOptions GetOptions(object serializer) =>
-            (JsonSerializerOptions)serializer.GetType()
+        private static JsonSerializerOptions GetOptions(object serializer)
+            => (JsonSerializerOptions)serializer.GetType()
                 .GetField("_options", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .GetValue(serializer)!;
 

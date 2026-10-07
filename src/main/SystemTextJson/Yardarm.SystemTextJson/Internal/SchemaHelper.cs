@@ -42,11 +42,11 @@ internal static class SchemaHelper
         && schema is {Discriminator.PropertyName: not null} or {OneOf.Count: > 0};
 
 
-    public static bool IsJsonMediaType(string mediaType) =>
-        mediaType.EndsWith("/json") || mediaType.EndsWith("+json") || IsJsonLinesMediaType(mediaType);
+    public static bool IsJsonMediaType(string mediaType)
+        => mediaType.EndsWith("/json") || mediaType.EndsWith("+json") || IsJsonLinesMediaType(mediaType);
 
-    public static bool IsJsonLinesMediaType(string mediaType) =>
-        mediaType is "application/jsonl" or "application/x-ndjson";
+    public static bool IsJsonLinesMediaType(string mediaType)
+        => mediaType is "application/jsonl" or "application/x-ndjson";
 
     /// <summary>
     /// Collects a list of all discriminator keys and their relevant C# type.

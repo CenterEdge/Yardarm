@@ -70,11 +70,11 @@ public class BinaryStreamSerializer : ITypeSerializer
 
     public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
         ISerializationData? serializationData = null)
-        where TSequence : IEnumerable<TElement> =>
-        Serialize(value, mediaType, serializationData);
+        where TSequence : IEnumerable<TElement>
+        => Serialize(value, mediaType, serializationData);
 
     public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        where TSequence : IEnumerable<TElement> =>
-        DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
+        where TSequence : IEnumerable<TElement>
+        => DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 }

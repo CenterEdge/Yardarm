@@ -72,12 +72,12 @@ public static class TypeSerializerRegistryExtensions
 
         public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
             // ReSharper disable once MethodOverloadWithOptionalParameter
-            CancellationToken cancellationToken = default) =>
-            GetSerializer(typeSerializerRegistry, content, typeof(T))
+            CancellationToken cancellationToken = default)
+            => GetSerializer(typeSerializerRegistry, content, typeof(T))
                 .DeserializeAsync<T>(content, serializationData, cancellationToken);
 
-        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null) =>
-            GetSerializer(typeSerializerRegistry, mediaType, typeof(T))
+        public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
+            => GetSerializer(typeSerializerRegistry, mediaType, typeof(T))
                 .Serialize(value, mediaType, serializationData);
 
         /// <summary>
@@ -87,8 +87,8 @@ public static class TypeSerializerRegistryExtensions
         /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
         public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
             ISerializationData? serializationData = null)
-            where TSequence : IEnumerable<TElement> =>
-            GetSerializer(typeSerializerRegistry, mediaType, typeof(TSequence))
+            where TSequence : IEnumerable<TElement>
+            => GetSerializer(typeSerializerRegistry, mediaType, typeof(TSequence))
                 .SerializeSequence<TSequence, TElement>(value, mediaType, serializationData);
 
         /// <summary>
@@ -98,14 +98,14 @@ public static class TypeSerializerRegistryExtensions
         /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
         public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
             ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-            where TSequence : IEnumerable<TElement> =>
-            GetSerializer(typeSerializerRegistry, content, typeof(TSequence))
+            where TSequence : IEnumerable<TElement>
+            => GetSerializer(typeSerializerRegistry, content, typeof(TSequence))
                 .DeserializeSequenceAsync<TSequence, TElement>(content, serializationData, cancellationToken);
     }
 
     private static ITypeSerializer GetSerializer(ITypeSerializerRegistry typeSerializerRegistry, HttpContent content,
-        Type schemaType) =>
-        GetSerializer(typeSerializerRegistry, content.Headers.ContentType?.MediaType, schemaType, content);
+        Type schemaType)
+        => GetSerializer(typeSerializerRegistry, content.Headers.ContentType?.MediaType, schemaType, content);
 
     private static ITypeSerializer GetSerializer(ITypeSerializerRegistry typeSerializerRegistry, string? mediaType,
         Type schemaType, HttpContent? content = null)

@@ -339,8 +339,8 @@ namespace Yardarm.Client.UnitTests.Serialization
 
         #region Helpers
 
-        private static HttpContent CreateContent(string mediaType = MediaType) =>
-            new ByteArrayContent(Encoding.UTF8.GetBytes("")) { Headers = { ContentType = new MediaTypeHeaderValue(mediaType) } };
+        private static HttpContent CreateContent(string mediaType = MediaType)
+            => new ByteArrayContent(Encoding.UTF8.GetBytes("")) { Headers = { ContentType = new MediaTypeHeaderValue(mediaType) } };
 
         /// <summary>
         /// Implements only <see cref="ITypeSerializer.Serialize{T}"/> and <see cref="ITypeSerializer.DeserializeAsync{T}(HttpContent, ISerializationData?, CancellationToken)"/>,
@@ -365,8 +365,8 @@ namespace Yardarm.Client.UnitTests.Serialization
                 return new ByteArrayContent([]);
             }
 
-            public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData) =>
-                DeserializeAsync<T>(content, serializationData, default);
+            public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData)
+                => DeserializeAsync<T>(content, serializationData, default);
 
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null,
                 CancellationToken cancellationToken = default)
@@ -412,15 +412,15 @@ namespace Yardarm.Client.UnitTests.Serialization
                 return new ValueTask<TSequence>((TSequence)DeserializedValue);
             }
 
-            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null) =>
-                throw new NotSupportedException();
+            public HttpContent Serialize<T>(T value, string mediaType, ISerializationData serializationData = null)
+                => throw new NotSupportedException();
 
-            public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData) =>
-                throw new NotSupportedException();
+            public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData)
+                => throw new NotSupportedException();
 
             public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData serializationData = null,
-                CancellationToken cancellationToken = default) =>
-                throw new NotSupportedException();
+                CancellationToken cancellationToken = default)
+                => throw new NotSupportedException();
         }
 
         #endregion

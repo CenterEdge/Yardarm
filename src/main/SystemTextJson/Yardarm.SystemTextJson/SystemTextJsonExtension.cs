@@ -19,7 +19,6 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
     {
         services
             .AddCreateDefaultRegistryEnricher<JsonCreateDefaultRegistryEnricher>()
-            .AddCreateDefaultRegistryEnricher<JsonLinesCreateDefaultRegistryEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonPropertyEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonEnumEnricher>()
             .AddOpenApiSyntaxNodeEnricher<JsonDiscriminatorEnricher>()

@@ -47,6 +47,12 @@ internal static class ThrowHelper
     }
 
     [DoesNotReturn]
+    public static void ThrowNotSupportedException(string? message)
+    {
+        throw new NotSupportedException(message);
+    }
+
+    [DoesNotReturn]
     public static void ThrowKeyNotFoundException(string? message = null)
     {
         throw new KeyNotFoundException(message);

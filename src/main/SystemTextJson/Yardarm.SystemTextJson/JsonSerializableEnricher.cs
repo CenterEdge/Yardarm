@@ -11,11 +11,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Enrichment.Compilation;
 using Yardarm.Generation;
-using Yardarm.Generation.MediaType;
-using Yardarm.Generation.Operation;
 using Yardarm.Helpers;
 using Yardarm.Names;
-using Yardarm.Spec;
 using Yardarm.SystemTextJson.Helpers;
 using Yardarm.SystemTextJson.Internal;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -28,11 +25,6 @@ namespace Yardarm.SystemTextJson;
 internal class JsonSerializableEnricher : ICompilationEnricher
 {
     private readonly ITypeGeneratorRegistry<IOpenApiSchema> _schemaGeneratorRegistry;
-    private readonly ITypeGeneratorRegistry<IOpenApiMediaType> _mediaTypeGeneratorRegistry;
-    private readonly ITypeGeneratorRegistry _typeGeneratorRegistry;
-    private readonly IMediaTypeSelector _mediaTypeSelector;
-    private readonly IOperationNameProvider _operationNameProvider;
-    private readonly OpenApiDocument _document;
     private readonly string _rootNamespacePrefix;
 
     public Type[] ExecuteAfter { get; } =
@@ -41,28 +33,11 @@ internal class JsonSerializableEnricher : ICompilationEnricher
         typeof(SyntaxTreeCompilationEnricher)
     ];
 
-    public JsonSerializableEnricher(
-        ITypeGeneratorRegistry<IOpenApiSchema> schemaGeneratorRegistry,
-        ITypeGeneratorRegistry<IOpenApiMediaType> mediaTypeGeneratorRegistry,
-        ITypeGeneratorRegistry typeGeneratorRegistry,
-        IMediaTypeSelector mediaTypeSelector,
-        IOperationNameProvider operationNameProvider,
-        OpenApiDocument document,
-        IRootNamespace rootNamespace)
+    public JsonSerializableEnricher(ITypeGeneratorRegistry<IOpenApiSchema> schemaGeneratorRegistry, IRootNamespace rootNamespace)
     {
         ArgumentNullException.ThrowIfNull(schemaGeneratorRegistry);
-        ArgumentNullException.ThrowIfNull(mediaTypeGeneratorRegistry);
-        ArgumentNullException.ThrowIfNull(typeGeneratorRegistry);
-        ArgumentNullException.ThrowIfNull(mediaTypeSelector);
-        ArgumentNullException.ThrowIfNull(operationNameProvider);
-        ArgumentNullException.ThrowIfNull(document);
 
         _schemaGeneratorRegistry = schemaGeneratorRegistry;
-        _mediaTypeGeneratorRegistry = mediaTypeGeneratorRegistry;
-        _typeGeneratorRegistry = typeGeneratorRegistry;
-        _mediaTypeSelector = mediaTypeSelector;
-        _operationNameProvider = operationNameProvider;
-        _document = document;
         _rootNamespacePrefix = rootNamespace.Name + ".";
     }
 
@@ -119,12 +94,8 @@ internal class JsonSerializableEnricher : ICompilationEnricher
         bool hasEmittedDynamicTypes = false;
         char[] workingBuffer = new char[256];
 
-        var generatedSchemas = new HashSet<IOpenApiSchema>(ReferenceEqualityComparer.Instance);
-
         foreach (var type in _schemaGeneratorRegistry.GetAll().OfType<TypeGeneratorBase<IOpenApiSchema>>())
         {
-            generatedSchemas.Add(type.Element.Element);
-
             if (!type.Element.IsJsonSchema)
             {
                 continue;
@@ -170,51 +141,6 @@ internal class JsonSerializableEnricher : ICompilationEnricher
                     GetPropertyName(workingBuffer, _rootNamespacePrefix, $"__Dictionary__Of__{keyArgument}__AndOf__{valueArgument}"));
             }
         }
-
-        // JSON Lines bodies are List<TItem>, which no schema generator produces
-        foreach (var mediaType in GetJsonItemSchemaMediaTypes())
-        {
-            ILocatedOpenApiElement<IOpenApiSchema> itemSchema = mediaType.GetItemSchema()!;
-            if (!itemSchema.IsReference && !generatedSchemas.Contains(itemSchema.Element))
-            {
-                // The inline item model was not generated, for example the response selected another media type
-                continue;
-            }
-
-            TypeSyntax bodyType = mediaType.GetBodyType(_typeGeneratorRegistry)!;
-            string bodyTypeString = bodyType.ToString();
-            if (alreadyEmitted.Add(bodyTypeString)
-                && WellKnownTypes.System.Collections.Generic.ListT.IsOfType(bodyType, out var genericArgument))
-            {
-                yield return (bodyType,
-                    GetPropertyName(workingBuffer, _rootNamespacePrefix, $"__List__{genericArgument}"));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the JSON media types with an item schema that are used as request or response bodies.
-    /// </summary>
-    private IEnumerable<ILocatedOpenApiElement<IOpenApiMediaType>> GetJsonItemSchemaMediaTypes()
-    {
-        // Request classes are generated only for the selected media types
-        var requestMediaTypes = _mediaTypeGeneratorRegistry.GetAll()
-            .OfType<RequestMediaTypeGenerator>()
-            .Select(p => p.Element);
-
-        var responses = _document.Paths.ToLocatedElements()
-            .GetOperations()
-            .WhereOperationHasName(_operationNameProvider)
-            .GetResponseSets()
-            .GetResponses()
-            .Concat(_document.Components?.Responses?.CreateRoot() ?? []);
-        var responseMediaTypes = responses
-            .Select(_mediaTypeSelector.Select)
-            .OfType<ILocatedOpenApiElement<IOpenApiMediaType>>();
-
-        return requestMediaTypes
-            .Concat(responseMediaTypes)
-            .Where(p => p.Element.ItemSchema is not null && SchemaHelper.IsJsonMediaType(p.Key));
     }
 
     // Since we may have multiple models with the same name but nested within different classes, we need

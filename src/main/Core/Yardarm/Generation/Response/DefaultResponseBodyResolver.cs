@@ -41,18 +41,22 @@ internal class DefaultResponseBodyResolver(
             return null;
         }
 
-        TypeSyntax? itemType = mediaType.GetItemType(context.TypeGeneratorRegistry);
+        // Includes compatible media types which aren't selected, since the serializer is chosen by the Content-Type of the
+        // received response and the Accept header may request a sequential media type
+        TypeSyntax? sequenceItemType = response.GetSequenceItemType(mediaTypeSelector, serializerSelector,
+            context.TypeGeneratorRegistry);
 
         if (serializerSelector.Select(mediaType) is not { Descriptor.SupportsStreaming: true })
         {
-            return new ResponseBodyInfo(mediaType, bodyType, itemType, IsStreaming: false);
+            return new ResponseBodyInfo(mediaType, bodyType, sequenceItemType, IsStreaming: false);
         }
 
         // Media types with an itemSchema always stream, arrays must opt in
-        itemType ??= GetStreamingArrayItemType(mediaType, bodyType);
+        TypeSyntax? itemType = mediaType.GetItemType(context.TypeGeneratorRegistry)
+            ?? GetStreamingArrayItemType(mediaType, bodyType);
         if (itemType is null)
         {
-            return new ResponseBodyInfo(mediaType, bodyType, ItemType: null, IsStreaming: false);
+            return new ResponseBodyInfo(mediaType, bodyType, sequenceItemType, IsStreaming: false);
         }
 
         return new ResponseBodyInfo(mediaType, WellKnownTypes.System.Collections.Generic.IAsyncEnumerableT.Name(itemType),

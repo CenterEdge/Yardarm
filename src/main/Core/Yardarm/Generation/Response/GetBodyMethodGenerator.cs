@@ -6,6 +6,7 @@ using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -16,20 +17,22 @@ namespace Yardarm.Generation.Response
         public const string GetBodyMethodName = "GetBodyAsync";
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
+        protected ISerializerSelector SerializerSelector { get; }
         protected GenerationContext Context { get; }
         protected ISerializationNamespace SerializationNamespace { get; }
-
         protected IResponseBodyResolver ResponseBodyResolver { get; }
 
-        public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, GenerationContext context,
-            ISerializationNamespace serializationNamespace, IResponseBodyResolver responseBodyResolver)
+        public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, ISerializerSelector serializerSelector,
+            GenerationContext context, ISerializationNamespace serializationNamespace, IResponseBodyResolver responseBodyResolver)
         {
             ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(serializerSelector);
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(serializationNamespace);
             ArgumentNullException.ThrowIfNull(responseBodyResolver);
 
             MediaTypeSelector = mediaTypeSelector;
+            SerializerSelector = serializerSelector;
             Context = context;
             SerializationNamespace = serializationNamespace;
             ResponseBodyResolver = responseBodyResolver;
@@ -81,7 +84,8 @@ namespace Yardarm.Generation.Response
             if (!returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name))
             {
                 // Sequential media types, such as JSON Lines, and streamed bodies deserialize the items with the item type
-                // known at compile time
+                // known at compile time. This includes compatible media types that aren't selected, since the serializer is chosen by the
+                // Content-Type of the response and the Accept header may request a sequential media type.
                 SimpleNameSyntax deserializeMethod =
                     ResponseBodyResolver.Resolve(response)?.ItemType is { } itemType
                         ? GenericName(Identifier("DeserializeSequenceAsync"),

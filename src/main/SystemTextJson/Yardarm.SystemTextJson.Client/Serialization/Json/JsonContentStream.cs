@@ -14,21 +14,30 @@ internal static class JsonContentStream
     /// Gets the content as a stream of UTF-8, which is what <c>System.Text.Json</c> reads. If the content declares a
     /// different charset, it is transcoded as it is read, without buffering the whole content.
     /// </summary>
-    /// <exception cref="NotSupportedException">The charset of the content is not supported.</exception>
+    /// <exception cref="NotSupportedException">
+    /// The charset of the content is not supported. Before .NET 5, only UTF-8 is supported.
+    /// </exception>
     public static async Task<Stream> ReadAsUtf8StreamAsync(HttpContent content, CancellationToken cancellationToken)
     {
         Encoding? encoding = GetEncoding(content);
 
-        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
-        if (encoding is null)
+#if !NET5_0_OR_GREATER
+        if (encoding is not null)
         {
-            return stream;
+            // Encoding.CreateTranscodingStream isn't available, so only UTF-8 can be read
+            throw new NotSupportedException(
+                $"The character set '{encoding.WebName}' is not supported on this runtime, only UTF-8 is.");
         }
+#endif
+
+        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
 
 #if NET5_0_OR_GREATER
-        return Encoding.CreateTranscodingStream(stream, encoding, Encoding.UTF8, leaveOpen: false);
+        return encoding is null
+            ? stream
+            : Encoding.CreateTranscodingStream(stream, encoding, Encoding.UTF8, leaveOpen: false);
 #else
-        return new TranscodingReadStream(stream, encoding);
+        return stream;
 #endif
     }
 

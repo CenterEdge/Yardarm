@@ -195,6 +195,8 @@ media types that are not arrays.
   `x-yardarm-streaming` is set on the media type.
 - JSON Lines request bodies use a separate `{Operation}JsonLinesRequest` class, with a `List<T>` `Body` property.
 - For OpenAPI 3.0 and 3.1, use the `x-oai-itemSchema` extension in place of `itemSchema`.
+- JSON and JSON Lines responses with a charset other than UTF-8, such as `charset=utf-16`, are transcoded as they are read.
+  This requires .NET 5 or later. On `netstandard2.0` only UTF-8 is supported and other charsets throw `NotSupportedException`.
 - A custom `ITypeSerializer` can support streaming by handling `IAsyncEnumerable<TElement>` as the `TSequence` type in
   `DeserializeSequenceAsync`, and by setting `SupportsStreaming` on its `SerializerDescriptor`.
 

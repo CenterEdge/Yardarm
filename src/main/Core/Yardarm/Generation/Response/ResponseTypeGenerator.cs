@@ -81,7 +81,7 @@ namespace Yardarm.Generation.Response
                 baseType = Context.TypeGeneratorRegistry.Get(rootElement).TypeInfo.Name;
             }
 
-            var bodyType = GetSchemaGenerator().schemaGenerator?.TypeInfo.Name;
+            (TypeSyntax? bodyType, ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
 
             var declaration = ClassDeclaration(className)
                 .AddElementAnnotation(Element, Context.ElementRegistry)
@@ -111,7 +111,6 @@ namespace Yardarm.Generation.Response
                 }
             }
 
-            (ITypeGenerator? schemaGenerator, bool schemaIsReference) = GetSchemaGenerator();
             if (schemaGenerator != null && !schemaIsReference)
             {
                 declaration = declaration.WithMembers(declaration.Members.AddRange(schemaGenerator.Generate()));
@@ -215,21 +214,24 @@ namespace Yardarm.Generation.Response
                     SingletonSeparatedList(VariableDeclarator(Identifier(BodyFieldName)))));
         }
 
-        private (ITypeGenerator? schemaGenerator, bool isReference) GetSchemaGenerator()
+        private (TypeSyntax? bodyType, ITypeGenerator? schemaGenerator, bool isReference) GetSchemaGenerator()
         {
             ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
             if (mediaType == null)
             {
-                return (null, false);
+                return (null, null, false);
             }
 
-            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetSchema();
+            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetBodySchema();
             if (schemaElement == null)
             {
-                return (null, false);
+                return (null, null, false);
             }
 
-            return (Context.TypeGeneratorRegistry.Get(schemaElement), schemaElement.Element is IOpenApiReferenceHolder);
+            return (
+                mediaType.GetBodyType(Context.TypeGeneratorRegistry),
+                Context.TypeGeneratorRegistry.Get(schemaElement),
+                schemaElement.Element is IOpenApiReferenceHolder);
         }
 
         private string GetClassName()

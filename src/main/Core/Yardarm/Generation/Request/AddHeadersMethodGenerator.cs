@@ -6,6 +6,7 @@ using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -14,6 +15,7 @@ namespace Yardarm.Generation.Request;
 public class AddHeadersMethodGenerator(
     IRequestsNamespace requestsNamespace,
     IMediaTypeSelector mediaTypeSelector,
+    ISerializerSelector serializerSelector,
     INameFormatterSelector nameFormatterSelector,
     ISerializationNamespace serializationNamespace)
     : IRequestMemberGenerator
@@ -23,6 +25,7 @@ public class AddHeadersMethodGenerator(
     public const string RequestMessageParameterName = "requestMessage";
 
     protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
+    protected ISerializerSelector SerializerSelector { get; } = serializerSelector;
     protected INameFormatterSelector NameFormatterSelector { get; } = nameFormatterSelector;
     protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
@@ -75,9 +78,34 @@ public class AddHeadersMethodGenerator(
             .OrderBy(p => p.Key)
             .First();
 
-        ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(primaryResponse);
-        if (mediaType != null)
+        // Accept every media type supported by both the operation and the configured serializers, highest quality first.
+        // OrderByDescending is stable, so ties keep their order in the spec.
+        var acceptedMediaTypes = responseSet
+            .GetResponses()
+            .SelectMany(p => p.GetMediaTypes())
+            .Select(p => (p.Key, Quality: SerializerSelector.Select(p)?.Quality ?? 0.0))
+            .Where(p => p.Quality > 0)
+            .GroupBy(p => p.Key)
+            .Select(g => (Key: g.Key, Quality: g.Max(p => p.Quality)))
+            .OrderByDescending(p => p.Quality)
+            .ToList();
+
+        if (acceptedMediaTypes.Count > 0)
         {
+            foreach ((string key, double quality) in acceptedMediaTypes)
+            {
+                yield return ExpressionStatement(InvocationExpression(
+                        SyntaxHelpers.MemberAccess(RequestMessageParameterName, "Headers", "Accept", "Add"))
+                    .AddArgumentListArguments(
+                        Argument(ObjectCreationExpression(WellKnownTypes.System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Name)
+                            .AddArgumentListArguments(
+                                Argument(SyntaxHelpers.StringLiteral(key)),
+                                Argument(LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(quality)))))));
+            }
+        }
+        else if (MediaTypeSelector.Select(primaryResponse) is { } mediaType)
+        {
+            // No serializer-backed media types, fall back to the selector (e.g. binary strings) without a quality
             yield return ExpressionStatement(InvocationExpression(
                     SyntaxHelpers.MemberAccess(RequestMessageParameterName, "Headers", "Accept", "Add"))
                 .AddArgumentListArguments(

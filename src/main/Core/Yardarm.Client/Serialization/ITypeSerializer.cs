@@ -47,7 +47,7 @@ public interface ITypeSerializer
     HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
         ISerializationData? serializationData = null)
         where TSequence : IEnumerable<TElement>
-#if NETCOREAPP3_1_OR_GREATER
+#if NETCOREAPP3_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     {
         return Serialize(value, mediaType, serializationData);
     }
@@ -67,7 +67,7 @@ public interface ITypeSerializer
     ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
         where TSequence : IEnumerable<TElement>
-#if NETCOREAPP3_1_OR_GREATER
+#if NETCOREAPP3_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     {
         return DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
     }

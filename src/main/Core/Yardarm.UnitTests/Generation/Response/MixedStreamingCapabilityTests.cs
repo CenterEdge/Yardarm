@@ -24,7 +24,7 @@ public class MixedStreamingCapabilityTests
     private const string Accept = "requestMessage.Headers.Accept.Add(new global::System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(";
 
     // application/xml is handled by a serializer that reads List<T> but cannot stream
-    private static string GetDocument(bool streaming) => $$"""
+    private static string GetDocument(bool streaming, bool includeBufferedErrorResponse) => $$"""
         {
           "openapi": "3.2.0",
           "info": { "title": "Test", "version": "1.0" },
@@ -48,6 +48,7 @@ public class MixedStreamingCapabilityTests
                       }
                     }
                   }
+                  {{(includeBufferedErrorResponse ? ",\"400\": { \"description\": \"Bad\", \"content\": { \"application/xml\": { \"schema\": { \"type\": \"array\", \"items\": { \"$ref\": \"#/components/schemas/Thing\" } } } } }" : "")}}
                 }
               }
             }
@@ -86,6 +87,19 @@ public class MixedStreamingCapabilityTests
     }
 
     [Fact]
+    public void GenerateAccept_StreamedBodyWithBufferedErrorResponse_ExcludesMediaTypeWhichCannotStreamGlobally()
+    {
+        // The 400 response is buffered, so XML is compatible with it, but XML can't be read as the streamed 200 body.
+        var (operation, serviceProvider) = Load(streaming: true, includeBufferedErrorResponse: true);
+
+        string[] accept = GenerateAccept(operation, serviceProvider);
+
+        accept.Should().Equal(
+            $"{Accept}\"application/json\", 1));",
+            $"{Accept}\"application/jsonl\", 0.8));");
+    }
+
+    [Fact]
     public void Resolve_StreamedBody_StreamsDespiteNonStreamingAlternative()
     {
         var (operation, serviceProvider) = Load(streaming: true);
@@ -112,9 +126,9 @@ public class MixedStreamingCapabilityTests
     }
 
     private static (ILocatedOpenApiElement<OpenApiOperation> operation, System.IServiceProvider serviceProvider) Load(
-        bool streaming)
+        bool streaming, bool includeBufferedErrorResponse = false)
     {
-        OpenApiDocument document = OpenApiDocument.Parse(GetDocument(streaming), "json", new OpenApiReaderSettings()).Document;
+        OpenApiDocument document = OpenApiDocument.Parse(GetDocument(streaming, includeBufferedErrorResponse), "json", new OpenApiReaderSettings()).Document;
         var serviceProvider = new YardarmGenerationSettings()
             .AddExtension<MixedStreamingTestExtension>()
             .BuildServiceProvider(document);

@@ -85,10 +85,26 @@ public class AddHeadersMethodGenerator(
         // Accept every media type supported by both the operation and the configured serializers, highest quality first.
         // Only media types that the generated response reads with the same body type as its selected media type are
         // included, since the response class is generated from only the selected media type.
+        // The server picks a media type for the whole operation without knowing which response it will return, so a
+        // media type is excluded if any response which declares it cannot read it as that response's body. Otherwise
+        // a media type that is safe for one response, such as a buffered 400, could be returned for another, such as a
+        // streamed 200 with a serializer which doesn't support streaming.
         // OrderByDescending is stable, so ties keep their order in the spec.
-        var acceptedMediaTypes = responseSet
+        var compatibleMediaTypes = responseSet
             .GetResponses()
-            .SelectMany(p => responseBodyResolver.GetCompatibleMediaTypes(p))
+            .Select(p => (Response: p, Compatible: responseBodyResolver.GetCompatibleMediaTypes(p).ToList()))
+            .ToList();
+
+        HashSet<string> unsafeMediaTypes = compatibleMediaTypes
+            .SelectMany(p => p.Response.GetMediaTypes()
+                .Where(m => (SerializerSelector.Select(m)?.Quality ?? 0.0) > 0)
+                .Select(m => m.Key)
+                .Except(p.Compatible.Select(c => c.MediaType.Key)))
+            .ToHashSet();
+
+        var acceptedMediaTypes = compatibleMediaTypes
+            .SelectMany(p => p.Compatible)
+            .Where(p => !unsafeMediaTypes.Contains(p.MediaType.Key))
             .Select(p => (p.MediaType.Key, p.Quality))
             .GroupBy(p => p.Key)
             .Select(g => (Key: g.Key, Quality: g.Max(p => p.Quality)))

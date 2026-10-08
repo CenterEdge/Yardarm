@@ -191,11 +191,15 @@ public class AddHeadersMethodGeneratorTests
     {
         var (_, serviceProvider, selector, operation) = Load(responses);
 
+        var serializerSelector = new StubSerializerSelector();
+        var context = serviceProvider.GetRequiredService<GenerationContext>();
+
         var generator = new GetBodyMethodGenerator(
             selector,
-            new StubSerializerSelector(),
-            serviceProvider.GetRequiredService<GenerationContext>(),
-            serviceProvider.GetRequiredService<ISerializationNamespace>());
+            serializerSelector,
+            context,
+            serviceProvider.GetRequiredService<ISerializationNamespace>(),
+            new DefaultResponseBodyResolver(selector, serializerSelector, context));
 
         var response = operation.GetResponseSet().GetResponses().Single();
 

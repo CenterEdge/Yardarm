@@ -13,7 +13,7 @@ namespace Yardarm.Generation.MediaType;
 /// media type chosen by <see cref="IMediaTypeSelector"/>. For example, a JSON array of <c>T</c> and a JSON Lines
 /// <c>itemSchema</c> of <c>T</c> both produce <c>List&lt;T&gt;</c>.
 /// </summary>
-public static class CompatibleMediaTypeExtensions
+internal static class CompatibleMediaTypeExtensions
 {
     extension(ILocatedOpenApiElement<IOpenApiResponse> response)
     {

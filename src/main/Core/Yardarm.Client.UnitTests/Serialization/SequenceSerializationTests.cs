@@ -404,7 +404,6 @@ namespace Yardarm.Client.UnitTests.Serialization
 
             public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
                 ISerializationData serializationData = null, CancellationToken cancellationToken = default)
-                where TSequence : IEnumerable<TElement>
             {
                 SequenceType = typeof(TSequence);
                 ElementType = typeof(TElement);

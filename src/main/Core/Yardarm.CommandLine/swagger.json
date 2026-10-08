@@ -240,6 +240,7 @@
                     },
                     "content": {
                         "application/json": {
+                            "x-yardarm-streaming": true,
                             "schema": {
                                 "type": "array",
                                 "items": {

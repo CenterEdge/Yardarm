@@ -119,20 +119,32 @@ public class JsonLinesTypeSerializer : ITypeSerializer
     /// <summary>
     /// Deserializes each JSON Lines record as an element of a sequence.
     /// </summary>
+    /// <remarks>
+    /// If <typeparamref name="TSequence"/> is <see cref="IAsyncEnumerable{T}"/> of <typeparamref name="TElement"/>, the
+    /// result is returned immediately and the content isn't read until the first item is enumerated. Other supported
+    /// sequence types are read completely before returning.
+    /// </remarks>
     /// <exception cref="NotSupportedException"><typeparamref name="TSequence"/> is not
-    /// <see cref="List{T}"/>, an array or <see cref="IEnumerable{T}"/> of <typeparamref name="TElement"/>.</exception>
+    /// <see cref="List{T}"/>, an array, <see cref="IEnumerable{T}"/> or <see cref="IAsyncEnumerable{T}"/> of
+    /// <typeparamref name="TElement"/>.</exception>
     public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        where TSequence : IEnumerable<TElement>
     {
         ArgumentNullException.ThrowIfNull(content);
+
+        if (typeof(TSequence) == typeof(IAsyncEnumerable<TElement>))
+        {
+            return new((TSequence)(object)new JsonStreamingEnumerable<TElement>(content,
+                (JsonTypeInfo<TElement>)_options.GetTypeInfo(typeof(TElement)), topLevelValues: true,
+                cancellationToken));
+        }
 
         if (typeof(TSequence) != typeof(List<TElement>)
             && typeof(TSequence) != typeof(TElement[])
             && typeof(TSequence) != typeof(IEnumerable<TElement>))
         {
             ThrowHelper.ThrowNotSupportedException(
-                $"JSON Lines deserialization of {typeof(TSequence)} is not supported. Use List<T>, T[] or IEnumerable<T>.");
+                $"JSON Lines deserialization of {typeof(TSequence)} is not supported. Use List<T>, T[], IEnumerable<T> or IAsyncEnumerable<T>.");
         }
 
         return DeserializeSequenceCoreAsync<TSequence, TElement>(content, cancellationToken);
@@ -140,7 +152,6 @@ public class JsonLinesTypeSerializer : ITypeSerializer
 
     private async ValueTask<TSequence> DeserializeSequenceCoreAsync<TSequence, TElement>(HttpContent content,
         CancellationToken cancellationToken)
-        where TSequence : IEnumerable<TElement>
     {
         Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
 

@@ -87,6 +87,7 @@ public static class YardarmCoreServiceCollectionExtensions
             services.TryAddSingleton<IOperationMethodGenerator, OperationMethodGenerator>();
             services.TryAddSingleton<IOperationNameProvider, DefaultOperationNameProvider>();
             services.TryAddSingleton<IMediaTypeSelector, PriorityMediaTypeSelector>();
+            services.TryAddSingleton<IResponseBodyResolver, DefaultResponseBodyResolver>();
 
             // Need to be able to specifically inject this one as well
             services.TryAddSingleton(serviceProvider =>

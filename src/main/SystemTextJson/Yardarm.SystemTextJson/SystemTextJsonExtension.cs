@@ -47,7 +47,8 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
                 // to include this in the list of supported request bodies along with the other content types.
                 new SerializerMediaType("application/*+json", 0)),
             "Json",
-            serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer
+            serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonTypeSerializer,
+            supportsStreaming: true
         ));
 
         services.AddSerializerDescriptor(serviceProvider => new SerializerDescriptor(
@@ -62,7 +63,8 @@ public class SystemTextJsonExtension(YardarmGenerationSettings settings) : Yarda
                 new SerializerMediaType("application/jsonl", 0.8),
                 new SerializerMediaType("application/x-ndjson", 0.7)),
             "JsonLines",
-            serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonLinesTypeSerializer
+            serviceProvider.GetRequiredService<IJsonSerializationNamespace>().JsonLinesTypeSerializer,
+            supportsStreaming: true
         ));
 
         services.Configure<JsonOptions>(options => options.ApplySettings(settings));

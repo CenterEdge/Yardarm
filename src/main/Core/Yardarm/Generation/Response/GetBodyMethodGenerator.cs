@@ -19,16 +19,20 @@ namespace Yardarm.Generation.Response
         protected GenerationContext Context { get; }
         protected ISerializationNamespace SerializationNamespace { get; }
 
+        protected IResponseBodyResolver ResponseBodyResolver { get; }
+
         public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, GenerationContext context,
-            ISerializationNamespace serializationNamespace)
+            ISerializationNamespace serializationNamespace, IResponseBodyResolver responseBodyResolver)
         {
             ArgumentNullException.ThrowIfNull(mediaTypeSelector);
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(serializationNamespace);
+            ArgumentNullException.ThrowIfNull(responseBodyResolver);
 
             MediaTypeSelector = mediaTypeSelector;
             Context = context;
             SerializationNamespace = serializationNamespace;
+            ResponseBodyResolver = responseBodyResolver;
         }
 
         public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<IOpenApiResponse> response, string className)
@@ -45,8 +49,7 @@ namespace Yardarm.Generation.Response
                 yield break;
             }
 
-            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(response);
-            TypeSyntax? returnType = mediaType?.GetBodyType(Context.TypeGeneratorRegistry);
+            TypeSyntax? returnType = ResponseBodyResolver.Resolve(response)?.BodyType;
             if (returnType == null)
             {
                 yield break;
@@ -77,9 +80,10 @@ namespace Yardarm.Generation.Response
 
             if (!returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name))
             {
-                // Sequential media types, such as JSON Lines, deserialize the items with the item type known at compile time
+                // Sequential media types, such as JSON Lines, and streamed bodies deserialize the items with the item type
+                // known at compile time
                 SimpleNameSyntax deserializeMethod =
-                    MediaTypeSelector.Select(response)?.GetItemType(Context.TypeGeneratorRegistry) is { } itemType
+                    ResponseBodyResolver.Resolve(response)?.ItemType is { } itemType
                         ? GenericName(Identifier("DeserializeSequenceAsync"),
                             TypeArgumentList(SeparatedList([returnType, itemType])))
                         : GenericName(Identifier("DeserializeAsync"),

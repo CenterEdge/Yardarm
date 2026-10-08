@@ -16,13 +16,11 @@ namespace Yardarm.Generation.Response
     /// </summary>
     internal class BodyConstructorMethodGenerator : IResponseMethodGenerator
     {
-        private readonly GenerationContext _context;
-        private readonly IMediaTypeSelector _mediaTypeSelector;
+        private readonly IResponseBodyResolver _responseBodyResolver;
 
-        public BodyConstructorMethodGenerator(GenerationContext context, IMediaTypeSelector mediaTypeSelector)
+        public BodyConstructorMethodGenerator(IResponseBodyResolver responseBodyResolver)
         {
-            _context = context;
-            _mediaTypeSelector = mediaTypeSelector;
+            _responseBodyResolver = responseBodyResolver;
         }
 
         public IEnumerable<BaseMethodDeclarationSyntax> Generate(ILocatedOpenApiElement<IOpenApiResponse> response, string className)
@@ -148,6 +146,6 @@ namespace Yardarm.Generation.Response
         }
 
         private TypeSyntax? GetBodyType(ILocatedOpenApiElement<IOpenApiResponse> response)
-            => _mediaTypeSelector.Select(response)?.GetBodyType(_context.TypeGeneratorRegistry);
+            => _responseBodyResolver.Resolve(response)?.BodyType;
     }
 }

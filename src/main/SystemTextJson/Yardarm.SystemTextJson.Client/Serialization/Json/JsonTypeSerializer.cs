@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -97,8 +98,23 @@ public class JsonTypeSerializer : ITypeSerializer
         where TSequence : IEnumerable<TElement>
         => Serialize(value, mediaType, serializationData);
 
+    /// <summary>
+    /// Deserializes a JSON array as a sequence. If <typeparamref name="TSequence"/> is
+    /// <see cref="IAsyncEnumerable{T}"/> of <typeparamref name="TElement"/>, the result is returned immediately and the
+    /// content isn't read until the first item is enumerated. Otherwise the array is deserialized as a single value.
+    /// </summary>
     public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        where TSequence : IEnumerable<TElement>
-        => DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        if (typeof(TSequence) == typeof(IAsyncEnumerable<TElement>))
+        {
+            return new((TSequence)(object)new JsonStreamingEnumerable<TElement>(content,
+                (JsonTypeInfo<TElement>)_options.GetTypeInfo(typeof(TElement)), topLevelValues: false,
+                cancellationToken));
+        }
+
+        return DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
+    }
 }

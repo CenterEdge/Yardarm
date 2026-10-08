@@ -6,6 +6,7 @@ using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Helpers;
 using Yardarm.Names;
+using Yardarm.Serialization;
 using Yardarm.Spec;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -16,17 +17,20 @@ namespace Yardarm.Generation.Response
         public const string GetBodyMethodName = "GetBodyAsync";
 
         protected IMediaTypeSelector MediaTypeSelector { get; }
+        protected ISerializerSelector SerializerSelector { get; }
         protected GenerationContext Context { get; }
         protected ISerializationNamespace SerializationNamespace { get; }
 
-        public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, GenerationContext context,
-            ISerializationNamespace serializationNamespace)
+        public GetBodyMethodGenerator(IMediaTypeSelector mediaTypeSelector, ISerializerSelector serializerSelector,
+            GenerationContext context, ISerializationNamespace serializationNamespace)
         {
             ArgumentNullException.ThrowIfNull(mediaTypeSelector);
+            ArgumentNullException.ThrowIfNull(serializerSelector);
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(serializationNamespace);
 
             MediaTypeSelector = mediaTypeSelector;
+            SerializerSelector = serializerSelector;
             Context = context;
             SerializationNamespace = serializationNamespace;
         }
@@ -78,8 +82,10 @@ namespace Yardarm.Generation.Response
             if (!returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name))
             {
                 // Sequential media types, such as JSON Lines, deserialize the items with the item type known at compile time
+                // This includes compatible media types that aren't selected, since the serializer is chosen by the
+                // Content-Type of the response and the Accept header may request a sequential media type.
                 SimpleNameSyntax deserializeMethod =
-                    MediaTypeSelector.Select(response)?.GetItemType(Context.TypeGeneratorRegistry) is { } itemType
+                    response.GetSequenceItemType(MediaTypeSelector, SerializerSelector, Context.TypeGeneratorRegistry) is { } itemType
                         ? GenericName(Identifier("DeserializeSequenceAsync"),
                             TypeArgumentList(SeparatedList([returnType, itemType])))
                         : GenericName(Identifier("DeserializeAsync"),

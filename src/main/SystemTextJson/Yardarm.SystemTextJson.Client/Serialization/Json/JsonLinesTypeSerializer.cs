@@ -101,7 +101,8 @@ public class JsonLinesTypeSerializer : ITypeSerializer
     {
         ArgumentNullException.ThrowIfNull(content);
 
-        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
+        // Transcodes to UTF-8 if the response declares another charset
+        using Stream stream = await JsonContentStream.ReadAsUtf8StreamAsync(content, cancellationToken).ConfigureAwait(false);
 
         return (await JsonSerializer.DeserializeAsync(stream, (JsonTypeInfo<T>)_options.GetTypeInfo(typeof(T)),
             cancellationToken).ConfigureAwait(false))!;
@@ -153,7 +154,8 @@ public class JsonLinesTypeSerializer : ITypeSerializer
     private async ValueTask<TSequence> DeserializeSequenceCoreAsync<TSequence, TElement>(HttpContent content,
         CancellationToken cancellationToken)
     {
-        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
+        // Transcodes to UTF-8 if the response declares another charset
+        using Stream stream = await JsonContentStream.ReadAsUtf8StreamAsync(content, cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<TElement?> elements = JsonSerializer.DeserializeAsyncEnumerable(stream,
             (JsonTypeInfo<TElement>)_options.GetTypeInfo(typeof(TElement)), topLevelValues: true, cancellationToken);
@@ -167,14 +169,4 @@ public class JsonLinesTypeSerializer : ITypeSerializer
 
     private static MediaTypeHeaderValue CreateMediaType(string mediaType)
         => new(mediaType) { CharSet = Encoding.UTF8.WebName };
-
-    private static Task<Stream> ReadAsStreamAsync(HttpContent content, CancellationToken cancellationToken)
-    {
-#if NET5_0_OR_GREATER
-        return content.ReadAsStreamAsync(cancellationToken);
-#else
-        cancellationToken.ThrowIfCancellationRequested();
-        return content.ReadAsStreamAsync();
-#endif
-    }
 }

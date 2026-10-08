@@ -33,6 +33,17 @@ public class JsonDependencyGenerator : IDependencyGenerator
                     VersionRange = VersionRange.Parse("10.0.10")
                 }
             };
+
+            // System.Linq.AsyncEnumerable is in-box in .NET 10 and later, it is used to deserialize JSON Lines
+            yield return new LibraryDependency
+            {
+                LibraryRange = new LibraryRange
+                {
+                    Name = "System.Linq.AsyncEnumerable",
+                    TypeConstraint = LibraryDependencyTarget.Package,
+                    VersionRange = VersionRange.Parse("10.0.10")
+                }
+            };
         }
     }
 }

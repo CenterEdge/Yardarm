@@ -137,6 +137,28 @@ for the response type. Exceptions may occur if the server returns one of the oth
 
 Different schemas based on the status code are fully supported.
 
+## JSON Lines
+
+Media types that use `itemSchema`, such as `application/jsonl` and `application/x-ndjson`, are supported
+with the System.Text.Json extension. The body is a `List<T>` of the item type, the same type an array schema
+produces. Each line is one item.
+
+```cs
+using var response = await api.StreamThingsAsync(new StreamThingsRequest());
+
+List<Thing> things = await response.AsOk().GetBodyAsync();
+```
+
+When a response offers both JSON and JSON Lines, Yardarm uses JSON. JSON Lines request bodies use a separate
+`{Operation}JsonLinesRequest` class, with a `List<T>` `Body` property.
+
+The whole body is held in memory: responses are read fully before they are deserialized.
+For OpenAPI 3.0 and 3.1, use the `x-oai-itemSchema` extension in place of `itemSchema`.
+
+The Newtonsoft.Json extension does not support JSON Lines. JSON Lines media types are not selected, so
+responses that only offer JSON Lines have no typed body, and JSON Lines requests use an
+`{Operation}HttpContentRequest` class with an `HttpContent` `Body` property.
+
 ## Disposing
 
 It is recommended  to use a `using` clause or some other means of calling `Dispose` on each response.

@@ -16,6 +16,7 @@ public class AddHeadersMethodGenerator(
     IRequestsNamespace requestsNamespace,
     IMediaTypeSelector mediaTypeSelector,
     ISerializerSelector serializerSelector,
+    GenerationContext context,
     INameFormatterSelector nameFormatterSelector,
     ISerializationNamespace serializationNamespace)
     : IRequestMemberGenerator
@@ -26,6 +27,7 @@ public class AddHeadersMethodGenerator(
 
     protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
     protected ISerializerSelector SerializerSelector { get; } = serializerSelector;
+    protected GenerationContext Context { get; } = context;
     protected INameFormatterSelector NameFormatterSelector { get; } = nameFormatterSelector;
     protected ISerializationNamespace SerializationNamespace { get; } = serializationNamespace;
 
@@ -79,12 +81,13 @@ public class AddHeadersMethodGenerator(
             .First();
 
         // Accept every media type supported by both the operation and the configured serializers, highest quality first.
+        // Only media types that the generated response reads with the same body type as its selected media type are
+        // included, since the response class is generated from only the selected media type.
         // OrderByDescending is stable, so ties keep their order in the spec.
         var acceptedMediaTypes = responseSet
             .GetResponses()
-            .SelectMany(p => p.GetMediaTypes())
-            .Select(p => (p.Key, Quality: SerializerSelector.Select(p)?.Quality ?? 0.0))
-            .Where(p => p.Quality > 0)
+            .SelectMany(p => p.GetCompatibleMediaTypes(MediaTypeSelector, SerializerSelector, Context.TypeGeneratorRegistry))
+            .Select(p => (p.MediaType.Key, p.Quality))
             .GroupBy(p => p.Key)
             .Select(g => (Key: g.Key, Quality: g.Max(p => p.Quality)))
             .OrderByDescending(p => p.Quality)

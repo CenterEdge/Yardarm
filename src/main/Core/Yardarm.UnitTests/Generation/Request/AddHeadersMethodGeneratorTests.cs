@@ -8,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Reader;
 using Xunit;
+using Yardarm.Generation;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Request;
+using Yardarm.Generation.Response;
 using Yardarm.Names;
 using Yardarm.Serialization;
 using Yardarm.Spec;
@@ -93,12 +95,61 @@ public class AddHeadersMethodGeneratorTests
         result.Should().BeEmpty();
     }
 
-    private static string[] GenerateAccept(string responses)
+    private const string ThingArray = """{ "type": "array", "items": { "$ref": "#/components/schemas/Thing" } }""";
+    private const string ThingObject = """{ "$ref": "#/components/schemas/Thing" }""";
+
+    private static string ThingResponse(string jsonSchema) => $$"""
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": { "schema": {{jsonSchema}} },
+            "application/jsonl": { "itemSchema": { "$ref": "#/components/schemas/Thing" } }
+          }
+        }
+        """;
+
+    [Fact]
+    public void Generate_JsonArrayAndJsonLinesSameBodyType_AcceptsBoth()
+    {
+        string[] result = GenerateAccept(ThingResponse(ThingArray));
+
+        result.Should().Equal(
+            $"{Accept}\"application/json\", 1));",
+            $"{Accept}\"application/jsonl\", 0.95));");
+    }
+
+    [Fact]
+    public void Generate_JsonObjectAndJsonLinesDifferentBodyType_AcceptsOnlySelected()
+    {
+        string[] result = GenerateAccept(ThingResponse(ThingObject));
+
+        result.Should().Equal($"{Accept}\"application/json\", 1));");
+    }
+
+    [Fact]
+    public void GenerateGetBody_JsonArrayAndJsonLinesSameBodyType_DeserializesSequence()
+    {
+        string result = GenerateGetBody(ThingResponse(ThingArray));
+
+        result.Should().Contain("DeserializeSequenceAsync<").And.NotContain("DeserializeAsync<");
+    }
+
+    [Fact]
+    public void GenerateGetBody_JsonObjectAndJsonLinesDifferentBodyType_Deserializes()
+    {
+        string result = GenerateGetBody(ThingResponse(ThingObject));
+
+        result.Should().Contain("DeserializeAsync<").And.NotContain("DeserializeSequenceAsync<");
+    }
+
+    private static (OpenApiDocument Document, IServiceProvider ServiceProvider, PriorityMediaTypeSelector Selector, ILocatedOpenApiElement<OpenApiOperation> Operation) Load(
+        string responses)
     {
         string documentText = $$"""
             {
-              "openapi": "3.0.4",
+              "openapi": "3.2.0",
               "info": { "title": "Test", "version": "1.0" },
+              "components": { "schemas": { "Thing": { "type": "object", "properties": { "id": { "type": "integer" } } } } },
               "paths": {
                 "/things": {
                   "get": {
@@ -114,10 +165,18 @@ public class AddHeadersMethodGeneratorTests
         IServiceProvider serviceProvider = new YardarmGenerationSettings().BuildServiceProvider(document);
         var operation = document.Paths.ToLocatedElements().GetOperations().Single();
 
+        return (document, serviceProvider, new PriorityMediaTypeSelector(new StubSerializerSelector()), operation);
+    }
+
+    private static string[] GenerateAccept(string responses)
+    {
+        var (_, serviceProvider, selector, operation) = Load(responses);
+
         var generator = new AddHeadersMethodGenerator(
             serviceProvider.GetRequiredService<IRequestsNamespace>(),
-            serviceProvider.GetRequiredService<IMediaTypeSelector>(),
+            selector,
             new StubSerializerSelector(),
+            serviceProvider.GetRequiredService<GenerationContext>(),
             serviceProvider.GetRequiredService<INameFormatterSelector>(),
             serviceProvider.GetRequiredService<ISerializationNamespace>());
 
@@ -126,6 +185,21 @@ public class AddHeadersMethodGeneratorTests
         return method.Body!.Statements
             .Select(p => p.NormalizeWhitespace().ToFullString())
             .ToArray();
+    }
+
+    private static string GenerateGetBody(string responses)
+    {
+        var (_, serviceProvider, selector, operation) = Load(responses);
+
+        var generator = new GetBodyMethodGenerator(
+            selector,
+            new StubSerializerSelector(),
+            serviceProvider.GetRequiredService<GenerationContext>(),
+            serviceProvider.GetRequiredService<ISerializationNamespace>());
+
+        var response = operation.GetResponseSet().GetResponses().Single();
+
+        return generator.Generate(response, "GetThingsResponse").Single().NormalizeWhitespace().ToFullString();
     }
 
     private sealed class StubSerializerSelector : ISerializerSelector

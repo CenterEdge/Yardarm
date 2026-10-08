@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -90,4 +91,14 @@ public class JsonTypeSerializer : ITypeSerializer
         // ReSharper disable once MethodOverloadWithOptionalParameter
         CancellationToken cancellationToken = default) =>
         new(content.ReadFromJsonAsync<T>(_options, cancellationToken)!);
+
+    public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
+        ISerializationData? serializationData = null)
+        where TSequence : IEnumerable<TElement>
+        => Serialize(value, mediaType, serializationData);
+
+    public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
+        ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+        where TSequence : IEnumerable<TElement>
+        => DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 }

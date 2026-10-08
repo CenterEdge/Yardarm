@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading;
@@ -32,6 +33,16 @@ public class PlainTextSerializer : ITypeSerializer
 
         return Deserialize<T>(value);
     }
+
+    public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
+        ISerializationData? serializationData = null)
+        where TSequence : IEnumerable<TElement>
+        => Serialize(value, mediaType, serializationData);
+
+    public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
+        ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+        where TSequence : IEnumerable<TElement>
+        => DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 
     private static T Deserialize<T>(string value)
     {

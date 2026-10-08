@@ -73,33 +73,52 @@ public static class TypeSerializerRegistryExtensions
         public ValueTask<T> DeserializeAsync<T>(HttpContent content, ISerializationData? serializationData = null,
             // ReSharper disable once MethodOverloadWithOptionalParameter
             CancellationToken cancellationToken = default)
-        {
-            string? mediaType = content.Headers.ContentType?.MediaType;
-
-            if (mediaType is null || !typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
-            {
-                // If there is no exact match by media type, fallback to find a match by schema type
-                if (!typeSerializerRegistry.TryGet(typeof(T), out typeSerializer))
-                {
-                    throw new UnknownMediaTypeException(mediaType, content);
-                }
-            }
-
-            return typeSerializer.DeserializeAsync<T>(content, serializationData, cancellationToken);
-        }
+            => GetSerializer(typeSerializerRegistry, content, typeof(T))
+                .DeserializeAsync<T>(content, serializationData, cancellationToken);
 
         public HttpContent Serialize<T>(T value, string mediaType, ISerializationData? serializationData = null)
-        {
-            if (!typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
-            {
-                // If there is no exact match by media type, fallback to find a match by schema type
-                if (!typeSerializerRegistry.TryGet(typeof(T), out typeSerializer))
-                {
-                    throw new UnknownMediaTypeException(mediaType);
-                }
-            }
+            => GetSerializer(typeSerializerRegistry, mediaType, typeof(T))
+                .Serialize(value, mediaType, serializationData);
 
-            return typeSerializer.Serialize(value, mediaType, serializationData);
+        /// <summary>
+        /// Serializes a sequence of elements with the serializer for the media type.
+        /// </summary>
+        /// <typeparam name="TSequence">The type of the sequence.</typeparam>
+        /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
+        public HttpContent SerializeSequence<TSequence, TElement>(TSequence value, string mediaType,
+            ISerializationData? serializationData = null)
+            where TSequence : IEnumerable<TElement>
+            => GetSerializer(typeSerializerRegistry, mediaType, typeof(TSequence))
+                .SerializeSequence<TSequence, TElement>(value, mediaType, serializationData);
+
+        /// <summary>
+        /// Deserializes a sequence of elements with the serializer for the media type of the content.
+        /// </summary>
+        /// <typeparam name="TSequence">The type of the sequence.</typeparam>
+        /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
+        public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
+            ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
+            where TSequence : IEnumerable<TElement>
+            => GetSerializer(typeSerializerRegistry, content, typeof(TSequence))
+                .DeserializeSequenceAsync<TSequence, TElement>(content, serializationData, cancellationToken);
+    }
+
+    private static ITypeSerializer GetSerializer(ITypeSerializerRegistry typeSerializerRegistry, HttpContent content,
+        Type schemaType)
+        => GetSerializer(typeSerializerRegistry, content.Headers.ContentType?.MediaType, schemaType, content);
+
+    private static ITypeSerializer GetSerializer(ITypeSerializerRegistry typeSerializerRegistry, string? mediaType,
+        Type schemaType, HttpContent? content = null)
+    {
+        if (mediaType is null || !typeSerializerRegistry.TryGet(mediaType, out ITypeSerializer? typeSerializer))
+        {
+            // If there is no exact match by media type, fallback to find a match by schema type
+            if (!typeSerializerRegistry.TryGet(schemaType, out typeSerializer))
+            {
+                throw new UnknownMediaTypeException(mediaType, content);
+            }
         }
+
+        return typeSerializer;
     }
 }

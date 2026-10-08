@@ -146,13 +146,15 @@ item type, which reads items as they arrive rather than waiting for the whole re
 ```cs
 using var response = await api.StreamThingsAsync(new StreamThingsRequest());
 
-await foreach (Thing thing in response.AsOk().GetBodyAsync())
+IAsyncEnumerable<Thing> things = await response.AsOk().GetBodyAsync();
+
+await foreach (Thing thing in things)
 {
     // Handle each thing as it is received
 }
 ```
 
-Calling `GetBodyAsync` returns immediately without waiting for any data, and the response content is not read
+`GetBodyAsync` completes synchronously without waiting for any data, and the response content is not read
 until the first item is requested. The body can only be enumerated once. Keep the response undisposed until
 enumeration is finished. Pass a `CancellationToken` to `GetBodyAsync` or to `WithCancellation` to stop reading.
 If either token is canceled, enumeration stops.

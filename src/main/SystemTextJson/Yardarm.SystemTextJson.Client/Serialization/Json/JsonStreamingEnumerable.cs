@@ -68,22 +68,12 @@ internal sealed class JsonStreamingEnumerable<T> : IAsyncEnumerable<T>
             ?? (cancellationToken.CanBeCanceled ? cancellationToken : _bodyCancellationToken);
 
         // Don't touch the content until the first item is requested
-        using Stream stream = await ReadAsStreamAsync(_content, token).ConfigureAwait(false);
+        using Stream stream = await JsonContentStream.ReadAsUtf8StreamAsync(_content, token).ConfigureAwait(false);
 
         await foreach (T? item in JsonSerializer.DeserializeAsyncEnumerable(stream, _typeInfo, _topLevelValues, token)
             .ConfigureAwait(false))
         {
             yield return item!;
         }
-    }
-
-    private static Task<Stream> ReadAsStreamAsync(HttpContent content, CancellationToken cancellationToken)
-    {
-#if NET5_0_OR_GREATER
-        return content.ReadAsStreamAsync(cancellationToken);
-#else
-        cancellationToken.ThrowIfCancellationRequested();
-        return content.ReadAsStreamAsync();
-#endif
     }
 }

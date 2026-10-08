@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -61,6 +62,20 @@ internal class DefaultResponseBodyResolver(
 
         return new ResponseBodyInfo(mediaType, WellKnownTypes.System.Collections.Generic.IAsyncEnumerableT.Name(itemType),
             itemType, IsStreaming: true);
+    }
+
+    public IEnumerable<(ILocatedOpenApiElement<IOpenApiMediaType> MediaType, double Quality)> GetCompatibleMediaTypes(
+        ILocatedOpenApiElement<IOpenApiResponse> response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        var compatible = response.GetCompatibleMediaTypes(mediaTypeSelector, serializerSelector, context.TypeGeneratorRegistry);
+
+        // Compatibility is determined by the buffered body type, but a streamed body can only be read by serializers
+        // that support streaming. Another media type, such as XML, must not be requested if it can't produce the body.
+        return Resolve(response) is { IsStreaming: true }
+            ? compatible.Where(p => serializerSelector.Select(p.MediaType) is { Descriptor.SupportsStreaming: true })
+            : compatible;
     }
 
     private TypeSyntax? GetStreamingArrayItemType(

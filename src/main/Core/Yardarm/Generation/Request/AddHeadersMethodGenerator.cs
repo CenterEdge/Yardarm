@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Response;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Serialization;
@@ -18,7 +19,8 @@ public class AddHeadersMethodGenerator(
     ISerializerSelector serializerSelector,
     GenerationContext context,
     INameFormatterSelector nameFormatterSelector,
-    ISerializationNamespace serializationNamespace)
+    ISerializationNamespace serializationNamespace,
+    IResponseBodyResolver responseBodyResolver)
     : IRequestMemberGenerator
 {
     public const string AddHeadersMethodName = "AddHeaders";
@@ -86,7 +88,7 @@ public class AddHeadersMethodGenerator(
         // OrderByDescending is stable, so ties keep their order in the spec.
         var acceptedMediaTypes = responseSet
             .GetResponses()
-            .SelectMany(p => p.GetCompatibleMediaTypes(MediaTypeSelector, SerializerSelector, Context.TypeGeneratorRegistry))
+            .SelectMany(p => responseBodyResolver.GetCompatibleMediaTypes(p))
             .Select(p => (p.MediaType.Key, p.Quality))
             .GroupBy(p => p.Key)
             .Select(g => (Key: g.Key, Quality: g.Max(p => p.Quality)))

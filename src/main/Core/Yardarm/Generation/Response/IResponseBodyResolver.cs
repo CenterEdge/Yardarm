@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.OpenApi;
 using Yardarm.Spec;
 
@@ -13,4 +14,11 @@ public interface IResponseBodyResolver
     /// </summary>
     /// <returns>The body, or <c>null</c> if the response has no body that can be deserialized.</returns>
     ResponseBodyInfo? Resolve(ILocatedOpenApiElement<IOpenApiResponse> response);
+
+    /// <summary>
+    /// Gets the media types, with their serializer quality, which the generated response can read as the body
+    /// returned by <see cref="Resolve"/>. For streamed bodies, this excludes media types whose serializer cannot stream.
+    /// </summary>
+    IEnumerable<(ILocatedOpenApiElement<IOpenApiMediaType> MediaType, double Quality)> GetCompatibleMediaTypes(
+        ILocatedOpenApiElement<IOpenApiResponse> response);
 }

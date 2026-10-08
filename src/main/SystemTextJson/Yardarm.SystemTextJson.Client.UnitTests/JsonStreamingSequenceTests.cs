@@ -326,6 +326,80 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
             list.Should().ContainSingle().Which.Id.Should().Be(1);
         }
 
+        [Theory]
+        [InlineData("utf-16", true)]
+        [InlineData("utf-16", false)]
+        [InlineData("utf-16BE", true)]
+        [InlineData("utf-16BE", false)]
+        [InlineData("utf-32", false)]
+        [InlineData("\"utf-16\"", true)]
+        public async Task AsyncEnumerable_NonUtf8Charset_IsTranscoded(string charset, bool jsonLines)
+        {
+            // Arrange
+
+            Encoding encoding = Encoding.GetEncoding(charset.Trim('"'));
+            string body = jsonLines
+                ? "{\"id\":1,\"name\":\"é€\"}\n{\"id\":2,\"name\":\"b\"}\n"
+                : "[{\"id\":1,\"name\":\"é€\"},{\"id\":2,\"name\":\"b\"}]";
+            var content = new ByteArrayContent(encoding.GetBytes(body));
+            content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(
+                $"{(jsonLines ? "application/jsonl" : "application/json")}; charset={charset}");
+
+            // Act
+
+            var result = jsonLines
+                ? await new JsonLinesTypeSerializer(s_options).DeserializeSequenceAsync<IAsyncEnumerable<Item>, Item>(
+                    content, cancellationToken: TestContext.Current.CancellationToken)
+                : await new JsonTypeSerializer(s_options).DeserializeSequenceAsync<IAsyncEnumerable<Item>, Item>(
+                    content, cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            (await ToListAsync(result)).Should().BeEquivalentTo(
+                [new Item { Id = 1, Name = "é€" }, new Item { Id = 2, Name = "b" }]);
+        }
+
+        [Fact]
+        public async Task AsyncEnumerable_Utf16LargeBody_IsTranscodedAcrossReads()
+        {
+            // Arrange
+
+            var items = Enumerable.Range(1, 5000).Select(p => new Item { Id = p, Name = new string('é', 20) }).ToList();
+            string body = string.Join("\n", items.Select(p => JsonSerializer.Serialize(p, s_options))) + "\n";
+            var content = new ByteArrayContent(Encoding.Unicode.GetBytes(body));
+            content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(
+                "application/jsonl; charset=utf-16");
+
+            // Act
+
+            var result = await new JsonLinesTypeSerializer(s_options).DeserializeSequenceAsync<IAsyncEnumerable<Item>, Item>(
+                content, cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            (await ToListAsync(result)).Should().BeEquivalentTo(items, o => o.WithStrictOrdering());
+        }
+
+        [Fact]
+        public async Task AsyncEnumerable_UnsupportedCharset_ThrowsNotSupportedException()
+        {
+            // Arrange
+
+            var content = new StringContent("[]");
+            content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(
+                "application/json; charset=not-a-charset");
+            var result = await new JsonTypeSerializer(s_options).DeserializeSequenceAsync<IAsyncEnumerable<Item>, Item>(
+                content, cancellationToken: TestContext.Current.CancellationToken);
+
+            // Act
+
+            Func<Task> action = async () => await ToListAsync(result);
+
+            // Assert
+
+            await action.Should().ThrowAsync<NotSupportedException>();
+        }
+
         private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> source)
         {
             var list = new List<T>();
@@ -375,6 +449,8 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
         public class Item
         {
             public int Id { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }

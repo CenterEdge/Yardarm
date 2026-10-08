@@ -178,7 +178,8 @@ public class AddHeadersMethodGeneratorTests
             new StubSerializerSelector(),
             serviceProvider.GetRequiredService<GenerationContext>(),
             serviceProvider.GetRequiredService<INameFormatterSelector>(),
-            serviceProvider.GetRequiredService<ISerializationNamespace>());
+            serviceProvider.GetRequiredService<ISerializationNamespace>(),
+            new DefaultResponseBodyResolver(selector, new StubSerializerSelector(), serviceProvider.GetRequiredService<GenerationContext>()));
 
         var method = (MethodDeclarationSyntax)generator.Generate(operation, null).Single();
 

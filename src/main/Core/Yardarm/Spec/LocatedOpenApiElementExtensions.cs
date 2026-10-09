@@ -363,25 +363,35 @@ public static class LocatedOpenApiElementExtensions
 
         /// <summary>
         /// Gets the response which owns the content and headers. For a response which references a component,
-        /// this is the root element of the component, otherwise it is the response itself.
+        /// this is the root element of the concrete component, following chained references. Otherwise it is
+        /// the response itself.
         /// </summary>
-        /// <exception cref="InvalidOperationException">The reference is unresolved or has no ID.</exception>
+        /// <exception cref="InvalidOperationException">A reference is unresolved, has no ID, or is circular.</exception>
         public ILocatedOpenApiElement<IOpenApiResponse> GetPrimaryResponse()
         {
-            if (response.Element is not IOpenApiReferenceHolder referenceHolder)
+            ILocatedOpenApiElement<IOpenApiResponse> current = response;
+            HashSet<IOpenApiResponse>? visited = null;
+
+            while (current.Element is IOpenApiReferenceHolder referenceHolder)
             {
-                return response;
+                if (OpenApiReferenceHolderAccessor.GetTarget(referenceHolder) is not IOpenApiResponse target)
+                {
+                    throw new InvalidOperationException("Response reference target was not resolved.");
+                }
+
+                string referenceId = current.Element.GetReferenceId()
+                    ?? throw new InvalidOperationException("Response reference ID is missing.");
+
+                visited ??= new HashSet<IOpenApiResponse>(ReferenceEqualityComparer.Instance);
+                if (!visited.Add(target))
+                {
+                    throw new InvalidOperationException($"Response reference '{referenceId}' is circular.");
+                }
+
+                current = target.CreateRoot(referenceId);
             }
 
-            if (OpenApiReferenceHolderAccessor.GetTarget(referenceHolder) is not IOpenApiResponse target)
-            {
-                throw new InvalidOperationException("Response reference target was not resolved.");
-            }
-
-            string referenceId = response.Element.GetReferenceId()
-                ?? throw new InvalidOperationException("Response reference ID is missing.");
-
-            return target.CreateRoot(referenceId);
+            return current;
         }
     }
 

@@ -31,7 +31,7 @@ namespace Yardarm.Generation.Response
                 yield break;
             }
 
-            if (response.IsRoot)
+            if (response.IsRoot && response.Element is not IOpenApiReferenceHolder)
             {
                 // this is a component which will be inherited from, it should receive the status code on the constructor
 
@@ -107,6 +107,45 @@ namespace Yardarm.Generation.Response
                         ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                             IdentifierName(ResponseTypeGenerator.BodyFieldName),
                             IdentifierName("body")))));
+            }
+            else if (response.IsRoot)
+            {
+                // This is a component which references another component, it will be inherited from so it should receive the
+                // status code on the constructor and pass the body on to the referenced component
+
+                yield return ConstructorDeclaration(
+                    default,
+                    new SyntaxTokenList(Token(SyntaxKind.ProtectedKeyword)),
+                    Identifier(className),
+                    ParameterList(SeparatedList(new[]
+                    {
+                        Parameter(
+                            default,
+                            default,
+                            WellKnownTypes.System.Net.HttpStatusCode.Name,
+                            Identifier("statusCode"),
+                            null),
+                        Parameter(
+                            default,
+                            default,
+                            bodyType,
+                            Identifier("body"),
+                            null),
+                        Parameter(
+                            default,
+                            default,
+                            NullableType(WellKnownTypes.System.Net.Http.Headers.HttpResponseHeaders.Name),
+                            Identifier("headers"),
+                            EqualsValueClause(LiteralExpression(SyntaxKind.NullLiteralExpression)))
+                    })),
+                    ConstructorInitializer(SyntaxKind.BaseConstructorInitializer,
+                        ArgumentList(SeparatedList(new[]
+                        {
+                            Argument(IdentifierName("statusCode")),
+                            Argument(IdentifierName("body")),
+                            Argument(IdentifierName("headers"))
+                        }))),
+                    Block());
             }
             else
             {

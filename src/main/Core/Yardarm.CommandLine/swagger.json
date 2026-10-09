@@ -3635,6 +3635,24 @@
         ]
       }
     },
+    "/api/v1/configuration/status/alias": {
+      "get": {
+        "tags": [
+          "Refresh"
+        ],
+        "operationId": "getConfigurationStatusAlias",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ConfigurationStatusAlias"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/activities/{activityId}/reservations": {
       "post": {
         "tags": [
@@ -12190,6 +12208,9 @@
       }
     },
     "responses": {
+      "ConfigurationStatusAlias": {
+        "$ref": "#/components/responses/ConfigurationStatus"
+      },
       "ConfigurationStatus": {
         "description": "Success",
         "content": {

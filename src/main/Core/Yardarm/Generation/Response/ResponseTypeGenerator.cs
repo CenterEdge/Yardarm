@@ -54,7 +54,7 @@ namespace Yardarm.Generation.Response
         {
             string className = GetClassName();
 
-            bool isPrimaryImplementation = Element.IsRoot || !Element.IsReference;
+            bool isPrimaryImplementation = !Element.IsReference;
 
             // For non-primary implementations (referencing a response in the components section),
             // inherit from the primary implementation

@@ -148,6 +148,131 @@ public class ResponseTypeGeneratorTests
         result.Should().BeSameAs(component);
     }
 
+    private const string ChainedReferenceDocument = """
+        {
+          "openapi": "3.2.0",
+          "info": {
+            "title": "Test",
+            "version": "1.0"
+          },
+          "paths": {
+            "/things": {
+              "get": {
+                "operationId": "listThings",
+                "responses": {
+                  "200": {
+                    "$ref": "#/components/responses/Alias"
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "responses": {
+              "Alias": {
+                "$ref": "#/components/responses/Things"
+              },
+              "Things": {
+                "description": "OK",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """;
+
+    [Fact]
+    public void Generate_ChainedResponseReferences_UsesConcreteComponentModel()
+    {
+        // Arrange
+
+        OpenApiDocument document = OpenApiDocument.Parse(ChainedReferenceDocument, "json", new OpenApiReaderSettings()).Document;
+        var registry = new YardarmGenerationSettings()
+            .AddExtension<JsonSerializerExtension>()
+            .BuildServiceProvider(document)
+            .GetRequiredService<ITypeGeneratorRegistry>();
+
+        var operationResponse = document.Paths.ToLocatedElements().GetOperations().Single()
+            .GetResponseSet().GetResponses().Single();
+        var aliasResponse = document.Components!.Responses!.CreateRoot().Single(p => p.Key == "Alias");
+
+        // Act
+
+        var operationDeclaration = registry.Get(operationResponse).Generate().OfType<ClassDeclarationSyntax>().Single();
+        var aliasDeclaration = registry.Get(aliasResponse).Generate().OfType<ClassDeclarationSyntax>().Single();
+
+        // Assert
+
+        GetBodyParameterType(operationDeclaration).Should().EndWith("ThingsResponse.SchemaModel");
+        GetBodyParameterType(aliasDeclaration).Should().Be(GetBodyParameterType(operationDeclaration));
+        operationDeclaration.Members.OfType<ClassDeclarationSyntax>().Should().BeEmpty();
+        aliasDeclaration.Members.OfType<ClassDeclarationSyntax>().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetPrimaryResponse_ChainedReferences_ReturnsConcreteComponentRoot()
+    {
+        // Arrange
+
+        OpenApiDocument document = OpenApiDocument.Parse(ChainedReferenceDocument, "json", new OpenApiReaderSettings()).Document;
+        var operationResponse = document.Paths.ToLocatedElements().GetOperations().Single()
+            .GetResponseSet().GetResponses().Single();
+        var aliasResponse = document.Components!.Responses!.CreateRoot().Single(p => p.Key == "Alias");
+
+        // Act
+
+        var fromOperation = operationResponse.GetPrimaryResponse();
+        var fromAlias = aliasResponse.GetPrimaryResponse();
+
+        // Assert
+
+        fromOperation.Key.Should().Be("Things");
+        fromAlias.Key.Should().Be("Things");
+        fromOperation.Element.Should().BeSameAs(fromAlias.Element);
+    }
+
+    [Fact]
+    public void GetPrimaryResponse_CircularReferences_Throws()
+    {
+        // Arrange
+
+        const string documentText = """
+            {
+              "openapi": "3.2.0",
+              "info": { "title": "Test", "version": "1.0" },
+              "paths": {},
+              "components": {
+                "responses": {
+                  "A": { "$ref": "#/components/responses/B" },
+                  "B": { "$ref": "#/components/responses/A" }
+                }
+              }
+            }
+            """;
+
+        OpenApiDocument document = OpenApiDocument.Parse(documentText, "json", new OpenApiReaderSettings()).Document;
+        var response = document.Components!.Responses!.CreateRoot().First();
+
+        // Act
+
+        var act = () => response.GetPrimaryResponse();
+
+        // Assert
+
+        act.Should().Throw<System.InvalidOperationException>().WithMessage("*circular*");
+    }
+
     private static (ITypeGeneratorRegistry Registry, ILocatedOpenApiElement<IOpenApiResponse> Response,
         ILocatedOpenApiElement<IOpenApiResponse> Component) Setup()
     {

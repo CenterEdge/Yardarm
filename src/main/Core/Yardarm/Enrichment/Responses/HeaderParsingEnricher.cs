@@ -40,7 +40,7 @@ namespace Yardarm.Enrichment.Responses
         /// <param name="response"></param>
         /// <returns></returns>
         private static bool IsBaseResponseClass(ILocatedOpenApiElement<IOpenApiResponse> response) =>
-            response.IsRoot || response.Element is not IOpenApiReferenceHolder;
+            response.Element is not IOpenApiReferenceHolder;
 
         public MethodDeclarationSyntax GenerateMethod(ILocatedOpenApiElement<IOpenApiResponse> response) =>
             MethodDeclaration(

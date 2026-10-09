@@ -23,7 +23,8 @@ public class MixedStreamingCapabilityTests
 {
     private const string Accept = "requestMessage.Headers.Accept.Add(new global::System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(";
 
-    // application/xml is handled by a serializer that reads List<T> but cannot stream
+    // application/xml is handled by a serializer that reads List<T> but cannot stream. When includeBufferedErrorResponse
+    // is set, a 400 response also offers application/xml, which is buffered and so is compatible with that response.
     private static string GetDocument(bool streaming, bool includeBufferedErrorResponse) => $$"""
         {
           "openapi": "3.2.0",
@@ -87,16 +88,20 @@ public class MixedStreamingCapabilityTests
     }
 
     [Fact]
-    public void GenerateAccept_StreamedBodyWithBufferedErrorResponse_ExcludesMediaTypeWhichCannotStreamGlobally()
+    public void GenerateAccept_OtherResponseOffersMediaTypeExcludedForStreamedBody_UnionsAcrossResponses()
     {
-        // The 400 response is buffered, so XML is compatible with it, but XML can't be read as the streamed 200 body.
+        // XML can't be read as the streamed 200 body, so it is excluded for that response. However, the 400 response
+        // only offers XML, so it must still be advertised or the 400 response couldn't be received. Filtering by .NET
+        // type applies within a single response, the header is the union across responses. This means the server could
+        // choose XML for the 200 response, which is a known limitation.
         var (operation, serviceProvider) = Load(streaming: true, includeBufferedErrorResponse: true);
 
         string[] accept = GenerateAccept(operation, serviceProvider);
 
         accept.Should().Equal(
             $"{Accept}\"application/json\", 1));",
-            $"{Accept}\"application/jsonl\", 0.8));");
+            $"{Accept}\"application/jsonl\", 0.8));",
+            $"{Accept}\"application/xml\", 0.5));");
     }
 
     [Fact]

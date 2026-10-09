@@ -83,28 +83,24 @@ public class AddHeadersMethodGenerator(
             .First();
 
         // Accept every media type supported by both the operation and the configured serializers, highest quality first.
-        // Only media types that the generated response reads with the same body type as its selected media type are
-        // included, since the response class is generated from only the selected media type.
-        // The server picks a media type for the whole operation without knowing which response it will return, so a
-        // media type is excluded if any response which declares it cannot read it as that response's body. Otherwise
-        // a media type that is safe for one response, such as a buffered 400, could be returned for another, such as a
-        // streamed 200 with a serializer which doesn't support streaming.
+        //
+        // Each response code has a single .NET body type, generated from the media type selected for that response, so
+        // filtering based on the .NET type applies only within a single response. A media type is included for a response
+        // only if it can be read as that response's body type, for example a media type whose serializer can't stream is
+        // excluded for a response with an IAsyncEnumerable<T> body. The header is then the union, with the highest
+        // quality, across all responses. Different response codes may offer a different mix of media types, such as a
+        // 404 which only offers XML, and omitting a media type that any response needs would prevent receiving that response.
+        //
+        // This is a known limitation: a media type which is only acceptable for one response may be advertised for the
+        // whole operation, so the server could choose it for a response which can't read it. For example, a 200 response
+        // may stream application/jsonl as IAsyncEnumerable<T> while application/xml is only List<T>, and XML is advertised
+        // because a 404 response only offers XML. We accept this risk, since servers rarely choose a lower quality format
+        // when the preferred one is available. Lowering the quality of such media types could mitigate this.
+        //
         // OrderByDescending is stable, so ties keep their order in the spec.
-        var compatibleMediaTypes = responseSet
+        var acceptedMediaTypes = responseSet
             .GetResponses()
-            .Select(p => (Response: p, Compatible: responseBodyResolver.GetCompatibleMediaTypes(p).ToList()))
-            .ToList();
-
-        HashSet<string> unsafeMediaTypes = compatibleMediaTypes
-            .SelectMany(p => p.Response.GetMediaTypes()
-                .Where(m => (SerializerSelector.Select(m)?.Quality ?? 0.0) > 0)
-                .Select(m => m.Key)
-                .Except(p.Compatible.Select(c => c.MediaType.Key)))
-            .ToHashSet();
-
-        var acceptedMediaTypes = compatibleMediaTypes
-            .SelectMany(p => p.Compatible)
-            .Where(p => !unsafeMediaTypes.Contains(p.MediaType.Key))
+            .SelectMany(p => responseBodyResolver.GetCompatibleMediaTypes(p))
             .Select(p => (p.MediaType.Key, p.Quality))
             .GroupBy(p => p.Key)
             .Select(g => (Key: g.Key, Quality: g.Max(p => p.Quality)))

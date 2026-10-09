@@ -25,7 +25,8 @@ namespace Yardarm.Generation.Response
         ISerializationNamespace serializationNamespace,
         IResponsesNamespace responsesNamespace,
         IEnumerable<IResponseMethodGenerator> methodGenerators,
-        IOperationNameProvider operationNameProvider)
+        IOperationNameProvider operationNameProvider,
+        IResponseBodyResolver responseBodyResolver)
         : TypeGeneratorBase<IOpenApiResponse>(responseElement, context, null)
     {
         public const string BodyFieldName = "_body";
@@ -216,20 +217,20 @@ namespace Yardarm.Generation.Response
 
         private (TypeSyntax? bodyType, ITypeGenerator? schemaGenerator, bool isReference) GetSchemaGenerator()
         {
-            ILocatedOpenApiElement<IOpenApiMediaType>? mediaType = MediaTypeSelector.Select(Element);
-            if (mediaType == null)
+            ResponseBodyInfo? body = responseBodyResolver.Resolve(Element);
+            if (body == null)
             {
                 return (null, null, false);
             }
 
-            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = mediaType.GetBodySchema();
+            ILocatedOpenApiElement<IOpenApiSchema>? schemaElement = body.MediaType.GetBodySchema();
             if (schemaElement == null)
             {
                 return (null, null, false);
             }
 
             return (
-                mediaType.GetBodyType(Context.TypeGeneratorRegistry),
+                body.BodyType,
                 Context.TypeGeneratorRegistry.Get(schemaElement),
                 schemaElement.Element is IOpenApiReferenceHolder);
         }

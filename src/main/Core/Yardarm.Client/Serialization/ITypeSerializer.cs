@@ -58,7 +58,10 @@ public interface ITypeSerializer
     /// <summary>
     /// Deserializes a sequence of elements.
     /// </summary>
-    /// <typeparam name="TSequence">The type of the sequence.</typeparam>
+    /// <typeparam name="TSequence">The type of the sequence. This is not constrained to <see cref="IEnumerable{T}"/>
+    /// so that serializers may support other sequence types, such as <c>IAsyncEnumerable&lt;TElement&gt;</c>, which
+    /// is returned without waiting for the content to be read. Serializers which do not support the sequence
+    /// type should fall back to <see cref="DeserializeAsync{T}(HttpContent, ISerializationData?, CancellationToken)"/>.</typeparam>
     /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
     /// <param name="content">The content to deserialize.</param>
     /// <param name="serializationData">Additional data for deserialization.</param>
@@ -66,7 +69,6 @@ public interface ITypeSerializer
     /// <returns>The deserialized sequence.</returns>
     ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        where TSequence : IEnumerable<TElement>
 #if NETCOREAPP3_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     {
         return DeserializeAsync<TSequence>(content, serializationData, cancellationToken);

@@ -246,6 +246,70 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
             await action.Should().ThrowAsync<OperationCanceledException>();
         }
 
+        [Theory]
+        [InlineData("utf-16")]
+        [InlineData("utf-16BE")]
+        [InlineData("utf-32")]
+        [InlineData("\"utf-16\"")]
+        public async Task JsonLines_DeserializeSequenceAsyncNonUtf8Charset_IsTranscoded(string charset)
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+            var content = CreateContent("{\"id\":1,\"name\":\"é€\"}\n{\"id\":2,\"name\":\"b\"}\n", charset);
+
+            // Act
+
+            var list = await serializer.DeserializeSequenceAsync<List<Item>, Item>(content,
+                cancellationToken: TestContext.Current.CancellationToken);
+            var array = await serializer.DeserializeSequenceAsync<Item[], Item>(
+                CreateContent("{\"id\":1,\"name\":\"é€\"}\n", charset),
+                cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            list.Should().BeEquivalentTo([new Item { Id = 1, Name = "é€" }, new Item { Id = 2, Name = "b" }]);
+            array.Should().BeEquivalentTo([new Item { Id = 1, Name = "é€" }]);
+        }
+
+        [Theory]
+        [InlineData("utf-16")]
+        [InlineData("utf-16BE")]
+        public async Task JsonLines_DeserializeAsyncNonUtf8Charset_IsTranscoded(string charset)
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+            var content = CreateContent("{\"id\":1,\"name\":\"é€\"}\n", charset);
+
+            // Act
+
+            var result = await serializer.DeserializeAsync<Item>(content,
+                cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            result.Should().BeEquivalentTo(new Item { Id = 1, Name = "é€" });
+        }
+
+        [Fact]
+        public async Task JsonLines_DeserializeSequenceAsyncUnsupportedCharset_ThrowsNotSupportedException()
+        {
+            // Arrange
+
+            var serializer = new JsonLinesTypeSerializer(s_options);
+            var content = CreateContent("{\"id\":1}\n", "not-a-charset", Encoding.UTF8);
+
+            // Act
+
+            Func<Task> action = async () => await serializer.DeserializeSequenceAsync<List<Item>, Item>(content,
+                cancellationToken: TestContext.Current.CancellationToken);
+
+            // Assert
+
+            await action.Should().ThrowAsync<NotSupportedException>();
+        }
+
         #endregion
 
         #region Round trips
@@ -295,6 +359,14 @@ namespace Yardarm.SystemTextJson.Client.UnitTests
         #endregion
 
         #region Helpers
+
+        private static HttpContent CreateContent(string body, string charset, Encoding encoding = null)
+        {
+            var content = new ByteArrayContent((encoding ?? Encoding.GetEncoding(charset.Trim('"'))).GetBytes(body));
+            content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(
+                $"application/jsonl; charset={charset}");
+            return content;
+        }
 
         // Simulates a response, whose content is buffered before it is read
         private static async Task<HttpContent> BufferAsync(HttpContent content)

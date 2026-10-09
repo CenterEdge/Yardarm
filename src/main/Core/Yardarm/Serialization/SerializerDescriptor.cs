@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -12,7 +12,19 @@ namespace Yardarm.Serialization
 
         public TypeSyntax SerializerType { get; }
 
+        /// <summary>
+        /// If true, the serializer supports deserializing list bodies as <c>IAsyncEnumerable&lt;T&gt;</c> via
+        /// <c>DeserializeSequenceAsync</c>, which allows response bodies to be streamed.
+        /// </summary>
+        public bool SupportsStreaming { get; }
+
         public SerializerDescriptor(IImmutableSet<SerializerMediaType> mediaTypes, string nameSegment, TypeSyntax serializerType)
+            : this(mediaTypes, nameSegment, serializerType, supportsStreaming: false)
+        {
+        }
+
+        public SerializerDescriptor(IImmutableSet<SerializerMediaType> mediaTypes, string nameSegment, TypeSyntax serializerType,
+            bool supportsStreaming)
         {
             ArgumentNullException.ThrowIfNull(mediaTypes);
             ArgumentNullException.ThrowIfNull(nameSegment);
@@ -21,6 +33,7 @@ namespace Yardarm.Serialization
             MediaTypes = mediaTypes;
             NameSegment = nameSegment;
             SerializerType = serializerType;
+            SupportsStreaming = supportsStreaming;
         }
     }
 }

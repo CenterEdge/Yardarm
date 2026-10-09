@@ -38,20 +38,5 @@ internal static class CompatibleMediaTypeExtensions
                     && p.MediaType.GetBodyType(typeGeneratorRegistry) is { } bodyType
                     && bodyType.IsEquivalentTo(selectedBodyType));
         }
-
-        /// <summary>
-        /// Gets the item type if the response body may be a sequential media type, such as JSON Lines, either because
-        /// it is the selected media type or because a compatible media type is one. Such bodies must be read with
-        /// sequence deserialization, which also reads the other compatible media types, since the serializer is chosen
-        /// from the <c>Content-Type</c> of the received response.
-        /// </summary>
-        public TypeSyntax? GetSequenceItemType(
-            IMediaTypeSelector mediaTypeSelector,
-            ISerializerSelector serializerSelector,
-            ITypeGeneratorRegistry typeGeneratorRegistry) =>
-            mediaTypeSelector.Select(response)?.GetItemType(typeGeneratorRegistry)
-                ?? response.GetCompatibleMediaTypes(mediaTypeSelector, serializerSelector, typeGeneratorRegistry)
-                    .Select(p => p.MediaType.GetItemType(typeGeneratorRegistry))
-                    .FirstOrDefault(p => p is not null);
     }
 }

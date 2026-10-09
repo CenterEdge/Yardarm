@@ -75,6 +75,16 @@ namespace Yardarm.Helpers
                                     TypeArgumentList(SeparatedList(new [] {keyType, valueType}))));
                     }
 
+                    public static class IAsyncEnumerableT
+                    {
+                        public static NameSyntax Name(TypeSyntax itemType) =>
+                            QualifiedName(
+                                Generic.Name,
+                                GenericName(
+                                    Identifier("IAsyncEnumerable"),
+                                    TypeArgumentList(SingletonSeparatedList(itemType))));
+                    }
+
                     public static class IEnumerableT
                     {
                         public static NameSyntax Name(TypeSyntax itemType) =>

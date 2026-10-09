@@ -101,7 +101,8 @@ public class JsonLinesTypeSerializer : ITypeSerializer
     {
         ArgumentNullException.ThrowIfNull(content);
 
-        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
+        // Transcodes to UTF-8 if the response declares another charset
+        using Stream stream = await JsonContentStream.ReadAsUtf8StreamAsync(content, cancellationToken).ConfigureAwait(false);
 
         return (await JsonSerializer.DeserializeAsync(stream, (JsonTypeInfo<T>)_options.GetTypeInfo(typeof(T)),
             cancellationToken).ConfigureAwait(false))!;
@@ -119,20 +120,32 @@ public class JsonLinesTypeSerializer : ITypeSerializer
     /// <summary>
     /// Deserializes each JSON Lines record as an element of a sequence.
     /// </summary>
+    /// <remarks>
+    /// If <typeparamref name="TSequence"/> is <see cref="IAsyncEnumerable{T}"/> of <typeparamref name="TElement"/>, the
+    /// result is returned immediately and the content isn't read until the first item is enumerated. Other supported
+    /// sequence types are read completely before returning.
+    /// </remarks>
     /// <exception cref="NotSupportedException"><typeparamref name="TSequence"/> is not
-    /// <see cref="List{T}"/>, an array or <see cref="IEnumerable{T}"/> of <typeparamref name="TElement"/>.</exception>
+    /// <see cref="List{T}"/>, an array, <see cref="IEnumerable{T}"/> or <see cref="IAsyncEnumerable{T}"/> of
+    /// <typeparamref name="TElement"/>.</exception>
     public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        where TSequence : IEnumerable<TElement>
     {
         ArgumentNullException.ThrowIfNull(content);
+
+        if (typeof(TSequence) == typeof(IAsyncEnumerable<TElement>))
+        {
+            return new((TSequence)(object)new JsonStreamingEnumerable<TElement>(content,
+                (JsonTypeInfo<TElement>)_options.GetTypeInfo(typeof(TElement)), topLevelValues: true,
+                cancellationToken));
+        }
 
         if (typeof(TSequence) != typeof(List<TElement>)
             && typeof(TSequence) != typeof(TElement[])
             && typeof(TSequence) != typeof(IEnumerable<TElement>))
         {
             ThrowHelper.ThrowNotSupportedException(
-                $"JSON Lines deserialization of {typeof(TSequence)} is not supported. Use List<T>, T[] or IEnumerable<T>.");
+                $"JSON Lines deserialization of {typeof(TSequence)} is not supported. Use List<T>, T[], IEnumerable<T> or IAsyncEnumerable<T>.");
         }
 
         return DeserializeSequenceCoreAsync<TSequence, TElement>(content, cancellationToken);
@@ -140,9 +153,9 @@ public class JsonLinesTypeSerializer : ITypeSerializer
 
     private async ValueTask<TSequence> DeserializeSequenceCoreAsync<TSequence, TElement>(HttpContent content,
         CancellationToken cancellationToken)
-        where TSequence : IEnumerable<TElement>
     {
-        Stream stream = await ReadAsStreamAsync(content, cancellationToken).ConfigureAwait(false);
+        // Transcodes to UTF-8 if the response declares another charset
+        using Stream stream = await JsonContentStream.ReadAsUtf8StreamAsync(content, cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<TElement?> elements = JsonSerializer.DeserializeAsyncEnumerable(stream,
             (JsonTypeInfo<TElement>)_options.GetTypeInfo(typeof(TElement)), topLevelValues: true, cancellationToken);
@@ -156,14 +169,4 @@ public class JsonLinesTypeSerializer : ITypeSerializer
 
     private static MediaTypeHeaderValue CreateMediaType(string mediaType)
         => new(mediaType) { CharSet = Encoding.UTF8.WebName };
-
-    private static Task<Stream> ReadAsStreamAsync(HttpContent content, CancellationToken cancellationToken)
-    {
-#if NET5_0_OR_GREATER
-        return content.ReadAsStreamAsync(cancellationToken);
-#else
-        cancellationToken.ThrowIfCancellationRequested();
-        return content.ReadAsStreamAsync();
-#endif
-    }
 }

@@ -41,7 +41,6 @@ public class PlainTextSerializer : ITypeSerializer
 
     public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
         ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-        where TSequence : IEnumerable<TElement>
         => DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 
     private static T Deserialize<T>(string value)

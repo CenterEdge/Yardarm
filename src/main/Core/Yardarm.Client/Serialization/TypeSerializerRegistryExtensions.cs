@@ -98,7 +98,6 @@ public static class TypeSerializerRegistryExtensions
         /// <typeparam name="TElement">The type of each element of the sequence.</typeparam>
         public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
             ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-            where TSequence : IEnumerable<TElement>
             => GetSerializer(typeSerializerRegistry, content, typeof(TSequence))
                 .DeserializeSequenceAsync<TSequence, TElement>(content, serializationData, cancellationToken);
     }

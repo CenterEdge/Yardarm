@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
 using Yardarm.Generation.Operation;
+using Yardarm.Generation.Response;
 using Yardarm.Generation.Request.Internal;
 using Yardarm.Helpers;
 using Yardarm.Names;
@@ -24,7 +25,8 @@ namespace Yardarm.Generation.Request
         IEnumerable<IRequestMemberGenerator> memberGenerators,
         IRequestsNamespace requestsNamespace,
         ISerializerSelector serializerSelector,
-        IOperationNameProvider operationNameProvider)
+        IOperationNameProvider operationNameProvider,
+        IResponseBodyResolver responseBodyResolver)
         : TypeGeneratorBase<OpenApiOperation>(operationElement, context, null)
     {
         protected IMediaTypeSelector MediaTypeSelector { get; } = mediaTypeSelector;
@@ -61,6 +63,19 @@ namespace Yardarm.Generation.Request
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
                 .AddBaseListTypes(SimpleBaseType(RequestsNamespace.OperationRequest));
 
+            if (HasStreamingResponse())
+            {
+                // Return response headers without waiting for the body, which is read as it is enumerated. Derived
+                // media type requests inherit this through their default constructor.
+                declaration = declaration.AddMembers(
+                    ConstructorDeclaration(className)
+                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                        .WithBody(Block(ExpressionStatement(
+                            AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName("EnableResponseStreaming"),
+                                LiteralExpression(SyntaxKind.TrueLiteralExpression))))));
+            }
+
             declaration = declaration.AddMembers(
                 GenerateParameterProperties(className)
                     .Concat(MemberGenerators
@@ -80,6 +95,9 @@ namespace Yardarm.Generation.Request
                 }
             }
         }
+
+        private bool HasStreamingResponse() =>
+            Element.GetResponseSet().GetResponses().Any(p => responseBodyResolver.Resolve(p)?.IsStreaming == true);
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateParameterProperties(string className)
         {

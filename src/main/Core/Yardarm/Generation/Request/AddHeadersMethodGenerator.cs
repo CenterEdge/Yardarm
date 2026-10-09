@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Generation.MediaType;
+using Yardarm.Generation.Response;
 using Yardarm.Helpers;
 using Yardarm.Names;
 using Yardarm.Serialization;
@@ -18,7 +19,8 @@ public class AddHeadersMethodGenerator(
     ISerializerSelector serializerSelector,
     GenerationContext context,
     INameFormatterSelector nameFormatterSelector,
-    ISerializationNamespace serializationNamespace)
+    ISerializationNamespace serializationNamespace,
+    IResponseBodyResolver responseBodyResolver)
     : IRequestMemberGenerator
 {
     public const string AddHeadersMethodName = "AddHeaders";
@@ -81,12 +83,24 @@ public class AddHeadersMethodGenerator(
             .First();
 
         // Accept every media type supported by both the operation and the configured serializers, highest quality first.
-        // Only media types that the generated response reads with the same body type as its selected media type are
-        // included, since the response class is generated from only the selected media type.
+        //
+        // Each response code has a single .NET body type, generated from the media type selected for that response, so
+        // filtering based on the .NET type applies only within a single response. A media type is included for a response
+        // only if it can be read as that response's body type, for example a media type whose serializer can't stream is
+        // excluded for a response with an IAsyncEnumerable<T> body. The header is then the union, with the highest
+        // quality, across all responses. Different response codes may offer a different mix of media types, such as a
+        // 404 which only offers XML, and omitting a media type that any response needs would prevent receiving that response.
+        //
+        // This is a known limitation: a media type which is only acceptable for one response may be advertised for the
+        // whole operation, so the server could choose it for a response which can't read it. For example, a 200 response
+        // may stream application/jsonl as IAsyncEnumerable<T> while application/xml is only List<T>, and XML is advertised
+        // because a 404 response only offers XML. We accept this risk, since servers rarely choose a lower quality format
+        // when the preferred one is available. Lowering the quality of such media types could mitigate this.
+        //
         // OrderByDescending is stable, so ties keep their order in the spec.
         var acceptedMediaTypes = responseSet
             .GetResponses()
-            .SelectMany(p => p.GetCompatibleMediaTypes(MediaTypeSelector, SerializerSelector, Context.TypeGeneratorRegistry))
+            .SelectMany(p => responseBodyResolver.GetCompatibleMediaTypes(p))
             .Select(p => (p.MediaType.Key, p.Quality))
             .GroupBy(p => p.Key)
             .Select(g => (Key: g.Key, Quality: g.Max(p => p.Quality)))

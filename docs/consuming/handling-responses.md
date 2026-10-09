@@ -137,27 +137,73 @@ for the response type. Exceptions may occur if the server returns one of the oth
 
 Different schemas based on the status code are fully supported.
 
-## JSON Lines
+## JSON Lines and streaming
 
 Media types that use `itemSchema`, such as `application/jsonl` and `application/x-ndjson`, are supported
-with the System.Text.Json extension. The body is a `List<T>` of the item type, the same type an array schema
-produces. Each line is one item.
+with the System.Text.Json extension. Each line is one item. The body is an `IAsyncEnumerable<T>` of the
+item type, which reads items as they arrive rather than waiting for the whole response.
 
 ```cs
 using var response = await api.StreamThingsAsync(new StreamThingsRequest());
 
-List<Thing> things = await response.AsOk().GetBodyAsync();
+IAsyncEnumerable<Thing> things = await response.AsOk().GetBodyAsync();
+
+await foreach (Thing thing in things)
+{
+    // Handle each thing as it is received
+}
 ```
 
-When a response offers both JSON and JSON Lines, Yardarm uses JSON. JSON Lines request bodies use a separate
-`{Operation}JsonLinesRequest` class, with a `List<T>` `Body` property.
+`GetBodyAsync` completes synchronously without waiting for any data, and the response content is not read
+until the first item is requested. The body can only be enumerated once. Keep the response undisposed until
+enumeration is finished. Pass a `CancellationToken` to `GetBodyAsync` or to `WithCancellation` to stop reading.
+If either token is canceled, enumeration stops.
 
-The whole body is held in memory: responses are read fully before they are deserialized.
-For OpenAPI 3.0 and 3.1, use the `x-oai-itemSchema` extension in place of `itemSchema`.
+Requests for operations with a streamed response default `EnableResponseStreaming` to `true`, so the response
+headers are returned as soon as they are received. Setting it to `false` still produces the same
+`IAsyncEnumerable<T>`, but the full response is buffered before the first item is returned.
 
-The Newtonsoft.Json extension does not support JSON Lines. JSON Lines media types are not selected, so
+### Streaming JSON arrays
+
+A response with a plain JSON array schema is a `List<T>` by default. To stream it as an
+`IAsyncEnumerable<T>`, add the `x-yardarm-streaming: true` extension to the media type, beside the `schema`:
+
+```yaml
+paths:
+  /things:
+    get:
+      operationId: listThings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              x-yardarm-streaming: true
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Thing'
+```
+
+The array is read incrementally, so the response should be an array at the root of the body. The extension
+applies to the media type it is on, including media types of responses in `components/responses`, and it is ignored for
+media types that are not arrays.
+
+### Other details
+
+- When a response offers both JSON and JSON Lines, Yardarm uses JSON, which is a `List<T>` unless
+  `x-yardarm-streaming` is set on the media type.
+- JSON Lines request bodies use a separate `{Operation}JsonLinesRequest` class, with a `List<T>` `Body` property.
+- For OpenAPI 3.0 and 3.1, use the `x-oai-itemSchema` extension in place of `itemSchema`.
+- JSON and JSON Lines responses with a charset other than UTF-8, such as `charset=utf-16`, are transcoded as they are read.
+  This requires .NET 5 or later. On `netstandard2.0` only UTF-8 is supported and other charsets throw `NotSupportedException`.
+- A custom `ITypeSerializer` can support streaming by handling `IAsyncEnumerable<TElement>` as the `TSequence` type in
+  `DeserializeSequenceAsync`, and by setting `SupportsStreaming` on its `SerializerDescriptor`.
+
+The Newtonsoft.Json extension does not support JSON Lines or streaming. JSON Lines media types are not selected, so
 responses that only offer JSON Lines have no typed body, and JSON Lines requests use an
-`{Operation}HttpContentRequest` class with an `HttpContent` `Body` property.
+`{Operation}HttpContentRequest` class with an `HttpContent` `Body` property. Array responses remain a
+`List<T>`, and `x-yardarm-streaming` is ignored.
 
 ## Disposing
 

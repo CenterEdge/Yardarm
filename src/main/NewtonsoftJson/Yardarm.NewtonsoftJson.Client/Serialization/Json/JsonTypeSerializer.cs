@@ -81,7 +81,6 @@ namespace RootNamespace.Serialization.Json
 
         public ValueTask<TSequence> DeserializeSequenceAsync<TSequence, TElement>(HttpContent content,
             ISerializationData? serializationData = null, CancellationToken cancellationToken = default)
-            where TSequence : IEnumerable<TElement>
             => DeserializeAsync<TSequence>(content, serializationData, cancellationToken);
 
         private static JsonSerializerSettings CreateDefaultSettings()

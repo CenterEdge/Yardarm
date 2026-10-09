@@ -42,26 +42,28 @@ internal class DefaultResponseBodyResolver(
             return null;
         }
 
-        // Includes compatible media types which aren't selected, since the serializer is chosen by the Content-Type of the
-        // received response and the Accept header may request a sequential media type
-        TypeSyntax? sequenceItemType = response.GetSequenceItemType(mediaTypeSelector, serializerSelector,
-            context.TypeGeneratorRegistry);
-
-        if (serializerSelector.Select(mediaType) is not { Descriptor.SupportsStreaming: true })
-        {
-            return new ResponseBodyInfo(mediaType, bodyType, sequenceItemType, IsStreaming: false);
-        }
-
-        // Media types with an itemSchema always stream, arrays must opt in
-        TypeSyntax? itemType = mediaType.GetItemType(context.TypeGeneratorRegistry)
-            ?? GetStreamingArrayItemType(mediaType, bodyType);
+        TypeSyntax? itemType = GetListItemType(mediaType);
         if (itemType is null)
         {
-            return new ResponseBodyInfo(mediaType, bodyType, sequenceItemType, IsStreaming: false);
+            return ResponseBodyInfo.ForNonList(mediaType, bodyType);
         }
 
-        return new ResponseBodyInfo(mediaType, WellKnownTypes.System.Collections.Generic.IAsyncEnumerableT.Name(itemType),
-            itemType, IsStreaming: true);
+        // Media types with an itemSchema, such as JSON Lines, always stream, arrays must opt in. The serializer must
+        // also support streaming.
+        bool isStreaming = (mediaType.GetItemSchema() is not null || HasStreamingExtension(mediaType))
+            && serializerSelector.Select(mediaType) is { Descriptor.SupportsStreaming: true };
+
+        // Includes compatible media types which aren't selected, since the serializer is chosen by the Content-Type of the
+        // received response and the Accept header may request a sequential media type
+        bool hasSequentialMediaType = response.GetSequenceItemType(mediaTypeSelector, serializerSelector,
+            context.TypeGeneratorRegistry) is not null;
+
+        return ResponseBodyInfo.ForList(
+            mediaType,
+            isStreaming ? WellKnownTypes.System.Collections.Generic.IAsyncEnumerableT.Name(itemType) : bodyType,
+            itemType,
+            isStreaming,
+            hasSequentialMediaType);
     }
 
     public IEnumerable<(ILocatedOpenApiElement<IOpenApiMediaType> MediaType, double Quality)> GetCompatibleMediaTypes(
@@ -78,21 +80,17 @@ internal class DefaultResponseBodyResolver(
             : compatible;
     }
 
-    private TypeSyntax? GetStreamingArrayItemType(
-        ILocatedOpenApiElement<IOpenApiMediaType> mediaType, TypeSyntax bodyType)
+    // Gets the item type of a list body, which is an array schema or a media type with an itemSchema. The item type
+    // comes from the schema, not from the generated body type, so it doesn't depend on how the list is represented.
+    private TypeSyntax? GetListItemType(ILocatedOpenApiElement<IOpenApiMediaType> mediaType)
     {
-        if (!HasStreamingExtension(mediaType)
-            || mediaType.GetSchema() is not { } schema
-            || !schema.Element.IsType(JsonSchemaType.Array))
+        if (mediaType.GetItemType(context.TypeGeneratorRegistry) is { } itemType)
         {
-            return null;
+            return itemType;
         }
 
-        // Ensure the body is generated as a list of the item type, so that the items are known
-        TypeSyntax itemType = context.TypeGeneratorRegistry.Get(schema.GetItemSchemaOrDefault()).TypeInfo.Name;
-
-        return WellKnownTypes.System.Collections.Generic.ListT.Name(itemType).IsEquivalentTo(bodyType)
-            ? itemType
+        return mediaType.GetSchema() is { } schema && schema.Element.IsType(JsonSchemaType.Array)
+            ? context.TypeGeneratorRegistry.Get(schema.GetItemSchemaOrDefault()).TypeInfo.Name
             : null;
     }
 

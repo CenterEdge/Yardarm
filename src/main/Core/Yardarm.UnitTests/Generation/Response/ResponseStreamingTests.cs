@@ -149,6 +149,7 @@ public class ResponseStreamingTests
         body!.IsStreaming.Should().BeFalse();
         body.BodyType.ToString().Should().Be($"global::System.Collections.Generic.List<{ThingType}>");
         body.ItemType!.ToString().Should().Be(ThingType);
+        body.DeserializeAsSequence.Should().BeTrue();
     }
 
     [Fact]
@@ -160,7 +161,8 @@ public class ResponseStreamingTests
 
         body!.IsStreaming.Should().BeFalse();
         body.BodyType.ToString().Should().Be($"global::System.Collections.Generic.List<{ThingType}>");
-        body.ItemType.Should().BeNull();
+        body.ItemType!.ToString().Should().Be(ThingType);
+        body.DeserializeAsSequence.Should().BeFalse();
     }
 
     [Fact]
@@ -206,6 +208,9 @@ public class ResponseStreamingTests
 
         body!.IsStreaming.Should().BeFalse();
         body.BodyType.ToString().Should().Be(ThingType);
+        body.IsList.Should().BeFalse();
+        body.ItemType.Should().BeNull();
+        body.DeserializeAsSequence.Should().BeFalse();
     }
 
     [Fact]

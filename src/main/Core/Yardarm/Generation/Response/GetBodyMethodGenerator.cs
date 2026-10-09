@@ -87,7 +87,7 @@ namespace Yardarm.Generation.Response
                 // known at compile time. This includes compatible media types that aren't selected, since the serializer is chosen by the
                 // Content-Type of the response and the Accept header may request a sequential media type.
                 SimpleNameSyntax deserializeMethod =
-                    ResponseBodyResolver.Resolve(response)?.ItemType is { } itemType
+                    ResponseBodyResolver.Resolve(response) is { DeserializeAsSequence: true, ItemType: { } itemType }
                         ? GenericName(Identifier("DeserializeSequenceAsync"),
                             TypeArgumentList(SeparatedList([returnType, itemType])))
                         : GenericName(Identifier("DeserializeAsync"),

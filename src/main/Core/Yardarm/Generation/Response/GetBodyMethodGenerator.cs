@@ -83,11 +83,12 @@ namespace Yardarm.Generation.Response
 
             if (!returnType.IsEquivalentTo(WellKnownTypes.System.IO.Stream.Name))
             {
-                // Sequential media types, such as JSON Lines, and streamed bodies deserialize the items with the item type
-                // known at compile time. This includes compatible media types that aren't selected, since the serializer is chosen by the
-                // Content-Type of the response and the Accept header may request a sequential media type.
+                // List bodies, including sequential media types such as JSON Lines and streamed bodies, deserialize the items
+                // with the item type known at compile time. Serializers which only support single values fall back to
+                // regular deserialization. This allows for compatible media types that aren't selected, such as JSON Lines,
+                // since the serializer is chosen by the Content-Type of the response.
                 SimpleNameSyntax deserializeMethod =
-                    ResponseBodyResolver.Resolve(response) is { DeserializeAsSequence: true, ItemType: { } itemType }
+                    ResponseBodyResolver.Resolve(response)?.ItemType is { } itemType
                         ? GenericName(Identifier("DeserializeSequenceAsync"),
                             TypeArgumentList(SeparatedList([returnType, itemType])))
                         : GenericName(Identifier("DeserializeAsync"),

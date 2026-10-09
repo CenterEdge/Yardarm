@@ -53,17 +53,11 @@ internal class DefaultResponseBodyResolver(
         bool isStreaming = (mediaType.GetItemSchema() is not null || HasStreamingExtension(mediaType))
             && serializerSelector.Select(mediaType) is { Descriptor.SupportsStreaming: true };
 
-        // Includes compatible media types which aren't selected, since the serializer is chosen by the Content-Type of the
-        // received response and the Accept header may request a sequential media type
-        bool hasSequentialMediaType = response.GetSequenceItemType(mediaTypeSelector, serializerSelector,
-            context.TypeGeneratorRegistry) is not null;
-
         return ResponseBodyInfo.ForList(
             mediaType,
             isStreaming ? WellKnownTypes.System.Collections.Generic.IAsyncEnumerableT.Name(itemType) : bodyType,
             itemType,
-            isStreaming,
-            hasSequentialMediaType);
+            isStreaming);
     }
 
     public IEnumerable<(ILocatedOpenApiElement<IOpenApiMediaType> MediaType, double Quality)> GetCompatibleMediaTypes(

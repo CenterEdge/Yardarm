@@ -41,22 +41,13 @@ public sealed class ResponseBodyInfo
     [MemberNotNullWhen(true, nameof(ItemType))]
     public bool IsStreaming { get; }
 
-    /// <summary>
-    /// If true, the body is deserialized with <c>DeserializeSequenceAsync</c> using <see cref="ItemType"/>, rather
-    /// than as a single value. This is the case for streamed bodies, and for list bodies where a sequential media type,
-    /// such as JSON Lines, may be received in place of the selected media type.
-    /// </summary>
-    [MemberNotNullWhen(true, nameof(ItemType))]
-    public bool DeserializeAsSequence { get; }
-
     private ResponseBodyInfo(ILocatedOpenApiElement<IOpenApiMediaType> mediaType, TypeSyntax bodyType,
-        TypeSyntax? itemType, bool isStreaming, bool deserializeAsSequence)
+        TypeSyntax? itemType, bool isStreaming)
     {
         MediaType = mediaType;
         BodyType = bodyType;
         ItemType = itemType;
         IsStreaming = isStreaming;
-        DeserializeAsSequence = deserializeAsSequence;
     }
 
     /// <summary>
@@ -69,7 +60,7 @@ public sealed class ResponseBodyInfo
         ArgumentNullException.ThrowIfNull(mediaType);
         ArgumentNullException.ThrowIfNull(bodyType);
 
-        return new ResponseBodyInfo(mediaType, bodyType, itemType: null, isStreaming: false, deserializeAsSequence: false);
+        return new ResponseBodyInfo(mediaType, bodyType, itemType: null, isStreaming: false);
     }
 
     /// <summary>
@@ -82,18 +73,13 @@ public sealed class ResponseBodyInfo
     /// </param>
     /// <param name="itemType">The C# type of each item.</param>
     /// <param name="isStreaming">If true, the body is streamed.</param>
-    /// <param name="hasSequentialMediaType">
-    /// If true, a sequential media type, such as JSON Lines, may be received for the response, so the body must be
-    /// deserialized as a sequence even when it isn't streamed.
-    /// </param>
     public static ResponseBodyInfo ForList(ILocatedOpenApiElement<IOpenApiMediaType> mediaType, TypeSyntax bodyType,
-        TypeSyntax itemType, bool isStreaming, bool hasSequentialMediaType)
+        TypeSyntax itemType, bool isStreaming)
     {
         ArgumentNullException.ThrowIfNull(mediaType);
         ArgumentNullException.ThrowIfNull(bodyType);
         ArgumentNullException.ThrowIfNull(itemType);
 
-        return new ResponseBodyInfo(mediaType, bodyType, itemType, isStreaming,
-            deserializeAsSequence: isStreaming || hasSequentialMediaType);
+        return new ResponseBodyInfo(mediaType, bodyType, itemType, isStreaming);
     }
 }

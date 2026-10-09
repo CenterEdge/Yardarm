@@ -149,7 +149,6 @@ public class ResponseStreamingTests
         body!.IsStreaming.Should().BeFalse();
         body.BodyType.ToString().Should().Be($"global::System.Collections.Generic.List<{ThingType}>");
         body.ItemType!.ToString().Should().Be(ThingType);
-        body.DeserializeAsSequence.Should().BeTrue();
     }
 
     [Fact]
@@ -162,7 +161,6 @@ public class ResponseStreamingTests
         body!.IsStreaming.Should().BeFalse();
         body.BodyType.ToString().Should().Be($"global::System.Collections.Generic.List<{ThingType}>");
         body.ItemType!.ToString().Should().Be(ThingType);
-        body.DeserializeAsSequence.Should().BeFalse();
     }
 
     [Fact]
@@ -210,7 +208,6 @@ public class ResponseStreamingTests
         body.BodyType.ToString().Should().Be(ThingType);
         body.IsList.Should().BeFalse();
         body.ItemType.Should().BeNull();
-        body.DeserializeAsSequence.Should().BeFalse();
     }
 
     [Fact]
@@ -234,7 +231,7 @@ public class ResponseStreamingTests
     }
 
     [Fact]
-    public void GenerateResponse_ArrayWithoutExtension_GetBodyUsesDeserialize()
+    public void GenerateResponse_ArrayWithoutExtension_GetBodyUsesBufferedList()
     {
         var (document, serviceProvider) = CreateDocument(supportsStreaming: true);
         var response = GetResponse(document, "listArray");
@@ -245,7 +242,7 @@ public class ResponseStreamingTests
         declaration.Members.OfType<MethodDeclarationSyntax>()
             .Single(p => p.Identifier.ValueText == "GetBodyAsync")
             .Body!.ToString().Should().Contain(
-                $"TypeSerializerRegistryExtensions.DeserializeAsync<global::System.Collections.Generic.List<{ThingType}>>(");
+                $"TypeSerializerRegistryExtensions.DeserializeSequenceAsync<global::System.Collections.Generic.List<{ThingType}>,{ThingType}>(");
     }
 
     [Theory]

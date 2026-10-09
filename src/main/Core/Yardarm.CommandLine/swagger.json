@@ -3617,6 +3617,42 @@
         ]
       }
     },
+    "/api/v1/configuration/status": {
+      "get": {
+        "tags": [
+          "Refresh"
+        ],
+        "operationId": "getConfigurationStatus",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ConfigurationStatus"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/v1/configuration/status/alias": {
+      "get": {
+        "tags": [
+          "Refresh"
+        ],
+        "operationId": "getConfigurationStatusAlias",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ConfigurationStatusAlias"
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/v1/activities/{activityId}/reservations": {
       "post": {
         "tags": [
@@ -12169,6 +12205,28 @@
           }
         },
         "additionalProperties": false
+      }
+    },
+    "responses": {
+      "ConfigurationStatusAlias": {
+        "$ref": "#/components/responses/ConfigurationStatus"
+      },
+      "ConfigurationStatus": {
+        "description": "Success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "lastRefreshed": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
       }
     },
     "securitySchemes": {

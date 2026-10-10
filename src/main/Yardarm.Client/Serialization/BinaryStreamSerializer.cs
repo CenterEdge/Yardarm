@@ -59,7 +59,7 @@ public class BinaryStreamSerializer : ITypeSerializer
             return (T)(object)await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #else
             cancellationToken.ThrowIfCancellationRequested();
-            return (T)(object)await content.ReadAsByteArrayAsync().ConfigureAwait(false);
+            return (T)(object)await content.ReadAsStreamAsync().ConfigureAwait(false);
 #endif
         }
 

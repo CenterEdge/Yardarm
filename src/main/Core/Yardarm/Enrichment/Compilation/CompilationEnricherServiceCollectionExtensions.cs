@@ -11,6 +11,7 @@ public static class CompilationEnricherServiceCollectionExtensions
             services
                 .AddAssemblyInfoEnricher<TargetRuntimeAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<VersionAssemblyInfoEnricher>()
+                .AddAssemblyInfoEnricher<YardarmVersionAssemblyInfoEnricher>()
                 .AddAssemblyInfoEnricher<IsTrimmableAssemblyInfoEnricher>()
                 .AddCompilationEnricher<ReferenceCompilationEnricher>()
                 .AddCompilationEnricher<ResourceFileCompilationEnricher>()

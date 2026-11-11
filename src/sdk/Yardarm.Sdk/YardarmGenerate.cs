@@ -3,6 +3,7 @@ using Microsoft.Build.Framework;
 
 namespace Yardarm.Build.Tasks;
 
+[MSBuildMultiThreadableTask]
 public class YardarmGenerate : YardarmCommonTask
 {
     protected override string Verb => "generate";

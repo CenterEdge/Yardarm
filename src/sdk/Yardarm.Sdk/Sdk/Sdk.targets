@@ -111,6 +111,20 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    The Yardarm tasks are built against MSBuild 18.9, which ships in the .NET 10.0.400 SDK. Earlier MSBuild versions can
+    run the tasks in-process during a multithreaded (-mt) build without setting the tool's working directory to the
+    project directory.
+  -->
+  <PropertyGroup>
+    <_YardarmMinimumSdkVersion>10.0.400</_YardarmMinimumSdkVersion>
+  </PropertyGroup>
+
+  <Target Name="_CheckYardarmSdkVersion">
+    <Error Text="Yardarm.Sdk requires the .NET SDK $(_YardarmMinimumSdkVersion) or later. The current .NET SDK version is $(NETCoreSdkVersion)."
+           Condition=" '$(NETCoreSdkVersion)' != '' And $([MSBuild]::VersionLessThan('$(NETCoreSdkVersion)', '$(_YardarmMinimumSdkVersion)')) " />
+  </Target>
+
   <Target Name="_ResolveYardarmProperties">
     <PropertyGroup>
       <_EffectiveYardarmProperties>$(YardarmProperties)</_EffectiveYardarmProperties>
@@ -138,7 +152,7 @@
   <Target Name="YardarmCollectDependencies"
           Condition=" '$(TargetFramework)' != '' "
           BeforeTargets="CollectPackageReferences;CollectPackageDownloads"
-          DependsOnTargets="CollectYardarmExtensions;_ResolveYardarmProperties"
+          DependsOnTargets="_CheckYardarmSdkVersion;CollectYardarmExtensions;_ResolveYardarmProperties"
           Returns="@(PackageReference);@(PackageDownload)">
     <YardarmCollectDependencies
       YardarmToolPath="$(YardarmToolPath)"
@@ -171,6 +185,7 @@
   <PropertyGroup>
     <CoreCompileDependsOn>
       $(CoreCompileDependsOn);
+      _CheckYardarmSdkVersion;
       _VerifyOpenApiSpecs;
       CollectYardarmExtensions;
       _ResolveYardarmProperties

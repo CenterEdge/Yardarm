@@ -7,6 +7,7 @@ using Yardarm.CommandLine.Interop;
 
 namespace Yardarm.Build.Tasks;
 
+[MSBuildMultiThreadableTask]
 public class YardarmCollectDependencies : YardarmCommonTask
 {
     private const string AddItemPrefix = "AddItem: ";

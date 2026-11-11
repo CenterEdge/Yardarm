@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "msbuild-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "dotnet/msbuild"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "mt-migration@msbuild-plugins": true
+  }
+}

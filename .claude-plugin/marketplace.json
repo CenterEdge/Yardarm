@@ -1,0 +1,20 @@
+{
+  "name": "yardarm-plugins",
+  "owner": {
+    "name": "Yardarm"
+  },
+  "metadata": {
+    "description": "Plugins used when working on Yardarm"
+  },
+  "plugins": [
+    {
+      "name": "mt-migration",
+      "description": "MSBuild multithreaded task migration toolkit: the migration playbook + an MT-specific code reviewer that traces call chains end-to-end.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/dotnet/msbuild.git",
+        "path": "plugins/mt-migration"
+      }
+    }
+  ]
+}

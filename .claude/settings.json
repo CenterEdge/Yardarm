@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "yardarm-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "CenterEdge/Yardarm"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "mt-migration@yardarm-plugins": true
+  }
+}

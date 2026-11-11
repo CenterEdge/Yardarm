@@ -5,6 +5,13 @@ using Microsoft.Build.Utilities;
 
 namespace Yardarm.Build.Tasks
 {
+    /// <remarks>
+    /// Derived tasks are marked with <see cref="MSBuildMultiThreadableTaskAttribute"/>. They must not touch process-wide
+    /// state or resolve relative paths themselves; relative paths are passed through to the command line unchanged.
+    /// <see cref="ToolTask"/> starts the tool from its injected TaskEnvironment (MSBuild 18.7 and later, SDK 10.0.400),
+    /// which sets the working directory and environment variables to the project's, so those paths still resolve
+    /// against the project directory when MSBuild runs in multithreaded mode.
+    /// </remarks>
     public abstract partial class YardarmTask : ToolTask
     {
         [GeneratedRegex(@"^\[(\w+)\] (.+)")]

@@ -45,6 +45,7 @@ jobs:
         dotnet-version: |
           8.0.x
           10.0.x
+          11.0.x
 
     - uses: actions/cache@v6
       with:
@@ -111,6 +112,7 @@ jobs:
         dotnet-version: |
           8.0.x
           10.0.x
+          11.0.x
 
     - uses: actions/cache@v6
       with:

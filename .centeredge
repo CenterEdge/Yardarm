@@ -6,5 +6,10 @@
     "lowThreshold": 100,
     "mediumThreshold": 150,
     "highThreshold": 200
+  },
+  "dependabot": {
+    "project": "PHNX",
+    "team": "Valhalla",
+    "epic": "PHNX-18543"
   }
 }

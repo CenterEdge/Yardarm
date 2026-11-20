@@ -6740,6 +6740,150 @@
           }
         }
       },
+      "UnevaluatedPropertiesClosed": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "unevaluatedProperties": false
+      },
+      "UnevaluatedPropertiesTyped": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "unevaluatedProperties": {
+          "type": "string"
+        }
+      },
+      "UnevaluatedPropertiesAdditionalPropertiesPrecedence": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "unevaluatedProperties": false
+      },
+      "UnevaluatedPropertiesDictionary": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "type": "string"
+        }
+      },
+      "UnevaluatedPropertiesReferences": {
+        "type": "object",
+        "properties": {
+          "dictionary": {
+            "$ref": "#/components/schemas/UnevaluatedPropertiesDictionary"
+          }
+        },
+        "unevaluatedProperties": false
+      },
+      "AbstractBaseAnimalType": {
+        "enum": [
+          "AbstractBaseDog",
+          "AbstractBaseCat"
+        ],
+        "type": "string"
+      },
+      "AbstractBaseAnimal": {
+        "required": [
+          "animalType"
+        ],
+        "type": "object",
+        "properties": {
+          "animalType": {
+            "$ref": "#/components/schemas/AbstractBaseAnimalType"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "discriminator": {
+          "propertyName": "animalType"
+        },
+        "x-abstract": true
+      },
+      "AbstractBaseDog": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AbstractBaseAnimal"
+          }
+        ],
+        "properties": {
+          "breed": {
+            "type": "string"
+          }
+        },
+        "unevaluatedProperties": false
+      },
+      "AbstractBaseCat": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AbstractBaseAnimal"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "lives": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ],
+        "unevaluatedProperties": {
+          "type": "string"
+        }
+      },
+      "OpenBaseVehicleType": {
+        "enum": [
+          "OpenBaseCar"
+        ],
+        "type": "string"
+      },
+      "OpenBaseVehicle": {
+        "required": [
+          "vehicleType"
+        ],
+        "type": "object",
+        "properties": {
+          "vehicleType": {
+            "$ref": "#/components/schemas/OpenBaseVehicleType"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "discriminator": {
+          "propertyName": "vehicleType"
+        }
+      },
+      "OpenBaseCar": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OpenBaseVehicle"
+          }
+        ],
+        "properties": {
+          "doors": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "unevaluatedProperties": false
+      },
       "ActionBase": {
         "required": [
           "actionType"

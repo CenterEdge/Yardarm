@@ -35,7 +35,7 @@ namespace Yardarm.Generation.Schema
 
             declaration = AddProperties(declaration, Element.GetProperties());
 
-            if (Schema.AdditionalPropertiesAllowed)
+            if (Schema.AllowsUndeclaredProperties)
             {
                 declaration = declaration.AddMembers(
                     GenerateAdditionalPropertiesMember(Element.GetAdditionalPropertiesOrDefault()).ToArray());

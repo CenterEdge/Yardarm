@@ -467,8 +467,20 @@ public static class LocatedOpenApiElementExtensions
                 ? schema.CreateChild(schema.Element.AdditionalProperties, "additionalProperties")
                 : null;
 
+        public ILocatedOpenApiElement<IOpenApiSchema>? GetUnevaluatedProperties() =>
+            schema.Element is IOpenApiSchemaMissingProperties { UnevaluatedPropertiesSchema: { } unevaluatedProperties }
+                ? schema.CreateChild(unevaluatedProperties, "unevaluatedProperties")
+                : null;
+
+        /// <summary>
+        /// Gets the schema for the values of the generated <c>AdditionalProperties</c> dictionary: the
+        /// <c>additionalProperties</c> subschema, else the <c>unevaluatedProperties</c> subschema, else an
+        /// empty schema that allows any value.
+        /// </summary>
         public ILocatedOpenApiElement<IOpenApiSchema> GetAdditionalPropertiesOrDefault() =>
-            GetAdditionalProperties(schema) ?? schema.CreateChild(_defaultSchema, "additionalProperties");
+            GetAdditionalProperties(schema)
+            ?? GetUnevaluatedProperties(schema)
+            ?? schema.CreateChild(_defaultSchema, "additionalProperties");
 
         public ILocatedOpenApiElement<IOpenApiSchema>? GetItemSchema() =>
             schema.Element.Items != null

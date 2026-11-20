@@ -35,7 +35,7 @@ namespace Yardarm.Enrichment.Schema
         public ClassDeclarationSyntax Enrich(ClassDeclarationSyntax target,
             OpenApiEnrichmentContext<IOpenApiSchema> context)
         {
-            if (!context.Element.AdditionalPropertiesAllowed)
+            if (!context.Element.AllowsUndeclaredProperties)
             {
                 return target;
             }
@@ -62,7 +62,7 @@ namespace Yardarm.Enrichment.Schema
                             .DeclaringSyntaxReferences.FirstOrDefault()?
                             .GetSyntax().GetElementAnnotation<IOpenApiSchema>(_context.ElementRegistry);
 
-                        if (parentSchema is not null && parentSchema.Element.AdditionalPropertiesAllowed)
+                        if (parentSchema is not null && parentSchema.Element.AllowsUndeclaredProperties)
                         {
                             // We will already have an AdditionalProperties property on the base type
 

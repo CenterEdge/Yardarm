@@ -38,7 +38,7 @@ public class DefaultSchemaGeneratorFactory(GenerationContext context) : ITypeGen
         return element.Element switch
         {
             _ when element.Element.IsType(JsonSchemaType.Object)
-                   && element.Element.AdditionalPropertiesAllowed
+                   && element.Element.AllowsUndeclaredProperties
                    && (element.Element.Properties is null or { Count: 0 })
                    && (element.Element.AnyOf is null or { Count: 0 }) => GetDictionaryGenerator(element, parent),
             _ when element.Element.IsType(JsonSchemaType.Object) => GetObjectGenerator(element, parent),

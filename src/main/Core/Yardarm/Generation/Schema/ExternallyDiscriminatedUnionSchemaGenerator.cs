@@ -141,7 +141,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
             || schema.Element.AllOf is { Count: > 0 }
             || schema.Element.Properties is { Count: > 0 }
             || (schema.Element.Type.HasValue && !schema.Element.IsType(JsonSchemaType.Object))
-            || schema.Element.AdditionalProperties is not null)
+            || schema.Element.UndeclaredPropertiesSchema is not null)
         {
             return false;
         }
@@ -157,7 +157,7 @@ internal class ExternallyDiscriminatedUnionSchemaGenerator(
             if ((unionCase.Properties?.Count ?? 0) != 1
                 || (unionCase.Type.HasValue && !unionCase.IsType(JsonSchemaType.Object))
                 || unionCase.Nullable
-                || unionCase.AdditionalProperties is not null)
+                || unionCase.UndeclaredPropertiesSchema is not null)
             {
                 // Not a single property object
                 return false;

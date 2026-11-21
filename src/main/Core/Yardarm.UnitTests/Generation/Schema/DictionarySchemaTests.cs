@@ -179,6 +179,122 @@ public class DictionarySchemaTests
             .Should().Equal("MapValueValue");
     }
 
+    [Theory]
+    [InlineData("""{ "type": ["string", "null"], "enum": ["a", "b", null] }""")]
+    [InlineData("""{ "oneOf": [ { "type": "string", "enum": ["a", "b"] }, { "type": "null" } ] }""")]
+    public async Task Get_DictionaryWithNullableInlineEnumValue_ValueTypeIsNullable(string valueSchema)
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync($$"""
+            {
+              "Map": { "type": "object", "additionalProperties": {{valueSchema}} }
+            }
+            """);
+        var registry = CreateRegistry(document);
+
+        // Act
+
+        var mapGenerator = registry.Get(document.Components!.Schemas!["Map"].CreateRoot("Map"));
+
+        // Assert
+
+        GetDictionaryValueType(mapGenerator.TypeInfo.Name).Should().EndWith(".MapValue?");
+    }
+
+    [Theory]
+    [InlineData("additionalProperties")]
+    [InlineData("unevaluatedProperties")]
+    public async Task Generate_ObjectWithDictionaryOfInlineValues_EmitsValueType(string keyword)
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync($$"""
+            {
+              "Widget": {
+                "type": "object",
+                "properties": { "name": { "type": "string" } },
+                "{{keyword}}": { "type": "object", "additionalProperties": {{InlineObject}} }
+              }
+            }
+            """);
+        var registry = CreateRegistry(document);
+
+        // Act
+
+        SyntaxTree widgetTree = registry.Get(document.Components!.Schemas!["Widget"].CreateRoot("Widget"))
+            .GenerateSyntaxTree();
+
+        // Assert
+
+        widgetTree.Should().NotBeNull();
+        var widget = widgetTree!.GetRoot(TestContext.Current.CancellationToken).DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Single(p => p.Identifier.ValueText == "Widget");
+        widget.Members.OfType<ClassDeclarationSyntax>().Select(p => p.Identifier.ValueText)
+            .Should().Equal($"{keyword[0].ToString().ToUpperInvariant()}{keyword[1..]}ModelValue");
+    }
+
+    [Fact]
+    public async Task Generate_HeaderWithDictionaryOfInlineValues_EmitsValueTypeInHeaderNamespace()
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync("{}", $$"""
+            {
+              "X-Map": { "schema": { "type": "object", "additionalProperties": {{InlineObject}} } }
+            }
+            """);
+        var headerRegistry = new YardarmGenerationSettings().BuildServiceProvider(document)
+            .GetRequiredService<ITypeGeneratorRegistry<IOpenApiHeader>>();
+
+        // Act
+
+        var headerGenerator = headerRegistry.Get(
+            LocatedOpenApiElement.CreateRoot(document.Components!.Headers!["X-Map"], "X-Map"));
+        SyntaxTree headerTree = headerGenerator.GenerateSyntaxTree();
+
+        // Assert
+
+        headerTree.Should().NotBeNull();
+        headerTree!.GetRoot(TestContext.Current.CancellationToken).DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Select(p => p.Identifier.ValueText)
+            .Should().Equal("XMapValue");
+        GetDictionaryValueType(headerGenerator.TypeInfo.Name).Should().EndWith(".XMapValue");
+    }
+
+    [Theory]
+    [InlineData("additionalProperties", true)]
+    [InlineData("unevaluatedProperties", true)]
+    [InlineData("unevaluatedProperties", false)]
+    public async Task GetAllSchemas_DictionaryWithInlineValue_IncludesValueOnlyWhenOpen(string keyword, bool open)
+    {
+        // Arrange
+
+        string closed = open ? "" : """, "additionalProperties": false""";
+        OpenApiDocument document = await LoadAsync($$"""
+            {
+              "Map": { "type": "object", "{{keyword}}": {{InlineObject}}{{closed}} }
+            }
+            """);
+
+        // Act
+
+        var schemas = document.GetAllSchemas().Select(p => p.ToString()).ToList();
+
+        // Assert
+
+        if (open)
+        {
+            schemas.Should().Contain($"Map:IOpenApiSchema/{keyword}:IOpenApiSchema");
+        }
+        else
+        {
+            schemas.Should().NotContain(p => p.Contains(keyword));
+        }
+    }
+
     private static TypeSyntax ParseType(string typeName) =>
         Microsoft.CodeAnalysis.CSharp.SyntaxFactory.ParseTypeName(typeName);
 
@@ -198,14 +314,14 @@ public class DictionarySchemaTests
         new YardarmGenerationSettings().BuildServiceProvider(document)
             .GetRequiredService<ITypeGeneratorRegistry<IOpenApiSchema>>();
 
-    private static async Task<OpenApiDocument> LoadAsync(string schemasJson)
+    private static async Task<OpenApiDocument> LoadAsync(string schemasJson, string headersJson = "{}")
     {
         string json = $$"""
             {
               "openapi": "3.1.1",
               "info": { "title": "Test", "version": "1.0.0" },
               "paths": {},
-              "components": { "schemas": {{schemasJson}} }
+              "components": { "schemas": {{schemasJson}}, "headers": {{headersJson}} }
             }
             """;
 

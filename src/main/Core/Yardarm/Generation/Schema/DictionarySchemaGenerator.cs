@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
@@ -16,21 +15,31 @@ namespace Yardarm.Generation.Schema
         ITypeGenerator? parent)
         : TypeGeneratorBase<IOpenApiSchema>(schemaElement, context, parent)
     {
-        public override QualifiedNameSyntax? GetTypeName() => null;
-
-        protected override YardarmTypeInfo CreateTypeInfo() =>
-            new(WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
-                    PredefinedType(Token(SyntaxKind.StringKeyword)),
-                    GetValueGenerator().TypeInfo.Name),
-                isGenerated: false);
-
         /// <inheritdoc />
         /// <remarks>
-        /// The dictionary itself is not generated, but an inline value schema of a generated type,
-        /// such as an object or enum, is emitted in its place.
+        /// The dictionary itself is not generated, so this is the name of its value type. It supplies the
+        /// namespace and file path when an inline value schema of a generated type, such as an object or enum,
+        /// is emitted in the dictionary's place.
         /// </remarks>
-        public override SyntaxTree? GenerateSyntaxTree() =>
-            GetGeneratedValueGenerator()?.GenerateSyntaxTree();
+        public override QualifiedNameSyntax GetTypeName() => GetChildName(GetValueSchema(), NameKind.Class);
+
+        protected override YardarmTypeInfo CreateTypeInfo()
+        {
+            ILocatedOpenApiElement<IOpenApiSchema> valueSchema = GetValueSchema();
+
+            TypeSyntax valueType = Context.TypeGeneratorRegistry.Get(valueSchema).TypeInfo.Name;
+            if (valueSchema.Element.Nullable)
+            {
+                // Matches typed AdditionalProperties, so JSON null values deserialize
+                valueType = valueType.MakeNullable();
+            }
+
+            return new YardarmTypeInfo(
+                WellKnownTypes.System.Collections.Generic.DictionaryT.Name(
+                    PredefinedType(Token(SyntaxKind.StringKeyword)),
+                    valueType),
+                isGenerated: false);
+        }
 
         public override IEnumerable<MemberDeclarationSyntax> Generate() =>
             GetGeneratedValueGenerator()?.Generate() ?? [];
@@ -55,9 +64,6 @@ namespace Yardarm.Generation.Schema
 
         private ILocatedOpenApiElement<IOpenApiSchema> GetValueSchema() =>
             Element.GetAdditionalPropertiesOrDefault();
-
-        private ITypeGenerator GetValueGenerator() =>
-            Context.TypeGeneratorRegistry.Get(GetValueSchema());
 
         // Referenced value schemas are generated at their own location. Inline value schemas of
         // types that aren't generated, such as strings, emit no declarations.

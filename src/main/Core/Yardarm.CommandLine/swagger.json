@@ -7092,6 +7092,55 @@
         },
         "additionalProperties": false
       },
+      "InlineValuePolymorphicDictionary": {
+        "type": "object",
+        "additionalProperties": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/AbstractBaseDog"
+            },
+            {
+              "$ref": "#/components/schemas/AbstractBaseCat"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "animalType"
+          }
+        }
+      },
+      "InlineValueNullableEnumDictionary": {
+        "type": "object",
+        "additionalProperties": {
+          "enum": [
+            "First",
+            "Second",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "InlineValueOpenObjectWithDictionary": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
       "ActionBase": {
         "required": [
           "actionType"

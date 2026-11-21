@@ -166,6 +166,16 @@ public static class LocatedOpenApiElementExtensions
         {
             yield return childSchema;
         }
+
+        // Only an open schema generates its additionalProperties or unevaluatedProperties value type
+        if (schema.Element.AllowsUndeclaredProperties
+            && (schema.GetAdditionalProperties() ?? schema.GetUnevaluatedProperties()) is { IsReference: false } valueSchema)
+        {
+            foreach (var childSchema in valueSchema.GetAllSchemas())
+            {
+                yield return childSchema;
+            }
+        }
     }
 
     #region PathItem

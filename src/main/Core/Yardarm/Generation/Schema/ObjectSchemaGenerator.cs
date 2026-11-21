@@ -98,12 +98,13 @@ namespace Yardarm.Generation.Schema
             ILocatedOpenApiElement<IOpenApiSchema> additionalProperties)
         {
             // The AdditionalProperties element isn't generated here, it's done by the AdditionalPropertiesEnricher
-            // However, we do need to generate the schema now
+            // However, we do need to generate the schema now. Containers such as arrays and dictionaries
+            // aren't generated types themselves, but emit their inline item or value types.
 
-            ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(additionalProperties);
-
-            if (schemaGenerator.TypeInfo.IsGenerated && additionalProperties.Element is not IOpenApiReferenceHolder)
+            if (additionalProperties.Element is not IOpenApiReferenceHolder)
             {
+                ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(additionalProperties);
+
                 foreach (MemberDeclarationSyntax childTypeDeclaration in schemaGenerator.Generate())
                 {
                     yield return childTypeDeclaration;

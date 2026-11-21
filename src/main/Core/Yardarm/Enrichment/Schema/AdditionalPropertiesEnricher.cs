@@ -48,45 +48,60 @@ namespace Yardarm.Enrichment.Schema
 
             var originalNode = context.OriginalNode as ClassDeclarationSyntax;
 
-            // Check to see if we're inheriting from a type that already implements AdditionalProperties
-            if (originalNode?.BaseList is {Types.Count: > 0})
+            // Check to see if we're inheriting from a type that already implements AdditionalProperties. The nearest
+            // ancestor that allows undeclared properties declares the dictionary that this type inherits. Ancestors
+            // between it and this type, such as an abstract or closed schema, declare none.
+            if (originalNode is not null
+                && FindNearestAncestorAllowingUndeclaredProperties(context, originalNode) is { } ancestorSchema)
             {
-                var semanticModel = context.Compilation.GetSemanticModel(context.SyntaxTree);
+                var ancestorAdditionalPropertiesTypeGenerator =
+                    _context.TypeGeneratorRegistry.Get(ancestorSchema.GetAdditionalPropertiesOrDefault());
 
-                foreach (BaseTypeSyntax baseType in originalNode.BaseList.Types)
+                if (ancestorAdditionalPropertiesTypeGenerator.TypeInfo.Name.IsEquivalentTo(valueType))
                 {
-                    var typeInfo = ModelExtensions.GetTypeInfo(semanticModel, baseType.Type);
-                    if (typeInfo.Type?.TypeKind == TypeKind.Class)
-                    {
-                        var parentSchema = typeInfo.Type
-                            .DeclaringSyntaxReferences.FirstOrDefault()?
-                            .GetSyntax().GetElementAnnotation<IOpenApiSchema>(_context.ElementRegistry);
-
-                        if (parentSchema is not null && parentSchema.Element.AllowsUndeclaredProperties)
-                        {
-                            // We will already have an AdditionalProperties property on the base type
-
-                            var parentAdditionalPropertiesTypeGenerator =
-                                _context.TypeGeneratorRegistry.Get(parentSchema.GetAdditionalPropertiesOrDefault());
-
-                            if (parentAdditionalPropertiesTypeGenerator.TypeInfo.Name.IsEquivalentTo(valueType))
-                            {
-                                // The types match, we can just accept the inherited version
-                                return target;
-                            }
-                            else
-                            {
-                                // We must shadow
-                                isShadowing = true;
-                                break;
-                            }
-                        }
-                    }
+                    // The types match, we can just accept the inherited version
+                    return target;
                 }
+
+                // We must shadow
+                isShadowing = true;
             }
 
             return target.AddMembers(GenerateAdditionalPropertiesMembers(dictionaryType, interfaceType,
                 propertyName, isShadowing));
+        }
+
+        /// <summary>
+        /// Walks the base class chain of <paramref name="classDeclaration"/> and returns the schema of the nearest
+        /// ancestor that allows undeclared properties, and so declares an <c>AdditionalProperties</c> dictionary.
+        /// Ancestors without a schema, such as <see cref="object"/>, are skipped.
+        /// </summary>
+        private ILocatedOpenApiElement<IOpenApiSchema>? FindNearestAncestorAllowingUndeclaredProperties(
+            OpenApiEnrichmentContext<IOpenApiSchema> context, ClassDeclarationSyntax classDeclaration)
+        {
+            if (classDeclaration.BaseList is not {Types.Count: > 0})
+            {
+                return null;
+            }
+
+            var semanticModel = context.Compilation.GetSemanticModel(context.SyntaxTree);
+
+            INamedTypeSymbol? ancestor = semanticModel.GetDeclaredSymbol(classDeclaration)?.BaseType;
+            while (ancestor is {TypeKind: TypeKind.Class})
+            {
+                var ancestorSchema = ancestor
+                    .DeclaringSyntaxReferences.FirstOrDefault()?
+                    .GetSyntax().GetElementAnnotation<IOpenApiSchema>(_context.ElementRegistry);
+
+                if (ancestorSchema is not null && ancestorSchema.Element.AllowsUndeclaredProperties)
+                {
+                    return ancestorSchema;
+                }
+
+                ancestor = ancestor.BaseType;
+            }
+
+            return null;
         }
 
         private (TypeSyntax dictionaryType, TypeSyntax interfaceType, TypeSyntax valueType) GetDictionaryType(OpenApiEnrichmentContext<IOpenApiSchema> context)

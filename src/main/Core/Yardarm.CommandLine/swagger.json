@@ -6884,6 +6884,95 @@
         },
         "unevaluatedProperties": false
       },
+      "InheritedDictionaryRoot": {
+        "type": "object",
+        "properties": {
+          "rootName": {
+            "type": "string"
+          }
+        }
+      },
+      "InheritedDictionaryAbstractMiddle": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InheritedDictionaryRoot"
+          }
+        ],
+        "properties": {
+          "middleName": {
+            "type": "string"
+          }
+        },
+        "x-abstract": true
+      },
+      "InheritedDictionaryAbstractMiddleOpenLeaf": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InheritedDictionaryAbstractMiddle"
+          }
+        ],
+        "properties": {
+          "leafName": {
+            "type": "string"
+          }
+        }
+      },
+      "InheritedDictionaryAdditionalPropertiesClosedMiddle": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InheritedDictionaryRoot"
+          }
+        ],
+        "properties": {
+          "middleName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InheritedDictionaryAdditionalPropertiesClosedMiddleOpenLeaf": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InheritedDictionaryAdditionalPropertiesClosedMiddle"
+          }
+        ],
+        "properties": {
+          "leafName": {
+            "type": "string"
+          }
+        }
+      },
+      "InheritedDictionaryUnevaluatedPropertiesClosedMiddle": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InheritedDictionaryRoot"
+          }
+        ],
+        "properties": {
+          "middleName": {
+            "type": "string"
+          }
+        },
+        "unevaluatedProperties": false
+      },
+      "InheritedDictionaryUnevaluatedPropertiesClosedMiddleOpenLeaf": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InheritedDictionaryUnevaluatedPropertiesClosedMiddle"
+          }
+        ],
+        "properties": {
+          "leafName": {
+            "type": "string"
+          }
+        }
+      },
       "InlineValueDictionaryObject": {
         "type": "object",
         "additionalProperties": {

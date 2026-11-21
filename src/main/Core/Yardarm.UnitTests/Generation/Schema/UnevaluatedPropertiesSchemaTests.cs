@@ -302,6 +302,73 @@ public class UnevaluatedPropertiesSchemaTests
     }
 
     [Theory]
+    [InlineData("\"x-abstract\": true")]
+    [InlineData("\"additionalProperties\": false")]
+    [InlineData("\"unevaluatedProperties\": false")]
+    public async Task Generate_ClosedMiddleAndOpenLeaf_LeafReusesRootAdditionalProperties(string middleKeyword)
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadThreeLevelAsync(middleKeyword, leafKeyword: null);
+
+        // Act
+
+        var classes = await GenerateAsync(document, "Root", "Middle", "Leaf");
+
+        // Assert
+
+        HasAdditionalProperties(classes["Root"]).Should().BeTrue();
+        HasAdditionalProperties(classes["Middle"]).Should().BeFalse();
+        HasAdditionalProperties(classes["Leaf"]).Should().BeFalse(
+            "the leaf inherits the matching dictionary declared by the root, past the closed middle");
+    }
+
+    [Theory]
+    [InlineData("\"x-abstract\": true", "\"additionalProperties\": { \"type\": \"string\" }")]
+    [InlineData("\"x-abstract\": true", "\"unevaluatedProperties\": { \"type\": \"string\" }")]
+    [InlineData("\"additionalProperties\": false", "\"additionalProperties\": { \"type\": \"string\" }")]
+    [InlineData("\"additionalProperties\": false", "\"unevaluatedProperties\": { \"type\": \"string\" }")]
+    [InlineData("\"unevaluatedProperties\": false", "\"additionalProperties\": { \"type\": \"string\" }")]
+    [InlineData("\"unevaluatedProperties\": false", "\"unevaluatedProperties\": { \"type\": \"string\" }")]
+    public async Task Generate_ClosedMiddleAndTypedLeaf_LeafShadowsRootAdditionalProperties(string middleKeyword,
+        string leafKeyword)
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadThreeLevelAsync(middleKeyword, leafKeyword);
+
+        // Act
+
+        var classes = await GenerateAsync(document, "Root", "Middle", "Leaf");
+
+        // Assert
+
+        GetAdditionalPropertiesValueType(classes["Root"]).Should().Be("object");
+        HasAdditionalProperties(classes["Middle"]).Should().BeFalse();
+        GetAdditionalPropertiesValueType(classes["Leaf"]).Should().Be("string");
+        GetAdditionalProperties(classes["Leaf"]).Modifiers.Should().Contain(p => p.IsKind(SyntaxKind.NewKeyword),
+            "the leaf hides the root dictionary, which has a different value type");
+    }
+
+    [Fact]
+    public async Task Generate_EveryLevelOpen_OnlyRootDeclaresAdditionalProperties()
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadThreeLevelAsync(middleKeyword: null, leafKeyword: null);
+
+        // Act
+
+        var classes = await GenerateAsync(document, "Root", "Middle", "Leaf");
+
+        // Assert
+
+        HasAdditionalProperties(classes["Root"]).Should().BeTrue();
+        HasAdditionalProperties(classes["Middle"]).Should().BeFalse();
+        HasAdditionalProperties(classes["Leaf"]).Should().BeFalse();
+    }
+
+    [Theory]
     [InlineData("false")]
     [InlineData("\"true\"")]
     [InlineData("1")]
@@ -345,6 +412,34 @@ public class UnevaluatedPropertiesSchemaTests
             .TypeArgumentList.Arguments[1]
             .ToString()
             .TrimEnd('?');
+
+    /// <summary>
+    /// Loads Root, Middle and Leaf, where each schema extends the previous one with <c>allOf</c>. Root is open.
+    /// </summary>
+    private static Task<OpenApiDocument> LoadThreeLevelAsync(string middleKeyword, string leafKeyword)
+    {
+        string middle = middleKeyword is null ? "" : $", {middleKeyword}";
+        string leaf = leafKeyword is null ? "" : $", {leafKeyword}";
+
+        return LoadAsync($$"""
+            {
+              "Root": {
+                "type": "object",
+                "properties": { "a": { "type": "string" } }
+              },
+              "Middle": {
+                "type": "object",
+                "allOf": [ { "$ref": "#/components/schemas/Root" } ],
+                "properties": { "b": { "type": "string" } }{{middle}}
+              },
+              "Leaf": {
+                "type": "object",
+                "allOf": [ { "$ref": "#/components/schemas/Middle" } ],
+                "properties": { "c": { "type": "string" } }{{leaf}}
+              }
+            }
+            """);
+    }
 
     private static async Task<OpenApiDocument> LoadAsync(string schemasJson)
     {

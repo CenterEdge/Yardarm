@@ -151,6 +151,13 @@ public static class LocatedOpenApiElementExtensions
     {
         yield return schema;
 
+        // A nullable oneOf wrapper is generated as its non-null alternative, at the same location
+        schema = schema.UnwrapUnderlyingNullableSchema();
+        if (schema.IsReference)
+        {
+            yield break;
+        }
+
         var itemSchema = schema.GetItemSchema();
         if (itemSchema is not null && !itemSchema.IsReference)
         {
@@ -165,6 +172,19 @@ public static class LocatedOpenApiElementExtensions
                      .SelectMany(p => p.GetAllSchemas()))
         {
             yield return childSchema;
+        }
+
+        // Only an open object or dictionary generates its additionalProperties or unevaluatedProperties
+        // value type. A oneOf schema is generated as an interface, which has no value type.
+        if (schema.Element.AllowsUndeclaredProperties
+            && schema.Element.OneOf is not { Count: > 0 }
+            && (schema.Element.AllOf is { Count: > 0 } || schema.Element.IsType(JsonSchemaType.Object))
+            && (schema.GetAdditionalProperties() ?? schema.GetUnevaluatedProperties()) is { IsReference: false } valueSchema)
+        {
+            foreach (var childSchema in valueSchema.GetAllSchemas())
+            {
+                yield return childSchema;
+            }
         }
     }
 

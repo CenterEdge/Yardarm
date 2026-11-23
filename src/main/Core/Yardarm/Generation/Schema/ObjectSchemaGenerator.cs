@@ -59,16 +59,9 @@ namespace Yardarm.Generation.Schema
         {
             yield return CreatePropertyDeclaration(property, ownerName);
 
-            if (property.Element is not IOpenApiReferenceHolder)
+            foreach (MemberDeclarationSyntax child in GenerateInlineSchema(property))
             {
-                // This isn't a reference, so we must generate the child schema
-
-                ITypeGenerator generator = Context.TypeGeneratorRegistry.Get(property);
-
-                foreach (MemberDeclarationSyntax child in generator.Generate())
-                {
-                    yield return child;
-                }
+                yield return child;
             }
         }
 
@@ -95,20 +88,16 @@ namespace Yardarm.Generation.Schema
         }
 
         protected virtual IEnumerable<MemberDeclarationSyntax> GenerateAdditionalPropertiesMember(
-            ILocatedOpenApiElement<IOpenApiSchema> additionalProperties)
-        {
+            ILocatedOpenApiElement<IOpenApiSchema> additionalProperties) =>
             // The AdditionalProperties element isn't generated here, it's done by the AdditionalPropertiesEnricher
             // However, we do need to generate the schema now
+            GenerateInlineSchema(additionalProperties);
 
-            ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(additionalProperties);
-
-            if (schemaGenerator.TypeInfo.IsGenerated && additionalProperties.Element is not IOpenApiReferenceHolder)
-            {
-                foreach (MemberDeclarationSyntax childTypeDeclaration in schemaGenerator.Generate())
-                {
-                    yield return childTypeDeclaration;
-                }
-            }
-        }
+        // A referenced schema is generated at its own location. An inline schema emits its own types,
+        // if any, including the inline item or value types of an array or dictionary.
+        private IEnumerable<MemberDeclarationSyntax> GenerateInlineSchema(ILocatedOpenApiElement<IOpenApiSchema> schema) =>
+            schema.Element is not IOpenApiReferenceHolder
+                ? Context.TypeGeneratorRegistry.Get(schema).Generate()
+                : [];
     }
 }

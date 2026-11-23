@@ -15,14 +15,31 @@ public class HeaderTypeGenerator : TypeGeneratorBase<IOpenApiHeader>
     {
     }
 
-    public override QualifiedNameSyntax? GetTypeName()
-        => Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).GetTypeName();
+    /// <inheritdoc />
+    /// <remarks>
+    /// The schema's type name, or the header's own name when the schema has none, such as a dictionary.
+    /// This supplies the namespace and file path for any inline types the schema emits.
+    /// </remarks>
+    public override QualifiedNameSyntax GetTypeName()
+    {
+        ILocatedOpenApiElement<IOpenApiSchema> schema = Element.GetSchemaOrDefault();
+
+        return Context.TypeGeneratorRegistry.Get(schema).GetTypeName()
+            ?? GetChildName(schema, NameKind.Class);
+    }
 
     protected override YardarmTypeInfo CreateTypeInfo() =>
         Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).TypeInfo;
 
-    public override IEnumerable<MemberDeclarationSyntax> Generate() =>
-        Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();
+    public override IEnumerable<MemberDeclarationSyntax> Generate()
+    {
+        ILocatedOpenApiElement<IOpenApiSchema> schema = Element.GetSchemaOrDefault();
+
+        // A referenced schema is generated at its own location
+        return schema.IsReference
+            ? []
+            : Context.TypeGeneratorRegistry.Get(schema).Generate();
+    }
 
     public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
     {

@@ -6973,6 +6973,174 @@
           }
         }
       },
+      "InlineValueDictionaryObject": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InlineValueDictionaryEnum": {
+        "type": "object",
+        "additionalProperties": {
+          "enum": [
+            "First",
+            "Second"
+          ],
+          "type": "string"
+        }
+      },
+      "InlineValueUnevaluatedDictionaryObject": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "InlineValueUnevaluatedDictionaryEnum": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "enum": [
+            "First",
+            "Second"
+          ],
+          "type": "string"
+        }
+      },
+      "InlineValueNestedDictionary": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "InlineValueDictionaryHolder": {
+        "type": "object",
+        "properties": {
+          "objectMap": {
+            "$ref": "#/components/schemas/InlineValueDictionaryObject"
+          },
+          "enumMap": {
+            "$ref": "#/components/schemas/InlineValueDictionaryEnum"
+          },
+          "unevaluatedObjectMap": {
+            "$ref": "#/components/schemas/InlineValueUnevaluatedDictionaryObject"
+          },
+          "unevaluatedEnumMap": {
+            "$ref": "#/components/schemas/InlineValueUnevaluatedDictionaryEnum"
+          },
+          "nestedMap": {
+            "$ref": "#/components/schemas/InlineValueNestedDictionary"
+          },
+          "inlineObjectMap": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "inlineEnumMap": {
+            "type": "object",
+            "additionalProperties": {
+              "enum": [
+                "First",
+                "Second"
+              ],
+              "type": "string"
+            }
+          },
+          "inlineUnevaluatedObjectMap": {
+            "type": "object",
+            "unevaluatedProperties": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "inlineUnevaluatedEnumMap": {
+            "type": "object",
+            "unevaluatedProperties": {
+              "enum": [
+                "First",
+                "Second"
+              ],
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "InlineValuePolymorphicDictionary": {
+        "type": "object",
+        "additionalProperties": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/AbstractBaseDog"
+            },
+            {
+              "$ref": "#/components/schemas/AbstractBaseCat"
+            }
+          ],
+          "discriminator": {
+            "propertyName": "animalType"
+          }
+        }
+      },
+      "InlineValueNullableEnumDictionary": {
+        "type": "object",
+        "additionalProperties": {
+          "enum": [
+            "First",
+            "Second",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "InlineValueOpenObjectWithDictionary": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
       "ActionBase": {
         "required": [
           "actionType"

@@ -264,6 +264,28 @@ public class DictionarySchemaTests
         GetDictionaryValueType(headerGenerator.TypeInfo.Name).Should().EndWith(".XMapValue");
     }
 
+    [Fact]
+    public async Task Generate_HeaderReferencingDictionaryOfInlineValues_DoesNotEmitValueAgain()
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync(
+            $$"""{ "Map": { "type": "object", "additionalProperties": {{InlineObject}} } }""",
+            """{ "X-Map": { "schema": { "$ref": "#/components/schemas/Map" } } }""");
+        var headerRegistry = new YardarmGenerationSettings().BuildServiceProvider(document)
+            .GetRequiredService<ITypeGeneratorRegistry<IOpenApiHeader>>();
+
+        // Act
+
+        var headerGenerator = headerRegistry.Get(
+            LocatedOpenApiElement.CreateRoot(document.Components!.Headers!["X-Map"], "X-Map"));
+
+        // Assert
+
+        headerGenerator.GenerateSyntaxTree().Should().BeNull("the referenced schema emits its value type");
+        GetDictionaryValueType(headerGenerator.TypeInfo.Name).Should().EndWith(".MapValue");
+    }
+
     [Theory]
     [InlineData("additionalProperties", true)]
     [InlineData("unevaluatedProperties", true)]

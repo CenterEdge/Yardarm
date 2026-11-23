@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
@@ -17,11 +18,10 @@ namespace Yardarm.Generation.Schema
     {
         /// <inheritdoc />
         /// <remarks>
-        /// The dictionary itself is not generated, so this is the name of its value type. It supplies the
-        /// namespace and file path when an inline value schema of a generated type, such as an object or enum,
-        /// is emitted in the dictionary's place.
+        /// The dictionary is not a generated type, so it has no name. An inline value type is named by its own
+        /// generator through <see cref="GetChildName{TChild}"/>.
         /// </remarks>
-        public override QualifiedNameSyntax GetTypeName() => GetChildName(GetValueSchema(), NameKind.Class);
+        public override QualifiedNameSyntax? GetTypeName() => null;
 
         protected override YardarmTypeInfo CreateTypeInfo()
         {
@@ -40,6 +40,13 @@ namespace Yardarm.Generation.Schema
                     valueType),
                 isGenerated: false);
         }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// An inline value type is emitted by its own generator, in the namespace and file given by its own name.
+        /// </remarks>
+        public override SyntaxTree? GenerateSyntaxTree() =>
+            GetGeneratedValueGenerator()?.GenerateSyntaxTree();
 
         public override IEnumerable<MemberDeclarationSyntax> Generate() =>
             GetGeneratedValueGenerator()?.Generate() ?? [];

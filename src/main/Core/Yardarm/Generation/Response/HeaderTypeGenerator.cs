@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Names;
@@ -20,6 +21,21 @@ public class HeaderTypeGenerator : TypeGeneratorBase<IOpenApiHeader>
 
     protected override YardarmTypeInfo CreateTypeInfo() =>
         Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).TypeInfo;
+
+    public override SyntaxTree? GenerateSyntaxTree()
+    {
+        ILocatedOpenApiElement<IOpenApiSchema> schema = Element.GetSchemaOrDefault();
+        ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schema);
+
+        if (schemaGenerator.GetTypeName() is null)
+        {
+            // A schema with no name of its own, such as a dictionary, emits any inline types it contains
+            // in the files given by their own names. A referenced schema emits them at its own location.
+            return schema.IsReference ? null : schemaGenerator.GenerateSyntaxTree();
+        }
+
+        return base.GenerateSyntaxTree();
+    }
 
     public override IEnumerable<MemberDeclarationSyntax> Generate() =>
         Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();

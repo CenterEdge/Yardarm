@@ -339,6 +339,61 @@ public class DictionarySchemaTests
         }
     }
 
+    [Fact]
+    public async Task GetAllSchemas_OneOfWithInlineValue_ExcludesValue()
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync($$"""
+            {
+              "Dog": { "type": "object" },
+              "Union": {
+                "oneOf": [ { "$ref": "#/components/schemas/Dog" } ],
+                "additionalProperties": {{InlineObject}}
+              }
+            }
+            """);
+
+        // Act
+
+        var schemas = document.GetAllSchemas().Select(p => p.ToString()).ToList();
+
+        // Assert
+
+        schemas.Should().NotContain(p => p.Contains("additionalProperties"));
+    }
+
+    [Fact]
+    public async Task GetAllSchemas_NullableDictionaryWithInlineValue_IncludesValue()
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync($$"""
+            {
+              "Holder": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "map": {
+                    "oneOf": [
+                      { "type": "null" },
+                      { "type": "object", "additionalProperties": {{InlineObject}} }
+                    ]
+                  }
+                }
+              }
+            }
+            """);
+
+        // Act
+
+        var schemas = document.GetAllSchemas().Select(p => p.ToString()).ToList();
+
+        // Assert
+
+        schemas.Should().Contain("Holder:IOpenApiSchema/map:IOpenApiSchema/additionalProperties:IOpenApiSchema");
+    }
+
     private static TypeSyntax ParseType(string typeName) =>
         Microsoft.CodeAnalysis.CSharp.SyntaxFactory.ParseTypeName(typeName);
 

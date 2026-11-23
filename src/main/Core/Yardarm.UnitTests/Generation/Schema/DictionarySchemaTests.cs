@@ -286,6 +286,28 @@ public class DictionarySchemaTests
         GetDictionaryValueType(headerGenerator.TypeInfo.Name).Should().EndWith(".MapValue");
     }
 
+    [Fact]
+    public async Task Generate_HeaderReferencingObject_DoesNotEmitObjectAgain()
+    {
+        // Arrange
+
+        OpenApiDocument document = await LoadAsync(
+            $$"""{ "Widget": {{InlineObject}} }""",
+            """{ "X-Widget": { "schema": { "$ref": "#/components/schemas/Widget" } } }""");
+        var headerRegistry = new YardarmGenerationSettings().BuildServiceProvider(document)
+            .GetRequiredService<ITypeGeneratorRegistry<IOpenApiHeader>>();
+
+        // Act
+
+        var headerGenerator = headerRegistry.Get(
+            LocatedOpenApiElement.CreateRoot(document.Components!.Headers!["X-Widget"], "X-Widget"));
+
+        // Assert
+
+        headerGenerator.GenerateSyntaxTree().Should().BeNull("the referenced schema emits its own type");
+        headerGenerator.TypeInfo.Name.ToString().Should().EndWith(".Widget");
+    }
+
     [Theory]
     [InlineData("additionalProperties", true)]
     [InlineData("unevaluatedProperties", true)]

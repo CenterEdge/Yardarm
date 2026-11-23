@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.OpenApi;
 using Yardarm.Names;
@@ -16,29 +15,31 @@ public class HeaderTypeGenerator : TypeGeneratorBase<IOpenApiHeader>
     {
     }
 
-    public override QualifiedNameSyntax? GetTypeName()
-        => Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).GetTypeName();
+    /// <inheritdoc />
+    /// <remarks>
+    /// The schema's type name, or the header's own name when the schema has none, such as a dictionary.
+    /// This supplies the namespace and file path for any inline types the schema emits.
+    /// </remarks>
+    public override QualifiedNameSyntax GetTypeName()
+    {
+        ILocatedOpenApiElement<IOpenApiSchema> schema = Element.GetSchemaOrDefault();
+
+        return Context.TypeGeneratorRegistry.Get(schema).GetTypeName()
+            ?? GetChildName(schema, NameKind.Class);
+    }
 
     protected override YardarmTypeInfo CreateTypeInfo() =>
         Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).TypeInfo;
 
-    public override SyntaxTree? GenerateSyntaxTree()
+    public override IEnumerable<MemberDeclarationSyntax> Generate()
     {
         ILocatedOpenApiElement<IOpenApiSchema> schema = Element.GetSchemaOrDefault();
-        ITypeGenerator schemaGenerator = Context.TypeGeneratorRegistry.Get(schema);
 
-        if (schemaGenerator.GetTypeName() is null)
-        {
-            // A schema with no name of its own, such as a dictionary, emits any inline types it contains
-            // in the files given by their own names. A referenced schema emits them at its own location.
-            return schema.IsReference ? null : schemaGenerator.GenerateSyntaxTree();
-        }
-
-        return base.GenerateSyntaxTree();
+        // A referenced schema is generated at its own location
+        return schema.IsReference
+            ? []
+            : Context.TypeGeneratorRegistry.Get(schema).Generate();
     }
-
-    public override IEnumerable<MemberDeclarationSyntax> Generate() =>
-        Context.TypeGeneratorRegistry.Get(Element.GetSchemaOrDefault()).Generate();
 
     public override QualifiedNameSyntax GetChildName<TChild>(ILocatedOpenApiElement<TChild> child, NameKind nameKind)
     {
